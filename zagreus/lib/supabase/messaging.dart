@@ -5,6 +5,8 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/profile_tools.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
+import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
 import 'package:dio/dio.dart';
 
 class ZagSupabaseMessaging {
@@ -57,7 +59,7 @@ class ZagSupabaseMessaging {
           _tokenController.add(token);
           ZagLogger().debug('Received APNS token: $token');
           // Automatically register with server when we get a new token
-          await _registerDeviceWithServer(token);
+          await _registerDeviceWithServer(token, anonymous: false);
           break;
         default:
           ZagLogger().warning('Unknown method call from iOS: ${call.method}');
@@ -106,30 +108,37 @@ class ZagSupabaseMessaging {
   }
 
   /// Register the current device token with the notification server
-  Future<bool> registerDeviceToken() async {
+  Future<bool> registerDeviceToken({bool anonymous = false}) async {
     final token = await getToken();
     if (token == null) {
       ZagLogger().warning('No token available to register');
       return false;
     }
-    return _registerDeviceWithServer(token);
+    return _registerDeviceWithServer(token, anonymous: anonymous);
   }
 
   /// Register the device token with the notification server
-  Future<bool> _registerDeviceWithServer(String token) async {
+  Future<bool> _registerDeviceWithServer(String token, {bool anonymous = false}) async {
     try {
       final dio = Dio();
-      final user = ZagSupabase.client.auth.currentUser;
-      if (user == null) {
-        ZagLogger().warning('No authenticated user, cannot register device');
-        return false;
+
+      // For anonymous mode, skip user check
+      String? userId;
+      if (!anonymous) {
+        final user = ZagSupabase.client.auth.currentUser;
+        if (user == null) {
+          ZagLogger().warning('No authenticated user, cannot register device');
+          return false;
+        }
+        userId = user.id;
       }
 
       // Get device info matching Go service expectations
       final deviceInfo = {
-        'user_id': user.id,
+        if (userId != null) 'user_id': userId,
         'device_token': token,
         'device_type': Platform.isIOS ? 'ios' : 'android',
+        'anonymous': anonymous,
       };
 
       final response = await dio.post(
@@ -143,7 +152,22 @@ class ZagSupabaseMessaging {
       );
 
       if (response.statusCode == 200) {
-        ZagLogger().debug('Successfully registered device with notification server');
+        // Extract webhook ID and signature from response
+        final responseData = response.data;
+        if (responseData is Map && responseData['webhook_id'] != null) {
+          final webhookId = responseData['webhook_id'] as String;
+          final webhookSignature = responseData['webhook_signature'] as String?;
+
+          // Store the webhook ID and signature locally
+          await _storeWebhookCredentials(webhookId, webhookSignature ?? '');
+
+          // Store anonymous mode preference
+          ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.update(anonymous);
+
+          ZagLogger().debug('Successfully registered device with webhook ID: $webhookId');
+        } else {
+          ZagLogger().debug('Successfully registered device (no webhook ID returned)');
+        }
         return true;
       } else {
         ZagLogger().error('Failed to register device: ${response.statusCode}', null, null);
@@ -256,6 +280,19 @@ class ZagSupabaseMessaging {
   /// Simulate receiving a message (for testing purposes)
   void simulateMessage(RemoteMessage message) {
     _messageController.add(message);
+  }
+
+  /// Store webhook credentials for use by webhook managers
+  Future<void> _storeWebhookCredentials(String webhookId, String signature) async {
+    // Store in database for webhook managers to use
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.update(webhookId);
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.update(signature);
+
+    // Also update webhook managers directly if needed
+    RadarrWebhookManager.storeWebhookId(webhookId);
+    RadarrWebhookManager.storeWebhookSignature(signature);
+    SonarrWebhookManager.storeWebhookId(webhookId);
+    SonarrWebhookManager.storeWebhookSignature(signature);
   }
 }
 

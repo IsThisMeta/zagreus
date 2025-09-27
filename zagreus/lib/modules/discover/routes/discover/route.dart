@@ -1508,11 +1508,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         title: title,
       );
     } else if (mediaType == 'person') {
-      // Person details
-      showZagSnackBar(
-        title: title,
-        message: 'Person details coming soon',
-        type: ZagSnackbarType.INFO,
+      // Navigate to person details page
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PersonDetailsRoute(
+            personId: tmdbId,
+            personName: title,
+          ),
+        ),
       );
     }
   }

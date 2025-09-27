@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"log"
+	"math/rand"
 	"os"
 	"time"
 
@@ -68,6 +72,13 @@ type DeviceRegistration struct {
 	UserID      string `json:"user_id"`
 	DeviceToken string `json:"device_token"`
 	DeviceType  string `json:"device_type"`
+	Anonymous   bool   `json:"anonymous"` // New field for anonymous mode
+}
+
+// Webhook registration response
+type WebhookRegistration struct {
+	WebhookID string `json:"webhook_id"`
+	Success   bool   `json:"success"`
 }
 
 func handleRegister(c *gin.Context) {
@@ -124,11 +135,21 @@ func handleRegister(c *gin.Context) {
 		log.Printf("Failed to update last seen: %v", err)
 	}
 
-	log.Printf("Device registered: %s for user %s", deviceID, req.UserID)
-	
+	// Generate or retrieve webhook ID and signature
+	webhookID, signature, err := getOrCreateWebhookID(req.UserID, req.DeviceToken, req.Anonymous)
+	if err != nil {
+		log.Printf("Failed to generate webhook ID: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to generate webhook ID"})
+		return
+	}
+
+	log.Printf("Device registered: %s for user %s with webhook %s", deviceID, req.UserID, webhookID)
+
 	c.JSON(200, gin.H{
 		"success": true,
 		"device_id": deviceID,
+		"webhook_id": webhookID,
+		"webhook_signature": signature,
 	})
 }
 
@@ -155,6 +176,125 @@ func getDeviceTokensForUser(userID string) ([]string, error) {
 			continue
 		}
 		tokens = append(tokens, token)
+	}
+
+	return tokens, nil
+}
+
+// Generate a random 6-character webhook ID
+func generateWebhookID() string {
+	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, 6)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+// Generate HMAC signature for webhook validation
+func generateWebhookSignature(webhookID string) string {
+	secret := os.Getenv("WEBHOOK_SECRET")
+	if secret == "" {
+		secret = "zagreus-default-secret-change-me" // Fallback for dev
+	}
+
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write([]byte(webhookID))
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
+
+// Verify webhook signature
+func verifyWebhookSignature(webhookID string, signature string) bool {
+	expected := generateWebhookSignature(webhookID)
+	return hmac.Equal([]byte(expected), []byte(signature))
+}
+
+// Get or create webhook ID for a user/device
+func getOrCreateWebhookID(userID string, deviceToken string, anonymous bool) (string, string, error) {
+	if db == nil {
+		// Return a mock webhook ID and signature for testing
+		webhookID := "test123"
+		signature := generateWebhookSignature(webhookID)
+		return webhookID, signature, nil
+	}
+
+	// For anonymous mode, generate a new webhook ID each time
+	if anonymous {
+		webhookID := generateWebhookID()
+
+		// Store the anonymous webhook mapping
+		_, err := db.Exec(`
+			INSERT INTO webhook_mappings (webhook_id, user_id, device_tokens, is_anonymous)
+			VALUES ($1, NULL, ARRAY[$2], true)
+			ON CONFLICT (webhook_id) DO UPDATE
+			SET device_tokens = ARRAY[$2], updated_at = CURRENT_TIMESTAMP
+		`, webhookID, deviceToken)
+
+		if err != nil {
+			// If collision, try again with new ID
+			return getOrCreateWebhookID(userID, deviceToken, anonymous)
+		}
+
+		signature := generateWebhookSignature(webhookID)
+		return webhookID, signature, nil
+	}
+
+	// For authenticated users, check if they already have a webhook ID
+	var webhookID string
+	err := db.QueryRow(`
+		SELECT webhook_id FROM webhook_mappings
+		WHERE user_id = $1 AND is_anonymous = false
+	`, userID).Scan(&webhookID)
+
+	if err == sql.ErrNoRows {
+		// Generate new webhook ID for this user
+		webhookID = generateWebhookID()
+
+		_, err = db.Exec(`
+			INSERT INTO webhook_mappings (webhook_id, user_id, device_tokens, is_anonymous)
+			VALUES ($1, $2, ARRAY[$3], false)
+		`, webhookID, userID, deviceToken)
+
+		if err != nil {
+			// If collision, try again
+			return getOrCreateWebhookID(userID, deviceToken, anonymous)
+		}
+	} else if err == nil {
+		// Update device tokens array
+		_, err = db.Exec(`
+			UPDATE webhook_mappings
+			SET device_tokens = array_append(
+				array_remove(device_tokens, $2), $2
+			),
+			updated_at = CURRENT_TIMESTAMP
+			WHERE webhook_id = $1
+		`, webhookID, deviceToken)
+
+		if err != nil {
+			return "", "", err
+		}
+	} else {
+		return "", "", err
+	}
+
+	signature := generateWebhookSignature(webhookID)
+	return webhookID, signature, nil
+}
+
+// Get device tokens for a webhook ID
+func getDeviceTokensForWebhook(webhookID string) ([]string, error) {
+	if db == nil {
+		return []string{}, nil
+	}
+
+	var tokens []string
+	err := db.QueryRow(`
+		SELECT device_tokens FROM webhook_mappings
+		WHERE webhook_id = $1
+	`, webhookID).Scan(&tokens)
+
+	if err != nil {
+		return nil, err
 	}
 
 	return tokens, nil

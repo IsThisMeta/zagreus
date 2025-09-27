@@ -315,15 +315,30 @@ func handleTautulliWebhook(c *gin.Context) {
 
 // Handle webhook with user ID in URL path (Flutter app compatibility)
 func handleWebhookWithPayload(c *gin.Context) {
-	payload := c.Param("payload")
-	
-	// Decode the base64 user ID
-	userIDBytes, err := base64.StdEncoding.DecodeString(payload)
-	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid payload"})
+	webhookID := c.Param("payload")
+
+	// Extract signature from Basic Auth password field (Radarr/Sonarr webhook format)
+	_, password, hasAuth := c.Request.BasicAuth()
+	if !hasAuth || password == "" {
+		log.Printf("Missing webhook signature for %s", webhookID)
+		c.JSON(401, gin.H{"error": "Missing signature"})
 		return
 	}
-	userID := string(userIDBytes)
+
+	// Verify the signature
+	if !verifyWebhookSignature(webhookID, password) {
+		log.Printf("Invalid webhook signature for %s", webhookID)
+		c.JSON(401, gin.H{"error": "Invalid signature"})
+		return
+	}
+
+	// Get device tokens for this webhook ID
+	deviceTokens, err := getDeviceTokensForWebhook(webhookID)
+	if err != nil {
+		log.Printf("Failed to get device tokens for webhook %s: %v", webhookID, err)
+		c.JSON(400, gin.H{"error": "Invalid webhook ID"})
+		return
+	}
 	
 	// First read the raw body for debugging
 	bodyBytes, _ := c.GetRawData()
@@ -341,7 +356,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 	}
 	
 	eventType, _ := genericWebhook["eventType"].(string)
-	log.Printf("Received webhook via payload URL: %s for user %s", eventType, userID)
+	log.Printf("Received webhook via payload URL: %s for webhook %s (%d devices)", eventType, webhookID, len(deviceTokens))
 	
 	var title, body string
 	
@@ -500,15 +515,23 @@ func handleWebhookWithPayload(c *gin.Context) {
 		}
 	}
 	
-	// Send the notification
-	if err := sendNotificationToUser(userID, title, body); err != nil {
-		log.Printf("Failed to send notification: %v", err)
-		c.JSON(500, gin.H{"error": "Failed to send notification"})
+	// Send notification to all device tokens
+	successCount := 0
+	for _, token := range deviceTokens {
+		if err := sendPushNotification(token, title, body); err != nil {
+			log.Printf("Failed to send to token %s: %v", token, err)
+		} else {
+			successCount++
+		}
+	}
+
+	if successCount == 0 && len(deviceTokens) > 0 {
+		c.JSON(500, gin.H{"error": "Failed to send any notifications"})
 		return
 	}
-	
+
 	c.JSON(200, gin.H{
 		"success": true,
-		"message": fmt.Sprintf("Notification sent for %s", eventType),
+		"message": fmt.Sprintf("Notification sent for %s to %d/%d devices", eventType, successCount, len(deviceTokens)),
 	})
 }

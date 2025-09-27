@@ -4,15 +4,15 @@ import 'package:dio/dio.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/supabase/core.dart';
-import 'package:zagreus/api/sonarr/sonarr.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 /// Simple webhook field that only serializes name and value
 class SimpleWebhookField {
   final String name;
   final String value;
-  
+
   SimpleWebhookField({required this.name, required this.value});
-  
+
   Map<String, dynamic> toJson() => {
     'name': name,
     'value': value,
@@ -26,7 +26,9 @@ class SonarrWebhookManager {
   /// Check if Zagreus webhook is already configured
   static Future<SonarrNotification?> getZagreusWebhook(SonarrAPI api) async {
     try {
+      ZagLogger().debug('Fetching all Sonarr notifications...');
       final notifications = await api.notification.getAll();
+      ZagLogger().debug('Found ${notifications.length} notifications');
       return notifications.firstWhereOrNull(
         (n) => n.name == webhookName && n.implementation == 'Webhook',
       );
@@ -37,36 +39,45 @@ class SonarrWebhookManager {
   }
 
   /// Create or update Zagreus webhook
-  static Future<bool> syncWebhook(SonarrAPI api) async {
+  static Future<bool> syncWebhook(SonarrAPI api, {String? webhookId}) async {
     try {
       ZagLogger().debug('=== Starting Sonarr webhook sync ===');
-      // Get user token from Supabase
-      final user = ZagSupabase.client.auth.currentUser;
-      if (user == null) {
-        throw Exception('No authenticated user');
+
+      // If webhookId not provided, get it from stored value or registration
+      String finalWebhookId;
+      if (webhookId != null) {
+        finalWebhookId = webhookId;
+      } else {
+        // Check if we have a stored webhook ID
+        // This will be set by the messaging service after registration
+        final storedId = _getStoredWebhookId();
+        if (storedId == null) {
+          throw Exception('No webhook ID available - register device first');
+        }
+        finalWebhookId = storedId;
       }
-      
-      final userToken = user.id; // Use Supabase user ID as the token
 
       // Check if webhook already exists
       ZagLogger().debug('Checking for existing webhook...');
       final existing = await getZagreusWebhook(api);
       ZagLogger().debug('Existing webhook: ${existing != null ? 'Found' : 'Not found'}');
+
+      // Build webhook URL with the 6-char webhook ID
+      final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/notifications/webhook/$finalWebhookId';
+      ZagLogger().debug('Webhook URL: $webhookUrl');
       
-      // Build webhook URL with user_id in the path
-      // Encode the user ID in base64
-      final payload = base64.encode(utf8.encode(userToken));
-      final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/notifications/webhook/$payload';
-      
+      // Get stored signature
+      final signature = _getStoredWebhookSignature() ?? '';
+
       // Create simple fields (just name and value)
       final simpleFields = [
         SimpleWebhookField(name: 'url', value: webhookUrl),
         SimpleWebhookField(name: 'method', value: '1'),
         SimpleWebhookField(name: 'username', value: ''),
-        SimpleWebhookField(name: 'password', value: ''),
+        SimpleWebhookField(name: 'password', value: signature), // HMAC signature here
       ];
       
-      // Create the JSON manually with simple fields and specific events enabled
+      // Create the JSON manually with simple fields
       final notificationData = {
         'name': webhookName,
         'implementation': 'Webhook',
@@ -74,18 +85,17 @@ class SonarrWebhookManager {
         'configContract': 'WebhookSettings',
         'fields': simpleFields.map((f) => f.toJson()).toList(),
         'tags': [],
-        'onGrab': true,           // Episode grabbed
-        'onDownload': true,        // Episode downloaded
-        'onUpgrade': true,         // Episode upgraded
-        'onRename': false,         // Don't notify on renames
-        'onSeriesAdd': true,       // Series added
-        'onSeriesDelete': true,    // Series deleted
-        'onEpisodeFileDelete': false,  // Episode file deleted
-        'onEpisodeFileDeleteForUpgrade': false,  // Episode deleted for upgrade
-        'onHealthIssue': false,    // Health issues
+        'onGrab': true,
+        'onDownload': true,
+        'onUpgrade': true,
+        'onRename': false,
+        'onSeriesAdd': true,
+        'onSeriesDelete': false,
+        'onEpisodeFileDelete': false,
+        'onHealthIssue': false,
         'includeHealthWarnings': false,
-        'onApplicationUpdate': false,  // App updates
-        'onManualInteractionRequired': true,  // Manual intervention needed
+        'onApplicationUpdate': false,
+        'onManualInteractionRequired': true,
       };
       
       if (existing != null && existing.id != null) {
@@ -100,6 +110,7 @@ class SonarrWebhookManager {
       } else {
         // Create new webhook
         ZagLogger().debug('Creating new webhook');
+        ZagLogger().debug('Webhook data: ${json.encode(notificationData)}');
         final response = await api.httpClient.post(
           'notification',
           data: notificationData,
@@ -108,9 +119,40 @@ class SonarrWebhookManager {
       }
       
       return true;
+    } on DioException catch (e) {
+      // Extract error details from Sonarr's response
+      String errorMsg = 'Webhook sync failed: ';
+      if (e.response?.data != null) {
+        if (e.response!.data is List) {
+          // Handle validation error array
+          final errors = e.response!.data as List;
+          final errorMessages = errors.map((e) {
+            if (e is Map) {
+              return e['errorMessage'] ?? e['propertyName'] ?? e.toString();
+            }
+            return e.toString();
+          }).join(', ');
+          errorMsg += errorMessages;
+        } else if (e.response!.data is Map) {
+          // Try to get error message from response
+          final data = e.response!.data as Map;
+          if (data['message'] != null) {
+            errorMsg += data['message'];
+          } else if (data['error'] != null) {
+            errorMsg += data['error'];
+          } else {
+            errorMsg += 'Response: ${json.encode(data)}';
+          }
+        } else {
+          errorMsg += e.response!.data.toString();
+        }
+      } else {
+        errorMsg += e.message ?? e.toString();
+      }
+      throw Exception(errorMsg);
     } catch (e, stackTrace) {
       ZagLogger().error('Failed to sync Sonarr webhook', e, stackTrace);
-      return false;
+      rethrow;
     }
   }
 
@@ -142,5 +184,27 @@ class SonarrWebhookManager {
       ZagLogger().error('Failed to test Sonarr webhook', e, stackTrace);
       return false;
     }
+  }
+
+  /// Store webhook ID locally
+  static void storeWebhookId(String webhookId) {
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.update(webhookId);
+  }
+
+  /// Store webhook signature locally
+  static void storeWebhookSignature(String signature) {
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.update(signature);
+  }
+
+  /// Get stored webhook ID
+  static String? _getStoredWebhookId() {
+    final id = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
+    return id.isNotEmpty ? id : null;
+  }
+
+  /// Get stored webhook signature
+  static String? _getStoredWebhookSignature() {
+    final sig = ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.read();
+    return sig.isNotEmpty ? sig : null;
   }
 }

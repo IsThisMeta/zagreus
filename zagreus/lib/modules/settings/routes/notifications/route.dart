@@ -59,10 +59,13 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       }
 
       final user = ZagSupabase.client.auth.currentUser;
-      if (!ZagSupabase.isSupported || user == null) {
+      final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+
+      // Check if we have a valid auth method
+      if (!isAnonymous && (!ZagSupabase.isSupported || user == null)) {
         setState(() {
-          _radarrStatus = 'Requires login';
-          _sonarrStatus = 'Requires login';
+          _radarrStatus = 'Enable Single Device Mode or sign in';
+          _sonarrStatus = 'Enable Single Device Mode or sign in';
         });
         return;
       }
@@ -146,18 +149,29 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     }
   }
 
-  Future<void> _registerDeviceTokenIfNeeded() async {
+  Future<bool> _registerDeviceTokenIfNeeded() async {
     try {
-      final user = ZagSupabase.client.auth.currentUser;
-      if (user != null) {
+      final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+
+      if (!isAnonymous) {
+        // For synced mode, check if user is authenticated
+        final user = ZagSupabase.client.auth.currentUser;
+        if (user == null) {
+          ZagLogger().warning('No authenticated user, cannot register device token');
+          return false;
+        }
         ZagLogger().debug('User authenticated, registering device token for user: ${user.id}');
-        final success = await ZagSupabaseMessaging.instance.registerDeviceToken();
-        ZagLogger().debug('Device token registration result: $success');
       } else {
-        ZagLogger().warning('No authenticated user, cannot register device token');
+        ZagLogger().debug('Registering anonymous device token');
       }
+
+      final success = await ZagSupabaseMessaging.instance
+          .registerDeviceToken(anonymous: isAnonymous);
+      ZagLogger().debug('Device token registration result: $success');
+      return success;
     } catch (e, stackTrace) {
       ZagLogger().error('Failed to register device token', e, stackTrace);
+      return false;
     }
   }
 
@@ -184,12 +198,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return ZagListView(
       controller: scrollController,
       children: [
-        // Show sign-in banner if not signed in
-        if (!isSignedIn)
+        // Show sign-in banner if not signed in AND not in anonymous mode
+        if (!isSignedIn && !ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read())
           ZagBanner(
-            headerText: 'Sign In Required',
+            headerText: 'Sign In Required for Multi-Device',
             bodyText:
-                'Please sign in to your Zagreus account to enable push notifications',
+                'Multi-device sync requires authentication. Enable Single Device Mode for anonymous notifications.',
             icon: Icons.account_circle_outlined,
             iconColor: ZagColours.orange,
           ),
@@ -210,6 +224,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           },
         ),
         _enableNotifications(),
+        _anonymousModeToggle(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
@@ -229,6 +244,10 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     const db = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS;
     final user = ZagSupabase.client.auth.currentUser;
     final isSignedIn = ZagSupabase.isSupported && user != null;
+    final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+
+    // Can enable if signed in OR in anonymous mode
+    final canEnable = isSignedIn || isAnonymous;
 
     return ZagBlock(
       title: 'Enable Notifications',
@@ -236,7 +255,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
           value: db.read(),
-          onChanged: !isSignedIn
+          onChanged: !canEnable
               ? null
               : (value) async {
                   ZagLogger().debug('Notification toggle changed to: $value');
@@ -282,6 +301,93 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                   }
                   db.update(value);
                 },
+        ),
+      ),
+    );
+  }
+
+  Widget _anonymousModeToggle() {
+    const db = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE;
+
+    return ZagBlock(
+      title: 'Single Device Mode',
+      body: [
+        TextSpan(
+          text: db.read()
+              ? 'Anonymous notifications (this device only)'
+              : 'Multi-device sync (requires authentication)',
+        ),
+      ],
+      trailing: db.listenableBuilder(
+        builder: (context, _) => ZagSwitch(
+          value: db.read(),
+          onChanged: (value) async {
+            // Show confirmation dialog
+            final confirmed = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(value ? 'Enable Single Device Mode?' : 'Disable Single Device Mode?'),
+                content: Text(
+                  value
+                      ? 'This will switch to anonymous notifications for this device only. '
+                        'You won\'t need to sign in, but notifications won\'t sync to other devices.\n\n'
+                        '⚠️ Installing on another device will break notifications here.'
+                      : 'This will switch to multi-device mode. '
+                        'Requires authentication to sync notifications across devices.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(
+                      'Continue',
+                      style: TextStyle(color: ZagColours.accentLight),
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirmed == true) {
+              // Update the preference
+              db.update(value);
+
+              // Clear cached token to force re-registration
+              ZagSupabaseMessaging.instance.clearCachedToken();
+
+              // Re-register with new mode
+              if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
+                try {
+                  final success = await ZagSupabaseMessaging.instance
+                      .registerDeviceToken(anonymous: value);
+
+                  if (success) {
+                    showZagSuccessSnackBar(
+                      title: 'Success',
+                      message: value
+                          ? 'Switched to single device mode'
+                          : 'Switched to multi-device mode',
+                    );
+
+                    // Refresh webhook sync
+                    _syncWebhooksInBackground();
+                  } else {
+                    throw Exception('Registration failed');
+                  }
+                } catch (e) {
+                  // Revert on failure
+                  db.update(!value);
+                  showZagErrorSnackBar(
+                    title: 'Error',
+                    message: 'Failed to update notification mode',
+                  );
+                }
+              }
+            }
+          },
         ),
       ),
     );

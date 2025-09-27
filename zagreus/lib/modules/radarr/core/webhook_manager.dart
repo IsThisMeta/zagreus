@@ -4,14 +4,15 @@ import 'package:dio/dio.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 /// Simple webhook field that only serializes name and value
 class SimpleWebhookField {
   final String name;
   final String value;
-  
+
   SimpleWebhookField({required this.name, required this.value});
-  
+
   Map<String, dynamic> toJson() => {
     'name': name,
     'value': value,
@@ -38,34 +39,42 @@ class RadarrWebhookManager {
   }
 
   /// Create or update Zagreus webhook
-  static Future<bool> syncWebhook(RadarrAPI api) async {
+  static Future<bool> syncWebhook(RadarrAPI api, {String? webhookId}) async {
     try {
       ZagLogger().debug('=== Starting Radarr webhook sync ===');
-      // Get user token from Supabase
-      final user = ZagSupabase.client.auth.currentUser;
-      if (user == null) {
-        throw Exception('No authenticated user');
+
+      // If webhookId not provided, get it from stored value or registration
+      String finalWebhookId;
+      if (webhookId != null) {
+        finalWebhookId = webhookId;
+      } else {
+        // Check if we have a stored webhook ID
+        // This will be set by the messaging service after registration
+        final storedId = _getStoredWebhookId();
+        if (storedId == null) {
+          throw Exception('No webhook ID available - register device first');
+        }
+        finalWebhookId = storedId;
       }
-      
-      final userToken = user.id; // Use Supabase user ID as the token
 
       // Check if webhook already exists
       ZagLogger().debug('Checking for existing webhook...');
       final existing = await getZagreusWebhook(api);
       ZagLogger().debug('Existing webhook: ${existing != null ? 'Found' : 'Not found'}');
-      
-      // Build webhook URL with user_id in the path
-      // Encode the user ID in base64
-      final payload = base64.encode(utf8.encode(userToken));
-      final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/notifications/webhook/$payload';
+
+      // Build webhook URL with the 6-char webhook ID
+      final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/notifications/webhook/$finalWebhookId';
       ZagLogger().debug('Webhook URL: $webhookUrl');
       
+      // Get stored signature
+      final signature = _getStoredWebhookSignature() ?? '';
+
       // Create simple fields (just name and value)
       final simpleFields = [
         SimpleWebhookField(name: 'url', value: webhookUrl),
         SimpleWebhookField(name: 'method', value: '1'),
         SimpleWebhookField(name: 'username', value: ''),
-        SimpleWebhookField(name: 'password', value: ''),
+        SimpleWebhookField(name: 'password', value: signature), // HMAC signature here
       ];
       
       // Create the JSON manually with simple fields
@@ -176,5 +185,27 @@ class RadarrWebhookManager {
       ZagLogger().error('Failed to test Radarr webhook', e, stackTrace);
       return false;
     }
+  }
+
+  /// Store webhook ID locally
+  static void storeWebhookId(String webhookId) {
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.update(webhookId);
+  }
+
+  /// Store webhook signature locally
+  static void storeWebhookSignature(String signature) {
+    ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.update(signature);
+  }
+
+  /// Get stored webhook ID
+  static String? _getStoredWebhookId() {
+    final id = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
+    return id.isNotEmpty ? id : null;
+  }
+
+  /// Get stored webhook signature
+  static String? _getStoredWebhookSignature() {
+    final sig = ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.read();
+    return sig.isNotEmpty ? sig : null;
   }
 }
