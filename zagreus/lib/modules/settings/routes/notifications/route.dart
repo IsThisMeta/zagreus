@@ -31,7 +31,10 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   @override
   void initState() {
     super.initState();
-    _syncWebhooksInBackground();
+    // Only sync webhooks if notifications are enabled
+    if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
+      _syncWebhooksInBackground();
+    }
     _checkNotificationStatus();
   }
 
@@ -146,6 +149,71 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         if (_radarrStatus.isEmpty) _radarrStatus = 'Error syncing webhooks';
         if (_sonarrStatus.isEmpty) _sonarrStatus = 'Error syncing webhooks';
       });
+    }
+  }
+
+  void _removeWebhooksInBackground() async {
+    try {
+      final profileName = ZagreusDatabase.ENABLED_PROFILE.read();
+      final profile = ZagBox.profiles.read(profileName);
+
+      if (profile == null) {
+        return;
+      }
+
+      ZagLogger().debug('=== REMOVING WEBHOOKS (Notifications Disabled) ===');
+
+      // Remove Radarr webhook if configured
+      if (profile.radarrEnabled &&
+          profile.radarrHost.isNotEmpty &&
+          profile.radarrKey.isNotEmpty) {
+        setState(() {
+          _radarrStatus = 'Removing webhook...';
+        });
+
+        try {
+          final api = RadarrAPI(
+            host: profile.radarrHost,
+            apiKey: profile.radarrKey,
+            headers: Map<String, dynamic>.from(profile.radarrHeaders),
+          );
+          await RadarrWebhookManager.removeWebhook(api);
+          setState(() {
+            _radarrStatus = 'Webhook removed';
+          });
+        } catch (e) {
+          setState(() {
+            _radarrStatus = 'Failed to remove webhook';
+          });
+        }
+      }
+
+      // Remove Sonarr webhook if configured
+      if (profile.sonarrEnabled &&
+          profile.sonarrHost.isNotEmpty &&
+          profile.sonarrKey.isNotEmpty) {
+        setState(() {
+          _sonarrStatus = 'Removing webhook...';
+        });
+
+        try {
+          final api = SonarrAPI(
+            host: profile.sonarrHost,
+            apiKey: profile.sonarrKey,
+            headers: Map<String, dynamic>.from(profile.sonarrHeaders),
+          );
+          await SonarrWebhookManager.removeWebhook(api);
+          setState(() {
+            _sonarrStatus = 'Webhook removed';
+          });
+        } catch (e) {
+          setState(() {
+            _sonarrStatus = 'Failed to remove webhook';
+          });
+        }
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Failed to remove webhooks', e, stack);
     }
   }
 
@@ -287,8 +355,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                       }
                     });
                   } else {
-                    // When disabling notifications, update webhook status
-                    _syncWebhooksInBackground();
+                    // When disabling notifications, remove webhooks
+                    _removeWebhooksInBackground();
                   }
                 },
         ),

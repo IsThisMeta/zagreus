@@ -71,14 +71,14 @@ abstract class ZagDialog {
 
   static Widget cancel(
     BuildContext context, {
-    Color textColor = Colors.white,
+    Color? textColor,
     String? text,
   }) =>
       TextButton(
         child: Text(
           text ?? 'zagreus.Cancel'.tr(),
           style: TextStyle(
-            color: textColor,
+            color: textColor ?? Theme.of(context).textTheme.bodyLarge?.color,
             fontSize: ZagDialog.BUTTON_SIZE,
           ),
         ),
@@ -280,7 +280,7 @@ abstract class ZagDialog {
             ZagDialog.cancel(
               context,
               text: cancelButtonText,
-              textColor: buttons != null ? Colors.white : ZagColours.accentLight,
+              textColor: buttons == null ? ZagColours.accentLight : null,
             ),
           if (buttons != null) ...buttons,
         ],
