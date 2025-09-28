@@ -371,7 +371,7 @@ class ZagBlock extends StatelessWidget {
                           fontSize: ZagUI.FONT_SIZE_H3,
                           color: Theme.of(context).brightness == Brightness.dark
                               ? ZagColours.grey
-                              : Colors.grey.shade800,
+                              : Colors.grey.shade900,
                         ),
                         children: [textSpan],
                       ),
