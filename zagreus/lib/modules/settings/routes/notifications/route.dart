@@ -546,27 +546,22 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ),
         _eventToggle(
           'On Grab',
-          'Notify when a movie is grabbed',
           ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB,
         ),
         _eventToggle(
-          'On Download',
-          'Notify when a movie finishes downloading',
+          'On Import',
           ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD,
         ),
         _eventToggle(
           'On Upgrade',
-          'Notify when a movie is upgraded',
           ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE,
         ),
         _eventToggle(
-          'On Movie Added',
-          'Notify when a new movie is added',
+          'On Add',
           ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED,
         ),
         _eventToggle(
-          'Manual Interaction Required',
-          'Notify when manual intervention is needed',
+          'On Manual Interaction',
           ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION,
         ),
       ],
@@ -589,27 +584,22 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ),
         _eventToggle(
           'On Grab',
-          'Notify when an episode is grabbed',
           ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB,
         ),
         _eventToggle(
-          'On Download',
-          'Notify when an episode finishes downloading',
+          'On Import',
           ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD,
         ),
         _eventToggle(
           'On Upgrade',
-          'Notify when an episode is upgraded',
           ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE,
         ),
         _eventToggle(
           'On Series Added',
-          'Notify when a new series is added',
           ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD,
         ),
         _eventToggle(
-          'Manual Interaction Required',
-          'Notify when manual intervention is needed',
+          'On Manual Interaction',
           ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION,
         ),
       ],
@@ -618,12 +608,11 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   Widget _eventToggle<T>(
     String title,
-    String description,
     ZagreusDatabase<T> db,
   ) {
     return ZagBlock(
       title: title,
-      body: [TextSpan(text: description)],
+      body: [],
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
           value: db.read() as bool,
