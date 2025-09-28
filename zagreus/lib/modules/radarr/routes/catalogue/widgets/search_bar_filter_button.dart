@@ -40,7 +40,7 @@ class _State extends State<RadarrCatalogueSearchBarFilterButton> {
                   color:
                       state.moviesFilterType == RadarrMoviesFilter.values[index]
                           ? ZagColours.accent
-                          : Colors.white,
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ),

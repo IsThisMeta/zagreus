@@ -49,7 +49,7 @@ class _State extends State<RadarrReleasesAppBarSortButton> {
                       color:
                           state.sortType == RadarrReleasesSorting.values[index]
                               ? ZagColours.accent
-                              : Colors.white,
+                              : Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   if (state.sortType == RadarrReleasesSorting.values[index])

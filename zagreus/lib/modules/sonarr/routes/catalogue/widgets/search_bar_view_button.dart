@@ -41,7 +41,7 @@ class _State extends State<SonarrSeriesSearchBarViewButton> {
                   color:
                       state.seriesViewType == ZagListViewOption.values[index]
                           ? ZagColours.accent
-                          : Colors.white,
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ),

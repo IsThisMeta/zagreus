@@ -48,7 +48,7 @@ class _State extends State<SonarrSeriesSearchBarSortButton> {
                         color: state.seriesSortType ==
                                 SonarrSeriesSorting.values[index]
                             ? ZagColours.accent
-                            : Colors.white,
+                            : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     if (state.seriesSortType ==

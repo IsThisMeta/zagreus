@@ -49,7 +49,7 @@ class _State extends State<RadarrCatalogueSearchBarSortButton> {
                       color: state.moviesSortType ==
                               RadarrMoviesSorting.values[index]
                           ? ZagColours.accent
-                          : Colors.white,
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   if (state.moviesSortType == RadarrMoviesSorting.values[index])

@@ -49,7 +49,7 @@ class _State extends State<SonarrReleasesAppBarSortButton> {
                       color:
                           state.sortType == SonarrReleasesSorting.values[index]
                               ? ZagColours.accent
-                              : Colors.white,
+                              : Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   if (state.sortType == SonarrReleasesSorting.values[index])

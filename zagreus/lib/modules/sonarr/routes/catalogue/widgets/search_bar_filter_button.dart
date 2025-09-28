@@ -40,7 +40,7 @@ class _State extends State<SonarrSeriesSearchBarFilterButton> {
                     color: state.seriesFilterType ==
                             SonarrSeriesFilter.values[index]
                         ? ZagColours.accent
-                        : Colors.white,
+                        : Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),

@@ -41,7 +41,7 @@ class _State extends State<RadarrCatalogueSearchBarViewButton> {
                   color:
                       state.moviesViewType == ZagListViewOption.values[index]
                           ? ZagColours.accent
-                          : Colors.white,
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ),

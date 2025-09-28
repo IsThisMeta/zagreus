@@ -40,7 +40,7 @@ class _State extends State<RadarrReleasesAppBarFilterButton> {
                   fontSize: ZagUI.FONT_SIZE_H3,
                   color: state.filterType == RadarrReleasesFilter.values[index]
                       ? ZagColours.accent
-                      : Colors.white,
+                      : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ),
