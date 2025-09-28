@@ -172,7 +172,7 @@ class ZagGridBlock extends StatelessWidget {
                 fontSize: ZagUI.FONT_SIZE_H3,
                 color: Theme.of(context).brightness == Brightness.dark
                     ? ZagColours.grey
-                    : Colors.grey.shade700,
+                    : Colors.grey.shade800,
               ),
               children: [subtitle],
             ),
