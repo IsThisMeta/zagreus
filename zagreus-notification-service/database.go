@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -287,16 +287,22 @@ func getDeviceTokensForWebhook(webhookID string) ([]string, error) {
 		return []string{}, nil
 	}
 
-	var tokens []string
+	// Use pq.Array to properly scan PostgreSQL array types
+	var tokens pq.StringArray
 	err := db.QueryRow(`
 		SELECT device_tokens FROM webhook_mappings
 		WHERE webhook_id = $1
 	`, webhookID).Scan(&tokens)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			// No mapping found for this webhook ID
+			return []string{}, nil
+		}
 		return nil, err
 	}
 
-	return tokens, nil
+	// Convert pq.StringArray to []string
+	return []string(tokens), nil
 }
 
