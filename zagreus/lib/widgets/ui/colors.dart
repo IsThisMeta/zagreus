@@ -21,7 +21,7 @@ class ZagColours {
   static const Color accentDark = Color(0xFF5AD2BE);
 
   /// Light mode accent colour
-  static const Color accentLight = Color(0xFF5AD2BE);
+  static const Color accentLight = Color(0xFF5AD2C3);
   
   // Dark Mode Colors
   static const Color primaryDark = Color(0xFF232534);
