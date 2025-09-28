@@ -297,10 +297,76 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   }
 
   Widget _statusBlock(String title, String status) {
-    final displayText = status.isEmpty ? 'Not checked' : status;
+    final isSuccess = status == 'SUCCESS';
+    final isFailed = status.startsWith('FAILED:');
+    final errorMessage = isFailed ? status.substring(8).trim() : '';
+
     return ZagBlock(
       title: title,
-      body: [TextSpan(text: displayText)],
+      body: [],
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (status.isEmpty)
+            Icon(
+              Icons.remove_circle_outline,
+              color: ZagColours.grey,
+              size: 24,
+            )
+          else if (isSuccess)
+            Icon(
+              Icons.check_circle,
+              color: ZagColours.orange,
+              size: 24,
+            )
+          else if (isFailed) ...[
+            Icon(
+              Icons.cancel,
+              color: ZagColours.red,
+              size: 24,
+            ),
+            SizedBox(width: 8),
+            ZagIconButton(
+              icon: Icons.info_outline,
+              color: ZagColours.grey,
+              onPressed: () => _showErrorDialog(title, errorMessage),
+            ),
+          ]
+          else
+            Icon(
+              Icons.hourglass_empty,
+              color: ZagColours.grey,
+              size: 24,
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String title, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('$title Error'),
+        content: SingleChildScrollView(
+          child: Text(
+            errorMessage,
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H3,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(color: ZagColours.accentLight),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
