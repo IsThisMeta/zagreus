@@ -66,7 +66,7 @@ class ZagGridBlock extends StatelessWidget {
                   children: [
                     _poster(context),
                     _title(context),
-                    _subtitle(),
+                    _subtitle(context),
                     const SizedBox(height: ZagUI.DEFAULT_MARGIN_SIZE),
                   ],
                 ),
@@ -160,7 +160,7 @@ class ZagGridBlock extends StatelessWidget {
     );
   }
 
-  Widget _subtitle() {
+  Widget _subtitle(BuildContext context) {
     return Container(
       child: Padding(
         child: SingleChildScrollView(
@@ -168,9 +168,11 @@ class ZagGridBlock extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H3,
-                color: ZagColours.grey,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? ZagColours.grey
+                    : Colors.grey.shade700,
               ),
               children: [subtitle],
             ),
