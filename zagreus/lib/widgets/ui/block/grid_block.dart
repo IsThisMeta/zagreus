@@ -26,7 +26,7 @@ class ZagGridBlock extends StatelessWidget {
   final bool disabled;
   final String? title;
   final TextSpan subtitle;
-  final Color titleColor;
+  final Color? titleColor;
 
   final Function? onTap;
   final Function? onLongPress;
@@ -36,7 +36,7 @@ class ZagGridBlock extends StatelessWidget {
     this.disabled = false,
     required this.title,
     required this.subtitle,
-    this.titleColor = Colors.white,
+    this.titleColor,
     this.backgroundColor,
     this.posterPlaceholderIcon,
     this.posterUrl,
@@ -65,7 +65,7 @@ class ZagGridBlock extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _poster(context),
-                    _title(),
+                    _title(context),
                     _subtitle(),
                     const SizedBox(height: ZagUI.DEFAULT_MARGIN_SIZE),
                   ],
@@ -135,16 +135,16 @@ class ZagGridBlock extends StatelessWidget {
     );
   }
 
-  Widget _title() {
+  Widget _title(BuildContext context) {
     return Container(
       child: Padding(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H3,
-                color: ZagColours.white,
+                color: titleColor ?? Theme.of(context).textTheme.bodyLarge?.color,
                 fontWeight: ZagUI.FONT_WEIGHT_BOLD,
               ),
               text: title,
