@@ -2,10 +2,10 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -518,7 +518,10 @@ func handleWebhookWithPayload(c *gin.Context) {
 	// Send notification to all device tokens
 	successCount := 0
 	for _, token := range deviceTokens {
-		if err := sendPushNotification(token, title, body); err != nil {
+		// Check environment to determine production/sandbox
+		isProduction := os.Getenv("APNS_ENVIRONMENT") == "production"
+
+		if err := apnsClient.SendNotification(token, title, body, isProduction); err != nil {
 			log.Printf("Failed to send to token %s: %v", token, err)
 		} else {
 			successCount++

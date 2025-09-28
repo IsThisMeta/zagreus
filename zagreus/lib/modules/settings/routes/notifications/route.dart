@@ -64,8 +64,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       // Check if we have a valid auth method
       if (!isAnonymous && (!ZagSupabase.isSupported || user == null)) {
         setState(() {
-          _radarrStatus = 'Enable Single Device Mode or sign in';
-          _sonarrStatus = 'Enable Single Device Mode or sign in';
+          _radarrStatus = 'Sign in or enable Single Device Mode';
+          _sonarrStatus = 'Sign in or enable Single Device Mode';
         });
         return;
       }
@@ -201,9 +201,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         // Show sign-in banner if not signed in AND not in anonymous mode
         if (!isSignedIn && !ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read())
           ZagBanner(
-            headerText: 'Sign In Required for Multi-Device',
+            headerText: 'Sign in for multi-device sync',
             bodyText:
-                'Multi-device sync requires authentication. Enable Single Device Mode for anonymous notifications.',
+                'Or use Single Device Mode without an account',
             icon: Icons.account_circle_outlined,
             iconColor: ZagColours.orange,
           ),
@@ -314,8 +314,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       body: [
         TextSpan(
           text: db.read()
-              ? 'Anonymous notifications (this device only)'
-              : 'Multi-device sync (requires authentication)',
+              ? 'This device only'
+              : 'Syncs across devices',
         ),
       ],
       trailing: db.listenableBuilder(
@@ -329,11 +329,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 title: Text(value ? 'Enable Single Device Mode?' : 'Disable Single Device Mode?'),
                 content: Text(
                   value
-                      ? 'This will switch to anonymous notifications for this device only. '
-                        'You won\'t need to sign in, but notifications won\'t sync to other devices.\n\n'
+                      ? 'Notifications will only work on this device.\n\n'
                         '⚠️ Installing on another device will break notifications here.'
-                      : 'This will switch to multi-device mode. '
-                        'Requires authentication to sync notifications across devices.',
+                      : 'You\'ll need to sign in to sync across devices.',
                 ),
                 actions: [
                   TextButton(

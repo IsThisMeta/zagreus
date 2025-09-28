@@ -122,6 +122,49 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _loadDemoConfiguration(BuildContext context) async {
+    // Show password dialog
+    final passwordController = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Review Access'),
+        content: TextField(
+          controller: passwordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Password',
+            hintText: 'Enter review password',
+          ),
+          autofocus: true,
+          onSubmitted: (_) => Navigator.of(context).pop(passwordController.text),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(passwordController.text),
+            child: Text(
+              'Continue',
+              style: TextStyle(color: ZagColours.accentLight),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Check password
+    if (password != 'review2025') {
+      if (password != null) {
+        showZagErrorSnackBar(
+          title: 'Access Denied',
+          message: 'Invalid password',
+        );
+      }
+      return;
+    }
+
     showZagInfoSnackBar(
       title: 'Loading Demo Configuration',
       message: 'Checking demo availability...',
