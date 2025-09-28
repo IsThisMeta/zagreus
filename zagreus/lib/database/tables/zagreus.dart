@@ -40,7 +40,19 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   USER_BOOT_MODULE<String>('dashboard'),
   NOTIFICATION_WEBHOOK_ID<String>(''),
   NOTIFICATION_WEBHOOK_SIGNATURE<String>(''),
-  NOTIFICATION_ANONYMOUS_MODE<bool>(true);
+  NOTIFICATION_ANONYMOUS_MODE<bool>(true),
+  // Radarr webhook events
+  RADARR_WEBHOOK_ON_GRAB<bool>(true),
+  RADARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
+  RADARR_WEBHOOK_ON_UPGRADE<bool>(true),
+  RADARR_WEBHOOK_ON_MOVIE_ADDED<bool>(true),
+  RADARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Sonarr webhook events
+  SONARR_WEBHOOK_ON_GRAB<bool>(true),
+  SONARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
+  SONARR_WEBHOOK_ON_UPGRADE<bool>(true),
+  SONARR_WEBHOOK_ON_SERIES_ADD<bool>(true),
+  SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true);
 
   @override
   ZagTable get table => ZagTable.zagreus;

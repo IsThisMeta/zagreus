@@ -85,18 +85,18 @@ class RadarrWebhookManager {
         'configContract': 'WebhookSettings',
         'fields': simpleFields.map((f) => f.toJson()).toList(),
         'tags': [],
-        'onGrab': true,
-        'onDownload': true,
-        'onUpgrade': true,
+        'onGrab': ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB.read(),
+        'onDownload': ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD.read(),
+        'onUpgrade': ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE.read(),
         'onRename': false,
-        'onMovieAdded': true,
+        'onMovieAdded': ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED.read(),
         'onMovieDelete': false,
         'onMovieFileDelete': false,
         'onMovieFileDeleteForUpgrade': false,
         'onHealthIssue': false,
         'includeHealthWarnings': false,
         'onApplicationUpdate': false,
-        'onManualInteractionRequired': true,
+        'onManualInteractionRequired': ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION.read(),
       };
       
       if (existing != null && existing.id != null) {

@@ -85,17 +85,17 @@ class SonarrWebhookManager {
         'configContract': 'WebhookSettings',
         'fields': simpleFields.map((f) => f.toJson()).toList(),
         'tags': [],
-        'onGrab': true,
-        'onDownload': true,
-        'onUpgrade': true,
+        'onGrab': ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB.read(),
+        'onDownload': ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD.read(),
+        'onUpgrade': ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE.read(),
         'onRename': false,
-        'onSeriesAdd': true,
+        'onSeriesAdd': ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD.read(),
         'onSeriesDelete': false,
         'onEpisodeFileDelete': false,
         'onHealthIssue': false,
         'includeHealthWarnings': false,
         'onApplicationUpdate': false,
-        'onManualInteractionRequired': true,
+        'onManualInteractionRequired': ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION.read(),
       };
       
       if (existing != null && existing.id != null) {

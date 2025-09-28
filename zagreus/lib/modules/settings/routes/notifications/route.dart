@@ -287,6 +287,11 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
+        if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) ...[
+          ZagDivider(),
+          _radarrEventsSection(),
+          _sonarrEventsSection(),
+        ],
       ],
     );
   }
@@ -454,6 +459,115 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                     }
                   }
                 },
+        ),
+      ),
+    );
+  }
+
+  Widget _radarrEventsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Radarr Events',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        _eventToggle(
+          'On Grab',
+          'Notify when a movie is grabbed',
+          ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB,
+        ),
+        _eventToggle(
+          'On Download',
+          'Notify when a movie finishes downloading',
+          ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD,
+        ),
+        _eventToggle(
+          'On Upgrade',
+          'Notify when a movie is upgraded',
+          ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE,
+        ),
+        _eventToggle(
+          'On Movie Added',
+          'Notify when a new movie is added',
+          ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED,
+        ),
+        _eventToggle(
+          'Manual Interaction Required',
+          'Notify when manual intervention is needed',
+          ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION,
+        ),
+      ],
+    );
+  }
+
+  Widget _sonarrEventsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Sonarr Events',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        _eventToggle(
+          'On Grab',
+          'Notify when an episode is grabbed',
+          ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB,
+        ),
+        _eventToggle(
+          'On Download',
+          'Notify when an episode finishes downloading',
+          ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD,
+        ),
+        _eventToggle(
+          'On Upgrade',
+          'Notify when an episode is upgraded',
+          ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE,
+        ),
+        _eventToggle(
+          'On Series Added',
+          'Notify when a new series is added',
+          ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD,
+        ),
+        _eventToggle(
+          'Manual Interaction Required',
+          'Notify when manual intervention is needed',
+          ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION,
+        ),
+      ],
+    );
+  }
+
+  Widget _eventToggle<T>(
+    String title,
+    String description,
+    ZagreusDatabase<T> db,
+  ) {
+    return ZagBlock(
+      title: title,
+      body: [TextSpan(text: description)],
+      trailing: db.listenableBuilder(
+        builder: (context, _) => ZagSwitch(
+          value: db.read() as bool,
+          onChanged: (value) async {
+            db.update(value as T);
+            // Trigger webhook sync after changing settings
+            if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
+              _syncWebhooksInBackground();
+            }
+          },
         ),
       ),
     );
