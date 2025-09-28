@@ -198,15 +198,6 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return ZagListView(
       controller: scrollController,
       children: [
-        // Show sign-in banner if not signed in AND not in anonymous mode
-        if (!isSignedIn && !ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read())
-          ZagBanner(
-            headerText: 'Sign in for multi-device sync',
-            bodyText:
-                'Or use Single Device Mode without an account',
-            icon: Icons.account_circle_outlined,
-            iconColor: ZagColours.orange,
-          ),
         ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
           builder: (context, _) {
             // Only show banner if notifications are enabled but not authorized
@@ -224,7 +215,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           },
         ),
         _enableNotifications(),
-        _anonymousModeToggle(),
+        _multiDeviceSyncToggle(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
@@ -242,12 +233,6 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   Widget _enableNotifications() {
     const db = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS;
-    final user = ZagSupabase.client.auth.currentUser;
-    final isSignedIn = ZagSupabase.isSupported && user != null;
-    final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
-
-    // Can enable if signed in OR in anonymous mode
-    final canEnable = isSignedIn || isAnonymous;
 
     return ZagBlock(
       title: 'Enable Notifications',
@@ -255,137 +240,152 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
           value: db.read(),
-          onChanged: !canEnable
-              ? null
-              : (value) async {
+          onChanged: (value) async {
                   ZagLogger().debug('Notification toggle changed to: $value');
+
+                  if (value) {
+                    // Request notification permissions when enabling
+                    ZagLogger().debug('Requesting notification permissions...');
+                    bool granted = await ZagSupabaseMessaging.instance
+                        .requestNotificationPermissions();
+                    ZagLogger().debug('Permissions granted: $granted');
+
+                    if (!granted) {
+                      // If permissions denied, don't enable the toggle
+                      showZagErrorSnackBar(
+                        title: 'Permission Denied',
+                        message: 'Please enable notifications in Settings',
+                      );
+                      return;
+                    }
+
+                    // Update authorization status
+                    setState(() {
+                      _notificationsAuthorized = true;
+                    });
+                  }
+
+                  // Update the toggle immediately
+                  db.update(value);
+
+                  // Do the heavy work in the background AFTER updating UI
                   if (value) {
                     // Clear any cached token first
                     ZagSupabaseMessaging.instance.clearCachedToken();
 
-                    // Request notification permissions when enabling
-                    try {
-                      ZagLogger()
-                          .debug('Requesting notification permissions...');
-                      bool granted = await ZagSupabaseMessaging.instance
-                          .requestNotificationPermissions();
-                      ZagLogger().debug('Permissions granted: $granted');
+                    // Register device token in background
+                    Future.delayed(Duration.zero, () async {
+                      try {
+                        ZagLogger().debug('Attempting to register device token...');
+                        final registered = await _registerDeviceTokenIfNeeded();
+                        ZagLogger().debug('Device registration complete');
 
-                      if (!granted) {
-                        // If permissions denied, don't enable the toggle
-                        showZagErrorSnackBar(
-                          title: 'Permission Denied',
-                          message: 'Please enable notifications in Settings',
-                        );
-                        return;
+                        // Trigger webhook sync after registration
+                        _syncWebhooksInBackground();
+                      } catch (e) {
+                        ZagLogger().error('Failed to register device', e, null);
                       }
-
-                      // Update authorization status
-                      setState(() {
-                        _notificationsAuthorized = true;
-                      });
-
-                      // Register device token when notifications are enabled
-                      ZagLogger().debug('Attempting to register device token...');
-                      final registered = await _registerDeviceTokenIfNeeded();
-                      ZagLogger().debug('Device registration complete');
-                    } catch (e) {
-                      ZagLogger()
-                          .error('Failed to request permissions', e, null);
-                      showZagErrorSnackBar(
-                        title: 'Error',
-                        message: 'Failed to enable notifications: $e',
-                      );
-                      return;
-                    }
+                    });
+                  } else {
+                    // When disabling notifications, update webhook status
+                    _syncWebhooksInBackground();
                   }
-                  db.update(value);
                 },
         ),
       ),
     );
   }
 
-  Widget _anonymousModeToggle() {
+
+  Widget _multiDeviceSyncToggle() {
     const db = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE;
+    final user = ZagSupabase.client.auth.currentUser;
+    final isSignedIn = ZagSupabase.isSupported && user != null;
 
     return ZagBlock(
-      title: 'Single Device Mode',
+      title: 'Multi-Device Sync',
       body: [
         TextSpan(
-          text: db.read()
-              ? 'This device only'
-              : 'Syncs across devices',
+          text: isSignedIn
+              ? 'Sync notifications across all your devices'
+              : 'Sign in to enable multi-device sync',
         ),
       ],
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
-          value: db.read(),
-          onChanged: (value) async {
-            // Show confirmation dialog
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(value ? 'Enable Single Device Mode?' : 'Disable Single Device Mode?'),
-                content: Text(
-                  value
-                      ? 'Notifications will only work on this device.\n\n'
-                        '⚠️ Installing on another device will break notifications here.'
-                      : 'You\'ll need to sign in to sync across devices.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(
-                      'Continue',
-                      style: TextStyle(color: ZagColours.accentLight),
+          value: !db.read(), // Inverted - when anonymous mode is OFF, multi-device is ON
+          onChanged: !isSignedIn
+              ? null // Disabled when not signed in
+              : (value) async {
+                  // value = true means user wants multi-device (so anonymous = false)
+                  // value = false means user wants single device (so anonymous = true)
+                  final newAnonymousMode = !value;
+
+                  // Show confirmation dialog
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(value
+                          ? 'Enable Multi-Device Sync?'
+                          : 'Disable Multi-Device Sync?'),
+                      content: Text(
+                        value
+                            ? 'Notifications will sync across all devices with this account.'
+                            : 'Notifications will only work on this device.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(
+                            'Continue',
+                            style: TextStyle(color: ZagColours.accentLight),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            );
-
-            if (confirmed == true) {
-              // Update the preference
-              db.update(value);
-
-              // Clear cached token to force re-registration
-              ZagSupabaseMessaging.instance.clearCachedToken();
-
-              // Re-register with new mode
-              if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
-                try {
-                  final success = await ZagSupabaseMessaging.instance
-                      .registerDeviceToken(anonymous: value);
-
-                  if (success) {
-                    showZagSuccessSnackBar(
-                      title: 'Success',
-                      message: value
-                          ? 'Switched to single device mode'
-                          : 'Switched to multi-device mode',
-                    );
-
-                    // Refresh webhook sync
-                    _syncWebhooksInBackground();
-                  } else {
-                    throw Exception('Registration failed');
-                  }
-                } catch (e) {
-                  // Revert on failure
-                  db.update(!value);
-                  showZagErrorSnackBar(
-                    title: 'Error',
-                    message: 'Failed to update notification mode',
                   );
-                }
-              }
-            }
-          },
+
+                  if (confirmed == true) {
+                    // Update the preference
+                    db.update(newAnonymousMode);
+
+                    // Clear cached token to force re-registration
+                    ZagSupabaseMessaging.instance.clearCachedToken();
+
+                    // Re-register with new mode
+                    if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
+                      try {
+                        final success = await ZagSupabaseMessaging.instance
+                            .registerDeviceToken(anonymous: newAnonymousMode);
+
+                        if (success) {
+                          showZagSuccessSnackBar(
+                            title: 'Success',
+                            message: value
+                                ? 'Switched to multi-device sync'
+                                : 'Switched to single device mode',
+                          );
+
+                          // Refresh webhook sync
+                          _syncWebhooksInBackground();
+                        } else {
+                          throw Exception('Registration failed');
+                        }
+                      } catch (e) {
+                        // Revert on failure
+                        db.update(!newAnonymousMode);
+                        showZagErrorSnackBar(
+                          title: 'Error',
+                          message: 'Failed to update notification mode',
+                        );
+                      }
+                    }
+                  }
+                },
         ),
       ),
     );

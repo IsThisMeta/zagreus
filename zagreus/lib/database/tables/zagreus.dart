@@ -40,7 +40,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   USER_BOOT_MODULE<String>('dashboard'),
   NOTIFICATION_WEBHOOK_ID<String>(''),
   NOTIFICATION_WEBHOOK_SIGNATURE<String>(''),
-  NOTIFICATION_ANONYMOUS_MODE<bool>(false);
+  NOTIFICATION_ANONYMOUS_MODE<bool>(true);
 
   @override
   ZagTable get table => ZagTable.zagreus;

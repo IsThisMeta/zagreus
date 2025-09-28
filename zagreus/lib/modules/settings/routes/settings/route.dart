@@ -236,7 +236,7 @@ Widget _buildProButton() {
             ZagDialog.tile(
               icon: Icons.star_rounded,
               iconColor: ZagColours.orange,
-              text: 'Yearly • \$3.99/year (Save 58%!)',
+              text: 'Yearly • \$3.99/year',
               subtitle: RichText(
                 text: TextSpan(
                   text: '1 month free trial',

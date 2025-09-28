@@ -134,14 +134,22 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           decoration: InputDecoration(
             labelText: 'Password',
             hintText: 'Enter review password',
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: ZagColours.accent),
+            ),
+            labelStyle: TextStyle(color: ZagColours.accent),
           ),
           autofocus: true,
+          cursorColor: ZagColours.accent,
           onSubmitted: (_) => Navigator.of(context).pop(passwordController.text),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(passwordController.text),
