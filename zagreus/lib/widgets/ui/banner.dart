@@ -9,8 +9,8 @@ class ZagBanner extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final Color? backgroundColor;
-  final Color headerColor;
-  final Color bodyColor;
+  final Color? headerColor;
+  final Color? bodyColor;
   final Function? dismissCallback;
   final List<ZagButton>? buttons;
 
@@ -22,8 +22,8 @@ class ZagBanner extends StatelessWidget {
     this.icon = Icons.info_outline_rounded,
     this.iconColor = ZagColours.accent,
     this.backgroundColor,
-    this.headerColor = Colors.white,
-    this.bodyColor = ZagColours.grey,
+    this.headerColor,
+    this.bodyColor,
     this.buttons,
   }) : super(key: key);
 
@@ -54,7 +54,9 @@ class ZagBanner extends StatelessWidget {
                   Expanded(
                     child: ZagText.title(
                       text: headerText,
-                      color: headerColor,
+                      color: headerColor ?? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87),
                       maxLines: _MAX_LINES,
                       softWrap: true,
                     ),
@@ -77,7 +79,9 @@ class ZagBanner extends StatelessWidget {
                 padding: ZagUI.MARGIN_H_DEFAULT_V_HALF.copyWith(top: 0),
                 child: ZagText.subtitle(
                   text: bodyText.toString(),
-                  color: bodyColor,
+                  color: bodyColor ?? (Theme.of(context).brightness == Brightness.dark
+                      ? ZagColours.grey
+                      : Colors.grey.shade700),
                   softWrap: true,
                   maxLines: _MAX_LINES,
                 ),
