@@ -3781,13 +3781,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
-        onTap: () {
-          // Navigate to movie detail
-          RadarrRoutes.MOVIE.go(
-            params: {
-              'movie': movie.id.toString(),
-            },
-          );
+        onTap: () async {
+          // Check if movie is already in library
+          if (movie.id != null && movie.id! > 0) {
+            // Movie is in library, navigate to details
+            RadarrRoutes.MOVIE.go(
+              params: {
+                'movie': movie.id.toString(),
+              },
+            );
+          } else if (movie.tmdbId != null) {
+            // Movie not in library, open add screen
+            await _openMovieInRadarr(
+              tmdbId: movie.tmdbId!,
+              title: movie.title,
+            );
+          }
         },
         child: Container(
           width: 140,
