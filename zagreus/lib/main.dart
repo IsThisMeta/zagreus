@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ import 'package:zagreus/system/recovery_mode/main.dart';
 import 'package:zagreus/system/window_manager/window_manager.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 
@@ -68,6 +71,37 @@ class ZagBIOS extends StatefulWidget {
 }
 
 class _ZagBIOSState extends State<ZagBIOS> {
+  StreamSubscription? _foregroundNotificationSubscription;
+  StreamSubscription? _backgroundNotificationSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotificationListeners();
+  }
+
+  void _initializeNotificationListeners() {
+    if (ZagSupabaseMessaging.isSupported) {
+      // Handle notifications when app is in foreground (show as toasts)
+      _foregroundNotificationSubscription =
+          ZagSupabaseMessaging.instance.registerOnMessageListener();
+
+      // Handle notification taps when app is in background
+      _backgroundNotificationSubscription =
+          ZagSupabaseMessaging.instance.registerOnMessageOpenedAppListener();
+
+      // Check for initial message (app opened from notification)
+      ZagSupabaseMessaging.instance.checkAndHandleInitialMessage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _foregroundNotificationSubscription?.cancel();
+    _backgroundNotificationSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ZagTheme();

@@ -61,6 +61,35 @@ class ZagSupabaseMessaging {
           // Automatically register with server when we get a new token
           await _registerDeviceWithServer(token, anonymous: false);
           break;
+        case 'onMessage':
+          // Handle foreground notification from iOS
+          final Map<dynamic, dynamic> data = call.arguments as Map<dynamic, dynamic>;
+          ZagLogger().debug('Received foreground notification: $data');
+
+          // Create RemoteMessage from iOS data
+          final message = RemoteMessage(
+            notification: RemoteNotification(
+              title: data['title'] as String?,
+              body: data['body'] as String?,
+            ),
+            data: Map<String, dynamic>.from(data),
+          );
+
+          // Add to message stream for toast display
+          _messageController.add(message);
+          break;
+        case 'onMessageOpenedApp':
+          // Handle notification tap when app is in background
+          final Map<dynamic, dynamic> data = call.arguments as Map<dynamic, dynamic>;
+          ZagLogger().debug('Notification tapped: $data');
+
+          final message = RemoteMessage(
+            data: Map<String, dynamic>.from(data),
+          );
+
+          // Handle the webhook navigation
+          _handleWebhook(message);
+          break;
         default:
           ZagLogger().warning('Unknown method call from iOS: ${call.method}');
       }
@@ -222,14 +251,16 @@ class ZagSupabaseMessaging {
       if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) return;
 
       ZagModule? module = ZagModule.fromKey(message.data['module']);
-      showZagSnackBar(
-        title: message.notification?.title ?? 'Unknown Content',
-        message: message.notification?.body ?? ZagUI.TEXT_EMDASH,
-        type: ZagSnackbarType.INFO,
-        position: FlashPosition.top,
-        duration: const Duration(seconds: 6, milliseconds: 750),
+
+      // Show a cleaner toast notification
+      showZagInfoSnackBar(
+        title: message.notification?.title ?? 'Notification',
+        message: message.notification?.body ?? 'New activity in your library',
         showButton: module != null,
-        buttonOnPressed: () async => _handleWebhook(message),
+        buttonText: 'View',
+        buttonOnPressed: module != null
+            ? () async => _handleWebhook(message)
+            : null,
       );
     });
   }

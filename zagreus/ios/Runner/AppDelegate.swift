@@ -9,7 +9,12 @@ import UserNotifications
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    
+
+    // Set self as UNUserNotificationCenter delegate to handle foreground notifications
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self
+    }
+
     // Clear badge on app launch
     UIApplication.shared.applicationIconBadgeNumber = 0
     
@@ -113,5 +118,67 @@ import UserNotifications
   // Clear badge when app becomes active
   override func applicationDidBecomeActive(_ application: UIApplication) {
     UIApplication.shared.applicationIconBadgeNumber = 0
+  }
+
+  // MARK: - UNUserNotificationCenterDelegate
+
+  // Handle notifications when app is in foreground
+  @available(iOS 10.0, *)
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    print("Zagreus: Received notification in foreground")
+
+    // Extract notification data
+    let userInfo = notification.request.content.userInfo
+    print("Zagreus: Notification data: \(userInfo)")
+
+    // Send notification to Flutter for display as toast
+    if let controller = window?.rootViewController as? FlutterViewController {
+      let channel = FlutterMethodChannel(name: "app.zagreus/notifications",
+                                        binaryMessenger: controller.binaryMessenger)
+
+      // Create message data for Flutter
+      var messageData: [String: Any] = [:]
+      messageData["title"] = notification.request.content.title
+      messageData["body"] = notification.request.content.body
+
+      // Add custom data
+      if let module = userInfo["module"] as? String {
+        messageData["module"] = module
+      }
+      if let event = userInfo["event"] as? String {
+        messageData["event"] = event
+      }
+
+      channel.invokeMethod("onMessage", arguments: messageData)
+      print("Zagreus: Sent foreground notification to Flutter")
+    }
+
+    // Don't show system notification banner since we'll show our own toast
+    completionHandler([])
+  }
+
+  // Handle notification taps
+  @available(iOS 10.0, *)
+  override func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    print("Zagreus: User tapped notification")
+
+    // Let Flutter handle the tap
+    if let controller = window?.rootViewController as? FlutterViewController {
+      let channel = FlutterMethodChannel(name: "app.zagreus/notifications",
+                                        binaryMessenger: controller.binaryMessenger)
+
+      let userInfo = response.notification.request.content.userInfo
+      channel.invokeMethod("onMessageOpenedApp", arguments: userInfo)
+    }
+
+    completionHandler()
   }
 }
