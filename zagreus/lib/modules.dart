@@ -430,7 +430,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES;
       case ZagModule.DISCOVER:
-        return null;
+        return SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS;
     }
   }
 

@@ -22,6 +22,7 @@ import 'package:zagreus/modules/discover/routes/tmdb_popular_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -998,22 +999,53 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         children: [
           // Hero carousel
           _heroCarousel(),
-          // Content sections
-          if (_recentlyDownloaded.isNotEmpty) _recentlyDownloadedSection(),
-          const SizedBox(height: 12),
-          _recommendedMoviesSection(),
-          const SizedBox(height: 12),
-          if (_missingMovies.isNotEmpty) _missingMoviesSection(),
-          const SizedBox(height: 12),
-          _downloadingSoonSection(), // Always show section, even when empty
-          const SizedBox(height: 12),
-          _popularMoviesSection(), // Always show section, even while loading
-          const SizedBox(height: 12),
-          _popularPeopleSection(), // Popular people section
-          const SizedBox(height: 12),
+          // Content sections in custom order
+          ..._buildMovieSections(),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildMovieSections() {
+    // Default section order
+    const defaultOrder = [
+      'recently_downloaded',
+      'recommended',
+      'missing',
+      'downloading_soon',
+      'popular_movies',
+      'popular_people',
+    ];
+
+    // Get saved order or use default
+    final savedOrder = ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
+    final sectionOrder = savedOrder.isNotEmpty
+        ? List<String>.from(savedOrder)
+        : defaultOrder;
+
+    // Map of section builders
+    final sectionBuilders = <String, Widget Function()>{
+      'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
+          ? Column(children: [_recentlyDownloadedSection(), const SizedBox(height: 12)])
+          : const SizedBox.shrink(),
+      'recommended': () => Column(children: [_recommendedMoviesSection(), const SizedBox(height: 12)]),
+      'missing': () => _missingMovies.isNotEmpty
+          ? Column(children: [_missingMoviesSection(), const SizedBox(height: 12)])
+          : const SizedBox.shrink(),
+      'downloading_soon': () => Column(children: [_downloadingSoonSection(), const SizedBox(height: 12)]),
+      'popular_movies': () => Column(children: [_popularMoviesSection(), const SizedBox(height: 12)]),
+      'popular_people': () => Column(children: [_popularPeopleSection(), const SizedBox(height: 12)]),
+    };
+
+    // Build sections in saved order
+    final sections = <Widget>[];
+    for (final sectionKey in sectionOrder) {
+      final builder = sectionBuilders[sectionKey];
+      if (builder != null) {
+        sections.add(builder());
+      }
+    }
+    return sections;
   }
 
   Widget _tvShowsPage() {
@@ -1025,20 +1057,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         children: [
           // Hero carousel (could be TV shows specific)
           _heroCarousel(),
-          // TV shows sections
-          if (_recentlyDownloadedShows.isNotEmpty)
-            _recentlyDownloadedShowsSection(),
-          if (_airingNextShows.isNotEmpty) _airingNextSection(),
-          const SizedBox(height: 12),
-          _popularTVShowsSection(), // Popular TV shows from TMDB
-          const SizedBox(height: 12),
-          _trendingNewTVShowsSection(), // Trending new TV shows from TMDB
-          const SizedBox(height: 12),
-          _mostAnticipatedShowsSection(), // Most anticipated shows (Trakt-style)
+          // TV shows sections in custom order
+          ..._buildTVSections(),
           const SizedBox(height: 32),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildTVSections() {
+    // Default section order
+    const defaultOrder = [
+      'recently_downloaded_shows',
+      'airing_next',
+      'popular_tv_shows',
+      'trending_new_tv_shows',
+      'most_anticipated',
+    ];
+
+    // Get saved order or use default
+    final savedOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
+    final sectionOrder = savedOrder.isNotEmpty
+        ? List<String>.from(savedOrder)
+        : defaultOrder;
+
+    // Map of section builders
+    final sectionBuilders = <String, Widget Function()>{
+      'recently_downloaded_shows': () => _recentlyDownloadedShows.isNotEmpty
+          ? _recentlyDownloadedShowsSection()
+          : const SizedBox.shrink(),
+      'airing_next': () => _airingNextShows.isNotEmpty
+          ? _airingNextSection()
+          : const SizedBox.shrink(),
+      'popular_tv_shows': () => Column(children: [_popularTVShowsSection(), const SizedBox(height: 12)]),
+      'trending_new_tv_shows': () => Column(children: [_trendingNewTVShowsSection(), const SizedBox(height: 12)]),
+      'most_anticipated': () => _mostAnticipatedShowsSection(),
+    };
+
+    // Build sections in saved order
+    final sections = <Widget>[];
+    for (final sectionKey in sectionOrder) {
+      final builder = sectionBuilders[sectionKey];
+      if (builder != null) {
+        sections.add(builder());
+      }
+    }
+    return sections;
   }
 
   /*

@@ -52,7 +52,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   SONARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
   SONARR_WEBHOOK_ON_UPGRADE<bool>(true),
   SONARR_WEBHOOK_ON_SERIES_ADD<bool>(true),
-  SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true);
+  SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Discover module section order
+  DISCOVER_MOVIES_SECTION_ORDER<List>([]),
+  DISCOVER_TV_SECTION_ORDER<List>([]);
 
   @override
   ZagTable get table => ZagTable.zagreus;

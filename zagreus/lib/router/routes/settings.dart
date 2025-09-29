@@ -10,6 +10,7 @@ import 'package:zagreus/modules/settings/routes/configuration_general/route.dart
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/pages/calendar_settings.dart';
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/route.dart';
+import 'package:zagreus/modules/settings/routes/discover_sections/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_drawer/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_external_modules/pages/add_module.dart';
 import 'package:zagreus/modules/settings/routes/configuration_external_modules/pages/edit_module.dart';
@@ -66,6 +67,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION('configuration'),
   CONFIGURATION_GENERAL('general'),
   CONFIGURATION_DASHBOARD('dashboard'),
+  CONFIGURATION_DISCOVER_SECTIONS('discover_sections'),
   CONFIGURATION_DASHBOARD_CALENDAR('calendar'),
   CONFIGURATION_DASHBOARD_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_DRAWER('drawer'),
@@ -140,6 +142,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationGeneralRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
         return route(widget: const ConfigurationDashboardRoute());
+      case SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS:
+        return route(widget: const DiscoverSectionsRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD_CALENDAR:
         return route(widget: const ConfigurationDashboardCalendarRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD_DEFAULT_PAGES:
@@ -285,6 +289,7 @@ enum SettingsRoutes with ZagRoutesMixin {
         return [
           SettingsRoutes.CONFIGURATION_GENERAL.routes,
           SettingsRoutes.CONFIGURATION_DASHBOARD.routes,
+          SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS.routes,
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,

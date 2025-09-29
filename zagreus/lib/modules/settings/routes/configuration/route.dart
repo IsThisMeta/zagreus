@@ -111,21 +111,23 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
     final bool isDiscoverModule = module == ZagModule.DISCOVER;
     final bool isPro = ZagreusPro.isEnabled;
     final bool isLocked = isDiscoverModule && !isPro;
-    
+
     return ZagBlock(
       title: module.title,
       body: [
         TextSpan(
-          text: isLocked 
+          text: isLocked
             ? 'Zagreus Pro • \$0.79/mo or \$3.99/yr'
-            : 'settings.ConfigureModule'.tr(args: [module.title])
+            : isDiscoverModule && isPro
+              ? 'Customize the order of sections in Discover'
+              : 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
       trailing: ZagIconButton(
         icon: isLocked ? Icons.lock_rounded : module.icon,
         color: isLocked ? ZagColours.orange : null,
       ),
-      onTap: isLocked 
+      onTap: isLocked
         ? () => _showProPurchaseDialog(context)
         : module.settingsRoute!.go,
     );
