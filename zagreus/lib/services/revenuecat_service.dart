@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:collection/collection.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
@@ -177,17 +178,61 @@ class RevenueCatService {
       print('🔍 Current offering: ${offerings.current?.identifier}');
       print('🔍 Available packages: ${offerings.current?.availablePackages.map((p) => p.identifier).toList()}');
 
+      // Also check all offerings, not just current
+      for (final entry in offerings.all.entries) {
+        print('📱 Offering "${entry.key}": ${entry.value.availablePackages.map((p) => '${p.identifier} (${p.packageType})').toList()}');
+      }
+
       // Try to find yearly package by identifier
       final packages = offerings.current?.availablePackages ?? [];
-      final yearlyPackage = packages.isNotEmpty
-          ? packages.firstWhere(
-              (pkg) => pkg.identifier == '\$rc_annual',
-              orElse: () => packages.firstWhere(
-                (pkg) => pkg.packageType == PackageType.annual,
-                orElse: () => packages.last, // Fallback to last package if no annual found
-              ),
-            )
-          : null;
+
+      // Log all packages for debugging
+      for (final pkg in packages) {
+        print('📦 Package: ${pkg.identifier}, Type: ${pkg.packageType}, Price: ${pkg.storeProduct.priceString}');
+      }
+
+      // Find yearly package - try multiple approaches
+      Package? yearlyPackage;
+
+      // First try by identifier
+      yearlyPackage = packages.firstWhereOrNull(
+        (pkg) => pkg.identifier == '\$rc_annual'
+      );
+
+      // Then try by package type
+      if (yearlyPackage == null) {
+        yearlyPackage = packages.firstWhereOrNull(
+          (pkg) => pkg.packageType == PackageType.annual
+        );
+      }
+
+      // Then try by custom identifier (in case you named it differently)
+      if (yearlyPackage == null) {
+        yearlyPackage = packages.firstWhereOrNull(
+          (pkg) => pkg.identifier.toLowerCase().contains('year') ||
+                   pkg.identifier.toLowerCase().contains('annual')
+        );
+      }
+
+      // Try looking for specific product ID
+      if (yearlyPackage == null) {
+        yearlyPackage = packages.firstWhereOrNull(
+          (pkg) => pkg.storeProduct.identifier.contains('yearly') ||
+                   pkg.storeProduct.identifier.contains('annual')
+        );
+      }
+
+      // Check if there's a second package at all
+      if (yearlyPackage == null && packages.length > 1) {
+        print('⚠️ Multiple packages found but none match yearly criteria. Using index 1.');
+        yearlyPackage = packages[1]; // If monthly is first, yearly might be second
+      }
+
+      // Last resort - pick the more expensive one (yearly should cost more)
+      if (yearlyPackage == null && packages.length >= 2) {
+        packages.sort((a, b) => b.storeProduct.price.compareTo(a.storeProduct.price));
+        yearlyPackage = packages.first; // Most expensive should be yearly
+      }
 
       if (yearlyPackage == null) {
         print('❌ No yearly package found in offerings');
