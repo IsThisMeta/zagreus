@@ -304,42 +304,34 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return ZagBlock(
       title: title,
       body: [],
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (status.isEmpty)
-            Icon(
+      trailing: status.isEmpty
+          ? Icon(
               Icons.remove_circle_outline,
               color: ZagColours.grey,
               size: 24,
             )
-          else if (isSuccess)
-            Icon(
-              Icons.check_circle,
-              color: ZagColours.orange,
-              size: 24,
-            )
-          else if (isFailed) ...[
-            Icon(
-              Icons.cancel,
-              color: ZagColours.red,
-              size: 24,
-            ),
-            SizedBox(width: 8),
-            ZagIconButton(
-              icon: Icons.info_outline,
-              color: ZagColours.grey,
-              onPressed: () => _showErrorDialog(title, errorMessage),
-            ),
-          ]
-          else
-            Icon(
-              Icons.hourglass_empty,
-              color: ZagColours.grey,
-              size: 24,
-            ),
-        ],
-      ),
+          : isSuccess
+              ? Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? ZagColours.accentLight
+                      : ZagColours.accent,
+                  size: 24,
+                )
+              : isFailed
+                  ? GestureDetector(
+                      onTap: () => _showErrorDialog(title, errorMessage),
+                      child: Icon(
+                        Icons.error,
+                        color: ZagColours.red,
+                        size: 24,
+                      ),
+                    )
+                  : Icon(
+                      Icons.hourglass_empty,
+                      color: ZagColours.grey,
+                      size: 24,
+                    ),
     );
   }
 
