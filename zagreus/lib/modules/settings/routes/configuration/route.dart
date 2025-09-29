@@ -101,10 +101,18 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget> _moduleList() {
-    return ([ZagModule.DASHBOARD, ...ZagModule.active])
+    final modules = [ZagModule.DASHBOARD, ...ZagModule.active]
         .where((module) => module.settingsRoute != null)
-        .map(_tileFromModuleMap)
         .toList();
+
+    // Move DISCOVER to right after DASHBOARD
+    final discoverIndex = modules.indexOf(ZagModule.DISCOVER);
+    if (discoverIndex > 1) {
+      modules.removeAt(discoverIndex);
+      modules.insert(1, ZagModule.DISCOVER);
+    }
+
+    return modules.map(_tileFromModuleMap).toList();
   }
 
   Widget _tileFromModuleMap(ZagModule module) {
