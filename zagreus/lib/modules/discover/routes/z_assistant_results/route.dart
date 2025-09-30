@@ -31,6 +31,15 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   final Set<int> _selectedIndices = {};
   bool _isSelectionMode = false;
 
+  // Radarr/Sonarr config state
+  int? _selectedRadarrQualityProfileId;
+  String? _selectedRadarrQualityProfileName;
+  String? _selectedRadarrRootFolder;
+
+  int? _selectedSonarrQualityProfileId;
+  String? _selectedSonarrQualityProfileName;
+  String? _selectedSonarrRootFolder;
+
   @override
   void initState() {
     super.initState();
@@ -144,8 +153,18 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
 
     return ZagAppBar(
-      title: 'Z Assistant Results',
+      title: 'Results',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.movie),
+          onPressed: _showRadarrConfig,
+          tooltip: 'Radarr Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.tv),
+          onPressed: _showSonarrConfig,
+          tooltip: 'Sonarr Settings',
+        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: _toggleSelectionMode,
@@ -353,5 +372,121 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     } else if (item.isShow && widget.onShowTap != null) {
       widget.onShowTap!(item.tmdbId, item.title);
     }
+  }
+
+  void _showRadarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Radarr Settings',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.high_quality),
+              title: const Text('Quality Profile'),
+              subtitle: Text(_selectedRadarrQualityProfileName ?? 'Select quality profile'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _selectRadarrQualityProfile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder),
+              title: const Text('Root Folder'),
+              subtitle: Text(_selectedRadarrRootFolder ?? 'Select root folder'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _selectRadarrRootFolder();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSonarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Sonarr Settings',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.high_quality),
+              title: const Text('Quality Profile'),
+              subtitle: Text(_selectedSonarrQualityProfileName ?? 'Select quality profile'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _selectSonarrQualityProfile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder),
+              title: const Text('Root Folder'),
+              subtitle: Text(_selectedSonarrRootFolder ?? 'Select root folder'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pop(context);
+                _selectSonarrRootFolder();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _selectRadarrQualityProfile() {
+    // TODO: Fetch and show Radarr quality profiles
+    showZagSnackBar(
+      title: 'Coming Soon',
+      message: 'Quality profile selection will be implemented',
+      type: ZagSnackbarType.INFO,
+    );
+  }
+
+  void _selectRadarrRootFolder() {
+    // TODO: Fetch and show Radarr root folders
+    showZagSnackBar(
+      title: 'Coming Soon',
+      message: 'Root folder selection will be implemented',
+      type: ZagSnackbarType.INFO,
+    );
+  }
+
+  void _selectSonarrQualityProfile() {
+    // TODO: Fetch and show Sonarr quality profiles
+    showZagSnackBar(
+      title: 'Coming Soon',
+      message: 'Quality profile selection will be implemented',
+      type: ZagSnackbarType.INFO,
+    );
+  }
+
+  void _selectSonarrRootFolder() {
+    // TODO: Fetch and show Sonarr root folders
+    showZagSnackBar(
+      title: 'Coming Soon',
+      message: 'Root folder selection will be implemented',
+      type: ZagSnackbarType.INFO,
+    );
   }
 }
