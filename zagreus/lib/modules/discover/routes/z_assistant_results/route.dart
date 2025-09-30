@@ -657,6 +657,13 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     // Get selected items
     final selectedItems = _selectedIndices.map((index) => _operation!.items[index]).toList();
 
+    // Show immediate feedback toast
+    showZagSnackBar(
+      title: 'Adding Items',
+      message: 'Adding ${selectedItems.length} items to library...',
+      type: ZagSnackbarType.INFO,
+    );
+
     // Split by media type
     final movies = selectedItems.where((item) => item.isMovie).toList();
     final shows = selectedItems.where((item) => item.isShow).toList();
