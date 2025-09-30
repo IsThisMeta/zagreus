@@ -394,7 +394,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         ? item.overview!
         : 'No overview available.';
 
-    // For movies, show Add button; for TV shows, show Copy button
+    // For both movies and TV shows, show Add button
     if (item.isMovie) {
       await ZagDialogs().textPreviewWithAdd(
         context,
@@ -402,11 +402,12 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         overview,
         onAdd: () => _addMovieToRadarr(item),
       );
-    } else {
-      await ZagDialogs().textPreview(
+    } else if (item.isShow) {
+      await ZagDialogs().textPreviewWithAdd(
         context,
         item.title,
         overview,
+        onAdd: () => _addShowToSonarr(item),
       );
     }
   }
@@ -788,6 +789,111 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       showZagSnackBar(
         title: 'Error',
         message: 'Failed to add movie: ${e.toString()}',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _addShowToSonarr(StagedMediaItem show) async {
+    try {
+      // Load saved Sonarr settings
+      final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+      final rootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+      final monitorTypeValue = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+      final searchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
+      final searchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
+
+      if (qualityProfileId == null || rootFolder == null) {
+        showZagSnackBar(
+          title: 'Missing Sonarr Config',
+          message: 'Please configure Sonarr settings using the TV icon in the toolbar',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final sonarrState = context.read<SonarrState>();
+      final profiles = await sonarrState.qualityProfiles;
+      final folders = await sonarrState.rootFolders;
+
+      if (profiles == null || folders == null) {
+        showZagSnackBar(
+          title: 'Sonarr Not Available',
+          message: 'Could not fetch Sonarr configuration',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final selectedProfile = profiles.firstWhere(
+        (p) => p.id == qualityProfileId,
+        orElse: () => profiles.first,
+      );
+      final selectedFolder = folders.firstWhere(
+        (f) => f.path == rootFolder,
+        orElse: () => folders.first,
+      );
+
+      final monitorType = SonarrSeriesMonitorType.values.firstWhere(
+        (type) => type.value == monitorTypeValue,
+        orElse: () => SonarrSeriesMonitorType.ALL,
+      );
+
+      // Show loading
+      showZagSnackBar(
+        title: 'Adding Show',
+        message: 'Adding ${show.title} to Sonarr...',
+        type: ZagSnackbarType.INFO,
+      );
+
+      // Lookup show
+      final lookupResults = await sonarrState.api!.seriesLookup.get(
+        term: "tmdb:${show.tmdbId}",
+      );
+
+      if (lookupResults.isEmpty) {
+        showZagSnackBar(
+          title: 'Show Not Found',
+          message: '${show.title} not found on TMDB',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final sonarrSeries = lookupResults.first;
+
+      // Check if already in library
+      if (sonarrSeries.id != null && sonarrSeries.id! > 0) {
+        showZagSnackBar(
+          title: 'Already in Library',
+          message: '${show.title} is already in your Sonarr library',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      // Add to Sonarr
+      await sonarrState.api!.series.create(
+        series: sonarrSeries,
+        seriesType: SonarrSeriesType.STANDARD,
+        seasonFolder: true,
+        qualityProfile: selectedProfile,
+        rootFolder: selectedFolder,
+        monitorType: monitorType,
+        searchForMissingEpisodes: searchForMissing,
+        searchForCutoffUnmetEpisodes: searchForCutoffUnmet,
+      );
+
+      showZagSnackBar(
+        title: 'Success',
+        message: '${show.title} added to Sonarr',
+        type: ZagSnackbarType.SUCCESS,
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Error adding show to Sonarr', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to add show: ${e.toString()}',
         type: ZagSnackbarType.ERROR,
       );
     }
