@@ -22,7 +22,9 @@ import 'package:zagreus/modules/discover/routes/tmdb_popular_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
+import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/services/z_assistant_service.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -1151,6 +1153,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool _isSearching = false;
   Timer? _searchDebounce;
 
+  // Z Assistant state
+  bool _isAskingZAssistant = false;
+
   Widget _searchPage() {
     return Column(
       children: [
@@ -1264,31 +1269,54 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ),
                         )
                       : Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off_rounded,
-                                size: 60,
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.white.withOpacity(0.2)
-                                    : Colors.black.withOpacity(0.2),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off_rounded,
+                                    size: 60,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withOpacity(0.2)
+                                        : Colors.black.withOpacity(0.2),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No results found',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white.withOpacity(0.4)
+                                          : Colors.black.withOpacity(0.4),
+                                    ),
+                                  ),
+                                  if (_searchController.text.split(' ').length >= 4)
+                                    ...[
+                                      const SizedBox(height: 24),
+                                      ElevatedButton.icon(
+                                        onPressed: _isAskingZAssistant
+                                            ? null
+                                            : () => _askZAssistant(_searchController.text),
+                                        icon: _isAskingZAssistant
+                                            ? const SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : const Icon(Icons.psychology),
+                                        label: Text(
+                                          _isAskingZAssistant
+                                              ? 'Asking Z Assistant...'
+                                              : 'Ask Z Assistant',
+                                        ),
+                                      ),
+                                    ],
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No results found',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white.withOpacity(0.4)
-                                      : Colors.black.withOpacity(0.4),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
+                            )
                   : _buildSearchResults(),
         ),
       ],
@@ -1322,6 +1350,49 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       showZagSnackBar(
         title: 'Search Error',
         message: 'Failed to search. Please try again.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _askZAssistant(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() {
+      _isAskingZAssistant = true;
+    });
+
+    try {
+      print('🤖 Asking Z Assistant: $query');
+      final service = ZAssistantService();
+      final stageId = await service.sendDiscoverQuery(query: query);
+
+      setState(() {
+        _isAskingZAssistant = false;
+      });
+
+      print('🤖 Z Assistant returned stage ID: $stageId');
+
+      // Navigate to fullscreen results
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ZAssistantResultsRoute(
+            stageId: stageId,
+            onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+          ),
+        ),
+      );
+    } catch (e) {
+      print('❌ Z Assistant error: $e');
+      setState(() {
+        _isAskingZAssistant = false;
+      });
+      showZagSnackBar(
+        title: 'Z Assistant Error',
+        message: 'Failed to get results from Z Assistant. Please try again.',
         type: ZagSnackbarType.ERROR,
       );
     }
