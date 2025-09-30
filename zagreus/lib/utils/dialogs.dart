@@ -81,6 +81,31 @@ class ZagDialogs {
     );
   }
 
+  /// Show a text preview dialog with Add button instead of Copy.
+  ///
+  /// Used for adding media items to Radarr/Sonarr with saved settings.
+  Future<void> textPreviewWithAdd(
+      BuildContext context, String? dialogTitle, String text,
+      {required VoidCallback onAdd}) async {
+    await ZagDialog.dialog(
+      context: context,
+      title: dialogTitle,
+      cancelButtonText: 'Close',
+      buttons: [
+        ZagDialog.button(
+            text: 'Add',
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+              onAdd();
+            }),
+      ],
+      content: [
+        ZagDialog.textContent(text: text),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+  }
+
   Future<void> showRejections(
       BuildContext context, List<String> rejections) async {
     if (rejections.isEmpty)

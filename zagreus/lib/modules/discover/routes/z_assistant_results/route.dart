@@ -384,16 +384,25 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   }
 
   Future<void> _showItemPreview(StagedMediaItem item) async {
-    // Show text preview dialog with copy button (like Add Movie screen)
     final overview = item.overview?.isNotEmpty == true
         ? item.overview!
         : 'No overview available.';
 
-    await ZagDialogs().textPreview(
-      context,
-      item.title,
-      overview,
-    );
+    // For movies, show Add button; for TV shows, show Copy button
+    if (item.isMovie) {
+      await ZagDialogs().textPreviewWithAdd(
+        context,
+        item.title,
+        overview,
+        onAdd: () => _addMovieToRadarr(item),
+      );
+    } else {
+      await ZagDialogs().textPreview(
+        context,
+        item.title,
+        overview,
+      );
+    }
   }
 
   void _showRadarrConfig() {
@@ -646,6 +655,102 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       showZagSnackBar(
         title: 'Error',
         message: 'Failed to load root folders',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _addMovieToRadarr(StagedMediaItem movie) async {
+    try {
+      // Load saved Radarr settings
+      final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+      final rootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+      final searchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+
+      if (qualityProfileId == null || rootFolder == null) {
+        showZagSnackBar(
+          title: 'Missing Radarr Config',
+          message: 'Please configure Radarr settings using the movie icon in the toolbar',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final radarrState = context.read<RadarrState>();
+      final profiles = await radarrState.qualityProfiles;
+      final folders = await radarrState.rootFolders;
+
+      if (profiles == null || folders == null) {
+        showZagSnackBar(
+          title: 'Radarr Not Available',
+          message: 'Could not fetch Radarr configuration',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final selectedProfile = profiles.firstWhere(
+        (p) => p.id == qualityProfileId,
+        orElse: () => profiles.first,
+      );
+      final selectedFolder = folders.firstWhere(
+        (f) => f.path == rootFolder,
+        orElse: () => folders.first,
+      );
+
+      // Show loading
+      showZagSnackBar(
+        title: 'Adding Movie',
+        message: 'Adding ${movie.title} to Radarr...',
+        type: ZagSnackbarType.INFO,
+      );
+
+      // Lookup movie
+      final lookupResults = await radarrState.api!.movieLookup.get(
+        term: "tmdb:${movie.tmdbId}",
+      );
+
+      if (lookupResults.isEmpty) {
+        showZagSnackBar(
+          title: 'Movie Not Found',
+          message: '${movie.title} not found on TMDB',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final radarrMovie = lookupResults.first;
+
+      // Check if already in library
+      if (radarrMovie.id != null && radarrMovie.id! > 0) {
+        showZagSnackBar(
+          title: 'Already in Library',
+          message: '${movie.title} is already in your Radarr library',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      // Add to Radarr
+      await radarrState.api!.movie.create(
+        movie: radarrMovie,
+        rootFolder: selectedFolder,
+        monitored: true,
+        minimumAvailability: RadarrAvailability.ANNOUNCED,
+        qualityProfile: selectedProfile,
+        searchForMovie: searchForMissing,
+      );
+
+      showZagSnackBar(
+        title: 'Success',
+        message: '${movie.title} added to Radarr',
+        type: ZagSnackbarType.SUCCESS,
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Error adding movie to Radarr', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to add movie: ${e.toString()}',
         type: ZagSnackbarType.ERROR,
       );
     }
