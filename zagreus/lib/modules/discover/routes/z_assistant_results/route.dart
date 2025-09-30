@@ -4,6 +4,7 @@ import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/extensions/string/string.dart';
 
 class ZAssistantResultsRoute extends StatefulWidget {
   final String stageId;
@@ -43,6 +44,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   String? _selectedSonarrQualityProfileName;
   String? _selectedSonarrRootFolder;
   SonarrSeriesMonitorType _sonarrMonitorType = SonarrSeriesMonitorType.ALL;
+  SonarrSeriesType _sonarrSeriesType = SonarrSeriesType.STANDARD;
   bool _sonarrSearchForMissing = true;
   bool _sonarrSearchForCutoffUnmet = false;
 
@@ -66,6 +68,11 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     _sonarrMonitorType = SonarrSeriesMonitorType.values.firstWhere(
       (type) => type.value == savedMonitorType,
       orElse: () => SonarrSeriesMonitorType.ALL,
+    );
+    final savedSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    _sonarrSeriesType = SonarrSeriesType.values.firstWhere(
+      (type) => type.value == savedSeriesType,
+      orElse: () => SonarrSeriesType.STANDARD,
     );
     _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
@@ -512,6 +519,16 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   _selectSonarrMonitorType();
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.folder_open_rounded),
+                title: const Text('Series Type'),
+                subtitle: Text(_sonarrSeriesType.value!.toTitleCase()),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrSeriesType();
+                },
+              ),
               SwitchListTile(
                 secondary: const Icon(Icons.search),
                 title: const Text('Start search for missing'),
@@ -698,6 +715,27 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
   }
 
+  Future<void> _selectSonarrSeriesType() async {
+    try {
+      final Tuple2<bool, SonarrSeriesType?> result = await SonarrDialogs().editSeriesType(context);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _sonarrSeriesType = result.item2!;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(_sonarrSeriesType.value);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr series type', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to select series type',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
   Future<void> _addMovieToRadarr(StagedMediaItem movie) async {
     try {
       // Load saved Radarr settings
@@ -875,7 +913,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       // Add to Sonarr
       await sonarrState.api!.series.create(
         series: sonarrSeries,
-        seriesType: SonarrSeriesType.STANDARD,
+        seriesType: _sonarrSeriesType,
         seasonFolder: true,
         qualityProfile: selectedProfile,
         rootFolder: selectedFolder,
@@ -1035,7 +1073,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
           // Add to Sonarr
           await sonarrState.api!.series.create(
             series: sonarrSeries,
-            seriesType: SonarrSeriesType.STANDARD,
+            seriesType: _sonarrSeriesType,
             seasonFolder: true,
             qualityProfile: selectedProfile,
             rootFolder: selectedFolder,

@@ -65,6 +65,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME<String?>(null),
   Z_ASSISTANT_SONARR_ROOT_FOLDER<String?>(null),
   Z_ASSISTANT_SONARR_MONITOR_TYPE<String?>('all'),
+  Z_ASSISTANT_SONARR_SERIES_TYPE<String?>('standard'),
   Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING<bool>(true),
   Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET<bool>(false);
 
