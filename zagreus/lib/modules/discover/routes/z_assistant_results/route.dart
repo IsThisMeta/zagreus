@@ -42,6 +42,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   int? _selectedSonarrQualityProfileId;
   String? _selectedSonarrQualityProfileName;
   String? _selectedSonarrRootFolder;
+  SonarrSeriesMonitorType _sonarrMonitorType = SonarrSeriesMonitorType.ALL;
   bool _sonarrSearchForMissing = true;
   bool _sonarrSearchForCutoffUnmet = false;
 
@@ -61,6 +62,11 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     _selectedSonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
     _selectedSonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
     _selectedSonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    final savedMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _sonarrMonitorType = SonarrSeriesMonitorType.values.firstWhere(
+      (type) => type.value == savedMonitorType,
+      orElse: () => SonarrSeriesMonitorType.ALL,
+    );
     _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
   }
@@ -495,6 +501,16 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   _selectSonarrRootFolder();
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.view_list_rounded),
+                title: const Text('Monitoring Options'),
+                subtitle: Text(_sonarrMonitorType.zagName),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrMonitorType();
+                },
+              ),
               SwitchListTile(
                 secondary: const Icon(Icons.search),
                 title: const Text('Start search for missing'),
@@ -655,6 +671,27 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       showZagSnackBar(
         title: 'Error',
         message: 'Failed to load root folders',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _selectSonarrMonitorType() async {
+    try {
+      final Tuple2<bool, SonarrSeriesMonitorType?> result = await SonarrDialogs().editMonitorType(context);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _sonarrMonitorType = result.item2!;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(_sonarrMonitorType.value);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr monitor type', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to select monitor type',
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -896,7 +933,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
             seasonFolder: true,
             qualityProfile: selectedProfile,
             rootFolder: selectedFolder,
-            monitorType: SonarrSeriesMonitorType.ALL,
+            monitorType: _sonarrMonitorType,
             searchForMissingEpisodes: _sonarrSearchForMissing,
             searchForCutoffUnmetEpisodes: _sonarrSearchForCutoffUnmet,
           );
