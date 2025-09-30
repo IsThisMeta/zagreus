@@ -35,10 +35,13 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   int? _selectedRadarrQualityProfileId;
   String? _selectedRadarrQualityProfileName;
   String? _selectedRadarrRootFolder;
+  bool _radarrSearchForMissing = true;
 
   int? _selectedSonarrQualityProfileId;
   String? _selectedSonarrQualityProfileName;
   String? _selectedSonarrRootFolder;
+  bool _sonarrSearchForMissing = true;
+  bool _sonarrSearchForCutoffUnmet = false;
 
   @override
   void initState() {
@@ -369,48 +372,66 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
 
   Future<void> _showItemPreview(StagedMediaItem item) async {
     // Show text preview dialog with copy button (like Add Movie screen)
+    final overview = item.overview?.isNotEmpty == true
+        ? item.overview!
+        : 'No overview available.';
+
     await ZagDialogs().textPreview(
       context,
       item.title,
-      'No overview available.',
+      overview,
     );
   }
 
   void _showRadarrConfig() {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Radarr Settings',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.high_quality),
-              title: const Text('Quality Profile'),
-              subtitle: Text(_selectedRadarrQualityProfileName ?? 'Select quality profile'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _selectRadarrQualityProfile();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder),
-              title: const Text('Root Folder'),
-              subtitle: Text(_selectedRadarrRootFolder ?? 'Select root folder'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _selectRadarrRootFolder();
-              },
-            ),
-          ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Radarr Settings',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: _selectedRadarrQualityProfileName != null ? Text(_selectedRadarrQualityProfileName!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectRadarrQualityProfile();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: _selectedRadarrRootFolder != null ? Text(_selectedRadarrRootFolder!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectRadarrRootFolder();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    setState(() {
+                      _radarrSearchForMissing = value;
+                    });
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -419,38 +440,64 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   void _showSonarrConfig() {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Sonarr Settings',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.high_quality),
-              title: const Text('Quality Profile'),
-              subtitle: Text(_selectedSonarrQualityProfileName ?? 'Select quality profile'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _selectSonarrQualityProfile();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder),
-              title: const Text('Root Folder'),
-              subtitle: Text(_selectedSonarrRootFolder ?? 'Select root folder'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                _selectSonarrRootFolder();
-              },
-            ),
-          ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Sonarr Settings',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: _selectedSonarrQualityProfileName != null ? Text(_selectedSonarrQualityProfileName!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrQualityProfile();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: _selectedSonarrRootFolder != null ? Text(_selectedSonarrRootFolder!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrRootFolder();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _sonarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    setState(() {
+                      _sonarrSearchForMissing = value;
+                    });
+                  });
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.cut),
+                title: const Text('Search for cutoff unmet'),
+                value: _sonarrSearchForCutoffUnmet,
+                onChanged: (value) {
+                  setModalState(() {
+                    setState(() {
+                      _sonarrSearchForCutoffUnmet = value;
+                    });
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

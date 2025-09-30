@@ -7,6 +7,7 @@ class StagedMediaItem {
   final String title;
   final int? year;
   final String? posterPath;
+  final String? overview;
   final String mediaType; // "movie" or "tv"
   final bool verified;
 
@@ -15,6 +16,7 @@ class StagedMediaItem {
     required this.title,
     this.year,
     this.posterPath,
+    this.overview,
     required this.mediaType,
     required this.verified,
   });
@@ -25,6 +27,7 @@ class StagedMediaItem {
       title: json['title'] as String,
       year: json['year'] as int?,
       posterPath: json['poster_path'] as String?,
+      overview: json['overview'] as String?,
       mediaType: json['media_type'] as String,
       verified: json['verified'] as bool? ?? true,
     );

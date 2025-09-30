@@ -1327,8 +1327,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                             : const Icon(Icons.psychology),
                                         label: Text(
                                           _isAskingZAssistant
-                                              ? 'Asking Z Assistant...'
-                                              : 'Ask Z Assistant',
+                                              ? 'Asking Z...'
+                                              : 'Ask Z',
                                         ),
                                       ),
                                     ],
@@ -1448,6 +1448,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Following",
           "year": 1999,
           "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1456,6 +1457,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Memento",
           "year": 2000,
           "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1464,6 +1466,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Insomnia",
           "year": 2002,
           "poster_path": "/riVXh3EimGO0y5dgQxEWPRy5Itg.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1472,6 +1475,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Batman Begins",
           "year": 2005,
           "poster_path": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1480,6 +1484,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "The Prestige",
           "year": 2006,
           "poster_path": "/2ZOzyhoW08neG27DVySMCcq2emd.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1488,6 +1493,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "The Dark Knight",
           "year": 2008,
           "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1496,6 +1502,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Inception",
           "year": 2010,
           "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1504,6 +1511,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "The Dark Knight Rises",
           "year": 2012,
           "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1512,6 +1520,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Interstellar",
           "year": 2014,
           "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1520,6 +1529,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Dunkirk",
           "year": 2017,
           "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1528,6 +1538,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Tenet",
           "year": 2020,
           "poster_path": "/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
+          "overview": "",
           "verified": true
         },
         {
@@ -1536,6 +1547,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Oppenheimer",
           "year": 2023,
           "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+          "overview": "",
           "verified": true
         },
       ];
