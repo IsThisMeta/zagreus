@@ -1303,9 +1303,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           : Colors.black.withOpacity(0.4),
                                     ),
                                   ),
+                                  const SizedBox(height: 24),
+                                  OutlinedButton.icon(
+                                    onPressed: _loadTestZAssistantResults,
+                                    icon: const Icon(Icons.science),
+                                    label: const Text('Test Z Assistant (Mock Data)'),
+                                  ),
                                   if (_searchController.text.split(' ').length >= 4)
                                     ...[
-                                      const SizedBox(height: 24),
+                                      const SizedBox(height: 12),
                                       ElevatedButton.icon(
                                         onPressed: _isAskingZAssistant
                                             ? null
@@ -1324,12 +1330,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                               ? 'Asking Z Assistant...'
                                               : 'Ask Z Assistant',
                                         ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      OutlinedButton.icon(
-                                        onPressed: _loadTestZAssistantResults,
-                                        icon: const Icon(Icons.science),
-                                        label: const Text('Test Z Assistant (Mock Data)'),
                                       ),
                                     ],
                                 ],

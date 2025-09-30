@@ -283,14 +283,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
           _onItemTapped(item);
         }
       },
-      onLongPress: () {
-        if (!_isSelectionMode) {
-          setState(() {
-            _isSelectionMode = true;
-            _selectedIndices.add(index);
-          });
-        }
-      },
+      onLongPress: () => _showItemPreview(item),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -372,6 +365,15 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     } else if (item.isShow && widget.onShowTap != null) {
       widget.onShowTap!(item.tmdbId, item.title);
     }
+  }
+
+  Future<void> _showItemPreview(StagedMediaItem item) async {
+    // Show text preview dialog with copy button (like Add Movie screen)
+    await ZagDialogs().textPreview(
+      context,
+      item.title,
+      'No overview available.',
+    );
   }
 
   void _showRadarrConfig() {
