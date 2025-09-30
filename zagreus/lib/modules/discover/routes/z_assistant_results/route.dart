@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
 
 class ZAssistantResultsRoute extends StatefulWidget {
   final String stageId;
@@ -46,7 +48,21 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     _loadData();
+  }
+
+  void _loadSavedSettings() {
+    _selectedRadarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _selectedRadarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _selectedRadarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+
+    _selectedSonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _selectedSonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _selectedSonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
+    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
   }
 
   Future<void> _loadData() async {
@@ -145,10 +161,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _selectedIndices.isEmpty ? null : () {
-              // TODO: Add selected items to library
-              ZagLogger().debug('Add ${_selectedIndices.length} items to library');
-            },
+            onPressed: _selectedIndices.isEmpty ? null : _addSelectedToLibrary,
             tooltip: 'Add to Library',
           ),
         ],
@@ -426,6 +439,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   setModalState(() {
                     setState(() {
                       _radarrSearchForMissing = value;
+                      ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
                     });
                   });
                 },
@@ -480,6 +494,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   setModalState(() {
                     setState(() {
                       _sonarrSearchForMissing = value;
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
                     });
                   });
                 },
@@ -492,6 +507,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   setModalState(() {
                     setState(() {
                       _sonarrSearchForCutoffUnmet = value;
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
                     });
                   });
                 },
@@ -503,39 +519,311 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     );
   }
 
-  void _selectRadarrQualityProfile() {
-    // TODO: Fetch and show Radarr quality profiles
-    showZagSnackBar(
-      title: 'Coming Soon',
-      message: 'Quality profile selection will be implemented',
-      type: ZagSnackbarType.INFO,
-    );
+  Future<void> _selectRadarrQualityProfile() async {
+    try {
+      final profiles = await context.read<RadarrState>().qualityProfiles;
+
+      if (profiles == null || profiles.isEmpty) {
+        showZagSnackBar(
+          title: 'No Quality Profiles',
+          message: 'No Radarr quality profiles found',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final Tuple2<bool, RadarrQualityProfile?> result = await RadarrDialogs().editQualityProfile(context, profiles);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedRadarrQualityProfileId = result.item2!.id;
+          _selectedRadarrQualityProfileName = result.item2!.name;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(_selectedRadarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(_selectedRadarrQualityProfileName);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Radarr quality profile', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to load quality profiles',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 
-  void _selectRadarrRootFolder() {
-    // TODO: Fetch and show Radarr root folders
-    showZagSnackBar(
-      title: 'Coming Soon',
-      message: 'Root folder selection will be implemented',
-      type: ZagSnackbarType.INFO,
-    );
+  Future<void> _selectRadarrRootFolder() async {
+    try {
+      final folders = await context.read<RadarrState>().rootFolders;
+
+      if (folders == null || folders.isEmpty) {
+        showZagSnackBar(
+          title: 'No Root Folders',
+          message: 'No Radarr root folders found',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final Tuple2<bool, RadarrRootFolder?> result = await RadarrDialogs().editRootFolder(context, folders);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedRadarrRootFolder = result.item2!.path;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(_selectedRadarrRootFolder);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Radarr root folder', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to load root folders',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 
-  void _selectSonarrQualityProfile() {
-    // TODO: Fetch and show Sonarr quality profiles
-    showZagSnackBar(
-      title: 'Coming Soon',
-      message: 'Quality profile selection will be implemented',
-      type: ZagSnackbarType.INFO,
-    );
+  Future<void> _selectSonarrQualityProfile() async {
+    try {
+      final profiles = await context.read<SonarrState>().qualityProfiles;
+
+      if (profiles == null || profiles.isEmpty) {
+        showZagSnackBar(
+          title: 'No Quality Profiles',
+          message: 'No Sonarr quality profiles found',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final Tuple2<bool, SonarrQualityProfile?> result = await SonarrDialogs().editQualityProfile(context, profiles);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedSonarrQualityProfileId = result.item2!.id;
+          _selectedSonarrQualityProfileName = result.item2!.name;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(_selectedSonarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(_selectedSonarrQualityProfileName);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr quality profile', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to load quality profiles',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 
-  void _selectSonarrRootFolder() {
-    // TODO: Fetch and show Sonarr root folders
-    showZagSnackBar(
-      title: 'Coming Soon',
-      message: 'Root folder selection will be implemented',
-      type: ZagSnackbarType.INFO,
-    );
+  Future<void> _selectSonarrRootFolder() async {
+    try {
+      final folders = await context.read<SonarrState>().rootFolders;
+
+      if (folders == null || folders.isEmpty) {
+        showZagSnackBar(
+          title: 'No Root Folders',
+          message: 'No Sonarr root folders found',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final Tuple2<bool, SonarrRootFolder?> result = await SonarrDialogs().editRootFolder(context, folders);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedSonarrRootFolder = result.item2!.path;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(_selectedSonarrRootFolder);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr root folder', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to load root folders',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _addSelectedToLibrary() async {
+    if (_operation == null) return;
+
+    // Get selected items
+    final selectedItems = _selectedIndices.map((index) => _operation!.items[index]).toList();
+
+    // Split by media type
+    final movies = selectedItems.where((item) => item.isMovie).toList();
+    final shows = selectedItems.where((item) => item.isShow).toList();
+
+    int successCount = 0;
+    int failCount = 0;
+    List<String> errors = [];
+
+    // Add movies to Radarr
+    if (movies.isNotEmpty) {
+      if (_selectedRadarrQualityProfileId == null || _selectedRadarrRootFolder == null) {
+        showZagSnackBar(
+          title: 'Missing Radarr Config',
+          message: 'Please configure Radarr quality profile and root folder',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final radarrState = context.read<RadarrState>();
+      final profiles = await radarrState.qualityProfiles;
+      final folders = await radarrState.rootFolders;
+
+      if (profiles == null || folders == null) {
+        showZagSnackBar(
+          title: 'Radarr Not Available',
+          message: 'Could not fetch Radarr configuration',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final selectedProfile = profiles.firstWhere((p) => p.id == _selectedRadarrQualityProfileId);
+      final selectedFolder = folders.firstWhere((f) => f.path == _selectedRadarrRootFolder);
+
+      for (final movie in movies) {
+        try {
+          // Lookup movie first
+          final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+
+          if (lookupResults.isEmpty) {
+            errors.add('${movie.title}: Not found on TMDB');
+            failCount++;
+            continue;
+          }
+
+          final radarrMovie = lookupResults.first;
+
+          // Check if already in library
+          if (radarrMovie.id != null && radarrMovie.id! > 0) {
+            errors.add('${movie.title}: Already in library');
+            failCount++;
+            continue;
+          }
+
+          // Add to Radarr
+          await radarrState.api!.movie.create(
+            movie: radarrMovie,
+            rootFolder: selectedFolder,
+            monitored: true,
+            minimumAvailability: RadarrAvailability.ANNOUNCED,
+            qualityProfile: selectedProfile,
+            searchForMovie: _radarrSearchForMissing,
+          );
+
+          successCount++;
+        } catch (e) {
+          errors.add('${movie.title}: ${e.toString()}');
+          failCount++;
+        }
+      }
+    }
+
+    // Add shows to Sonarr
+    if (shows.isNotEmpty) {
+      if (_selectedSonarrQualityProfileId == null || _selectedSonarrRootFolder == null) {
+        showZagSnackBar(
+          title: 'Missing Sonarr Config',
+          message: 'Please configure Sonarr quality profile and root folder',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final sonarrState = context.read<SonarrState>();
+      final profiles = await sonarrState.qualityProfiles;
+      final folders = await sonarrState.rootFolders;
+
+      if (profiles == null || folders == null) {
+        showZagSnackBar(
+          title: 'Sonarr Not Available',
+          message: 'Could not fetch Sonarr configuration',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final selectedProfile = profiles.firstWhere((p) => p.id == _selectedSonarrQualityProfileId);
+      final selectedFolder = folders.firstWhere((f) => f.path == _selectedSonarrRootFolder);
+
+      for (final show in shows) {
+        try {
+          // Lookup show first
+          final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tmdb:${show.tmdbId}");
+
+          if (lookupResults.isEmpty) {
+            errors.add('${show.title}: Not found on TMDB');
+            failCount++;
+            continue;
+          }
+
+          final sonarrSeries = lookupResults.first;
+
+          // Check if already in library
+          if (sonarrSeries.id != null && sonarrSeries.id! > 0) {
+            errors.add('${show.title}: Already in library');
+            failCount++;
+            continue;
+          }
+
+          // Add to Sonarr
+          await sonarrState.api!.series.create(
+            series: sonarrSeries,
+            seriesType: SonarrSeriesType.STANDARD,
+            seasonFolder: true,
+            qualityProfile: selectedProfile,
+            rootFolder: selectedFolder,
+            monitorType: SonarrSeriesMonitorType.ALL,
+            searchForMissingEpisodes: _sonarrSearchForMissing,
+            searchForCutoffUnmetEpisodes: _sonarrSearchForCutoffUnmet,
+          );
+
+          successCount++;
+        } catch (e) {
+          errors.add('${show.title}: ${e.toString()}');
+          failCount++;
+        }
+      }
+    }
+
+    // Exit selection mode
+    setState(() {
+      _isSelectionMode = false;
+      _selectedIndices.clear();
+    });
+
+    // Show result
+    if (failCount == 0) {
+      showZagSnackBar(
+        title: 'Success',
+        message: 'Added $successCount items to library',
+        type: ZagSnackbarType.SUCCESS,
+      );
+    } else if (successCount == 0) {
+      showZagSnackBar(
+        title: 'Failed',
+        message: 'Failed to add all items. Check logs for details.',
+        type: ZagSnackbarType.ERROR,
+      );
+      errors.forEach((error) => ZagLogger().warning(error));
+    } else {
+      showZagSnackBar(
+        title: 'Partial Success',
+        message: 'Added $successCount items, $failCount failed',
+        type: ZagSnackbarType.INFO,
+      );
+      errors.forEach((error) => ZagLogger().warning(error));
+    }
   }
 }

@@ -55,7 +55,17 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
   // Discover module section order
   DISCOVER_MOVIES_SECTION_ORDER<List>([]),
-  DISCOVER_TV_SECTION_ORDER<List>([]);
+  DISCOVER_TV_SECTION_ORDER<List>([]),
+  // Z Assistant multi-add settings
+  Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID<int?>(null),
+  Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME<String?>(null),
+  Z_ASSISTANT_RADARR_ROOT_FOLDER<String?>(null),
+  Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING<bool>(true),
+  Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID<int?>(null),
+  Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME<String?>(null),
+  Z_ASSISTANT_SONARR_ROOT_FOLDER<String?>(null),
+  Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING<bool>(true),
+  Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET<bool>(false);
 
   @override
   ZagTable get table => ZagTable.zagreus;
