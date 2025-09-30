@@ -27,6 +27,10 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   bool _loading = true;
   String? _error;
 
+  // Multi-select state
+  final Set<int> _selectedIndices = {};
+  bool _isSelectionMode = false;
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +41,8 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     setState(() {
       _loading = true;
       _error = null;
+      _selectedIndices.clear();
+      _isSelectionMode = false;
     });
 
     try {
@@ -63,19 +69,88 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
   }
 
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) {
+        _selectedIndices.clear();
+      }
+    });
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedIndices.length == _operation!.items.length) {
+        _selectedIndices.clear();
+      } else {
+        _selectedIndices.clear();
+        for (int i = 0; i < _operation!.items.length; i++) {
+          _selectedIndices.add(i);
+        }
+      }
+    });
+  }
+
+  void _toggleItemSelection(int index) {
+    setState(() {
+      if (_selectedIndices.contains(index)) {
+        _selectedIndices.remove(index);
+      } else {
+        _selectedIndices.add(index);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      appBar: _appBar(),
+      appBar: _appBar(context),
       body: _body(),
     );
   }
 
-  PreferredSizeWidget _appBar() {
+  PreferredSizeWidget _appBar(BuildContext context) {
+    if (_isSelectionMode) {
+      // Use standard AppBar for selection mode to show custom leading
+      return AppBar(
+        title: Text('${_selectedIndices.length} selected'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: _toggleSelectionMode,
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _selectedIndices.length == _operation?.items.length
+                  ? Icons.deselect
+                  : Icons.select_all,
+            ),
+            onPressed: _toggleSelectAll,
+            tooltip: _selectedIndices.length == _operation?.items.length
+                ? 'Deselect All'
+                : 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _selectedIndices.isEmpty ? null : () {
+              // TODO: Add selected items to library
+              ZagLogger().debug('Add ${_selectedIndices.length} items to library');
+            },
+            tooltip: 'Add to Library',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'Z Assistant Results',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: _toggleSelectionMode,
+          tooltip: 'Select Items',
+        ),
         IconButton(
           icon: Icon(ZagIcons.REFRESH),
           onPressed: _loadData,
@@ -172,41 +247,81 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         itemCount: _operation!.items.length,
         itemBuilder: (context, index) {
           final item = _operation!.items[index];
-          return _buildMediaItem(item);
+          return _buildMediaItem(item, index);
         },
       ),
     );
   }
 
-  Widget _buildMediaItem(StagedMediaItem item) {
+  Widget _buildMediaItem(StagedMediaItem item, int index) {
+    final isSelected = _selectedIndices.contains(index);
+
     return GestureDetector(
-      onTap: () => _onItemTapped(item),
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleItemSelection(index);
+        } else {
+          _onItemTapped(item);
+        }
+      },
+      onLongPress: () {
+        if (!_isSelectionMode) {
+          setState(() {
+            _isSelectionMode = true;
+            _selectedIndices.add(index);
+          });
+        }
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: item.posterPath != null
-                  ? CachedNetworkImage(
-                      imageUrl: item.posterUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[900],
-                        child: const Center(
-                          child: CircularProgressIndicator(),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: item.posterPath != null
+                      ? CachedNetworkImage(
+                          imageUrl: item.posterUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[900],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[900],
+                            child: const Icon(Icons.broken_image, size: 48),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[900],
+                          child: const Icon(Icons.movie, size: 48),
+                        ),
+                ),
+                if (_isSelectionMode)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[900],
-                        child: const Icon(Icons.broken_image, size: 48),
+                      child: Icon(
+                        isSelected ? Icons.check_circle : Icons.circle_outlined,
+                        color: Colors.white,
+                        size: 28,
                       ),
-                    )
-                  : Container(
-                      color: Colors.grey[900],
-                      child: const Icon(Icons.movie, size: 48),
                     ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
