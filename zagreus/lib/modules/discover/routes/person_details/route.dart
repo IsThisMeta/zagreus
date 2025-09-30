@@ -622,9 +622,9 @@ class _State extends State<PersonDetailsRoute>
             if (credit['role'] != null)
               Text(
                 credit['role'],
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
-                  color: ZagColours.accent.withOpacity(0.8),
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
                 maxLines: 1,
