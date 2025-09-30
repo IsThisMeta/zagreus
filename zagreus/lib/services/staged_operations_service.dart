@@ -141,4 +141,32 @@ class StagedOperationsService {
       return false;
     }
   }
+
+  /// Create a staged operation (for testing)
+  Future<String> createStagedOperation(String operation, List<Map<String, dynamic>> items) async {
+    try {
+      ZagLogger().debug('Creating staged operation: $operation with ${items.length} items');
+
+      // Generate a stage ID
+      final stageId = DateTime.now().millisecondsSinceEpoch.toString();
+
+      final userId = ZagSupabase.client.auth.currentUser?.id;
+
+      await ZagSupabase.client
+          .from('staged_operations')
+          .insert({
+            'stage_id': stageId,
+            'operation': operation,
+            'items': items,
+            'status': 'pending',
+            'user_id': userId,
+          });
+
+      ZagLogger().debug('Staged operation created: $stageId');
+      return stageId;
+    } catch (e, stack) {
+      ZagLogger().error('Failed to create staged operation', e, stack);
+      rethrow;
+    }
+  }
 }

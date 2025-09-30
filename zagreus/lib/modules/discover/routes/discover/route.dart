@@ -25,6 +25,7 @@ import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/rou
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/services/staged_operations_service.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -59,6 +60,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _trendingItems = [];
   Timer? _autoScrollTimer;
   final Set<String> _precachedHeroBackdrops = {};
+
+  // Z Assistant navigation history
+  String? _lastZAssistantStageId;
 
   @override
   void initState() {
@@ -922,7 +926,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ),
                 ),
               ]
-            : null,
+            : (_lastZAssistantStageId != null
+                ? [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward),
+                      onPressed: _navigateToLastZAssistantResults,
+                      tooltip: 'Return to Z Assistant Results',
+                    ),
+                  ]
+                : null),
       ),
       body: _body(),
       bottomNavigationBar: _DiscoverNavigationBar(
@@ -1313,6 +1325,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                               : 'Ask Z Assistant',
                                         ),
                                       ),
+                                      const SizedBox(height: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: _loadTestZAssistantResults,
+                                        icon: const Icon(Icons.science),
+                                        label: const Text('Test Z Assistant (Mock Data)'),
+                                      ),
                                     ],
                                 ],
                               ),
@@ -1373,6 +1391,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       print('🤖 Z Assistant returned stage ID: $stageId');
 
+      // Store stage ID for navigation history
+      setState(() {
+        _lastZAssistantStageId = stageId;
+      });
+
       // Navigate to fullscreen results
       if (!mounted) return;
       Navigator.push(
@@ -1393,6 +1416,158 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       showZagSnackBar(
         title: 'Z Assistant Error',
         message: 'Failed to get results from Z Assistant. Please try again.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  void _navigateToLastZAssistantResults() {
+    if (_lastZAssistantStageId == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ZAssistantResultsRoute(
+          stageId: _lastZAssistantStageId!,
+          onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+          onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadTestZAssistantResults() async {
+    try {
+      print('🧪 Creating mock Z Assistant results');
+
+      // Mock Christopher Nolan movies with posters
+      final mockItems = [
+        {
+          "tmdb_id": 496,
+          "media_type": "movie",
+          "title": "Following",
+          "year": 1999,
+          "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 77,
+          "media_type": "movie",
+          "title": "Memento",
+          "year": 2000,
+          "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 320,
+          "media_type": "movie",
+          "title": "Insomnia",
+          "year": 2002,
+          "poster_path": "/riVXh3EimGO0y5dgQxEWPRy5Itg.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 272,
+          "media_type": "movie",
+          "title": "Batman Begins",
+          "year": 2005,
+          "poster_path": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 1124,
+          "media_type": "movie",
+          "title": "The Prestige",
+          "year": 2006,
+          "poster_path": "/2ZOzyhoW08neG27DVySMCcq2emd.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 155,
+          "media_type": "movie",
+          "title": "The Dark Knight",
+          "year": 2008,
+          "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 27205,
+          "media_type": "movie",
+          "title": "Inception",
+          "year": 2010,
+          "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 49026,
+          "media_type": "movie",
+          "title": "The Dark Knight Rises",
+          "year": 2012,
+          "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 157336,
+          "media_type": "movie",
+          "title": "Interstellar",
+          "year": 2014,
+          "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 324857,
+          "media_type": "movie",
+          "title": "Dunkirk",
+          "year": 2017,
+          "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 577922,
+          "media_type": "movie",
+          "title": "Tenet",
+          "year": 2020,
+          "poster_path": "/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
+          "verified": true
+        },
+        {
+          "tmdb_id": 872585,
+          "media_type": "movie",
+          "title": "Oppenheimer",
+          "year": 2023,
+          "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+          "verified": true
+        },
+      ];
+
+      // Create staged operation locally
+      final service = StagedOperationsService();
+      final stageId = await service.createStagedOperation('discover', mockItems);
+
+      print('🎯 Test stage created: $stageId');
+
+      // Store stage ID for navigation history
+      setState(() {
+        _lastZAssistantStageId = stageId;
+      });
+
+      // Navigate to results
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ZAssistantResultsRoute(
+            stageId: stageId,
+            onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+          ),
+        ),
+      );
+    } catch (e) {
+      print('❌ Test Z Assistant error: $e');
+      showZagSnackBar(
+        title: 'Test Error',
+        message: 'Failed to create test results: $e',
         type: ZagSnackbarType.ERROR,
       );
     }
