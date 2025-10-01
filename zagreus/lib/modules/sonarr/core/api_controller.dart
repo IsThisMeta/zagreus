@@ -537,7 +537,7 @@ class SonarrAPIController {
         return true;
       }
 
-      // Step 4: Delete all episode files
+      // Step 4: Delete all episode files with progress dialog
       final episodeFileIds = seasonEpisodes
           .map((ep) => ep.episodeFileId)
           .where((id) => id != null)
@@ -545,15 +545,51 @@ class SonarrAPIController {
           .toList();
 
       if (episodeFileIds.isNotEmpty) {
-        await sonarrState.api!.episodeFile.deleteBulk(episodeFileIds: episodeFileIds);
+        // Show progress dialog
+        int remaining = episodeFileIds.length;
+        late void Function(void Function()) updateDialog;
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => StatefulBuilder(
+            builder: (context, setState) {
+              updateDialog = setState;
+              return AlertDialog(
+                title: Text('Deleting Episode Files'),
+                content: Text(remaining == episodeFileIds.length
+                    ? 'Deleting ${episodeFileIds.length} files...'
+                    : 'Deleting: $remaining files left'),
+              );
+            },
+          ),
+        );
+
+        // Delete files one by one with progress updates
+        for (int i = 0; i < episodeFileIds.length; i++) {
+          try {
+            await sonarrState.api!.episodeFile.delete(episodeFileId: episodeFileIds[i]);
+            remaining--;
+
+            // Update progress dialog
+            if (remaining > 0) {
+              updateDialog(() {});
+            }
+          } catch (e) {
+            ZagLogger().error('Failed to delete episode file ${episodeFileIds[i]}', e, null);
+          }
+        }
+
+        // Dismiss progress dialog
+        Navigator.of(context, rootNavigator: true).pop();
       }
 
       if (showSnackbar) {
         showZagSuccessSnackBar(
           title: 'Season Cleanup Complete',
           message: season.seasonNumber == 0
-              ? 'Specials unmonitored and ${episodeFileIds.length} file(s) deleted'
-              : 'Season ${season.seasonNumber} unmonitored and ${episodeFileIds.length} file(s) deleted',
+              ? 'Specials unmonitored and ${episodeFileIds.length} files deleted'
+              : 'Season ${season.seasonNumber} unmonitored and ${episodeFileIds.length} files deleted',
         );
       }
 

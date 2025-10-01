@@ -151,10 +151,10 @@ class TMDBApi {
     String? region,
   }) async {
     try {
-      // Fetch multiple pages for more results (like nzb360)
+      // Fetch single page (20 results, UI will display 10)
       List<Map<String, dynamic>> allShows = [];
-      
-      for (int p = 1; p <= 2; p++) {
+
+      for (int p = 1; p <= 1; p++) {
         String url = '$_baseUrl/tv/popular?api_key=$_apiKey&page=$p';
         if (region != null) {
           url += '&region=$region';
@@ -198,10 +198,10 @@ class TMDBApi {
     String? region,
   }) async {
     try {
-      // Fetch multiple pages for more results (like nzb360)
+      // Fetch single page (20 results, UI will display 10)
       List<Map<String, dynamic>> allShows = [];
-      
-      for (int p = 1; p <= 2; p++) {
+
+      for (int p = 1; p <= 1; p++) {
         // Using discover endpoint to get new shows (first_air_date recent)
         final now = DateTime.now();
         final threeMonthsAgo = now.subtract(const Duration(days: 90));

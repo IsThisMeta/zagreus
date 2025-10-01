@@ -812,7 +812,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     print('🎯 Loading most anticipated shows from Trakt...');
     try {
       // Use the real Trakt API
-      final shows = await TraktApi.getAnticipatedShows(page: 1, limit: 40);
+      final shows = await TraktApi.getAnticipatedShows(page: 1, limit: 10);
       print('🎯 Got ${shows.length} most anticipated shows from Trakt');
 
       // Enrich with TMDB poster images if we have TMDB IDs
