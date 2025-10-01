@@ -2516,47 +2516,47 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.local_fire_department_rounded,
-                color: const Color(0xFF6688FF),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'TMDB',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF6688FF),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Popular Movies',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          child: GestureDetector(
+            onTap: _popularMovies.isNotEmpty ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TMDBPopularMoviesRoute(
+                    initialData: _popularMovies,
                   ),
                 ),
-              ),
-              if (_popularMovies.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBPopularMoviesRoute(
-                          initialData: _popularMovies,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Icon(
+              );
+            } : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.local_fire_department_rounded,
+                  color: const Color(0xFF6688FF),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'TMDB',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF6688FF),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Popular Movies',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_popularMovies.isNotEmpty)
+                  Icon(
                     Icons.arrow_forward_ios,
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -2564,8 +2564,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         .withOpacity(0.5),
                     size: 16,
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         // Movie list or loading placeholder
@@ -2748,47 +2748,47 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.tv_rounded,
-                color: const Color(0xFF6688FF),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'TMDB',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF6688FF),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Popular TV Shows',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          child: GestureDetector(
+            onTap: _popularTVShows.isNotEmpty ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TMDBPopularTVShowsRoute(
+                    initialData: _popularTVShows,
                   ),
                 ),
-              ),
-              if (_popularTVShows.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBPopularTVShowsRoute(
-                          initialData: _popularTVShows,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Icon(
+              );
+            } : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.tv_rounded,
+                  color: const Color(0xFF6688FF),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'TMDB',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF6688FF),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Popular TV Shows',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_popularTVShows.isNotEmpty)
+                  Icon(
                     Icons.arrow_forward_ios,
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -2796,8 +2796,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         .withOpacity(0.5),
                     size: 16,
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         // TV show list or loading placeholder
@@ -2990,47 +2990,47 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.trending_up_rounded,
-                color: const Color(0xFF6688FF),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'TMDB',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF6688FF),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Trending New TV Shows',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          child: GestureDetector(
+            onTap: _trendingNewTVShows.isNotEmpty ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TMDBTrendingNewTVShowsRoute(
+                    initialData: _trendingNewTVShows,
                   ),
                 ),
-              ),
-              if (_trendingNewTVShows.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBTrendingNewTVShowsRoute(
-                          initialData: _trendingNewTVShows,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Icon(
+              );
+            } : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.trending_up_rounded,
+                  color: const Color(0xFF6688FF),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'TMDB',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF6688FF),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Trending New TV Shows',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_trendingNewTVShows.isNotEmpty)
+                  Icon(
                     Icons.arrow_forward_ios,
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -3038,8 +3038,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         .withOpacity(0.5),
                     size: 16,
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         // TV show list or loading placeholder
@@ -3409,47 +3409,47 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: const Color(0xFFED2224),
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Trakt',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFFED2224),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Most Anticipated Shows',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          child: GestureDetector(
+            onTap: _mostAnticipatedShows.isNotEmpty ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TraktMostAnticipatedShowsRoute(
+                    initialData: _mostAnticipatedShows,
                   ),
                 ),
-              ),
-              if (_mostAnticipatedShows.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TraktMostAnticipatedShowsRoute(
-                          initialData: _mostAnticipatedShows,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Icon(
+              );
+            } : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: const Color(0xFFED2224),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Trakt',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFED2224),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Most Anticipated Shows',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_mostAnticipatedShows.isNotEmpty)
+                  Icon(
                     Icons.arrow_forward_ios,
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -3457,8 +3457,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         .withOpacity(0.5),
                     size: 16,
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         // TV show list or loading placeholder
