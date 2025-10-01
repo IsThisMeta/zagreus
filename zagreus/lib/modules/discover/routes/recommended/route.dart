@@ -31,6 +31,10 @@ class _State extends State<DiscoverRecommendedRoute>
   String? _radarrRootFolder;
   bool _radarrSearchForMissing = true;
 
+  // Multi-select mode
+  bool _isMultiSelectMode = false;
+  Set<int> _selectedMovieIndices = {};
+
   @override
   void initState() {
     super.initState();
@@ -161,6 +165,33 @@ class _State extends State<DiscoverRecommendedRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    if (_isMultiSelectMode) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = false;
+              _selectedMovieIndices.clear();
+            });
+          },
+        ),
+        title: Text('${_selectedMovieIndices.length} selected'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _selectedMovieIndices.isEmpty ? null : _addSelectedMoviesToRadarr,
+            tooltip: 'Add Selected',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'Recommended Movies',
       actions: [
@@ -170,11 +201,30 @@ class _State extends State<DiscoverRecommendedRoute>
           tooltip: 'Radarr Settings',
         ),
         IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = true;
+            });
+          },
+          tooltip: 'Multi-Select',
+        ),
+        IconButton(
           icon: Icon(ZagIcons.REFRESH),
           onPressed: _loadRecommendedMovies,
         ),
       ],
     );
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedMovieIndices.length == _movies.length) {
+        _selectedMovieIndices.clear();
+      } else {
+        _selectedMovieIndices = Set.from(List.generate(_movies.length, (i) => i));
+      }
+    });
   }
 
   Widget _body() {
@@ -256,14 +306,16 @@ class _State extends State<DiscoverRecommendedRoute>
           mainAxisSpacing: 16,
         ),
         itemCount: _movies.length,
-        itemBuilder: (context, index) => _movieTile(_movies[index]),
+        itemBuilder: (context, index) => _movieTile(_movies[index], index),
       ),
     );
   }
 
-  Widget _movieTile(RadarrMovie movie) {
+  Widget _movieTile(RadarrMovie movie, int index) {
+    final isSelected = _selectedMovieIndices.contains(index);
+
     return GestureDetector(
-      onTap: () => _handleMovieTap(movie),
+      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleMovieTap(movie),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -318,11 +370,46 @@ class _State extends State<DiscoverRecommendedRoute>
                   textAlign: TextAlign.center,
                 ),
               ),
+              // Selection indicator
+              if (_isMultiSelectMode)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : null,
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (_selectedMovieIndices.contains(index)) {
+        _selectedMovieIndices.remove(index);
+      } else {
+        _selectedMovieIndices.add(index);
+      }
+    });
   }
 
   Widget _buildPosterImage(BuildContext context, RadarrMovie movie) {
@@ -501,18 +588,6 @@ class _State extends State<DiscoverRecommendedRoute>
                   ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
                 },
               ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _addAllMoviesToRadarr();
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('Add All Movies to Radarr'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                ),
-              ),
             ],
           ),
         ),
@@ -520,7 +595,7 @@ class _State extends State<DiscoverRecommendedRoute>
     );
   }
 
-  Future<void> _addAllMoviesToRadarr() async {
+  Future<void> _addSelectedMoviesToRadarr() async {
     if (_radarrQualityProfileId == null || _radarrRootFolder == null) {
       showZagSnackBar(
         title: 'Configuration Required',
@@ -562,16 +637,19 @@ class _State extends State<DiscoverRecommendedRoute>
       orElse: () => folders.first,
     );
 
+    // Get selected movies
+    final selectedMovies = _selectedMovieIndices.map((i) => _movies[i]).toList();
+
     showZagSnackBar(
       title: 'Adding Movies',
-      message: 'Adding ${_movies.length} movies to Radarr...',
+      message: 'Adding ${selectedMovies.length} movies to Radarr...',
       type: ZagSnackbarType.INFO,
     );
 
     int successCount = 0;
     int failCount = 0;
 
-    for (final movie in _movies) {
+    for (final movie in selectedMovies) {
       try {
         if (movie.tmdbId == null) {
           failCount++;
@@ -618,6 +696,12 @@ class _State extends State<DiscoverRecommendedRoute>
       message: 'Added $successCount movies. $failCount failed.',
       type: successCount > 0 ? ZagSnackbarType.SUCCESS : ZagSnackbarType.ERROR,
     );
+
+    // Exit multi-select mode
+    setState(() {
+      _isMultiSelectMode = false;
+      _selectedMovieIndices.clear();
+    });
 
     // Refresh the list
     _loadRecommendedMovies();

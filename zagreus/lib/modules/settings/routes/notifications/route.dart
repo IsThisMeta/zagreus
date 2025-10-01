@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
@@ -11,6 +12,7 @@ import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsRoute extends StatefulWidget {
   const NotificationsRoute({
@@ -274,11 +276,21 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               return const SizedBox(height: 0.0, width: double.infinity);
             }
 
-            return ZagBanner(
-              headerText: 'settings.NotAuthorized'.tr(),
-              bodyText: 'settings.NotAuthorizedMessage'.tr(),
-              icon: Icons.error_outline_rounded,
-              iconColor: ZagColours.red,
+            return GestureDetector(
+              onTap: () async {
+                if (Platform.isIOS) {
+                  final uri = Uri.parse('app-settings:');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                  }
+                }
+              },
+              child: ZagBanner(
+                headerText: 'settings.NotAuthorized'.tr(),
+                bodyText: 'settings.NotAuthorizedMessage'.tr(),
+                icon: Icons.error_outline_rounded,
+                iconColor: ZagColours.red,
+              ),
             );
           },
         ),
