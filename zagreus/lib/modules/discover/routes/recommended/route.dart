@@ -579,7 +579,6 @@ class _State extends State<DiscoverRecommendedRoute>
               ),
               SwitchListTile(
                 title: const Text('Search for Missing'),
-                subtitle: const Text('Automatically search for movies after adding'),
                 value: _radarrSearchForMissing,
                 onChanged: (value) {
                   setModalState(() {
