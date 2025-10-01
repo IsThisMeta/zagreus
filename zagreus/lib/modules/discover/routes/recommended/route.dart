@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 class DiscoverRecommendedRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
@@ -24,9 +25,16 @@ class _State extends State<DiscoverRecommendedRoute>
   bool _isLoading = true;
   String? _error;
 
+  // Radarr multi-add settings
+  int? _radarrQualityProfileId;
+  String? _radarrQualityProfileName;
+  String? _radarrRootFolder;
+  bool _radarrSearchForMissing = true;
+
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     if (widget.initialData != null) {
       // Use the provided initial data
       _movies = widget.initialData!;
@@ -35,6 +43,13 @@ class _State extends State<DiscoverRecommendedRoute>
       // Load data from API
       _loadRecommendedMovies();
     }
+  }
+
+  void _loadSavedSettings() {
+    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
   }
 
   Future<void> _loadRecommendedMovies() async {
@@ -149,6 +164,11 @@ class _State extends State<DiscoverRecommendedRoute>
     return ZagAppBar(
       title: 'Recommended Movies',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.movie),
+          onPressed: _showRadarrConfig,
+          tooltip: 'Radarr Settings',
+        ),
         IconButton(
           icon: Icon(ZagIcons.REFRESH),
           onPressed: _loadRecommendedMovies,
@@ -386,5 +406,220 @@ class _State extends State<DiscoverRecommendedRoute>
       extra: movie,
       queryParams: {'isDiscovery': 'true'},
     );
+  }
+
+  void _showRadarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Radarr Batch Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.hd),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final profiles = await radarrState.api!.qualityProfile.getAll();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrQualityProfileId = profile.id;
+                              _radarrQualityProfileName = profile.name;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final folders = await radarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrRootFolder = folder.path;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Search for Missing'),
+                subtitle: const Text('Automatically search for movies after adding'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    _radarrSearchForMissing = value;
+                  });
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                },
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _addAllMoviesToRadarr();
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Add All Movies to Radarr'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addAllMoviesToRadarr() async {
+    if (_radarrQualityProfileId == null || _radarrRootFolder == null) {
+      showZagSnackBar(
+        title: 'Configuration Required',
+        message: 'Please select both Quality Profile and Root Folder',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled || radarrState.api == null) {
+      showZagSnackBar(
+        title: 'Radarr Not Available',
+        message: 'Radarr is not enabled or configured',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    // Get profiles and folders
+    final profiles = await radarrState.qualityProfiles;
+    final folders = await radarrState.rootFolders;
+
+    if (profiles == null || folders == null) {
+      showZagSnackBar(
+        title: 'Configuration Error',
+        message: 'Could not fetch Radarr configuration',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final selectedProfile = profiles.firstWhere(
+      (p) => p.id == _radarrQualityProfileId,
+      orElse: () => profiles.first,
+    );
+    final selectedFolder = folders.firstWhere(
+      (f) => f.path == _radarrRootFolder,
+      orElse: () => folders.first,
+    );
+
+    showZagSnackBar(
+      title: 'Adding Movies',
+      message: 'Adding ${_movies.length} movies to Radarr...',
+      type: ZagSnackbarType.INFO,
+    );
+
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final movie in _movies) {
+      try {
+        if (movie.tmdbId == null) {
+          failCount++;
+          continue;
+        }
+
+        // Lookup movie on TMDB
+        final lookupResults = await radarrState.api!.movieLookup.get(
+          term: "tmdb:${movie.tmdbId}",
+        );
+
+        if (lookupResults.isEmpty) {
+          failCount++;
+          continue;
+        }
+
+        final radarrMovie = lookupResults.first;
+
+        // Check if already in library
+        if (radarrMovie.id != null && radarrMovie.id! > 0) {
+          failCount++;
+          continue;
+        }
+
+        // Add to Radarr
+        await radarrState.api!.movie.create(
+          movie: radarrMovie,
+          rootFolder: selectedFolder,
+          monitored: true,
+          minimumAvailability: RadarrAvailability.ANNOUNCED,
+          qualityProfile: selectedProfile,
+          searchForMovie: _radarrSearchForMissing,
+        );
+
+        successCount++;
+      } catch (e) {
+        failCount++;
+        ZagLogger().warning('Failed to add movie ${movie.title}: $e');
+      }
+    }
+
+    showZagSnackBar(
+      title: 'Batch Add Complete',
+      message: 'Added $successCount movies. $failCount failed.',
+      type: successCount > 0 ? ZagSnackbarType.SUCCESS : ZagSnackbarType.ERROR,
+    );
+
+    // Refresh the list
+    _loadRecommendedMovies();
   }
 }
