@@ -6,6 +6,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 enum SonarrSeasonSettingsType {
   AUTOMATIC_SEARCH,
   INTERACTIVE_SEARCH,
+  SEASON_CLEANUP,
 }
 
 extension SonarrSeasonSettingsTypeExtension on SonarrSeasonSettingsType {
@@ -15,6 +16,8 @@ extension SonarrSeasonSettingsTypeExtension on SonarrSeasonSettingsType {
         return Icons.search_rounded;
       case SonarrSeasonSettingsType.INTERACTIVE_SEARCH:
         return Icons.youtube_searched_for_rounded;
+      case SonarrSeasonSettingsType.SEASON_CLEANUP:
+        return Icons.cleaning_services_rounded;
     }
   }
 
@@ -24,6 +27,8 @@ extension SonarrSeasonSettingsTypeExtension on SonarrSeasonSettingsType {
         return 'sonarr.AutomaticSearch'.tr();
       case SonarrSeasonSettingsType.INTERACTIVE_SEARCH:
         return 'sonarr.InteractiveSearch'.tr();
+      case SonarrSeasonSettingsType.SEASON_CLEANUP:
+        return 'Season Cleanup';
     }
   }
 
@@ -45,6 +50,51 @@ extension SonarrSeasonSettingsTypeExtension on SonarrSeasonSettingsType {
           'series': seriesId.toString(),
           'season': seasonNumber.toString(),
         });
+      case SonarrSeasonSettingsType.SEASON_CLEANUP:
+        // Show confirmation dialog
+        bool confirmed = false;
+        await ZagDialog.dialog(
+          context: context,
+          title: seasonNumber == 0 ? 'Specials Cleanup' : 'Season $seasonNumber Cleanup',
+          buttons: [
+            ZagDialog.button(
+              text: 'YES',
+              textColor: ZagColours.red,
+              onPressed: () {
+                confirmed = true;
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            ),
+          ],
+          content: [
+            ZagDialog.textContent(
+              text: 'This action will both unmonitor and delete all episode files for this season. Are you sure you want to do this?',
+            ),
+          ],
+          contentPadding: ZagDialog.textDialogContentPadding(),
+        );
+
+        if (!confirmed) return;
+
+        // Get the season object from state
+        final sonarrState = context.read<SonarrState>();
+        final series = await sonarrState.series!.then((allSeries) => allSeries[seriesId]);
+
+        if (series == null) return;
+
+        final season = series.seasons?.firstWhere(
+          (s) => s.seasonNumber == seasonNumber,
+        );
+
+        if (season == null) return;
+
+        // Perform cleanup
+        await SonarrAPIController().seasonCleanup(
+          context: context,
+          season: season,
+          seriesId: seriesId,
+        );
+        return;
     }
   }
 }

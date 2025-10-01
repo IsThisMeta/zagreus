@@ -489,6 +489,91 @@ class SonarrAPIController {
     return false;
   }
 
+  Future<bool> seasonCleanup({
+    required BuildContext context,
+    required SonarrSeriesSeason season,
+    required int? seriesId,
+    bool showSnackbar = true,
+  }) async {
+    if (!context.read<SonarrState>().enabled) return false;
+
+    try {
+      final sonarrState = context.read<SonarrState>();
+
+      // Step 1: Unmonitor the season
+      final series = await sonarrState.series!.then((allSeries) {
+        if (allSeries[seriesId] == null) {
+          throw Exception('Series does not exist in catalogue');
+        }
+        return allSeries[seriesId]!.clone();
+      });
+
+      series.seasons!.forEach((seriesSeason) {
+        if (seriesSeason.seasonNumber == season.seasonNumber) {
+          seriesSeason.monitored = false;
+        }
+      });
+
+      await sonarrState.api!.series.update(series: series);
+      await sonarrState.setSingleSeries(series);
+
+      // Step 2: Get all episodes for the series
+      final episodes = await sonarrState.api!.episode.getMulti(seriesId: seriesId!);
+
+      // Step 3: Filter episodes for this season that have files
+      final seasonEpisodes = episodes
+          .where((ep) => ep.seasonNumber == season.seasonNumber && ep.hasFile == true)
+          .toList();
+
+      if (seasonEpisodes.isEmpty) {
+        if (showSnackbar) {
+          showZagSuccessSnackBar(
+            title: 'Season Cleanup Complete',
+            message: season.seasonNumber == 0
+                ? 'Specials unmonitored (no files to delete)'
+                : 'Season ${season.seasonNumber} unmonitored (no files to delete)',
+          );
+        }
+        return true;
+      }
+
+      // Step 4: Delete all episode files
+      final episodeFileIds = seasonEpisodes
+          .map((ep) => ep.episodeFileId)
+          .where((id) => id != null)
+          .cast<int>()
+          .toList();
+
+      if (episodeFileIds.isNotEmpty) {
+        await sonarrState.api!.episodeFile.deleteBulk(episodeFileIds: episodeFileIds);
+      }
+
+      if (showSnackbar) {
+        showZagSuccessSnackBar(
+          title: 'Season Cleanup Complete',
+          message: season.seasonNumber == 0
+              ? 'Specials unmonitored and ${episodeFileIds.length} file(s) deleted'
+              : 'Season ${season.seasonNumber} unmonitored and ${episodeFileIds.length} file(s) deleted',
+        );
+      }
+
+      return true;
+    } catch (error, stack) {
+      ZagLogger().error(
+        'Failed to perform season cleanup ($seriesId, ${season.seasonNumber})',
+        error,
+        stack,
+      );
+      if (showSnackbar) {
+        showZagErrorSnackBar(
+          title: 'Season Cleanup Failed',
+          error: error,
+        );
+      }
+      return false;
+    }
+  }
+
   Future<bool> seriesSearch({
     required BuildContext context,
     required SonarrSeries series,
