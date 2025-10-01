@@ -21,6 +21,7 @@ import 'package:zagreus/modules/discover/routes/recommended/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route.dart';
+import 'package:zagreus/modules/discover/routes/tmdb_popular_people/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -3637,36 +3638,56 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.people_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'TMDB',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF6688FF),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Popular People',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          child: GestureDetector(
+            onTap: _popularPeople.isNotEmpty ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TMDBPopularPeopleRoute(
+                    initialData: _popularPeople,
                   ),
                 ),
-              ),
-            ],
+              );
+            } : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.people_rounded,
+                  color: const Color(0xFF6688FF),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'TMDB',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF6688FF),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Popular People',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                if (_popularPeople.isNotEmpty)
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    size: 16,
+                  ),
+              ],
+            ),
           ),
         ),
         // People list or loading placeholder
