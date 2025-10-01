@@ -74,7 +74,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
         ZagBlock(
           title: 'Zagreus Mega',
           body: [
-            TextSpan(text: 'Coming soon • Ultimate features')
+            TextSpan(text: 'Unlock Z Assistant features • \$1.79/month')
           ],
           trailing: ZagIconButton(
             icon: Icons.star_border_rounded,
@@ -250,22 +250,111 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Zagreus Mega is coming soon!\n\n'
-              'Get ready for the ultimate Zagreus experience with exclusive features and priority support.',
+              'Unlock Z Assistant features!\n\n'
+              'Get AI-powered recommendations with Ask Z and more exclusive features.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
             ),
           ),
+          ZagDialog.tile(
+            icon: Icons.rocket_launch_rounded,
+            iconColor: ZagColours.purple,
+            text: 'Monthly • \$1.79/month',
+            subtitle: RichText(
+              text: TextSpan(
+                text: '7-day free trial',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.of(context).pop();
+              _purchaseMega(true);
+            },
+          ),
           const SizedBox(height: 16),
-          Center(
-            child: Icon(
-              Icons.rocket_launch_rounded,
-              size: 64,
-              color: ZagColours.purple,
+          // Legal links required by Apple
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                const Divider(),
+                const SizedBox(height: 8),
+                Text(
+                  'By subscribing, you agree to our',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      onTap: () => _openUrl(
+                          'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
+                      child: Text(
+                        'Terms of Service',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: ZagColours.accentLight,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' and ',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withOpacity(0.7),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => _openUrl('https://zagreus.app/privacy'),
+                      child: Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: ZagColours.accentLight,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
+          // Restore Purchases button
+          Center(
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _restorePurchases();
+              },
+              child: Text(
+                'Restore Purchases',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: ZagColours.accentLight,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
@@ -297,6 +386,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     if (success) {
       setState(() {});
     }
+  }
+
+  void _purchaseMega(bool isMonthly) async {
+    // TODO: Implement Mega purchase once RevenueCat is configured
+    showZagInfoSnackBar(
+      title: 'Coming Soon',
+      message: 'Zagreus Mega subscriptions will be available shortly!',
+    );
   }
 
   void _cancelPro() async {

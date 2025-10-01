@@ -27,6 +27,8 @@ import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/router/routes/settings.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -1316,7 +1318,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       ElevatedButton.icon(
                                         onPressed: _isAskingZAssistant
                                             ? null
-                                            : () => _askZAssistant(_searchController.text),
+                                            : () {
+                                                if (!ZagreusMega.isEnabled) {
+                                                  _showMegaRequiredDialog();
+                                                } else {
+                                                  _askZAssistant(_searchController.text);
+                                                }
+                                              },
                                         icon: _isAskingZAssistant
                                             ? const SizedBox(
                                                 width: 16,
@@ -1325,11 +1333,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                                   strokeWidth: 2,
                                                 ),
                                               )
-                                            : const Icon(Icons.psychology),
+                                            : Icon(
+                                                ZagreusMega.isEnabled
+                                                    ? Icons.psychology
+                                                    : Icons.lock_outlined,
+                                              ),
                                         label: Text(
                                           _isAskingZAssistant
                                               ? 'Asking Z...'
-                                              : 'Ask Z',
+                                              : ZagreusMega.isEnabled
+                                                  ? 'Ask Z'
+                                                  : 'Ask Z (Mega)',
                                         ),
                                       ),
                                     ],
@@ -1372,6 +1386,41 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         type: ZagSnackbarType.ERROR,
       );
     }
+  }
+
+  void _showMegaRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.star_border_rounded, color: ZagColours.purple),
+            const SizedBox(width: 12),
+            const Text('Zagreus Mega Required'),
+          ],
+        ),
+        content: const Text(
+          'Ask Z is a Zagreus Mega exclusive feature.\n\n'
+          'Upgrade to Zagreus Mega to unlock AI-powered recommendations!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              SettingsRoutes.SUBSCRIPTIONS.go();
+            },
+            child: Text(
+              'View Subscriptions',
+              style: TextStyle(color: ZagColours.purple),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _askZAssistant(String query) async {
