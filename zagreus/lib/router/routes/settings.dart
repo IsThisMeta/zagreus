@@ -52,6 +52,7 @@ import 'package:zagreus/modules/settings/routes/notifications/route.dart';
 import 'package:zagreus/modules/settings/routes/profiles/route.dart';
 import 'package:zagreus/modules/settings/routes/resources/route.dart';
 import 'package:zagreus/modules/settings/routes/settings/route.dart';
+import 'package:zagreus/modules/settings/routes/subscriptions/route.dart';
 import 'package:zagreus/modules/settings/routes/system/route.dart';
 import 'package:zagreus/modules/settings/routes/system_logs/pages/log_details.dart';
 import 'package:zagreus/modules/settings/routes/system_logs/route.dart';
@@ -110,6 +111,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
   RESOURCES('resources'),
+  SUBSCRIPTIONS('subscriptions'),
   SYSTEM('system'),
   SYSTEM_LOGS('logs'),
   SYSTEM_LOGS_DETAILS('view/:type');
@@ -256,6 +258,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ProfilesRoute());
       case SettingsRoutes.RESOURCES:
         return route(widget: const SettingsResourcesRoute());
+      case SettingsRoutes.SUBSCRIPTIONS:
+        return route(widget: const SubscriptionsRoute());
       case SettingsRoutes.SYSTEM:
         return route(widget: const SystemRoute());
       case SettingsRoutes.SYSTEM_LOGS:
@@ -278,6 +282,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.NOTIFICATIONS.routes,
           SettingsRoutes.PROFILES.routes,
           SettingsRoutes.RESOURCES.routes,
+          SettingsRoutes.SUBSCRIPTIONS.routes,
           SettingsRoutes.SYSTEM.routes,
         ];
       case SettingsRoutes.ACCOUNT:
