@@ -1312,6 +1312,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     icon: const Icon(Icons.science),
                                     label: const Text('Test Z Assistant (Mock Data)'),
                                   ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: _spamTenCalls,
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('Spam 10 Calls (Test Rate Limit)'),
+                                  ),
                                   if (_searchController.text.split(' ').length >= 4)
                                     ...[
                                       const SizedBox(height: 12),
@@ -1486,9 +1492,41 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Future<void> _spamTenCalls() async {
+    print('🔥 Spamming 10 API calls to test rate limiting...');
+    final zAssistant = ZAssistantService();
+
+    for (int i = 1; i <= 10; i++) {
+      try {
+        print('📡 Call #$i...');
+        await zAssistant.sendDiscoverQuery(query: 'test call $i');
+        print('✅ Call #$i successful');
+      } catch (e) {
+        print('❌ Call #$i failed: $e');
+      }
+    }
+
+    print('🎉 Finished 10 calls!');
+    showZagSnackBar(
+      title: 'Rate Limit Test',
+      message: 'Sent 10 requests. Check Xcode console for results.',
+      type: ZagSnackbarType.INFO,
+    );
+  }
+
   Future<void> _loadTestZAssistantResults() async {
     try {
       print('🧪 Creating mock Z Assistant results');
+
+      // Make a real API call to test authentication and rate limiting
+      final zAssistant = ZAssistantService();
+      try {
+        print('📡 Testing Z Assistant API call...');
+        await zAssistant.sendDiscoverQuery(query: 'test rate limiting');
+        print('✅ Z Assistant API call successful');
+      } catch (e) {
+        print('⚠️ Z Assistant API call failed (expected if not Mega): $e');
+      }
 
       // Mock Christopher Nolan movies with posters
       final mockItems = [
