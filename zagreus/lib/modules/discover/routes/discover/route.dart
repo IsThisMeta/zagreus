@@ -24,6 +24,7 @@ import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route
 import 'package:zagreus/modules/discover/routes/tmdb_popular_people/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
+import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
@@ -952,7 +953,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         _moviesPage(),
         _tvShowsPage(),
-        // _calendarPage(), // Calendar tab reserved for future release
+        const ZChatPage(),
         _searchPage(),
       ],
     );
@@ -4766,14 +4767,14 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<IconData> icons = [
     Icons.movie_rounded,
     Icons.tv_rounded,
-    // Icons.calendar_today_rounded, // Calendar tab reserved for future release
+    Icons.chat_bubble_rounded, // Placeholder, will use custom Z
     Icons.search_rounded,
   ];
 
   static const List<String> titles = [
     'Movies',
     'TV Shows',
-    // 'Calendar', // Calendar tab reserved for future release
+    'Ask Z',
     'Search',
   ];
 

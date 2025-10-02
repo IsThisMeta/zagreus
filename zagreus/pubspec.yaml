@@ -79,6 +79,9 @@ flutter:
     - family: ZagBrandIcons
       fonts:
         - asset: assets/ZagBrandIcons.ttf
+    - family: Zebrra
+      fonts:
+        - asset: assets/Zebrra.ttf
 flutter_icons:
   android: true
   ios: true
