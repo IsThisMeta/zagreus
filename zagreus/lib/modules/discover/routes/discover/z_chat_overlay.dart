@@ -87,11 +87,13 @@ class _ZChatPageState extends State<ZChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Messages
-        Expanded(
-          child: _messages.isEmpty
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Column(
+        children: [
+          // Messages
+          Expanded(
+            child: _messages.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -180,7 +182,8 @@ class _ZChatPageState extends State<ZChatPage> {
             ),
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 
