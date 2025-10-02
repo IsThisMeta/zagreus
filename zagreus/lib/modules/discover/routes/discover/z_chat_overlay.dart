@@ -92,91 +92,62 @@ class _ZChatPageState extends State<ZChatPage> {
         // Input bar (like search bar)
         Container(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-          child: Row(
-            children: [
-              // Back to search button
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.arrow_back_rounded,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.7)
-                        : Colors.black.withOpacity(0.7),
-                  ),
-                ),
+          child: TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            maxLines: null,
+            textInputAction: TextInputAction.send,
+            onSubmitted: (_) => _sendMessage(),
+            onChanged: (_) => setState(() {}), // Update UI for send button
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+              fontSize: 16,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Ask Z anything...',
+              hintStyle: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.3),
               ),
-              const SizedBox(width: 12),
-              // Input field
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _sendMessage(),
-                  onChanged: (_) => setState(() {}), // Update UI for send button
+              prefixIcon: Container(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  'z',
                   style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
-                    fontSize: 16,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Ask Z anything...',
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withOpacity(0.3)
-                          : Colors.black.withOpacity(0.3),
-                    ),
-                    prefixIcon: Container(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        'z',
-                        style: TextStyle(
-                          fontFamily: 'Zebrra',
-                          fontSize: 20,
-                          color: ZagColours.accent,
-                        ),
-                      ),
-                    ),
-                    suffixIcon: _controller.text.isNotEmpty && !_isThinking
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.arrow_upward_rounded,
-                              color: ZagColours.accent,
-                            ),
-                            onPressed: _sendMessage,
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.05),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: ZagColours.accent,
-                        width: 2,
-                      ),
-                    ),
+                    fontFamily: 'Zebrra',
+                    fontSize: 20,
+                    color: ZagColours.accent,
                   ),
                 ),
               ),
-            ],
+              suffixIcon: _controller.text.isNotEmpty && !_isThinking
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.arrow_upward_rounded,
+                        color: ZagColours.accent,
+                      ),
+                      onPressed: _sendMessage,
+                    )
+                  : null,
+              filled: true,
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: ZagColours.accent,
+                  width: 2,
+                ),
+              ),
+            ),
           ),
         ),
 
