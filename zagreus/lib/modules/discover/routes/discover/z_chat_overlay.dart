@@ -89,9 +89,50 @@ class _ZChatPageState extends State<ZChatPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Input bar (like search bar)
+        // Messages
+        Expanded(
+          child: _messages.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'z',
+                        style: TextStyle(
+                          fontFamily: 'Zebrra',
+                          fontSize: 80,
+                          color: ZagColours.accent.withOpacity(0.15),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Ask Z anything about movies or shows',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.4)
+                              : Colors.black.withOpacity(0.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: _messages.length + (_isThinking ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length && _isThinking) {
+                      return _buildThinkingIndicator();
+                    }
+                    return _buildMessage(_messages[index]);
+                  },
+                ),
+        ),
+
+        // Input bar at bottom
         Container(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
@@ -149,47 +190,6 @@ class _ZChatPageState extends State<ZChatPage> {
               ),
             ),
           ),
-        ),
-
-        // Messages
-        Expanded(
-          child: _messages.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'z',
-                        style: TextStyle(
-                          fontFamily: 'Zebrra',
-                          fontSize: 80,
-                          color: ZagColours.accent.withOpacity(0.15),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Ask Z anything about movies or shows',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white.withOpacity(0.4)
-                              : Colors.black.withOpacity(0.4),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _messages.length + (_isThinking ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _messages.length && _isThinking) {
-                      return _buildThinkingIndicator();
-                    }
-                    return _buildMessage(_messages[index]);
-                  },
-                ),
         ),
       ],
     );
