@@ -203,21 +203,13 @@ class _ZChatPageState extends State<ZChatPage> {
         children: [
           if (!message.isUser) ...[
             // Z icon for assistant
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
               child: Text(
                 'z',
                 style: TextStyle(
                   fontFamily: 'Zebrra',
-                  fontSize: 16,
+                  fontSize: 24,
                   color: ZagColours.accent,
                 ),
               ),
