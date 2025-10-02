@@ -253,7 +253,7 @@ class TMDBApi {
   }
   
   // Simulating Trakt Most Anticipated Shows using TMDB
-  // nzb360 fetches 40 shows from Trakt's anticipated endpoint
+  // Fetches 40 shows from Trakt's anticipated endpoint
   static Future<List<Map<String, dynamic>>> getMostAnticipatedShows({
     String? region,
   }) async {
@@ -356,7 +356,7 @@ class TMDBApi {
         return bScore.compareTo(aScore);
       });
       
-      // Take top 40 shows (matching nzb360's limit)
+      // Take top 40 shows
       final anticipatedShows = sortedShows.take(40).map((item) {
         return {
           'id': item['id'],
