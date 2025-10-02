@@ -1,24 +1,42 @@
 import 'dart:convert';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:zagreus/core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
   static const String _baseUrl = 'https://z-assistant.fly.dev';
 
-  final Dio _dio;
+  final dio.Dio _dio;
 
   ZAssistantService()
-      : _dio = Dio(
-          BaseOptions(
+      : _dio = dio.Dio(
+          dio.BaseOptions(
             baseUrl: _baseUrl,
             connectTimeout: const Duration(seconds: 30),
             receiveTimeout: const Duration(seconds: 60),
             sendTimeout: const Duration(seconds: 30),
-            contentType: Headers.jsonContentType,
-            responseType: ResponseType.json,
+            contentType: dio.Headers.jsonContentType,
+            responseType: dio.ResponseType.json,
           ),
-        );
+        ) {
+    // Add interceptor to inject Authorization header
+    _dio.interceptors.add(
+      dio.InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // Get current Supabase session token
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null && session.accessToken.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer ${session.accessToken}';
+            ZagLogger().debug('Added Authorization header to Z Assistant request');
+          } else {
+            ZagLogger().warning('No Supabase session found for Z Assistant request');
+          }
+          handler.next(options);
+        },
+      ),
+    );
+  }
 
   /// Send a message to Z Assistant and get a response
   ///
@@ -50,11 +68,11 @@ class ZAssistantService {
       } else {
         throw Exception('Failed to get response from Z Assistant: ${response.statusCode}');
       }
-    } on DioException catch (e, stack) {
+    } on dio.DioException catch (e, stack) {
       ZagLogger().error('Z Assistant API error', e, stack);
-      if (e.type == DioExceptionType.connectionTimeout) {
+      if (e.type == dio.DioExceptionType.connectionTimeout) {
         throw Exception('Connection timeout - Z Assistant took too long to respond');
-      } else if (e.type == DioExceptionType.receiveTimeout) {
+      } else if (e.type == dio.DioExceptionType.receiveTimeout) {
         throw Exception('Receive timeout - Z Assistant took too long to respond');
       } else {
         throw Exception('Failed to connect to Z Assistant: ${e.message}');

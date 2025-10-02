@@ -1,5 +1,6 @@
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:zagreus/core.dart';
 
 class ZagreusMega {
 
@@ -102,7 +103,7 @@ class ZagreusMega {
   static void applySubscription({
     required DateTime expiresAt,
     required String productId,
-  }) {
+  }) async {
     final expiryUtc = expiresAt.toUtc();
     print('🔐 Mega: Setting expiry to $expiryUtc for product $productId');
 
@@ -115,6 +116,31 @@ class ZagreusMega {
         .update(DateTime.now().toUtc().toIso8601String());
 
     clearCache();
+
+    // Sync to Supabase for backend verification
+    await _syncToSupabase(expiryUtc, productId);
+  }
+
+  static Future<void> _syncToSupabase(DateTime expiresAt, String productId) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user != null) {
+        await supabase.rpc('upsert_subscription', params: {
+          'p_user_id': user.id,
+          'p_product_id': productId,
+          'p_subscription_type': 'mega',
+          'p_expires_at': expiresAt.toIso8601String(),
+        });
+        print('✅ Synced Mega subscription to Supabase');
+      } else {
+        print('⚠️ No authenticated user - skipping Supabase sync');
+      }
+    } catch (e) {
+      print('⚠️ Failed to sync Mega subscription to Supabase: $e');
+      // Don't throw - local storage still works
+    }
   }
 
   static void disable() {

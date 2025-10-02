@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
@@ -51,7 +52,7 @@ class RevenueCatService {
     }
   }
 
-  void _updateProStatus() {
+  void _updateProStatus() async {
     print('🔍 RevenueCat: Checking entitlements...');
     print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
     print('🔍 Active entitlements: ${_customerInfo?.entitlements.active.keys}');
@@ -64,10 +65,15 @@ class RevenueCatService {
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
         print('🎯 RevenueCat: Pro active until $expiry');
+
+        // Update local storage
         ZagreusPro.applySubscription(
           expiresAt: expiry,
           productId: 'revenuecat_pro',
         );
+
+        // Sync to Supabase for backend verification
+        await _syncToSupabase('pro', expiry, 'revenuecat_pro');
       } else {
         // Active but no expiration date - this shouldn't happen for subscriptions
         print('⚠️ RevenueCat: Pro marked active but no expiration date');
@@ -76,6 +82,28 @@ class RevenueCatService {
     } else {
       print('📵 RevenueCat: Pro not active - entitlements: ${_customerInfo?.entitlements.all}');
       ZagreusPro.disable();
+    }
+  }
+
+  Future<void> _syncToSupabase(String subscriptionType, DateTime expiresAt, String productId) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user != null) {
+        await supabase.rpc('upsert_subscription', params: {
+          'p_user_id': user.id,
+          'p_product_id': productId,
+          'p_subscription_type': subscriptionType,
+          'p_expires_at': expiresAt.toUtc().toIso8601String(),
+        });
+        print('✅ Synced $subscriptionType subscription to Supabase');
+      } else {
+        print('⚠️ No authenticated user - skipping Supabase sync');
+      }
+    } catch (e) {
+      print('⚠️ Failed to sync subscription to Supabase: $e');
+      // Don't throw - local storage still works
     }
   }
 

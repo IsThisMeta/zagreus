@@ -389,11 +389,64 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   void _purchaseMega(bool isMonthly) async {
-    // TODO: Implement Mega purchase once RevenueCat is configured
+    // TODO: Implement Mega purchase once RevenueCat is configured with Mega entitlement
     showZagInfoSnackBar(
       title: 'Coming Soon',
       message: 'Zagreus Mega subscriptions will be available shortly!',
     );
+
+    // When implemented, uncomment this:
+    /*
+    final iapService = RevenueCatService();
+
+    if (!iapService.isAvailable) {
+      showZagInfoSnackBar(
+        title: 'Unavailable',
+        message: 'In-app purchases are not available',
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'Processing',
+      message: 'Connecting to App Store...',
+    );
+
+    // Purchase Mega subscription
+    final bool success = await iapService.purchaseMega(isMonthly);
+
+    if (success) {
+      // Sync to Supabase
+      await _syncMegaToSupabase();
+      setState(() {});
+    }
+    */
+  }
+
+  Future<void> _syncMegaToSupabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user != null) {
+        final expiryString = ZagreusDatabase.ZAGREUS_MEGA_EXPIRY.read();
+        if (expiryString.isNotEmpty) {
+          final expiry = DateTime.parse(expiryString);
+          final productId = ZagreusDatabase.ZAGREUS_MEGA_SUBSCRIPTION_TYPE.read();
+
+          await supabase.rpc('upsert_subscription', params: {
+            'p_user_id': user.id,
+            'p_product_id': 'zagreus_mega_$productId',
+            'p_subscription_type': 'mega',
+            'p_expires_at': expiry.toUtc().toIso8601String(),
+          });
+
+          print('✅ Synced Mega subscription to Supabase');
+        }
+      }
+    } catch (e) {
+      print('⚠️ Failed to sync Mega subscription: $e');
+    }
   }
 
   void _cancelPro() async {
