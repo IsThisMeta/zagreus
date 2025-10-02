@@ -153,17 +153,6 @@ class _ZChatPageState extends State<ZChatPage> {
                     ? Colors.white.withOpacity(0.3)
                     : Colors.black.withOpacity(0.3),
               ),
-              prefixIcon: Container(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  'z',
-                  style: TextStyle(
-                    fontFamily: 'Zebrra',
-                    fontSize: 20,
-                    color: ZagColours.accent,
-                  ),
-                ),
-              ),
               suffixIcon: _controller.text.isNotEmpty && !_isThinking
                   ? IconButton(
                       icon: Icon(
@@ -209,12 +198,12 @@ class _ZChatPageState extends State<ZChatPage> {
                 'z',
                 style: TextStyle(
                   fontFamily: 'Zebrra',
-                  fontSize: 24,
+                  fontSize: 32,
                   color: ZagColours.accent,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
           ],
           if (message.isUser) const Spacer(),
           Flexible(
