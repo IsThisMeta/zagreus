@@ -208,32 +208,32 @@ class _ZChatPageState extends State<ZChatPage> {
             ),
             const SizedBox(width: 12),
           ],
-          if (message.isUser) const Spacer(),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
+          if (message.isUser) const Expanded(child: SizedBox()),
+          Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.75,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: message.isUser
+                  ? ZagColours.accent
+                  : (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.05)),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              message.content,
+              style: TextStyle(
                 color: message.isUser
-                    ? ZagColours.accent
+                    ? Colors.white
                     : (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.05)),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                message.content,
-                style: TextStyle(
-                  color: message.isUser
-                      ? Colors.white
-                      : (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87),
-                  fontSize: 15,
-                ),
+                        ? Colors.white
+                        : Colors.black87),
+                fontSize: 15,
               ),
             ),
           ),
-          if (!message.isUser) const Spacer(),
         ],
       ),
     );
