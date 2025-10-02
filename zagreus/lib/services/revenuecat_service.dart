@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RevenueCatService {
@@ -11,7 +12,8 @@ class RevenueCatService {
   RevenueCatService._internal();
 
   static const String _apiKey = 'appl_rUDwskSqmGCotcUTmqthnGgYCFq';
-  static const String _entitlementId = 'Pro';  // Note: Uppercase 'Pro' as shown in dashboard
+  static const String _proEntitlementId = 'Pro';  // Note: Uppercase 'Pro' as shown in dashboard
+  static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
 
   CustomerInfo? _customerInfo;
 
@@ -57,11 +59,12 @@ class RevenueCatService {
     print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
     print('🔍 Active entitlements: ${_customerInfo?.entitlements.active.keys}');
 
-    final isActive = _customerInfo?.entitlements.all[_entitlementId]?.isActive ?? false;
-    print('🔍 Pro entitlement "$_entitlementId" active: $isActive');
+    // Check Pro entitlement
+    final isProActive = _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
+    print('🔍 Pro entitlement "$_proEntitlementId" active: $isProActive');
 
-    if (isActive) {
-      final expirationDate = _customerInfo?.entitlements.all[_entitlementId]?.expirationDate;
+    if (isProActive) {
+      final expirationDate = _customerInfo?.entitlements.all[_proEntitlementId]?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
         print('🎯 RevenueCat: Pro active until $expiry');
@@ -80,8 +83,36 @@ class RevenueCatService {
         ZagreusPro.disable();
       }
     } else {
-      print('📵 RevenueCat: Pro not active - entitlements: ${_customerInfo?.entitlements.all}');
+      print('📵 RevenueCat: Pro not active');
       ZagreusPro.disable();
+    }
+
+    // Check Mega entitlement
+    final isMegaActive = _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
+    print('🔍 Mega entitlement "$_megaEntitlementId" active: $isMegaActive');
+
+    if (isMegaActive) {
+      final expirationDate = _customerInfo?.entitlements.all[_megaEntitlementId]?.expirationDate;
+      if (expirationDate != null) {
+        final expiry = DateTime.parse(expirationDate);
+        print('🎯 RevenueCat: Mega active until $expiry');
+
+        // Update local storage
+        ZagreusMega.applySubscription(
+          expiresAt: expiry,
+          productId: 'revenuecat_mega',
+        );
+
+        // Sync to Supabase for backend verification
+        await _syncToSupabase('mega', expiry, 'revenuecat_mega');
+      } else {
+        // Active but no expiration date
+        print('⚠️ RevenueCat: Mega marked active but no expiration date');
+        ZagreusMega.disable();
+      }
+    } else {
+      print('📵 RevenueCat: Mega not active');
+      ZagreusMega.disable();
     }
   }
 
@@ -165,14 +196,17 @@ class RevenueCatService {
       _customerInfo = customerInfo;
 
       print('🔍 Entitlements: ${customerInfo.entitlements.all.keys}');
-      print('🔍 Pro entitlement: ${customerInfo.entitlements.all[_entitlementId]}');
-      print('🔍 Is Pro active: ${customerInfo.entitlements.all[_entitlementId]?.isActive}');
+      print('🔍 Pro entitlement: ${customerInfo.entitlements.all[_proEntitlementId]}');
+      print('🔍 Is Pro active: ${customerInfo.entitlements.all[_proEntitlementId]?.isActive}');
+      print('🔍 Mega entitlement: ${customerInfo.entitlements.all[_megaEntitlementId]}');
+      print('🔍 Is Mega active: ${customerInfo.entitlements.all[_megaEntitlementId]?.isActive}');
       print('🔍 All active purchases: ${customerInfo.activeSubscriptions}');
       print('🔍 All purchases: ${customerInfo.allPurchasedProductIdentifiers}');
 
       _updateProStatus();
 
-      if (_customerInfo?.entitlements.all[_entitlementId]?.isActive ?? false) {
+      final hasProOrMega = (isProActive || isMegaActive);
+      if (hasProOrMega) {
         showZagInfoSnackBar(
           title: 'Subscription Restored',
           message: 'Your Pro subscription has been restored.',
@@ -193,7 +227,10 @@ class RevenueCatService {
   }
 
   bool get isProActive =>
-    _customerInfo?.entitlements.all[_entitlementId]?.isActive ?? false;
+    _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
+
+  bool get isMegaActive =>
+    _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
 
   bool get isAvailable => true; // RevenueCat handles availability internally
 
