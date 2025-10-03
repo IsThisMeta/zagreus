@@ -24,16 +24,18 @@ type APNsClient struct {
 	bundleID   string
 	privateKey *ecdsa.PrivateKey
 	httpClient *http.Client
-	
+
 	// JWT token management
-	mu         sync.RWMutex
-	token      string
-	tokenExp   time.Time
+	mu       sync.RWMutex
+	token    string
+	tokenExp time.Time
 }
 
 // APNsPayload represents the push notification payload
 type APNsPayload struct {
-	Aps APNsAps `json:"aps"`
+	Aps      APNsAps           `json:"aps"`
+	MediaURL string            `json:"media_url,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
 // APNsAps represents the aps dictionary
@@ -43,6 +45,7 @@ type APNsAps struct {
 	Sound            string    `json:"sound,omitempty"`
 	ContentAvailable int       `json:"content-available,omitempty"`
 	Category         string    `json:"category,omitempty"`
+	MutableContent   int       `json:"mutable-content,omitempty"`
 }
 
 // APNsAlert represents the alert dictionary
@@ -197,7 +200,7 @@ func (c *APNsClient) SendNotification(deviceToken string, title, body string, is
 	// Send request
 	log.Printf("Sending APNs request to: %s", apiURL)
 	log.Printf("Using bundle ID: %s", c.bundleID)
-	
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
@@ -265,7 +268,7 @@ func (c *APNsClient) SendRichNotification(deviceToken string, payload APNsPayloa
 	// Send request
 	log.Printf("Sending APNs request to: %s", apiURL)
 	log.Printf("Using bundle ID: %s", c.bundleID)
-	
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
