@@ -50,9 +50,9 @@ class ZAssistantService {
 
   /// Send a message to Z Assistant and get a response
   ///
-  /// For discover view searches, the response will be a stage_id
-  /// that can be used to fetch staged results from Supabase
-  Future<String> sendMessage({
+  /// Returns either a text response or a stage_id for bulk operations
+  /// Check response.staged to determine if it's a staged operation
+  Future<ZAssistantResponse> sendMessage({
     required String message,
     required Map<String, Map<String, String>> servers,
     String? context,
@@ -73,8 +73,16 @@ class ZAssistantService {
 
       if (response.statusCode == 200) {
         final responseText = response.data['response'] as String;
-        ZagLogger().debug('Z Assistant response: $responseText');
-        return responseText.trim();
+        final isStaged = response.data['staged'] == true;
+        final stageId = response.data['stage_id'] as String?;
+
+        ZagLogger().debug('Z Assistant response: $responseText (staged: $isStaged)');
+
+        return ZAssistantResponse(
+          text: responseText.trim(),
+          isStaged: isStaged,
+          stageId: stageId,
+        );
       } else {
         throw Exception('Failed to get response from Z Assistant: ${response.statusCode}');
       }
@@ -99,17 +107,49 @@ class ZAssistantService {
   Future<String> sendDiscoverQuery({
     required String query,
   }) async {
-    // For discover queries, we don't need server credentials since
-    // Z Assistant just searches TMDB and stages results
-    final servers = <String, Map<String, String>>{};
+    try {
+      ZagLogger().debug('Sending discover query: $query');
 
-    // Add discover context prefix
-    final contextualMessage = '[CONTEXT: DISCOVER VIEW] $query';
+      final response = await _dio.post(
+        '/discover',
+        data: {
+          'message': query,
+          'servers': {}, // Discover doesn't need server creds
+        },
+      );
 
-    return await sendMessage(
-      message: contextualMessage,
-      servers: servers,
-      context: 'discover',
-    );
+      if (response.statusCode == 200) {
+        final stageId = response.data['stage_id'] as String? ?? response.data['response'] as String;
+        ZagLogger().debug('Discover stage_id: $stageId');
+        return stageId.trim();
+      } else {
+        throw Exception('Failed to get discover results: ${response.statusCode}');
+      }
+    } on dio.DioException catch (e, stack) {
+      ZagLogger().error('Discover API error', e, stack);
+      if (e.type == dio.DioExceptionType.connectionTimeout) {
+        throw Exception('Connection timeout - search took too long');
+      } else if (e.type == dio.DioExceptionType.receiveTimeout) {
+        throw Exception('Receive timeout - search took too long');
+      } else {
+        throw Exception('Failed to search: ${e.message}');
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Unexpected discover error', e, stack);
+      throw Exception('Search failed: $e');
+    }
   }
+}
+
+/// Response from Z Assistant
+class ZAssistantResponse {
+  final String text;
+  final bool isStaged;
+  final String? stageId;
+
+  ZAssistantResponse({
+    required this.text,
+    this.isStaged = false,
+    this.stageId,
+  });
 }

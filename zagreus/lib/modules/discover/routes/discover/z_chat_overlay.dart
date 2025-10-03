@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/database/config.dart';
 
 /// Simple stateless Z chat page for Discover module
 /// Resets conversation when you leave Discover
@@ -64,14 +66,16 @@ class _ZChatPageState extends State<ZChatPage> {
 
     try {
       final zAssistant = ZAssistantService();
+
+      // Use discover endpoint for searches
       final response = await zAssistant.sendDiscoverQuery(query: userMessage);
 
       setState(() {
-        _messages.add(_ChatMessage(content: response, isUser: false));
         _isThinking = false;
       });
 
-      _scrollToBottom();
+      // Show staging modal
+      _showStagingModal(response, 'discover');
     } catch (e) {
       setState(() {
         _messages.add(_ChatMessage(
@@ -189,6 +193,65 @@ class _ZChatPageState extends State<ZChatPage> {
     );
   }
 
+  Future<void> _showStagingModal(String stageId, String operation) async {
+    // Fetch staged operation
+    final staged = await Supabase.instance.client
+        .from('staged_operations')
+        .select()
+        .eq('stage_id', stageId)
+        .single();
+
+    if (!mounted) return;
+
+    final items = (staged['items'] as List<dynamic>?) ?? [];
+    final actualOperation = staged['operation'] as String;
+
+    // Show modal
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _StagingModal(
+        stageId: stageId,
+        operation: actualOperation,
+        items: items,
+      ),
+    );
+
+    // Handle result
+    if (confirmed == true) {
+      // Add success message to chat
+      setState(() {
+        _messages.add(_ChatMessage(
+          content: 'Operation confirmed! Processing...',
+          isUser: false,
+        ));
+      });
+      _scrollToBottom();
+
+      // TODO: Execute actual operation
+      // For now, just delete the staging
+      await Supabase.instance.client
+          .from('staged_operations')
+          .delete()
+          .eq('stage_id', stageId);
+    } else {
+      // Cancelled - delete staging
+      await Supabase.instance.client
+          .from('staged_operations')
+          .delete()
+          .eq('stage_id', stageId);
+
+      setState(() {
+        _messages.add(_ChatMessage(
+          content: 'Operation cancelled.',
+          isUser: false,
+        ));
+      });
+      _scrollToBottom();
+    }
+  }
+
   Widget _buildMessage(_ChatMessage message) {
     final theme = Theme.of(context);
 
@@ -209,7 +272,7 @@ class _ZChatPageState extends State<ZChatPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                message.content,
+                message.content ?? '',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -221,6 +284,7 @@ class _ZChatPageState extends State<ZChatPage> {
       );
     }
 
+    // Regular text message
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -230,7 +294,7 @@ class _ZChatPageState extends State<ZChatPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                message.content,
+                message.content ?? '',
                 style: TextStyle(
                   fontSize: 15,
                   height: 1.4,
@@ -269,10 +333,233 @@ class _ZChatPageState extends State<ZChatPage> {
 }
 
 class _ChatMessage {
-  final String content;
+  final String? content;
   final bool isUser;
 
-  _ChatMessage({required this.content, required this.isUser});
+  _ChatMessage({
+    this.content,
+    required this.isUser,
+  });
+}
+
+// Staging Modal
+class _StagingModal extends StatelessWidget {
+  final String stageId;
+  final String operation;
+  final List<dynamic> items;
+
+  const _StagingModal({
+    required this.stageId,
+    required this.operation,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Get operation color and label
+    Color badgeColor;
+    String badgeText;
+    switch (operation) {
+      case 'add':
+        badgeColor = Colors.green;
+        badgeText = 'ADD ${items.length} ITEMS';
+        break;
+      case 'remove':
+        badgeColor = Colors.red;
+        badgeText = 'REMOVE ${items.length} ITEMS';
+        break;
+      case 'update':
+        badgeColor = const Color(0xFF89CFF0); // Pastel blue
+        badgeText = 'UPDATE ${items.length} ITEMS';
+        break;
+      case 'discover':
+      default:
+        badgeColor = ZagColours.accent;
+        badgeText = '${items.length} RESULTS';
+    }
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Header with badge
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: badgeColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badgeText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Scrollable items list
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final title = item['title'] ?? 'Unknown';
+                final year = item['year'];
+                final posterPath = item['poster_path'] as String?;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      // Poster thumbnail
+                      if (posterPath != null && posterPath.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Image.network(
+                            'https://image.tmdb.org/t/p/w92$posterPath',
+                            width: 40,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: 40,
+                              height: 60,
+                              color: Colors.grey.withOpacity(0.3),
+                              child: const Icon(Icons.movie, size: 20),
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 40,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Icon(Icons.movie, size: 20),
+                        ),
+                      const SizedBox(width: 12),
+                      // Title and year
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                            ),
+                            if (year != null && year != 0)
+                              Text(
+                                year.toString(),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white.withOpacity(0.5)
+                                      : Colors.black.withOpacity(0.5),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Bottom buttons
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                    ),
+                    child: const Text(
+                      'CANCEL',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: badgeColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'CONFIRM',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BouncingDot extends StatefulWidget {

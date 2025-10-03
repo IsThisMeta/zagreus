@@ -191,34 +191,37 @@ class RevenueCatService {
 
   Future<void> restorePurchases() async {
     try {
-      print('🔄 RevenueCat: Starting restore...');
+      ZagLogger().debug('🔄 RevenueCat: Starting restore...');
       final customerInfo = await Purchases.restorePurchases();
       _customerInfo = customerInfo;
 
-      print('🔍 Entitlements: ${customerInfo.entitlements.all.keys}');
-      print('🔍 Pro entitlement: ${customerInfo.entitlements.all[_proEntitlementId]}');
-      print('🔍 Is Pro active: ${customerInfo.entitlements.all[_proEntitlementId]?.isActive}');
-      print('🔍 Mega entitlement: ${customerInfo.entitlements.all[_megaEntitlementId]}');
-      print('🔍 Is Mega active: ${customerInfo.entitlements.all[_megaEntitlementId]?.isActive}');
-      print('🔍 All active purchases: ${customerInfo.activeSubscriptions}');
-      print('🔍 All purchases: ${customerInfo.allPurchasedProductIdentifiers}');
+      ZagLogger().debug('🔍 Entitlements: ${customerInfo.entitlements.all.keys}');
+      ZagLogger().debug('🔍 Pro entitlement: ${customerInfo.entitlements.all[_proEntitlementId]}');
+      ZagLogger().debug('🔍 Is Pro active: ${customerInfo.entitlements.all[_proEntitlementId]?.isActive}');
+      ZagLogger().debug('🔍 Mega entitlement: ${customerInfo.entitlements.all[_megaEntitlementId]}');
+      ZagLogger().debug('🔍 Is Mega active: ${customerInfo.entitlements.all[_megaEntitlementId]?.isActive}');
+      ZagLogger().debug('🔍 All active purchases: ${customerInfo.activeSubscriptions}');
+      ZagLogger().debug('🔍 All purchases: ${customerInfo.allPurchasedProductIdentifiers}');
 
       _updateProStatus();
 
       final hasProOrMega = (isProActive || isMegaActive);
       if (hasProOrMega) {
+        final subscriptionType = isMegaActive ? 'Mega' : 'Pro';
+        ZagLogger().debug('✅ Restore successful - $subscriptionType active');
         showZagInfoSnackBar(
           title: 'Subscription Restored',
-          message: 'Your Pro subscription has been restored.',
+          message: 'Your $subscriptionType subscription has been restored.',
         );
       } else {
+        ZagLogger().debug('⚠️ Restore completed - no active subscriptions found');
         showZagInfoSnackBar(
           title: 'No Subscription Found',
           message: 'No active subscription to restore.',
         );
       }
     } catch (e) {
-      print('❌ Restore failed: $e');
+      ZagLogger().error('❌ Restore failed', e, StackTrace.current);
       showZagInfoSnackBar(
         title: 'Restore Failed',
         message: 'Unable to restore purchases',
