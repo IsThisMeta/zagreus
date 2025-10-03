@@ -389,14 +389,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   void _purchaseMega(bool isMonthly) async {
-    // TODO: Implement Mega purchase once RevenueCat is configured with Mega entitlement
-    showZagInfoSnackBar(
-      title: 'Coming Soon',
-      message: 'Zagreus Mega subscriptions will be available shortly!',
-    );
-
-    // When implemented, uncomment this:
-    /*
     final iapService = RevenueCatService();
 
     if (!iapService.isAvailable) {
@@ -420,7 +412,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       await _syncMegaToSupabase();
       setState(() {});
     }
-    */
   }
 
   Future<void> _syncMegaToSupabase() async {

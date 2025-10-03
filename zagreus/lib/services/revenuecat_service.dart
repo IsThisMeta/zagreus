@@ -234,6 +234,67 @@ class RevenueCatService {
 
   bool get isAvailable => true; // RevenueCat handles availability internally
 
+  Future<bool> purchaseMega(bool isMonthly) async {
+    try {
+      // Get available packages from mega offering
+      final offerings = await Purchases.getOfferings();
+
+      print('🔍 RevenueCat Offerings: ${offerings.all.keys}');
+
+      // Get the "mega" offering
+      final megaOffering = offerings.all['mega'];
+
+      if (megaOffering == null) {
+        print('❌ No mega offering found');
+        showZagInfoSnackBar(
+          title: 'Error',
+          message: 'Mega subscription not configured',
+        );
+        return false;
+      }
+
+      final packages = megaOffering.availablePackages;
+
+      if (packages.isEmpty) {
+        print('❌ No packages in mega offering');
+        showZagInfoSnackBar(
+          title: 'Error',
+          message: 'Mega subscription not available',
+        );
+        return false;
+      }
+
+      // Find monthly package (for now we only have monthly)
+      final monthlyPackage = packages.firstWhereOrNull(
+        (pkg) => pkg.identifier == '\$rc_monthly' || pkg.packageType == PackageType.monthly
+      ) ?? packages.first;
+
+      print('📦 Purchasing Mega package: ${monthlyPackage.identifier}');
+
+      // Make purchase
+      final result = await Purchases.purchasePackage(monthlyPackage);
+      _customerInfo = result.customerInfo;
+      _updateProStatus();
+
+      showZagInfoSnackBar(
+        title: 'Welcome to Zagreus Mega!',
+        message: 'Z Assistant features are now unlocked.',
+      );
+      return true;
+    } catch (e) {
+      if (e is PurchasesErrorCode && e == PurchasesErrorCode.purchaseCancelledError) {
+        // User cancelled - don't show error
+        return false;
+      }
+      print('❌ Mega purchase failed: $e');
+      showZagInfoSnackBar(
+        title: 'Purchase Failed',
+        message: 'Unable to complete purchase',
+      );
+      return false;
+    }
+  }
+
   Future<bool> purchaseYearly() async {
     try {
       // Get available packages
