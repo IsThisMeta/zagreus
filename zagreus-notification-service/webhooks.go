@@ -81,6 +81,13 @@ func handleSonarrWebhook(c *gin.Context) {
 	eventType, _ := genericWebhook["eventType"].(string)
 	log.Printf("Received Sonarr webhook: %s for user %s", eventType, userID)
 
+	// DEBUG: Print series images
+	if seriesData, ok := genericWebhook["series"].(map[string]interface{}); ok {
+		if images, ok := seriesData["images"].([]interface{}); ok {
+			log.Printf("📺 SONARR IMAGES DEBUG: %+v", images)
+		}
+	}
+
 	// Extract series info and identifiers
 	seriesTitle := "Unknown Series"
 	seriesData, _ := genericWebhook["series"].(map[string]interface{})
@@ -242,6 +249,7 @@ func handleRadarrWebhook(c *gin.Context) {
 	}
 
 	log.Printf("Received Radarr webhook: %s for user %s", webhook.EventType, userID)
+	log.Printf("🎬 RADARR IMAGES DEBUG: %+v", webhook.Movie.Images)
 
 	var title, body string
 
