@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -1373,7 +1374,230 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       print('🔍 Searching for: $query');
       final tmdbApi = TMDBApi();
-      final results = await tmdbApi.searchMulti(query);
+      List<Map<String, dynamic>> results = await tmdbApi.searchMulti(query);
+
+      if (results.isNotEmpty) {
+        final indexedResults = results.asMap().entries.toList();
+
+        String normalizeText(String value) => value
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+
+        String stripLeadingArticles(String value) {
+          final lower = value;
+          for (final article in ['the ', 'a ', 'an ']) {
+            if (lower.startsWith(article)) {
+              return lower.substring(article.length);
+            }
+          }
+          return lower;
+        }
+
+        String singularize(String token) {
+          if (token.length <= 3) return token;
+          if (token.endsWith('ies')) {
+            return '${token.substring(0, token.length - 3)}y';
+          }
+          if (token.endsWith('ves')) {
+            return '${token.substring(0, token.length - 3)}f';
+          }
+          if (token.endsWith('es') && !token.endsWith('ses')) {
+            return token.substring(0, token.length - 2);
+          }
+          if (token.endsWith('s') && !token.endsWith('ss')) {
+            return token.substring(0, token.length - 1);
+          }
+          return token;
+        }
+
+        Set<String> tokenize(String value) {
+          final normalized = normalizeText(value);
+          if (normalized.isEmpty) return {};
+          return normalized
+              .split(' ')
+              .where((token) => token.isNotEmpty)
+              .map(singularize)
+              .toSet();
+        }
+
+        final normalizedQuery = normalizeText(query);
+        final strippedQuery = stripLeadingArticles(normalizedQuery);
+        final queryTokens = tokenize(query);
+
+        int? extractYear(Map<String, dynamic> item) {
+          final dateString =
+              (item['release_date'] ?? item['first_air_date']) as String?;
+          if (dateString == null || dateString.isEmpty) return null;
+          final yearPart = dateString.split('-').first;
+          return int.tryParse(yearPart);
+        }
+
+        double mediaPriority(Map<String, dynamic> item) {
+          final mediaType = item['media_type'] as String?;
+          switch (mediaType) {
+            case 'movie':
+            case 'tv':
+              return 1.0;
+            case 'collection':
+              return 0.8;
+            case 'person':
+              return 0.5;
+            default:
+              return 0.4;
+          }
+        }
+
+        final maxPopularity = indexedResults.fold<double>(
+          0,
+          (current, entry) {
+            final value =
+                (entry.value['popularity'] as num?)?.toDouble() ?? 0;
+            return math.max(current, value);
+          },
+        );
+
+        final maxVoteLog = indexedResults.fold<double>(
+          0,
+          (current, entry) {
+            final votes =
+                (entry.value['vote_count'] as num?)?.toDouble() ?? 0;
+            final voteLog = math.log(votes + 1);
+            return math.max(current, voteLog);
+          },
+        );
+
+        final releaseYears = indexedResults
+            .map((entry) => extractYear(entry.value))
+            .whereType<int>()
+            .toList();
+
+        final int? minYear = releaseYears.isEmpty
+            ? null
+            : releaseYears.reduce(
+                (value, element) => math.min(value, element),
+              );
+        final int? maxYear = releaseYears.isEmpty
+            ? null
+            : releaseYears.reduce(
+                (value, element) => math.max(value, element),
+              );
+
+        double computeYearScore(int? year) {
+          if (year == null ||
+              minYear == null ||
+              maxYear == null ||
+              minYear == maxYear) {
+            return 0.5;
+          }
+          final normalized = (year - minYear) / (maxYear - minYear);
+          return normalized.clamp(0, 1).toDouble();
+        }
+
+        double computeMatchScore(Map<String, dynamic> item) {
+          final title = (item['title'] ??
+                  item['name'] ??
+                  item['original_title'] ??
+                  item['original_name'] ??
+                  '')
+              .toString();
+          final normalizedTitle = normalizeText(title);
+          if (normalizedTitle.isEmpty || normalizedQuery.isEmpty) {
+            return 0.45;
+          }
+
+          final strippedTitle = stripLeadingArticles(normalizedTitle);
+
+          if (normalizedTitle == normalizedQuery ||
+              strippedTitle == strippedQuery) {
+            return 1.0;
+          }
+
+          if (strippedTitle.startsWith('$strippedQuery ')) {
+            return 0.96;
+          }
+
+          if (normalizedTitle.startsWith('$normalizedQuery ')) {
+            return 0.94;
+          }
+
+          final titleTokens = tokenize(title);
+          if (queryTokens.isNotEmpty && titleTokens.isNotEmpty) {
+            final intersection = queryTokens.intersection(titleTokens);
+            if (intersection.isNotEmpty) {
+              if (intersection.length == queryTokens.length) {
+                return titleTokens.length == queryTokens.length ? 0.92 : 0.88;
+              }
+              final coverage = intersection.length / queryTokens.length;
+              if (coverage >= 0.6) {
+                return 0.8;
+              }
+              return 0.68;
+            }
+          }
+
+          if (normalizedTitle.contains(normalizedQuery)) {
+            return 0.65;
+          }
+
+          return 0.45;
+        }
+
+        double computeScore(Map<String, dynamic> item) {
+          final popularity = (item['popularity'] as num?)?.toDouble() ?? 0;
+          final votes = (item['vote_count'] as num?)?.toDouble() ?? 0;
+          final popScore = maxPopularity > 0
+              ? (popularity / maxPopularity).clamp(0, 1)
+              : 0.0;
+          final voteScore = maxVoteLog > 0
+              ? (math.log(votes + 1) / maxVoteLog).clamp(0, 1)
+              : 0.0;
+          final matchScore = computeMatchScore(item);
+          final yearScore = computeYearScore(extractYear(item));
+          final mediaScore = mediaPriority(item);
+
+          return (mediaScore * 40) +
+              (matchScore * 50) +
+              (voteScore * 25) +
+              (popScore * 15) +
+              (yearScore * 5);
+        }
+
+        indexedResults.sort((a, b) {
+          final scoreA = computeScore(a.value);
+          final scoreB = computeScore(b.value);
+          final scoreComparison = scoreB.compareTo(scoreA);
+          if (scoreComparison != 0) return scoreComparison;
+
+          final mediaComparison =
+              mediaPriority(b.value).compareTo(mediaPriority(a.value));
+          if (mediaComparison != 0) return mediaComparison;
+
+          final matchComparison =
+              computeMatchScore(b.value).compareTo(computeMatchScore(a.value));
+          if (matchComparison != 0) return matchComparison;
+
+          final popularityA = (a.value['popularity'] as num?)?.toDouble() ?? 0;
+          final popularityB = (b.value['popularity'] as num?)?.toDouble() ?? 0;
+          final popularityComparison = popularityB.compareTo(popularityA);
+          if (popularityComparison != 0) return popularityComparison;
+
+          final votesA = (a.value['vote_count'] as num?)?.toDouble() ?? 0;
+          final votesB = (b.value['vote_count'] as num?)?.toDouble() ?? 0;
+          final votesComparison = votesB.compareTo(votesA);
+          if (votesComparison != 0) return votesComparison;
+
+          final yearA = extractYear(a.value) ?? -1;
+          final yearB = extractYear(b.value) ?? -1;
+          final yearComparison = yearB.compareTo(yearA);
+          if (yearComparison != 0) return yearComparison;
+
+          return a.key.compareTo(b.key);
+        });
+
+        results = indexedResults.map((entry) => entry.value).toList();
+      }
 
       setState(() {
         _searchResults = results;
