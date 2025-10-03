@@ -94,143 +94,150 @@ class _ZChatPageState extends State<ZChatPage> {
           // Messages
           Expanded(
             child: _messages.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'z',
-                        style: TextStyle(
-                          fontFamily: 'Zebrra',
-                          fontSize: 80,
-                          color: ZagColours.accent.withOpacity(0.15),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'z',
+                          style: TextStyle(
+                            fontFamily: 'Zebrra',
+                            fontSize: 80,
+                            color: ZagColours.accent.withOpacity(0.15),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Ask Z anything about movies or shows',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white.withOpacity(0.4)
-                              : Colors.black.withOpacity(0.4),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Ask Z anything about movies or shows',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white.withOpacity(0.4)
+                                    : Colors.black.withOpacity(0.4),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: _messages.length + (_isThinking ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _messages.length && _isThinking) {
+                        return _buildThinkingIndicator();
+                      }
+                      return _buildMessage(_messages[index]);
+                    },
                   ),
-                )
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _messages.length + (_isThinking ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _messages.length && _isThinking) {
-                      return _buildThinkingIndicator();
-                    }
-                    return _buildMessage(_messages[index]);
-                  },
-                ),
-        ),
+          ),
 
-        // Input bar at bottom
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            maxLines: null,
-            textInputAction: TextInputAction.send,
-            onSubmitted: (_) => _sendMessage(),
-            onChanged: (_) => setState(() {}), // Update UI for send button
-            style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-              fontSize: 16,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Ask Z anything...',
-              hintStyle: TextStyle(
+          // Input bar at bottom
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              maxLines: null,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
+              onChanged: (_) => setState(() {}), // Update UI for send button
+              style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.3),
+                    ? Colors.white
+                    : Colors.black87,
+                fontSize: 16,
               ),
-              suffixIcon: _controller.text.isNotEmpty && !_isThinking
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.arrow_upward_rounded,
-                        color: ZagColours.accent,
-                      ),
-                      onPressed: _sendMessage,
-                    )
-                  : null,
-              filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: ZagColours.accent,
-                  width: 2,
+              decoration: InputDecoration(
+                hintText: 'Ask Z anything...',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.3),
+                ),
+                suffixIcon: _controller.text.isNotEmpty && !_isThinking
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.arrow_upward_rounded,
+                          color: ZagColours.accent,
+                        ),
+                        onPressed: _sendMessage,
+                      )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: ZagColours.accent,
+                    width: 2,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         ],
       ),
     );
   }
 
   Widget _buildMessage(_ChatMessage message) {
+    final theme = Theme.of(context);
+
+    if (message.isUser) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Expanded(child: SizedBox()),
+            Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: ZagColours.accent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                message.content,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!message.isUser) ...[
-            // Z icon for assistant
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                'z',
+                message.content,
                 style: TextStyle(
-                  fontFamily: 'Zebrra',
-                  fontSize: 32,
-                  color: ZagColours.accent,
+                  fontSize: 15,
+                  height: 1.4,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-          ],
-          if (message.isUser) const Expanded(child: SizedBox()),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: message.isUser
-                  ? ZagColours.accent
-                  : (Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.05)),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              message.content,
-              style: TextStyle(
-                color: message.isUser
-                    ? Colors.white
-                    : (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87),
-                fontSize: 15,
               ),
             ),
           ),
@@ -245,42 +252,13 @@ class _ZChatPageState extends State<ZChatPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'z',
-              style: TextStyle(
-                fontFamily: 'Zebrra',
-                fontSize: 16,
-                color: ZagColours.accent,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                3,
-                (index) => Padding(
-                  padding: EdgeInsets.only(left: index == 0 ? 0 : 4),
-                  child: _BouncingDot(delay: index * 200),
-                ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              3,
+              (index) => Padding(
+                padding: EdgeInsets.only(left: index == 0 ? 0 : 6),
+                child: _BouncingDot(delay: index * 200),
               ),
             ),
           ),
