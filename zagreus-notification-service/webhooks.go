@@ -106,6 +106,23 @@ func handleSonarrWebhook(c *gin.Context) {
 		imdbID = stringFromInterface(seriesData["imdbId"])
 	}
 
+	// Extract poster URL from images array
+	var posterURL string
+	if seriesData != nil {
+		if images, ok := seriesData["images"].([]interface{}); ok {
+			for _, img := range images {
+				if imgMap, ok := img.(map[string]interface{}); ok {
+					if coverType, ok := imgMap["coverType"].(string); ok && coverType == "poster" {
+						if remoteURL, ok := imgMap["remoteUrl"].(string); ok {
+							posterURL = remoteURL
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Extract episodes info
 	var episodes []map[string]interface{}
 	if eps, ok := genericWebhook["episodes"].([]interface{}); ok {
@@ -198,20 +215,8 @@ func handleSonarrWebhook(c *gin.Context) {
 		if imdbID != "" {
 			metadata["imdb_id"] = imdbID
 		}
-
-		posterURL := ""
-		resolvedTMDB := tmdbID
-		if url, tmdbResolved, err := getTVPosterURL(tmdbID, tvdbID, imdbID); err == nil {
-			posterURL = url
-			if tmdbResolved != 0 {
-				resolvedTMDB = tmdbResolved
-			}
-		} else if err != nil {
-			log.Printf("TMDB lookup failed for Sonarr series %s: %v", seriesTitle, err)
-		}
-
-		if resolvedTMDB > 0 {
-			metadata["tmdb_id"] = strconv.Itoa(resolvedTMDB)
+		if tmdbID > 0 {
+			metadata["tmdb_id"] = strconv.Itoa(tmdbID)
 		}
 
 		var params *NotificationParams
@@ -249,7 +254,17 @@ func handleRadarrWebhook(c *gin.Context) {
 	}
 
 	log.Printf("Received Radarr webhook: %s for user %s", webhook.EventType, userID)
-	log.Printf("🎬 RADARR IMAGES DEBUG: %+v", webhook.Movie.Images)
+
+	// Extract poster URL from images array
+	var posterURL string
+	for _, img := range webhook.Movie.Images {
+		if coverType, ok := img["coverType"].(string); ok && coverType == "poster" {
+			if remoteURL, ok := img["remoteUrl"].(string); ok {
+				posterURL = remoteURL
+				break
+			}
+		}
+	}
 
 	var title, body string
 
@@ -300,20 +315,8 @@ func handleRadarrWebhook(c *gin.Context) {
 		if webhook.Movie.ImdbID != "" {
 			metadata["imdb_id"] = webhook.Movie.ImdbID
 		}
-
-		posterURL := ""
-		resolvedTMDB := webhook.Movie.TmdbID
-		if url, tmdbResolved, err := getMoviePosterURL(webhook.Movie.TmdbID, webhook.Movie.ImdbID); err == nil {
-			posterURL = url
-			if tmdbResolved != 0 {
-				resolvedTMDB = tmdbResolved
-			}
-		} else if err != nil {
-			log.Printf("TMDB lookup failed for Radarr movie %s: %v", webhook.Movie.Title, err)
-		}
-
-		if resolvedTMDB != 0 {
-			metadata["tmdb_id"] = strconv.Itoa(resolvedTMDB)
+		if webhook.Movie.TmdbID != 0 {
+			metadata["tmdb_id"] = strconv.Itoa(webhook.Movie.TmdbID)
 		}
 
 		var params *NotificationParams
