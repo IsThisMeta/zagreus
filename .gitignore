@@ -27,3 +27,4 @@ zagreus/lib/modules/settings/core/dialogs.dart
 zagreus/lib/supabase/demo_config.dart
 zagreus/demo_config_setup.sql
 zagreus/DEMO_SETUP_INSTRUCTIONS.md
+zagreus-cloud-functions/supabase/migrations/20241004_clean_12_subscription_functions.sql
