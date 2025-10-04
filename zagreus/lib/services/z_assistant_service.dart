@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
+import 'package:zagreus/services/hmac_encryption_service.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
@@ -23,16 +24,53 @@ class ZAssistantService {
     // Add interceptor to inject device ID header
     _dio.interceptors.add(
       dio.InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
           // Get device ID - no auth required!
           final deviceId = DeviceIdService().deviceId;
           options.headers['X-Device-Id'] = deviceId;
           ZagLogger().debug('Added device ID to Z Assistant request: ${deviceId.substring(0, 8)}...');
 
+          // Register device if needed
+          await _ensureDeviceRegistered();
+
           handler.next(options);
         },
       ),
     );
+  }
+
+  /// Ensure device is registered with backend
+  Future<void> _ensureDeviceRegistered() async {
+    final hmacService = HmacEncryptionService();
+
+    // Skip if already registered
+    if (hmacService.isRegistered) {
+      return;
+    }
+
+    try {
+      // Register device with backend
+      final deviceId = DeviceIdService().deviceId;
+      final hmacKey = hmacService.hmacKey;
+
+      ZagLogger().debug('🔐 Registering device with Z Assistant...');
+
+      final response = await _dio.post(
+        '/device/register',
+        data: {
+          'device_id': deviceId,
+          'hmac_key': hmacKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        hmacService.setRegistered(true);
+        ZagLogger().debug('✅ Device registered successfully');
+      }
+    } catch (e) {
+      // Registration failed but we'll try again next time
+      ZagLogger().warning('Device registration failed: $e');
+    }
   }
 
   /// Send a message to Z Assistant and get a response
@@ -48,11 +86,14 @@ class ZAssistantService {
     try {
       ZagLogger().debug('Sending message to Z Assistant: $message');
 
+      // Encrypt server credentials with HMAC
+      final encryptedServers = HmacEncryptionService().encryptCredentialsSecure(servers);
+
       final response = await _dio.post(
         '/chat',
         data: {
           'message': message,
-          'servers': servers,
+          'servers': encryptedServers, // Send encrypted credentials
           if (context != null) 'context': context,
           if (history != null) 'history': history,
         },

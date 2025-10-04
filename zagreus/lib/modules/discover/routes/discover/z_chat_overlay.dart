@@ -68,7 +68,7 @@ class _ZChatPageState extends State<ZChatPage> {
     try {
       final zAssistant = ZAssistantService();
 
-      // Get server credentials from current profile
+      // Prepare encrypted server credentials
       final profile = ZagProfile.current;
       final servers = <String, Map<String, String>>{};
 
@@ -86,6 +86,7 @@ class _ZChatPageState extends State<ZChatPage> {
         };
       }
 
+      // Note: Encryption will be handled inside sendMessage
       final response = await zAssistant.sendMessage(
         message: userMessage,
         servers: servers,
