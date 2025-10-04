@@ -41,6 +41,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   ZAGREUS_MEGA_SUBSCRIPTION_TYPE<String>(''),
   LAST_SUBSCRIPTION_VERIFY<String>(''),
   USER_BOOT_MODULE<String>('dashboard'),
+  DEVICE_ID<String>(''),
   NOTIFICATION_WEBHOOK_ID<String>(''),
   NOTIFICATION_WEBHOOK_SIGNATURE<String>(''),
   NOTIFICATION_ANONYMOUS_MODE<bool>(true),

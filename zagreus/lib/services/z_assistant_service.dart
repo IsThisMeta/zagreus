@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
 import 'package:zagreus/core.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:zagreus/services/device_id_service.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
@@ -20,28 +20,15 @@ class ZAssistantService {
             responseType: dio.ResponseType.json,
           ),
         ) {
-    // Add interceptor to inject Authorization header
+    // Add interceptor to inject device ID header
     _dio.interceptors.add(
       dio.InterceptorsWrapper(
         onRequest: (options, handler) {
-          // TEST MODE: Use bypass token if query contains "test call"
-          if (options.data != null &&
-              options.data['message'] != null &&
-              options.data['message'].toString().contains('test call')) {
-            options.headers['Authorization'] = 'Bearer test-bypass';
-            ZagLogger().debug('⚠️ TEST MODE: Using bypass token');
-            handler.next(options);
-            return;
-          }
+          // Get device ID - no auth required!
+          final deviceId = DeviceIdService().deviceId;
+          options.headers['X-Device-Id'] = deviceId;
+          ZagLogger().debug('Added device ID to Z Assistant request: ${deviceId.substring(0, 8)}...');
 
-          // Get current Supabase session token
-          final session = Supabase.instance.client.auth.currentSession;
-          if (session != null && session.accessToken.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer ${session.accessToken}';
-            ZagLogger().debug('Added Authorization header to Z Assistant request');
-          } else {
-            ZagLogger().warning('No Supabase session found for Z Assistant request');
-          }
           handler.next(options);
         },
       ),
