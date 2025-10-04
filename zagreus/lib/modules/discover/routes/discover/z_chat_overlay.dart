@@ -98,10 +98,10 @@ class _ZChatPageState extends State<ZChatPage> {
 
       // Check if response is staged operation
       if (response.isStaged && response.stageId != null) {
-        // Add message about operation being staged
+        // Add message with just the stage button (no content shown)
         setState(() {
           _messages.add(_ChatMessage(
-            content: response.text,
+            content: null,  // Don't show the stage ID as text
             isUser: false,
             stageId: response.stageId,
           ));
@@ -299,7 +299,7 @@ class _ZChatPageState extends State<ZChatPage> {
       );
     }
 
-    // Check if message has a stage ID - if so, show with button
+    // Check if message has a stage ID - if so, show only the button
     if (message.stageId != null) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
@@ -312,16 +312,6 @@ class _ZChatPageState extends State<ZChatPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      message.content ?? '',
-                      style: TextStyle(
-                        fontSize: 15,
-                        height: 1.4,
-                        color: theme.brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
-                      ),
-                    ),
                     const SizedBox(height: 12),
                     // Stage button
                     InkWell(
@@ -340,10 +330,9 @@ class _ZChatPageState extends State<ZChatPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.folder_open,
-                              size: 16,
-                              color: ZagColours.accent,
+                            Text(
+                              '📁',
+                              style: TextStyle(fontSize: 16),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -352,15 +341,6 @@ class _ZChatPageState extends State<ZChatPage> {
                                 color: ZagColours.accent,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              message.stageId!.substring(0, 8) + '...',
-                              style: TextStyle(
-                                color: ZagColours.accent.withOpacity(0.6),
-                                fontSize: 12,
-                                fontFamily: 'monospace',
                               ),
                             ),
                           ],
