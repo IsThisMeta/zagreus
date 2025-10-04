@@ -52,21 +52,23 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Pro',
           body: [
             TextSpan(
-              text: isPro
-                  ? 'Active • ${ZagreusPro.subscriptionType} subscription'
-                  : 'Unlock the Discover module',
+              text: isMega
+                  ? 'Included with Mega subscription'
+                  : isPro
+                      ? 'Active • ${ZagreusPro.subscriptionType} subscription'
+                      : 'Unlock the Discover module',
             )
           ],
           trailing: GestureDetector(
             onLongPressStart: (_) {
-              if (isPro) {
+              if (isPro && !isMega) {
                 _startRevokeTimer();
               }
             },
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
-              icon: isPro ? Icons.star_rounded : Icons.lock_open_rounded,
-              color: isPro ? ZagColours.orange : ZagColours.accent,
+              icon: isMega || isPro ? Icons.star_rounded : Icons.lock_open_rounded,
+              color: isMega ? ZagColours.purple : isPro ? ZagColours.orange : ZagColours.accent,
             ),
           ),
           onTap: () => _showProDialog(context),
@@ -94,6 +96,31 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   void _showProDialog(BuildContext context) {
     final bool isPro = ZagreusPro.isEnabled;
+    final bool isMega = ZagreusMega.isEnabled;
+
+    // If user has Mega, show that Pro is included
+    if (isMega) {
+      ZagDialog.dialog(
+        context: context,
+        title: 'Zagreus Pro',
+        customContent: ZagDialog.content(
+          children: [
+            Padding(
+              padding: ZagDialog.textDialogContentPadding(),
+              child: Text(
+                'Pro features are included with your Mega subscription!\n\n'
+                'You already have access to all Pro features.',
+                style: const TextStyle(
+                  fontSize: ZagUI.FONT_SIZE_H2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        contentPadding: ZagDialog.listDialogContentPadding(),
+      );
+      return;
+    }
 
     ZagDialog.dialog(
       context: context,
