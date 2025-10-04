@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/database/config.dart';
+import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 
 /// Simple stateless Z chat page for Discover module
 /// Resets conversation when you leave Discover
@@ -96,7 +97,17 @@ class _ZChatPageState extends State<ZChatPage> {
 
       // Check if response is staged operation
       if (response.isStaged && response.stageId != null) {
-        // Show staging modal
+        // Add message about operation being staged
+        setState(() {
+          _messages.add(_ChatMessage(
+            content: response.text,
+            isUser: false,
+            stageId: response.stageId,
+          ));
+        });
+        _scrollToBottom();
+
+        // Show the staging modal for add/update/remove operations
         _showStagingModal(response.stageId!, response.text);
       } else {
         // Regular text response
@@ -226,62 +237,33 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _showStagingModal(String stageId, String operation) async {
-    // Fetch staged operation
-    final staged = await Supabase.instance.client
-        .from('staged_operations')
-        .select()
-        .eq('stage_id', stageId)
-        .single();
-
-    if (!mounted) return;
-
-    final items = (staged['items'] as List<dynamic>?) ?? [];
-    final actualOperation = staged['operation'] as String;
-
-    // Show modal
-    final confirmed = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _StagingModal(
-        stageId: stageId,
-        operation: actualOperation,
-        items: items,
+    // Navigate to the results page with all the batch add functionality
+    // This has the Radarr/Sonarr config buttons (movie/TV icons) at the top
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ZAssistantResultsRoute(
+          stageId: stageId,
+        ),
       ),
     );
 
-    // Handle result
-    if (confirmed == true) {
-      // Add success message to chat
+    // Update chat based on result
+    if (result == true) {
       setState(() {
         _messages.add(_ChatMessage(
-          content: 'Operation confirmed! Processing...',
+          content: 'Operation completed successfully!',
           isUser: false,
         ));
       });
-      _scrollToBottom();
-
-      // TODO: Execute actual operation
-      // For now, just delete the staging
-      await Supabase.instance.client
-          .from('staged_operations')
-          .delete()
-          .eq('stage_id', stageId);
-    } else {
-      // Cancelled - delete staging
-      await Supabase.instance.client
-          .from('staged_operations')
-          .delete()
-          .eq('stage_id', stageId);
-
+    } else if (result == false) {
       setState(() {
         _messages.add(_ChatMessage(
           content: 'Operation cancelled.',
           isUser: false,
         ));
       });
-      _scrollToBottom();
     }
+    _scrollToBottom();
   }
 
   Widget _buildMessage(_ChatMessage message) {
@@ -367,9 +349,11 @@ class _ZChatPageState extends State<ZChatPage> {
 class _ChatMessage {
   final String? content;
   final bool isUser;
+  final String? stageId;
 
   _ChatMessage({
     this.content,
+    this.stageId,
     required this.isUser,
   });
 }
