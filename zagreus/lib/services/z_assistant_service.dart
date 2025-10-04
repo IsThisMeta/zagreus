@@ -3,6 +3,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
@@ -49,9 +50,16 @@ class ZAssistantService {
     }
 
     try {
-      // Register device with backend
+      // Register device with backend - requires Supabase auth!
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = hmacService.hmacKey;
+
+      // Get current Supabase session for registration only
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session == null) {
+        ZagLogger().warning('No Supabase session for device registration');
+        return;
+      }
 
       ZagLogger().debug('🔐 Registering device with Z Assistant...');
 
@@ -61,6 +69,11 @@ class ZAssistantService {
           'device_id': deviceId,
           'hmac_key': hmacKey,
         },
+        options: dio.Options(
+          headers: {
+            'Authorization': 'Bearer ${session.accessToken}',
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
