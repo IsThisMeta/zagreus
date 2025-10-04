@@ -78,22 +78,24 @@ class RevenueCatService {
     print('🔍 Pro (any) active: $isProActive');
 
     if (isProActive) {
-      // Get expiration from whichever Pro entitlement is active
-      final expirationDate = isProMonthlyActive
-        ? _customerInfo?.entitlements.all[_proEntitlementId]?.expirationDate
-        : _customerInfo?.entitlements.all[_proYearlyEntitlementId]?.expirationDate;
+      // Get expiration and product ID from whichever Pro entitlement is active
+      final activeProEntitlement = isProMonthlyActive
+        ? _customerInfo?.entitlements.all[_proEntitlementId]
+        : _customerInfo?.entitlements.all[_proYearlyEntitlementId];
+      final expirationDate = activeProEntitlement?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
-        print('🎯 RevenueCat: Pro active until $expiry');
+        final productId = activeProEntitlement?.productIdentifier ?? 'revenuecat_pro';
+        print('🎯 RevenueCat: Pro active until $expiry (product: $productId)');
 
         // Update local storage from RevenueCat (source of truth)
         ZagreusPro.applySubscription(
           expiresAt: expiry,
-          productId: 'revenuecat_pro',
+          productId: productId,
         );
 
         // STILL sync to Supabase - backend needs this for verification
-        await _syncToSupabase('pro', expiry, 'revenuecat_pro');
+        await _syncToSupabase('pro', expiry, productId);
       } else {
         // Active but no expiration date - this shouldn't happen for subscriptions
         print('⚠️ RevenueCat: Pro marked active but no expiration date');
@@ -110,19 +112,21 @@ class RevenueCatService {
     print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
 
     if (isMegaActive) {
-      final expirationDate = _customerInfo?.entitlements.all[_megaEntitlementId]?.expirationDate;
+      final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];
+      final expirationDate = megaEntitlement?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
-        print('🎯 RevenueCat: Mega active until $expiry');
+        final productId = megaEntitlement?.productIdentifier ?? 'revenuecat_mega';
+        print('🎯 RevenueCat: Mega active until $expiry (product: $productId)');
 
         // Update local storage from RevenueCat (source of truth)
         ZagreusMega.applySubscription(
           expiresAt: expiry,
-          productId: 'revenuecat_mega',
+          productId: productId,
         );
 
         // STILL sync to Supabase - backend needs this for Z Assistant verification
-        await _syncToSupabase('mega', expiry, 'revenuecat_mega');
+        await _syncToSupabase('mega', expiry, productId);
       } else {
         // Active but no expiration date
         print('⚠️ RevenueCat: Mega marked active but no expiration date');
