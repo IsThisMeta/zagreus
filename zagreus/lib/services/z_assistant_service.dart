@@ -3,7 +3,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:zagreus/services/revenuecat_service.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
@@ -50,16 +50,21 @@ class ZAssistantService {
     }
 
     try {
-      // Register device with backend - requires Supabase auth!
+      // Register device with backend - requires active Mega subscription!
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = hmacService.hmacKey;
 
-      // Get current Supabase session for registration only
-      final session = Supabase.instance.client.auth.currentSession;
-      if (session == null) {
-        ZagLogger().warning('No Supabase session for device registration');
+      // Get RevenueCat customer ID for verification
+      final rcService = RevenueCatService();
+      final customerInfo = rcService.customerInfo;
+
+      if (customerInfo == null || !rcService.isMegaActive) {
+        ZagLogger().warning('No Mega subscription for device registration');
         return;
       }
+
+      // Use the original app user ID as the receipt token
+      final receiptToken = customerInfo.originalAppUserId;
 
       ZagLogger().debug('🔐 Registering device with Z Assistant...');
 
@@ -68,12 +73,8 @@ class ZAssistantService {
         data: {
           'device_id': deviceId,
           'hmac_key': hmacKey,
+          'receipt_token': receiptToken,
         },
-        options: dio.Options(
-          headers: {
-            'Authorization': 'Bearer ${session.accessToken}',
-          },
-        ),
       );
 
       if (response.statusCode == 200) {
