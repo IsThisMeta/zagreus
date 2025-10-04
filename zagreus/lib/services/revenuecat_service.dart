@@ -19,6 +19,9 @@ class RevenueCatService {
   CustomerInfo? _customerInfo;
   bool _isUpdating = false; // Prevent duplicate updates
 
+  // Public getter for customer info
+  CustomerInfo? get customerInfo => _customerInfo;
+
   Future<void> initialize() async {
     try {
       // Configure RevenueCat
