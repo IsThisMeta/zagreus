@@ -250,31 +250,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   void _showMegaDialog(BuildContext context) {
     final bool isMega = ZagreusMega.isEnabled;
 
-    // If already have Mega, show status instead of purchase
-    if (isMega) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Mega',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Your Mega subscription is active!\n\n'
-                'You have full access to Z Assistant and all AI features.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
-    }
-
-    // Show purchase dialog only if NOT subscribed
     ZagDialog.dialog(
       context: context,
       title: 'Zagreus Mega',
@@ -283,13 +258,17 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Unlock Z Assistant features!\n\n'
-              'Get AI-powered recommendations with Ask Z and more exclusive features.',
+              isMega
+                  ? 'You have an active Mega subscription.\n\n'
+                      'Thank you for supporting Zagreus!'
+                  : 'Unlock Z Assistant features!\n\n'
+                      'Get AI-powered recommendations with Ask Z and more exclusive features.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
             ),
           ),
+          if (!isMega) ...[
           ZagDialog.tile(
             icon: Icons.rocket_launch_rounded,
             iconColor: ZagColours.purple,
@@ -388,6 +367,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
             ),
           ),
+          ],
         ],
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
