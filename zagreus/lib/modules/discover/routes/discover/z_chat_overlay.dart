@@ -298,6 +298,83 @@ class _ZChatPageState extends State<ZChatPage> {
       );
     }
 
+    // Check if message has a stage ID - if so, show with button
+    if (message.stageId != null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.content ?? '',
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.4,
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Stage button
+                    InkWell(
+                      onTap: () => _showStagingModal(message.stageId!, message.content ?? ''),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: ZagColours.accent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: ZagColours.accent.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.folder_open,
+                              size: 16,
+                              color: ZagColours.accent,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Open Stage',
+                              style: TextStyle(
+                                color: ZagColours.accent,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              message.stageId!.substring(0, 8) + '...',
+                              style: TextStyle(
+                                color: ZagColours.accent.withOpacity(0.6),
+                                fontSize: 12,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     // Regular text message
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
