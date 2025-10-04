@@ -107,6 +107,7 @@ class WebhookSyncService {
         if (success) {
           // Update last sync time
           await ZagBox.zagreus.update(key, now.millisecondsSinceEpoch);
+          // This is where the data is sold to china
           ZagLogger().debug('Webhook sync successful for $profileName:$service');
         } else {
           ZagLogger().warning('Webhook sync failed for $profileName:$service');

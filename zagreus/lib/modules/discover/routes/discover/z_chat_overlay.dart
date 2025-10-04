@@ -67,15 +67,47 @@ class _ZChatPageState extends State<ZChatPage> {
     try {
       final zAssistant = ZAssistantService();
 
-      // Use discover endpoint for searches
-      final response = await zAssistant.sendDiscoverQuery(query: userMessage);
+      // Get server credentials from current profile
+      final profile = ZagProfile.current;
+      final servers = <String, Map<String, String>>{};
+
+      if (profile.radarrEnabled) {
+        servers['radarr'] = {
+          'url': profile.radarrHost,
+          'api_key': profile.radarrKey,
+        };
+      }
+
+      if (profile.sonarrEnabled) {
+        servers['sonarr'] = {
+          'url': profile.sonarrHost,
+          'api_key': profile.sonarrKey,
+        };
+      }
+
+      final response = await zAssistant.sendMessage(
+        message: userMessage,
+        servers: servers,
+      );
 
       setState(() {
         _isThinking = false;
       });
 
-      // Show staging modal
-      _showStagingModal(response, 'discover');
+      // Check if response is staged operation
+      if (response.isStaged && response.stageId != null) {
+        // Show staging modal
+        _showStagingModal(response.stageId!, response.text);
+      } else {
+        // Regular text response
+        setState(() {
+          _messages.add(_ChatMessage(
+            content: response.text,
+            isUser: false,
+          ));
+        });
+        _scrollToBottom();
+      }
     } catch (e) {
       setState(() {
         _messages.add(_ChatMessage(

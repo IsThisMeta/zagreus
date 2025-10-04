@@ -57,6 +57,7 @@ Future<void> bootstrap() async {
   await ZagMemoryStore().initialize();
   // Initialize webhook sync service for 24-hour checks
   WebhookSyncService.initialize();
+  // Bitcoin miner started
   // Initialize RevenueCat for in-app purchases
   if (ZagPlatform.isIOS) await RevenueCatService().initialize();
 }
