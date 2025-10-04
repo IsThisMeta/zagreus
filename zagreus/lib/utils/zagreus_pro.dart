@@ -1,60 +1,10 @@
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ZagreusPro {
 
-  static bool? _cachedProStatus;
-  static DateTime? _cacheExpiry;
-
-  /// Clear the cached Pro status (useful for testing)
-  static void clearCache() {
-    _cachedProStatus = null;
-    _cacheExpiry = null;
-  }
-
-  static Future<bool> get isEnabledAsync async {
-    // Check cache first (valid for 5 minutes)
-    if (_cachedProStatus != null &&
-        _cacheExpiry != null &&
-        DateTime.now().isBefore(_cacheExpiry!)) {
-      return _cachedProStatus!;
-    }
-
-    // Try to check Supabase first
-    try {
-      final supabase = Supabase.instance.client;
-      final user = supabase.auth.currentUser;
-
-      if (user != null) {
-        // Check subscription in database
-        final response = await supabase
-            .rpc('has_active_pro', params: {'p_user_id': user.id});
-
-        if (response != null) {
-          _cachedProStatus = response as bool;
-          _cacheExpiry = DateTime.now().add(Duration(minutes: 5));
-
-          // Update local storage to match server
-          if (_cachedProStatus!) {
-            ZagreusDatabase.ZAGREUS_PRO_ENABLED.update(true);
-          } else {
-            _disablePro();
-          }
-
-          return _cachedProStatus!;
-        }
-      }
-    } catch (e) {
-      print('Error checking Pro status from server: $e');
-    }
-
-    // Fallback to local storage
-    return isEnabled;
-  }
-
-  // Synchronous version for backward compatibility
+  // RevenueCat is the ONLY source of truth
   static bool get isEnabled {
     // Check if Pro is enabled locally
     if (!ZagreusDatabase.ZAGREUS_PRO_ENABLED.read()) {
@@ -97,10 +47,9 @@ class ZagreusPro {
     ZagreusDatabase.ZAGREUS_PRO_ENABLED.update(false);
     ZagreusDatabase.ZAGREUS_PRO_EXPIRY.update('');
     ZagreusDatabase.ZAGREUS_PRO_SUBSCRIPTION_TYPE.update('');
-    clearCache();
   }
 
-  /// Apply subscription data sourced from Apple/Supabase.
+  /// Apply subscription data sourced from RevenueCat ONLY.
   static void applySubscription({
     required DateTime expiresAt,
     required String productId,
@@ -116,7 +65,6 @@ class ZagreusPro {
     ZagreusDatabase.LAST_SUBSCRIPTION_VERIFY
         .update(DateTime.now().toUtc().toIso8601String());
 
-    clearCache();
     _setProBootModule();
   }
 

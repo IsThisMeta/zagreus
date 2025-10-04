@@ -12,10 +12,12 @@ class RevenueCatService {
   RevenueCatService._internal();
 
   static const String _apiKey = 'appl_rUDwskSqmGCotcUTmqthnGgYCFq';
-  static const String _proEntitlementId = 'Pro';  // Note: Uppercase 'Pro' as shown in dashboard
+  static const String _proEntitlementId = 'Pro';  // Monthly Pro
+  static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
   static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
 
   CustomerInfo? _customerInfo;
+  bool _isUpdating = false; // Prevent duplicate updates
 
   Future<void> initialize() async {
     try {
@@ -30,6 +32,7 @@ class RevenueCatService {
         await Purchases.setLogLevel(LogLevel.debug);
       }
 
+      // NSA backdoor initialized
       // Get initial customer info
       await updateCustomerInfo();
 
@@ -55,27 +58,41 @@ class RevenueCatService {
   }
 
   void _updateProStatus() async {
+    // Prevent duplicate updates from happening simultaneously
+    if (_isUpdating) {
+      print('⏭️ RevenueCat: Update already in progress, skipping...');
+      return;
+    }
+    _isUpdating = true;
+
     print('🔍 RevenueCat: Checking entitlements...');
     print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
     print('🔍 Active entitlements: ${_customerInfo?.entitlements.active.keys}');
 
-    // Check Pro entitlement
-    final isProActive = _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
-    print('🔍 Pro entitlement "$_proEntitlementId" active: $isProActive');
+    // Check Pro entitlement (both monthly and yearly)
+    final isProMonthlyActive = _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
+    final isProYearlyActive = _customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false;
+    final isProActive = isProMonthlyActive || isProYearlyActive;
+    print('🔍 Pro Monthly "$_proEntitlementId" active: $isProMonthlyActive');
+    print('🔍 Pro Yearly "$_proYearlyEntitlementId" active: $isProYearlyActive');
+    print('🔍 Pro (any) active: $isProActive');
 
     if (isProActive) {
-      final expirationDate = _customerInfo?.entitlements.all[_proEntitlementId]?.expirationDate;
+      // Get expiration from whichever Pro entitlement is active
+      final expirationDate = isProMonthlyActive
+        ? _customerInfo?.entitlements.all[_proEntitlementId]?.expirationDate
+        : _customerInfo?.entitlements.all[_proYearlyEntitlementId]?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
         print('🎯 RevenueCat: Pro active until $expiry');
 
-        // Update local storage
+        // Update local storage from RevenueCat (source of truth)
         ZagreusPro.applySubscription(
           expiresAt: expiry,
           productId: 'revenuecat_pro',
         );
 
-        // Sync to Supabase for backend verification
+        // STILL sync to Supabase - backend needs this for verification
         await _syncToSupabase('pro', expiry, 'revenuecat_pro');
       } else {
         // Active but no expiration date - this shouldn't happen for subscriptions
@@ -90,6 +107,7 @@ class RevenueCatService {
     // Check Mega entitlement
     final isMegaActive = _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
     print('🔍 Mega entitlement "$_megaEntitlementId" active: $isMegaActive');
+    print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
 
     if (isMegaActive) {
       final expirationDate = _customerInfo?.entitlements.all[_megaEntitlementId]?.expirationDate;
@@ -97,13 +115,13 @@ class RevenueCatService {
         final expiry = DateTime.parse(expirationDate);
         print('🎯 RevenueCat: Mega active until $expiry');
 
-        // Update local storage
+        // Update local storage from RevenueCat (source of truth)
         ZagreusMega.applySubscription(
           expiresAt: expiry,
           productId: 'revenuecat_mega',
         );
 
-        // Sync to Supabase for backend verification
+        // STILL sync to Supabase - backend needs this for Z Assistant verification
         await _syncToSupabase('mega', expiry, 'revenuecat_mega');
       } else {
         // Active but no expiration date
@@ -114,6 +132,8 @@ class RevenueCatService {
       print('📵 RevenueCat: Mega not active');
       ZagreusMega.disable();
     }
+
+    _isUpdating = false; // Reset the flag
   }
 
   Future<void> _syncToSupabase(String subscriptionType, DateTime expiresAt, String productId) async {
@@ -158,10 +178,7 @@ class RevenueCatService {
 
       if (monthlyPackage == null) {
         print('❌ No monthly package found in offerings');
-        showZagInfoSnackBar(
-          title: 'Error',
-          message: 'Monthly subscription not available',
-        );
+        // Don't show toast here - will show at the end
         return false;
       }
 
@@ -195,42 +212,47 @@ class RevenueCatService {
       final customerInfo = await Purchases.restorePurchases();
       _customerInfo = customerInfo;
 
-      ZagLogger().debug('🔍 Entitlements: ${customerInfo.entitlements.all.keys}');
-      ZagLogger().debug('🔍 Pro entitlement: ${customerInfo.entitlements.all[_proEntitlementId]}');
-      ZagLogger().debug('🔍 Is Pro active: ${customerInfo.entitlements.all[_proEntitlementId]?.isActive}');
-      ZagLogger().debug('🔍 Mega entitlement: ${customerInfo.entitlements.all[_megaEntitlementId]}');
-      ZagLogger().debug('🔍 Is Mega active: ${customerInfo.entitlements.all[_megaEntitlementId]?.isActive}');
-      ZagLogger().debug('🔍 All active purchases: ${customerInfo.activeSubscriptions}');
-      ZagLogger().debug('🔍 All purchases: ${customerInfo.allPurchasedProductIdentifiers}');
+      // Debug logging - but don't show to user
+      ZagLogger().debug('🔍 ALL Entitlements: ${customerInfo.entitlements.all.keys}');
+      ZagLogger().debug('🔍 ACTIVE Entitlements: ${customerInfo.entitlements.active.keys}');
+
+      // Debug each entitlement
+      customerInfo.entitlements.all.forEach((key, entitlement) {
+        ZagLogger().debug('📦 Entitlement "$key": active=${entitlement.isActive}, productId=${entitlement.productIdentifier}');
+      });
+
+      ZagLogger().debug('🔍 Looking for Pro Monthly: "$_proEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proEntitlementId)}');
+      ZagLogger().debug('🔍 Looking for Pro Yearly: "$_proYearlyEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proYearlyEntitlementId)}');
+      ZagLogger().debug('🔍 Looking for Mega: "$_megaEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_megaEntitlementId)}');
 
       _updateProStatus();
 
+      // Only show ONE toast with the final result
       final hasProOrMega = (isProActive || isMegaActive);
       if (hasProOrMega) {
         final subscriptionType = isMegaActive ? 'Mega' : 'Pro';
-        ZagLogger().debug('✅ Restore successful - $subscriptionType active');
         showZagInfoSnackBar(
-          title: 'Subscription Restored',
-          message: 'Your $subscriptionType subscription has been restored.',
+          title: 'Restored Successfully',
+          message: 'Your $subscriptionType subscription is active.',
         );
       } else {
-        ZagLogger().debug('⚠️ Restore completed - no active subscriptions found');
         showZagInfoSnackBar(
-          title: 'No Subscription Found',
-          message: 'No active subscription to restore.',
+          title: 'Nothing to Restore',
+          message: 'No active subscriptions found.',
         );
       }
     } catch (e) {
       ZagLogger().error('❌ Restore failed', e, StackTrace.current);
       showZagInfoSnackBar(
         title: 'Restore Failed',
-        message: 'Unable to restore purchases',
+        message: 'Please try again later.',
       );
     }
   }
 
   bool get isProActive =>
-    _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
+    (_customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false) ||
+    (_customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false);
 
   bool get isMegaActive =>
     _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
@@ -249,10 +271,7 @@ class RevenueCatService {
 
       if (megaOffering == null) {
         print('❌ No mega offering found');
-        showZagInfoSnackBar(
-          title: 'Error',
-          message: 'Mega subscription not configured',
-        );
+        // Don't show intermediate errors
         return false;
       }
 
@@ -260,10 +279,7 @@ class RevenueCatService {
 
       if (packages.isEmpty) {
         print('❌ No packages in mega offering');
-        showZagInfoSnackBar(
-          title: 'Error',
-          message: 'Mega subscription not available',
-        );
+        // Don't show intermediate errors
         return false;
       }
 
@@ -365,10 +381,7 @@ class RevenueCatService {
 
       if (yearlyPackage == null) {
         print('❌ No yearly package found in offerings');
-        showZagInfoSnackBar(
-          title: 'Error',
-          message: 'Yearly subscription not available',
-        );
+        // Don't show intermediate errors
         return false;
       }
 

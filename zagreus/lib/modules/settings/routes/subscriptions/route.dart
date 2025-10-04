@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
@@ -41,6 +42,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   Widget _body() {
     final bool isPro = ZagreusPro.isEnabled;
+    final bool isMega = ZagreusMega.isEnabled;
 
     return ZagListView(
       controller: scrollController,
@@ -74,10 +76,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
         ZagBlock(
           title: 'Zagreus Mega',
           body: [
-            TextSpan(text: 'Unlock Z Assistant features • \$1.79/month')
+            TextSpan(
+              text: isMega
+                  ? 'Active • mega subscription'
+                  : 'Unlock Z Assistant features • \$1.79/month'
+            )
           ],
           trailing: ZagIconButton(
-            icon: Icons.star_border_rounded,
+            icon: isMega ? Icons.star_rounded : Icons.star_border_rounded,
             color: ZagColours.purple,
           ),
           onTap: () => _showMegaDialog(context),
@@ -242,6 +248,33 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   void _showMegaDialog(BuildContext context) {
+    final bool isMega = ZagreusMega.isEnabled;
+
+    // If already have Mega, show status instead of purchase
+    if (isMega) {
+      ZagDialog.dialog(
+        context: context,
+        title: 'Zagreus Mega',
+        customContent: ZagDialog.content(
+          children: [
+            Padding(
+              padding: ZagDialog.textDialogContentPadding(),
+              child: Text(
+                'Your Mega subscription is active!\n\n'
+                'You have full access to Z Assistant and all AI features.',
+                style: const TextStyle(
+                  fontSize: ZagUI.FONT_SIZE_H2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        contentPadding: ZagDialog.listDialogContentPadding(),
+      );
+      return;
+    }
+
+    // Show purchase dialog only if NOT subscribed
     ZagDialog.dialog(
       context: context,
       title: 'Zagreus Mega',
@@ -491,11 +524,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   void _restorePurchases() async {
-    showZagInfoSnackBar(
-      title: 'Restoring',
-      message: 'Checking for previous purchases...',
-    );
-
+    // Don't show toast here - RevenueCatService will show the result
     final iapService = RevenueCatService();
     await iapService.restorePurchases();
 
