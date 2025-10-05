@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
