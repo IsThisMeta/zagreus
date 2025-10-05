@@ -60,6 +60,18 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   SONARR_WEBHOOK_ON_UPGRADE<bool>(true),
   SONARR_WEBHOOK_ON_SERIES_ADD<bool>(true),
   SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Radarr toast events
+  RADARR_TOAST_ON_GRAB<bool>(true),
+  RADARR_TOAST_ON_DOWNLOAD<bool>(true),
+  RADARR_TOAST_ON_UPGRADE<bool>(true),
+  RADARR_TOAST_ON_MOVIE_ADDED<bool>(true),
+  RADARR_TOAST_ON_MANUAL_INTERACTION<bool>(true),
+  // Sonarr toast events
+  SONARR_TOAST_ON_GRAB<bool>(true),
+  SONARR_TOAST_ON_DOWNLOAD<bool>(true),
+  SONARR_TOAST_ON_UPGRADE<bool>(true),
+  SONARR_TOAST_ON_SERIES_ADD<bool>(true),
+  SONARR_TOAST_ON_MANUAL_INTERACTION<bool>(true),
   // Discover module section order
   DISCOVER_MOVIES_SECTION_ORDER<List>([]),
   DISCOVER_TV_SECTION_ORDER<List>([]),

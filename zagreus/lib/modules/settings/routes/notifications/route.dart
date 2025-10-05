@@ -296,7 +296,6 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ),
         _enableNotifications(),
         _multiDeviceSyncToggle(),
-        _enableInAppToasts(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
@@ -304,6 +303,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ZagDivider(),
           _radarrEventsSection(),
           _sonarrEventsSection(),
+        ],
+        ZagDivider(),
+        _enableInAppToasts(),
+        if (ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) ...[
+          _radarrToastEventsSection(),
+          _sonarrToastEventsSection(),
         ],
       ],
     );
@@ -646,6 +651,107 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             }
           },
         ),
+      ),
+    );
+  }
+
+  Widget _radarrToastEventsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Radarr Toast Events',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        _toastToggle(
+          'On Grab',
+          ZagreusDatabase.RADARR_TOAST_ON_GRAB,
+        ),
+        _toastToggle(
+          'On Import',
+          ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD,
+        ),
+        _toastToggle(
+          'On Upgrade',
+          ZagreusDatabase.RADARR_TOAST_ON_UPGRADE,
+        ),
+        _toastToggle(
+          'On Add',
+          ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED,
+        ),
+        _toastToggle(
+          'On Manual Interaction',
+          ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION,
+        ),
+      ],
+    );
+  }
+
+  Widget _sonarrToastEventsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Sonarr Toast Events',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        _toastToggle(
+          'On Grab',
+          ZagreusDatabase.SONARR_TOAST_ON_GRAB,
+        ),
+        _toastToggle(
+          'On Import',
+          ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD,
+        ),
+        _toastToggle(
+          'On Upgrade',
+          ZagreusDatabase.SONARR_TOAST_ON_UPGRADE,
+        ),
+        _toastToggle(
+          'On Series Added',
+          ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD,
+        ),
+        _toastToggle(
+          'On Manual Interaction',
+          ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION,
+        ),
+      ],
+    );
+  }
+
+  Widget _toastToggle<T>(
+    String title,
+    ZagreusDatabase<T> db,
+  ) {
+    return ZagBlock(
+      title: title,
+      body: [],
+      trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+        builder: (context, _) {
+          final notificationsEnabled = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+          return db.listenableBuilder(
+            builder: (context, _) => ZagSwitch(
+              value: db.read() as bool,
+              onChanged: notificationsEnabled
+                  ? (value) {
+                      db.update(value as T);
+                    }
+                  : null, // Disabled when notifications are off
+            ),
+          );
+        },
       ),
     );
   }
