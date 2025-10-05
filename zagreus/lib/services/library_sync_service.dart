@@ -102,18 +102,25 @@ class LibrarySyncService {
             final sonarrShows = await sonarrState.api!.series.getAll();
 
             for (final show in sonarrShows) {
-              // Get season numbers that have files
-              final seasonsWithFiles = show.seasons
+              // Get season info with completion percentages
+              final seasonsWithPercentages = show.seasons
                   ?.where((s) => (s.statistics?.episodeFileCount ?? 0) > 0)
-                  .map((s) => s.seasonNumber)
+                  .map((s) {
+                    final fileCount = s.statistics?.episodeFileCount ?? 0;
+                    final totalCount = s.statistics?.episodeCount ?? 0;
+                    final percentage = totalCount > 0
+                        ? ((fileCount / totalCount) * 100).round()
+                        : 0;
+                    return '${s.seasonNumber} (${percentage}%)';
+                  })
                   .toList() ?? [];
 
               shows.add({
                 'title': show.title,
                 'year': show.year,
                 'tmdb_id': show.tvdbId, // Note: Sonarr uses tvdbId
-                'seasons': seasonsWithFiles,
-                'has_file': seasonsWithFiles.isNotEmpty,
+                'seasons': seasonsWithPercentages,
+                'has_file': seasonsWithPercentages.isNotEmpty,
                 'genres': show.genres,
               });
             }
