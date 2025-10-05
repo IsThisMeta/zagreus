@@ -3,8 +3,9 @@ import 'package:crypto/crypto.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:uuid/uuid.dart';
 
-/// HMAC-based encryption service for Z Assistant credentials
-/// Fort Knox for your movie server credentials
+/// HMAC key service for device authentication with Z Assistant
+/// Zero-knowledge architecture: NO credentials are ever encrypted or sent!
+/// This only generates a device identifier for backend authentication
 class HmacEncryptionService {
   static final HmacEncryptionService _instance = HmacEncryptionService._internal();
   factory HmacEncryptionService() => _instance;
@@ -12,6 +13,7 @@ class HmacEncryptionService {
 
   static const _uuid = Uuid();
   String? _cachedHmacKey;
+  bool _isRegistered = false;
 
   /// Get or generate device's HMAC key
   String get hmacKey {
@@ -50,83 +52,11 @@ class HmacEncryptionService {
     return digest.toString();
   }
 
-  /// Encrypt credentials with HMAC
-  Map<String, String> encryptCredentials(Map<String, Map<String, String>> servers) {
-    final key = hmacKey;
-    final result = <String, String>{};
+  /// Check if device is registered with backend
+  bool get isRegistered => _isRegistered;
 
-    servers.forEach((service, creds) {
-      // Combine URL and API key
-      final combined = jsonEncode(creds);
-
-      // Create HMAC
-      final hmacSha256 = Hmac(sha256, utf8.encode(key));
-      final digest = hmacSha256.convert(utf8.encode(combined));
-
-      // Base64 encode the original data + HMAC
-      final encrypted = base64.encode(utf8.encode('$combined::$digest'));
-
-      result[service] = encrypted;
-    });
-
-    return result;
-  }
-
-  /// Simple XOR encryption for the actual data (on top of HMAC)
-  /// This prevents the creds from being visible in base64 decode
-  String _xorEncrypt(String data, String key) {
-    final dataBytes = utf8.encode(data);
-    final keyBytes = utf8.encode(key);
-    final encrypted = <int>[];
-
-    for (int i = 0; i < dataBytes.length; i++) {
-      encrypted.add(dataBytes[i] ^ keyBytes[i % keyBytes.length]);
-    }
-
-    return base64.encode(encrypted);
-  }
-
-  /// Encrypt with XOR + HMAC for double protection
-  Map<String, String> encryptCredentialsSecure(Map<String, Map<String, String>> servers) {
-    final key = hmacKey;
-    final result = <String, String>{};
-
-    servers.forEach((service, creds) {
-      // Convert to JSON
-      final jsonData = jsonEncode(creds);
-
-      // XOR encrypt the data first
-      final xorEncrypted = _xorEncrypt(jsonData, key);
-
-      // Then add HMAC for integrity
-      final hmacSha256 = Hmac(sha256, utf8.encode(key));
-      final digest = hmacSha256.convert(utf8.encode(xorEncrypted));
-
-      // Combine encrypted data with HMAC
-      final combined = '$xorEncrypted::${digest.toString()}';
-
-      result[service] = combined;
-    });
-
-    return result;
-  }
-
-  /// Check if device has been registered with backend
-  bool get isRegistered {
-    return ZagreusDatabase.DEVICE_REGISTERED.read() ?? false;
-  }
-
-  /// Mark device as registered
+  /// Set registration status
   void setRegistered(bool registered) {
-    ZagreusDatabase.DEVICE_REGISTERED.update(registered);
-  }
-
-  /// Reset encryption (generates new keys)
-  void reset() {
-    final newKey = _generateHmacKey();
-    ZagreusDatabase.DEVICE_HMAC_KEY.update(newKey);
-    ZagreusDatabase.DEVICE_REGISTERED.update(false);
-    _cachedHmacKey = newKey;
-    print('🔄 Reset HMAC key and registration');
+    _isRegistered = registered;
   }
 }

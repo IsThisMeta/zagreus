@@ -118,7 +118,8 @@ class LibrarySyncService {
               shows.add({
                 'title': show.title,
                 'year': show.year,
-                'tmdb_id': show.tvdbId, // Note: Sonarr uses tvdbId
+                'tvdb_id': show.tvdbId,  // Correct: Sonarr uses TVDB IDs
+                'tmdb_id': show.tmdbId,  // Also store TMDB ID if available
                 'seasons': seasonsWithPercentages,
                 'has_file': seasonsWithPercentages.isNotEmpty,
                 'genres': show.genres,
