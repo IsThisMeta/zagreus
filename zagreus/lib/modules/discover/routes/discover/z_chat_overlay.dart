@@ -303,7 +303,85 @@ class _ZChatPageState extends State<ZChatPage> {
         }
       }
 
-      // TODO: Add shows to Sonarr (similar pattern)
+      // Add shows to Sonarr
+      if (shows.isNotEmpty) {
+        final sonarrState = context.read<SonarrState>();
+
+        // Get saved settings
+        final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+        final rootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+        final searchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
+        final monitorTypeValue = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+        final seriesTypeValue = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+
+        if (qualityProfileId == null || rootFolder == null) {
+          showZagSnackBar(
+            title: 'Missing Sonarr Config',
+            message: 'Please configure Sonarr settings',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        final profiles = await sonarrState.qualityProfiles;
+        final folders = await sonarrState.rootFolders;
+
+        if (profiles == null || folders == null) {
+          showZagSnackBar(
+            title: 'Sonarr Not Available',
+            message: 'Could not connect to Sonarr',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        final selectedProfile = profiles.firstWhere((p) => p.id == qualityProfileId);
+        final selectedFolder = folders.firstWhere((f) => f.path == rootFolder);
+
+        // Get monitor and series types
+        final monitorType = SonarrSeriesMonitorType.values.firstWhere(
+          (type) => type.value == monitorTypeValue,
+          orElse: () => SonarrSeriesMonitorType.ALL,
+        );
+        final seriesType = SonarrSeriesType.values.firstWhere(
+          (type) => type.value == seriesTypeValue,
+          orElse: () => SonarrSeriesType.STANDARD,
+        );
+
+        for (final show in shows) {
+          try {
+            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+
+            if (lookupResults.isEmpty) {
+              failCount++;
+              continue;
+            }
+
+            final sonarrSeries = lookupResults.first;
+
+            if (sonarrSeries.id != null && sonarrSeries.id! > 0) {
+              failCount++;
+              continue;
+            }
+
+            await sonarrState.api!.series.create(
+              series: sonarrSeries,
+              rootFolder: selectedFolder,
+              monitored: true,
+              qualityProfile: selectedProfile,
+              seriesType: seriesType,
+              seasonFolder: true,
+              searchForMissingEpisodes: searchForMissing,
+              monitor: monitorType,
+            );
+
+            successCount++;
+          } catch (e) {
+            ZagLogger().error('Failed to add show: ${show.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
 
       // Show result
       if (successCount > 0) {
