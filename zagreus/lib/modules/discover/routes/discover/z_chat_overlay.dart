@@ -41,13 +41,6 @@ class _ZChatPageState extends State<ZChatPage> {
         }
       }
     });
-
-    // Auto-focus input when page opens
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   @override
@@ -71,20 +64,38 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _forceResync() async {
+    print('\n╔════════════════════════════════════════════╗');
+    print('║   MANUAL SYNC BUTTON PRESSED             ║');
+    print('╚════════════════════════════════════════════╝');
+
     setState(() => _isSyncing = true);
 
     try {
-      ZagLogger().debug('🔄 Manual library resync triggered');
-      await LibrarySyncService().syncLibrary(force: true);
+      print('→ Calling LibrarySyncService().syncLibrary(force: true)...\n');
+      final success = await LibrarySyncService().syncLibrary(force: true);
+
+      print('\n→ Sync returned: $success');
 
       if (mounted) {
-        showZagSnackBar(
-          title: 'Library Synced',
-          message: 'Your library has been synced to Z Assistant',
-          type: ZagSnackbarType.SUCCESS,
-        );
+        if (success) {
+          print('→ Showing success snackbar');
+          showZagSnackBar(
+            title: 'Library Synced',
+            message: 'Your library has been synced to Z Assistant',
+            type: ZagSnackbarType.SUCCESS,
+          );
+        } else {
+          print('→ Sync returned false - showing warning');
+          showZagSnackBar(
+            title: 'Sync Issue',
+            message: 'Sync completed but may not have uploaded data. Check console.',
+            type: ZagSnackbarType.INFO,
+          );
+        }
       }
     } catch (e, stack) {
+      print('❌ EXCEPTION in _forceResync: $e');
+      print('Stack trace: $stack');
       ZagLogger().error('Failed to sync library', e, stack);
       if (mounted) {
         showZagSnackBar(
@@ -96,6 +107,7 @@ class _ZChatPageState extends State<ZChatPage> {
     } finally {
       if (mounted) {
         setState(() => _isSyncing = false);
+        print('→ Sync button released\n');
       }
     }
   }
