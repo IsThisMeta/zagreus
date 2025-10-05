@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -20,8 +22,10 @@ func main() {
 	}
 
 	// Setup Gin
-	r := gin.Default()
-	
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(maskedLogger())
+
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -84,6 +88,25 @@ func main() {
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+}
+
+func maskedLogger() gin.HandlerFunc {
+	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		path := param.Path
+		if path == "" {
+			path = param.Request.URL.Path
+		}
+
+		return fmt.Sprintf("[GIN] %s |%3d| %13v | %s |%-7s %s\n%s",
+			param.TimeStamp.Format(time.RFC3339),
+			param.StatusCode,
+			param.Latency,
+			"client-ip-masked",
+			param.Method,
+			path,
+			param.ErrorMessage,
+		)
+	})
 }
 
 // handleLogin stub for now

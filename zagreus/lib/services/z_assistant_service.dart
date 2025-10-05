@@ -16,7 +16,7 @@ class ZAssistantService {
           dio.BaseOptions(
             baseUrl: _baseUrl,
             connectTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 60),
+            receiveTimeout: const Duration(seconds: 120),
             sendTimeout: const Duration(seconds: 30),
             contentType: dio.Headers.jsonContentType,
             responseType: dio.ResponseType.json,
@@ -120,12 +120,23 @@ class ZAssistantService {
         final isStaged = response.data['staged'] == true;
         final stageId = response.data['stage_id'] as String?;
 
+        // Parse commands if present
+        final List<ZAssistantCommand> commands = [];
+        if (response.data['commands'] != null) {
+          final commandsData = response.data['commands'] as List<dynamic>;
+          for (final cmdJson in commandsData) {
+            commands.add(ZAssistantCommand.fromJson(cmdJson as Map<String, dynamic>));
+          }
+          ZagLogger().debug('Received ${commands.length} commands from Z Assistant');
+        }
+
         ZagLogger().debug('Z Assistant response: $responseText (staged: $isStaged)');
 
         return ZAssistantResponse(
           text: responseText.trim(),
           isStaged: isStaged,
           stageId: stageId,
+          commands: commands,
         );
       } else {
         throw Exception('Failed to get response from Z Assistant: ${response.statusCode}');
@@ -190,10 +201,36 @@ class ZAssistantResponse {
   final String text;
   final bool isStaged;
   final String? stageId;
+  final List<ZAssistantCommand> commands;
 
   ZAssistantResponse({
     required this.text,
     this.isStaged = false,
     this.stageId,
+    this.commands = const [],
   });
+}
+
+/// Command for device to execute
+class ZAssistantCommand {
+  final String action;
+  final List<String>? services;
+  final int? tmdbId;
+  final String? mediaType;
+
+  ZAssistantCommand({
+    required this.action,
+    this.services,
+    this.tmdbId,
+    this.mediaType,
+  });
+
+  factory ZAssistantCommand.fromJson(Map<String, dynamic> json) {
+    return ZAssistantCommand(
+      action: json['action'] as String,
+      services: (json['services'] as List<dynamic>?)?.cast<String>(),
+      tmdbId: json['tmdb_id'] as int?,
+      mediaType: json['media_type'] as String?,
+    );
+  }
 }

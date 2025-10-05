@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
+import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/database/config.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -99,20 +100,55 @@ class _ZChatPageState extends State<ZChatPage> {
         _isThinking = false;
       });
 
+      // Execute any commands from the response
+      if (response.commands.isNotEmpty) {
+        await _executeCommands(response.commands);
+      }
+
       // Check if response is staged operation
       if (response.isStaged && response.stageId != null) {
-        // Add message with just the stage button (no content shown)
-        setState(() {
-          _messages.add(_ChatMessage(
-            content: null,  // Don't show the stage ID as text
-            isUser: false,
-            stageId: response.stageId,
-          ));
-        });
-        _scrollToBottom();
+        // Fetch the staged operation to check if it's queue or stage
+        final stagedOp = await _service.fetchStagedOperation(response.stageId!);
 
-        // Show the staging modal for add/update/remove operations
-        _showStagingModal(response.stageId!, response.text);
+        if (stagedOp == null) {
+          setState(() {
+            _messages.add(_ChatMessage(
+              content: 'Error: Could not fetch staged operation',
+              isUser: false,
+            ));
+          });
+          return;
+        }
+
+        // Check operation type: queue = auto-execute, stage = show modal
+        if (stagedOp.operation == 'queue') {
+          // Auto-execute queue operations (1-3 items)
+          ZagLogger().debug('Auto-executing queue operation with ${stagedOp.items.length} items');
+
+          // Show AI's message
+          setState(() {
+            _messages.add(_ChatMessage(
+              content: response.text,
+              isUser: false,
+            ));
+          });
+          _scrollToBottom();
+
+          // Execute in background using existing batch code
+          await _executeQueueOperation(stagedOp);
+        } else {
+          // Show staging modal for review (4+ items or explicit staging)
+          setState(() {
+            _messages.add(_ChatMessage(
+              content: null,  // Don't show the stage ID as text
+              isUser: false,
+              stageId: response.stageId,
+            ));
+          });
+          _scrollToBottom();
+
+          _showStagingModal(response.stageId!, response.text);
+        }
       } else {
         // Regular text response
         setState(() {
@@ -133,6 +169,125 @@ class _ZChatPageState extends State<ZChatPage> {
       });
 
       _scrollToBottom();
+    }
+  }
+
+  Future<void> _executeCommands(List<ZAssistantCommand> commands) async {
+    for (final command in commands) {
+      ZagLogger().debug('Executing command: ${command.action}');
+
+      switch (command.action) {
+        case 'sync_library':
+          // Sync library to Supabase cache
+          ZagLogger().debug('Syncing library to cache...');
+          await LibrarySyncService().syncLibrary(force: true);
+          break;
+        default:
+          ZagLogger().warning('Unknown command action: ${command.action}');
+      }
+    }
+  }
+
+  Future<void> _executeQueueOperation(StagedOperation operation) async {
+    try {
+      // Split items by media type
+      final movies = operation.items.where((item) => item.isMovie).toList();
+      final shows = operation.items.where((item) => item.isShow).toList();
+
+      int successCount = 0;
+      int failCount = 0;
+
+      // Add movies to Radarr
+      if (movies.isNotEmpty) {
+        final radarrState = context.read<RadarrState>();
+
+        // Get saved settings
+        final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+        final rootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+        final searchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+
+        if (qualityProfileId == null || rootFolder == null) {
+          showZagSnackBar(
+            title: 'Missing Radarr Config',
+            message: 'Please configure Radarr settings',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        final profiles = await radarrState.qualityProfiles;
+        final folders = await radarrState.rootFolders;
+
+        if (profiles == null || folders == null) {
+          showZagSnackBar(
+            title: 'Radarr Not Available',
+            message: 'Could not connect to Radarr',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        final selectedProfile = profiles.firstWhere((p) => p.id == qualityProfileId);
+        final selectedFolder = folders.firstWhere((f) => f.path == rootFolder);
+
+        for (final movie in movies) {
+          try {
+            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+
+            if (lookupResults.isEmpty) {
+              failCount++;
+              continue;
+            }
+
+            final radarrMovie = lookupResults.first;
+
+            if (radarrMovie.id != null && radarrMovie.id! > 0) {
+              failCount++;
+              continue;
+            }
+
+            await radarrState.api!.movie.create(
+              movie: radarrMovie,
+              rootFolder: selectedFolder,
+              monitored: true,
+              minimumAvailability: RadarrAvailability.ANNOUNCED,
+              qualityProfile: selectedProfile,
+              searchForMovie: searchForMissing,
+            );
+
+            successCount++;
+          } catch (e) {
+            ZagLogger().error('Failed to add movie: ${movie.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
+
+      // TODO: Add shows to Sonarr (similar pattern)
+
+      // Show result
+      if (successCount > 0) {
+        showZagSnackBar(
+          title: 'Success',
+          message: 'Added $successCount item${successCount == 1 ? '' : 's'} to library',
+          type: ZagSnackbarType.SUCCESS,
+        );
+      }
+
+      if (failCount > 0) {
+        showZagSnackBar(
+          title: 'Warning',
+          message: '$failCount item${failCount == 1 ? '' : 's'} failed or already in library',
+          type: ZagSnackbarType.WARNING,
+        );
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Queue execution failed', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to execute operation',
+        type: ZagSnackbarType.ERROR,
+      );
     }
   }
 
