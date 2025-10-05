@@ -101,6 +101,8 @@ class _ZChatPageState extends State<ZChatPage> {
         _isThinking = false;
       });
 
+      ZagLogger().debug('📨 Z Assistant response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
+
       // Execute any commands from the response
       if (response.commands.isNotEmpty) {
         await _executeCommands(response.commands);
