@@ -542,10 +542,12 @@ class _StagingModalState extends State<_StagingModal> {
 
   @override
   Widget build(BuildContext context) {
-    // Get operation color and label
+    // Get operation color and label from the actual staged operation
     Color badgeColor;
     String badgeText;
-    switch (widget.operation) {
+    final operationType = _stagedOperation?.operation ?? widget.operation;
+
+    switch (operationType) {
       case 'add':
         badgeColor = Colors.green;
         badgeText = 'ADD ${_stagedOperation?.items.length ?? 0} ITEMS';
