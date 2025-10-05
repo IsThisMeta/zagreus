@@ -93,23 +93,22 @@ class ZAssistantService {
   ///
   /// Returns either a text response or a stage_id for bulk operations
   /// Check response.staged to determine if it's a staged operation
+  ///
+  /// ZERO-KNOWLEDGE: Backend never receives server credentials!
+  /// It uses library_cache from Supabase to know what's in your library.
   Future<ZAssistantResponse> sendMessage({
     required String message,
-    required Map<String, Map<String, String>> servers,
     String? context,
     List<Map<String, String>>? history,
   }) async {
     try {
       ZagLogger().debug('Sending message to Z Assistant: $message');
 
-      // Encrypt server credentials with HMAC
-      final encryptedServers = HmacEncryptionService().encryptCredentialsSecure(servers);
-
       final response = await _dio.post(
         '/chat',
         data: {
           'message': message,
-          'servers': encryptedServers, // Send encrypted credentials
+          // NO SERVERS! Zero-knowledge architecture
           if (context != null) 'context': context,
           if (history != null) 'history': history,
         },
@@ -169,7 +168,7 @@ class ZAssistantService {
         '/discover',
         data: {
           'message': query,
-          'servers': {}, // Discover doesn't need server creds
+          // NO SERVERS! Zero-knowledge architecture
         },
       );
 

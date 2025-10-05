@@ -29,6 +29,7 @@ import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
+import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
@@ -1656,6 +1657,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _askZAssistant(String query) async {
     if (query.isEmpty) return;
+
+    // Trigger library sync if needed (Mega-only, max once per 24h)
+    final syncService = LibrarySyncService();
+    if (syncService.needsSync) {
+      ZagLogger().debug('Ask Z pressed - triggering library sync...');
+      syncService.syncIfNeeded(); // Fire and forget
+    }
 
     setState(() {
       _isAskingZAssistant = true;

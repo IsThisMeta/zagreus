@@ -1,11 +1,13 @@
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
+import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/supabase/core.dart';
 
 /// Service for syncing library cache to Supabase
 /// Ensures zero-knowledge architecture - backend never calls user servers
+/// Only syncs for Mega subscribers, max once per 24 hours
 class LibrarySyncService {
   static final LibrarySyncService _instance = LibrarySyncService._internal();
   factory LibrarySyncService() => _instance;
@@ -14,20 +16,28 @@ class LibrarySyncService {
   DateTime? _lastSyncTime;
   bool _isSyncing = false;
 
-  /// Check if sync is needed (> 1 hour since last sync)
+  /// Check if sync is needed (> 24 hours since last sync)
   bool get needsSync {
     if (_lastSyncTime == null) return true;
     final hoursSinceSync = DateTime.now().difference(_lastSyncTime!).inHours;
-    return hoursSinceSync >= 1;
+    return hoursSinceSync >= 24;
   }
 
   /// Sync library to Supabase cache
   /// Returns true if successful
+  /// Only syncs for Mega subscribers
   Future<bool> syncLibrary({
     bool force = false,
     bool syncRadarr = true,
     bool syncSonarr = true,
   }) async {
+    // Check for Mega subscription - library sync is Mega-only feature
+    final rcService = RevenueCatService();
+    if (!rcService.isMegaActive) {
+      ZagLogger().debug('Library sync skipped - Mega subscription required');
+      return false;
+    }
+
     if (_isSyncing && !force) {
       ZagLogger().debug('Library sync already in progress');
       return false;
@@ -44,6 +54,18 @@ class LibrarySyncService {
       ZagLogger().debug('🔄 Starting library sync...');
 
       final deviceId = DeviceIdService().deviceId;
+
+      // Mark sync as in progress in Supabase
+      try {
+        await ZagSupabase.client.from('library_cache').upsert({
+          'device_id': deviceId,
+          'is_syncing': true,
+          'sync_started_at': DateTime.now().toIso8601String(),
+        });
+      } catch (e) {
+        ZagLogger().warning('Failed to mark sync as in progress: $e');
+      }
+
       final List<Map<String, dynamic>> movies = [];
       final List<Map<String, dynamic>> shows = [];
 
@@ -110,6 +132,7 @@ class LibrarySyncService {
           'movies': movies,
           'shows': shows,
           'synced_at': DateTime.now().toIso8601String(),
+          'is_syncing': false,  // Mark sync as complete
         });
 
         _lastSyncTime = DateTime.now();

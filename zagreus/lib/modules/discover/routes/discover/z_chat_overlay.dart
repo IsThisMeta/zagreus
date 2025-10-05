@@ -29,6 +29,14 @@ class _ZChatPageState extends State<ZChatPage> {
   @override
   void initState() {
     super.initState();
+
+    // Trigger library sync if needed (Mega-only, max once per 24h)
+    final syncService = LibrarySyncService();
+    if (syncService.needsSync) {
+      ZagLogger().debug('Z Chat opened - triggering library sync...');
+      syncService.syncIfNeeded(); // Fire and forget
+    }
+
     // Auto-focus input when page opens
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -73,28 +81,10 @@ class _ZChatPageState extends State<ZChatPage> {
     try {
       final zAssistant = ZAssistantService();
 
-      // Prepare encrypted server credentials
-      final profile = ZagProfile.current;
-      final servers = <String, Map<String, String>>{};
-
-      if (profile.radarrEnabled) {
-        servers['radarr'] = {
-          'url': profile.radarrHost,
-          'api_key': profile.radarrKey,
-        };
-      }
-
-      if (profile.sonarrEnabled) {
-        servers['sonarr'] = {
-          'url': profile.sonarrHost,
-          'api_key': profile.sonarrKey,
-        };
-      }
-
-      // Note: Encryption will be handled inside sendMessage
+      // ZERO-KNOWLEDGE: No server credentials sent to backend!
+      // Backend uses library_cache from Supabase instead
       final response = await zAssistant.sendMessage(
         message: userMessage,
-        servers: servers,
       );
 
       setState(() {
