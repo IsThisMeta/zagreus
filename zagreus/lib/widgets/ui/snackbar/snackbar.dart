@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/database.dart';
 
 enum ZagSnackbarType {
   SUCCESS,
@@ -46,6 +47,11 @@ Future<void> showZagSnackBar({
   String buttonText = 'view',
   Function? buttonOnPressed,
 }) async {
+  // Check if in-app toasts are enabled
+  if (!ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) {
+    return;
+  }
+
   showFlash(
     context: ZagState.context,
     duration: duration ?? Duration(seconds: showButton ? 4 : 2),

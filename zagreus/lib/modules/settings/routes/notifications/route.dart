@@ -296,6 +296,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ),
         _enableNotifications(),
         _multiDeviceSyncToggle(),
+        _enableInAppToasts(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
@@ -529,6 +530,23 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                     }
                   }
                 },
+        ),
+      ),
+    );
+  }
+
+  Widget _enableInAppToasts() {
+    const db = ZagreusDatabase.ENABLE_IN_APP_TOASTS;
+
+    return ZagBlock(
+      title: 'Enable In-App Toasts',
+      body: [TextSpan(text: 'Show toast notifications when actions complete')],
+      trailing: db.listenableBuilder(
+        builder: (context, _) => ZagSwitch(
+          value: db.read(),
+          onChanged: (value) {
+            db.update(value);
+          },
         ),
       ),
     );
