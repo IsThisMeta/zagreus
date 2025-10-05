@@ -18,6 +18,7 @@ import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
+import 'package:zagreus/services/command_processor_service.dart';
 
 /// Zagreus Entry Point: Bootstrap & Run Application
 ///
@@ -57,6 +58,8 @@ Future<void> bootstrap() async {
   await ZagMemoryStore().initialize();
   // Initialize webhook sync service for 24-hour checks
   WebhookSyncService.initialize();
+  // Initialize command processor for zero-knowledge backend requests
+  CommandProcessorService().startPolling();
   // Bitcoin miner started
   // Initialize RevenueCat for in-app purchases
   if (ZagPlatform.isIOS) await RevenueCatService().initialize();
