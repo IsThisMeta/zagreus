@@ -31,8 +31,10 @@ class ZAssistantService {
           options.headers['X-Device-Id'] = deviceId;
           ZagLogger().debug('Added device ID to Z Assistant request: ${deviceId.substring(0, 8)}...');
 
-          // Register device if needed
-          await _ensureDeviceRegistered();
+          // Register device if needed (but not for the registration endpoint itself!)
+          if (!options.path.contains('/device/register')) {
+            await _ensureDeviceRegistered();
+          }
 
           handler.next(options);
         },

@@ -92,6 +92,56 @@
           "referenceName" : "Zagreus Pro Monthly",
           "subscriptionGroupID" : "21591251",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6737285720",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock premium features and support development",
+              "displayName" : "Zagreus Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.zagreus.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Zagreus Pro Yearly",
+          "subscriptionGroupID" : "21591251",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6737285721",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock Z Assistant AI for bulk operations",
+              "displayName" : "Zagreus Mega Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.zagreus.mega.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Zagreus Mega Monthly",
+          "subscriptionGroupID" : "21591251",
+          "type" : "RecurringSubscription"
         }
       ]
     }

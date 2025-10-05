@@ -105,6 +105,36 @@
           "referenceName" : "Zagreus Pro Monthly",
           "subscriptionGroupID" : "21579658",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "6752624667",
+          "introductoryOffer" : {
+            "internalID" : "FREETRIALID2",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlock Z Assistant AI for bulk operations",
+              "displayName" : "Zagreus Mega Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.zagreus.mega.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Zagreus Mega Monthly",
+          "subscriptionGroupID" : "21579658",
+          "type" : "RecurringSubscription"
         }
       ]
     }
