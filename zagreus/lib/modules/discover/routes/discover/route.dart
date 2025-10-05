@@ -1658,12 +1658,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _askZAssistant(String query) async {
     if (query.isEmpty) return;
 
-    // Trigger library sync if needed (Mega-only, max once per 24h)
-    final syncService = LibrarySyncService();
-    if (syncService.needsSync) {
-      ZagLogger().debug('Ask Z pressed - triggering library sync...');
-      syncService.syncIfNeeded(); // Fire and forget
-    }
+    // Trigger library sync after 5 seconds to avoid UI lag
+    Future.delayed(const Duration(seconds: 5), () {
+      final syncService = LibrarySyncService();
+      if (syncService.needsSync) {
+        ZagLogger().debug('Ask Z pressed - triggering library sync...');
+        syncService.syncIfNeeded(); // Fire and forget
+      }
+    });
 
     setState(() {
       _isAskingZAssistant = true;

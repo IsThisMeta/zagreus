@@ -53,15 +53,14 @@ class CommandProcessorService {
           .eq('device_id', deviceId)
           .eq('status', 'pending')
           .order('created_at', ascending: true)
-          .limit(1)
-          .execute();
+          .limit(1);
 
-      if (response.data == null || (response.data as List).isEmpty) {
+      if (response.isEmpty) {
         // No pending commands
         return;
       }
 
-      final command = (response.data as List).first;
+      final command = response.first;
       final requestId = command['request_id'] as String;
       final action = command['action'] as String;
 
@@ -111,7 +110,7 @@ class CommandProcessorService {
       }
 
       // Fetch all episodes for this series
-      final episodes = await sonarrState.api!.episode.getEpisodesBySeries(seriesId);
+      final episodes = await sonarrState.api!.episode.getMulti(seriesId: seriesId);
 
       // Convert to JSON format
       final episodesJson = episodes.map((ep) => {
@@ -132,7 +131,7 @@ class CommandProcessorService {
         'show_title': showTitle,
         'episodes': episodesJson,
         'synced_at': DateTime.now().toIso8601String(),
-      }).execute();
+      });
 
       ZagLogger().debug('  ✓ Uploaded episodes to cache');
 
@@ -140,7 +139,7 @@ class CommandProcessorService {
       await ZagSupabase.client.from('data_fetch_commands').update({
         'status': 'completed',
         'completed_at': DateTime.now().toIso8601String(),
-      }).eq('request_id', requestId).execute();
+      }).eq('request_id', requestId);
 
       ZagLogger().debug('  ✅ Command completed: $requestId');
 
@@ -157,11 +156,11 @@ class CommandProcessorService {
         'status': 'failed',
         'completed_at': DateTime.now().toIso8601String(),
         'error_message': error,
-      }).eq('request_id', requestId).execute();
+      }).eq('request_id', requestId);
 
       ZagLogger().debug('  ❌ Command failed: $requestId - $error');
-    } catch (e) {
-      ZagLogger().error('Failed to mark command as failed', e);
+    } catch (e, stack) {
+      ZagLogger().error('Failed to mark command as failed', e, stack);
     }
   }
 }

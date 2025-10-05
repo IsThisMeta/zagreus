@@ -25,17 +25,22 @@ class _ZChatPageState extends State<ZChatPage> {
   final FocusNode _focusNode = FocusNode();
   final StagedOperationsService _stagingService = StagedOperationsService();
   bool _isThinking = false;
+  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Trigger library sync if needed (Mega-only, max once per 24h)
-    final syncService = LibrarySyncService();
-    if (syncService.needsSync) {
-      ZagLogger().debug('Z Chat opened - triggering library sync...');
-      syncService.syncIfNeeded(); // Fire and forget
-    }
+    // Trigger library sync after 5 seconds to avoid UI lag
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        final syncService = LibrarySyncService();
+        if (syncService.needsSync) {
+          ZagLogger().debug('Z Chat opened - triggering library sync...');
+          syncService.syncIfNeeded(); // Fire and forget
+        }
+      }
+    });
 
     // Auto-focus input when page opens
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -63,6 +68,36 @@ class _ZChatPageState extends State<ZChatPage> {
         );
       }
     });
+  }
+
+  Future<void> _forceResync() async {
+    setState(() => _isSyncing = true);
+
+    try {
+      ZagLogger().debug('🔄 Manual library resync triggered');
+      await LibrarySyncService().syncLibrary(force: true);
+
+      if (mounted) {
+        showZagSnackBar(
+          title: 'Library Synced',
+          message: 'Your library has been synced to Z Assistant',
+          type: ZagSnackbarType.SUCCESS,
+        );
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync library', e, stack);
+      if (mounted) {
+        showZagSnackBar(
+          title: 'Sync Failed',
+          message: 'Could not sync library. Please try again.',
+          type: ZagSnackbarType.ERROR,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -288,10 +323,12 @@ class _ZChatPageState extends State<ZChatPage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Column(
+      child: Stack(
         children: [
-          // Messages
-          Expanded(
+          Column(
+            children: [
+              // Messages
+              Expanded(
             child: _messages.isEmpty
                 ? Center(
                     child: Column(
@@ -379,6 +416,48 @@ class _ZChatPageState extends State<ZChatPage> {
                     color: ZagColours.accent,
                     width: 2,
                   ),
+                ),
+              ),
+            ),
+          ),
+            ],
+          ),
+
+          // Sync button at top right
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _isSyncing ? null : _forceResync,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: _isSyncing
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ZagColours.accent,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.sync,
+                          size: 20,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.black.withOpacity(0.7),
+                        ),
                 ),
               ),
             ),
