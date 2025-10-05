@@ -2,6 +2,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/supabase/core.dart';
 
 /// Service for syncing library cache to Supabase
 /// Ensures zero-knowledge architecture - backend never calls user servers
@@ -50,8 +51,8 @@ class LibrarySyncService {
       if (syncRadarr) {
         try {
           final radarrState = RadarrState();
-          if (radarrState.isEnabled && radarrState.api != null) {
-            final radarrMovies = await radarrState.api!.movie.get();
+          if (radarrState.enabled && radarrState.api != null) {
+            final radarrMovies = await radarrState.api!.movie.getAll();
 
             for (final movie in radarrMovies) {
               movies.add({
@@ -59,7 +60,7 @@ class LibrarySyncService {
                 'year': movie.year,
                 'tmdb_id': movie.tmdbId,
                 'has_file': movie.hasFile,
-                'quality': movie.movieFile?.quality.quality.name,
+                'quality': movie.movieFile?.quality?.quality?.name,
                 'genres': movie.genres,
               });
             }
@@ -75,15 +76,15 @@ class LibrarySyncService {
       if (syncSonarr) {
         try {
           final sonarrState = SonarrState();
-          if (sonarrState.isEnabled && sonarrState.api != null) {
-            final sonarrShows = await sonarrState.api!.series.get();
+          if (sonarrState.enabled && sonarrState.api != null) {
+            final sonarrShows = await sonarrState.api!.series.getAll();
 
             for (final show in sonarrShows) {
               // Get season numbers that have files
               final seasonsWithFiles = show.seasons
-                  .where((s) => s.statistics?.episodeFileCount ?? 0 > 0)
+                  ?.where((s) => (s.statistics?.episodeFileCount ?? 0) > 0)
                   .map((s) => s.seasonNumber)
-                  .toList();
+                  .toList() ?? [];
 
               shows.add({
                 'title': show.title,

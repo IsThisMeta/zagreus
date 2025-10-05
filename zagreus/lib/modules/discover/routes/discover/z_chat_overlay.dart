@@ -23,6 +23,7 @@ class _ZChatPageState extends State<ZChatPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  final StagedOperationsService _stagingService = StagedOperationsService();
   bool _isThinking = false;
 
   @override
@@ -108,7 +109,7 @@ class _ZChatPageState extends State<ZChatPage> {
       // Check if response is staged operation
       if (response.isStaged && response.stageId != null) {
         // Fetch the staged operation to check if it's queue or stage
-        final stagedOp = await _service.fetchStagedOperation(response.stageId!);
+        final stagedOp = await _stagingService.fetchStagedOperation(response.stageId!);
 
         if (stagedOp == null) {
           setState(() {
@@ -278,7 +279,7 @@ class _ZChatPageState extends State<ZChatPage> {
         showZagSnackBar(
           title: 'Warning',
           message: '$failCount item${failCount == 1 ? '' : 's'} failed or already in library',
-          type: ZagSnackbarType.WARNING,
+          type: ZagSnackbarType.INFO,
         );
       }
     } catch (e, stack) {
