@@ -160,18 +160,35 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
 
   Widget _buildSubscriptionsButton() {
     final bool isPro = ZagreusPro.isEnabled;
+    final bool isMega = ZagreusMega.isEnabled;
+
+    // Determine display text and icon
+    String displayText;
+    IconData displayIcon;
+    Color displayColor;
+
+    if (isMega) {
+      displayText = 'Zagreus Mega Active • ${ZagreusMega.subscriptionType}';
+      displayIcon = Icons.star_rounded;
+      displayColor = ZagColours.purple;
+    } else if (isPro) {
+      displayText = 'Zagreus Pro Active • ${ZagreusPro.subscriptionType}';
+      displayIcon = Icons.star_rounded;
+      displayColor = ZagColours.orange;
+    } else {
+      displayText = 'Manage subscriptions';
+      displayIcon = Icons.shopping_bag_outlined;
+      displayColor = ZagColours.accent;
+    }
 
     return ZagBlock(
       title: 'Subscriptions',
       body: [
-        TextSpan(
-            text: isPro
-                ? 'Zagreus Pro Active • ${ZagreusPro.subscriptionType}'
-                : 'Manage subscriptions')
+        TextSpan(text: displayText)
       ],
       trailing: ZagIconButton(
-        icon: isPro ? Icons.star_rounded : Icons.shopping_bag_outlined,
-        color: isPro ? ZagColours.orange : ZagColours.accent,
+        icon: displayIcon,
+        color: displayColor,
       ),
       onTap: SettingsRoutes.SUBSCRIPTIONS.go,
     );
