@@ -53,7 +53,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           body: [
             TextSpan(
               text: isMega
-                  ? 'Included with Mega subscription'
+                  ? 'Included with Mega'
                   : isPro
                       ? 'Active • ${ZagreusPro.subscriptionType} subscription'
                       : 'Unlock the Discover module',
@@ -68,7 +68,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
               icon: isMega || isPro ? Icons.star_rounded : Icons.lock_open_rounded,
-              color: isMega ? ZagColours.purple : isPro ? ZagColours.orange : ZagColours.accent,
+              color: isMega || isPro ? ZagColours.orange : ZagColours.accent,
             ),
           ),
           onTap: () => _showProDialog(context),
@@ -80,7 +80,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           body: [
             TextSpan(
               text: isMega
-                  ? 'Active • mega subscription'
+                  ? 'Active'
                   : 'Unlock Z Assistant features • \$1.79/month'
             )
           ],
