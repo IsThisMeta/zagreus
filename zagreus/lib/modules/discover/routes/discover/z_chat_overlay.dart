@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/database/config.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
+import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
 
 /// Simple stateless Z chat page for Discover module
 /// Resets conversation when you leave Discover
@@ -238,13 +241,14 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _showStagingModal(String stageId, String operation) async {
-    // Navigate to the results page with all the batch add functionality
-    // This has the Radarr/Sonarr config buttons (movie/TV icons) at the top
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ZAssistantResultsRoute(
-          stageId: stageId,
-        ),
+    // Show the staging modal bottom sheet
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _StagingModal(
+        stageId: stageId,
+        operation: operation,
       ),
     );
 
@@ -416,40 +420,148 @@ class _ChatMessage {
   });
 }
 
-// Staging Modal
-class _StagingModal extends StatelessWidget {
+// Staging Modal - Power user list-based staging UI for Z Chat
+class _StagingModal extends StatefulWidget {
   final String stageId;
   final String operation;
-  final List<dynamic> items;
 
   const _StagingModal({
     required this.stageId,
     required this.operation,
-    required this.items,
   });
+
+  @override
+  State<_StagingModal> createState() => _StagingModalState();
+}
+
+class _StagingModalState extends State<_StagingModal> {
+  final _service = StagedOperationsService();
+
+  StagedOperation? _stagedOperation;
+  bool _loading = true;
+  String? _error;
+
+  // Multi-select state
+  final Set<int> _selectedIndices = {};
+  bool _isMultiSelectMode = false;
+
+  // Radarr/Sonarr config state
+  int? _selectedRadarrQualityProfileId;
+  String? _selectedRadarrQualityProfileName;
+  String? _selectedRadarrRootFolder;
+  bool _radarrSearchForMissing = true;
+
+  int? _selectedSonarrQualityProfileId;
+  String? _selectedSonarrQualityProfileName;
+  String? _selectedSonarrRootFolder;
+  SonarrSeriesMonitorType _sonarrMonitorType = SonarrSeriesMonitorType.ALL;
+  SonarrSeriesType _sonarrSeriesType = SonarrSeriesType.STANDARD;
+  bool _sonarrSearchForMissing = true;
+  bool _sonarrSearchForCutoffUnmet = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedSettings();
+    _loadData();
+  }
+
+  void _loadSavedSettings() {
+    _selectedRadarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _selectedRadarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _selectedRadarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+
+    _selectedSonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _selectedSonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _selectedSonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    final savedMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _sonarrMonitorType = SonarrSeriesMonitorType.values.firstWhere(
+      (type) => type.value == savedMonitorType,
+      orElse: () => SonarrSeriesMonitorType.ALL,
+    );
+    final savedSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    _sonarrSeriesType = SonarrSeriesType.values.firstWhere(
+      (type) => type.value == savedSeriesType,
+      orElse: () => SonarrSeriesType.STANDARD,
+    );
+    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
+    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+      _selectedIndices.clear();
+      _isMultiSelectMode = false;
+    });
+
+    try {
+      final operation = await _service.fetchStagedOperation(widget.stageId);
+
+      if (operation == null) {
+        setState(() {
+          _error = 'Failed to load staged operation';
+          _loading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _stagedOperation = operation;
+        _loading = false;
+      });
+    } catch (e, stack) {
+      ZagLogger().error('Error loading staged operation', e, stack);
+      setState(() {
+        _error = 'Error loading operation: $e';
+        _loading = false;
+      });
+    }
+  }
+
+  void _toggleMultiSelectMode() {
+    setState(() {
+      _isMultiSelectMode = !_isMultiSelectMode;
+      if (!_isMultiSelectMode) {
+        _selectedIndices.clear();
+      }
+    });
+  }
+
+  void _toggleItemSelection(int index) {
+    setState(() {
+      if (_selectedIndices.contains(index)) {
+        _selectedIndices.remove(index);
+      } else {
+        _selectedIndices.add(index);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     // Get operation color and label
     Color badgeColor;
     String badgeText;
-    switch (operation) {
+    switch (widget.operation) {
       case 'add':
         badgeColor = Colors.green;
-        badgeText = 'ADD ${items.length} ITEMS';
+        badgeText = 'ADD ${_stagedOperation?.items.length ?? 0} ITEMS';
         break;
       case 'remove':
         badgeColor = Colors.red;
-        badgeText = 'REMOVE ${items.length} ITEMS';
+        badgeText = 'REMOVE ${_stagedOperation?.items.length ?? 0} ITEMS';
         break;
       case 'update':
         badgeColor = const Color(0xFF89CFF0); // Pastel blue
-        badgeText = 'UPDATE ${items.length} ITEMS';
+        badgeText = 'UPDATE ${_stagedOperation?.items.length ?? 0} ITEMS';
         break;
       case 'discover':
       default:
         badgeColor = ZagColours.accent;
-        badgeText = '${items.length} RESULTS';
+        badgeText = '${_stagedOperation?.items.length ?? 0} RESULTS';
     }
 
     return Container(
@@ -460,9 +572,9 @@ class _StagingModal extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header with badge
+          // Header with icons and badge
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -472,110 +584,57 @@ class _StagingModal extends StatelessWidget {
                 ),
               ),
             ),
-            child: Row(
+            child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: badgeColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    badgeText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                // Icon buttons row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.movie),
+                      onPressed: _showRadarrConfig,
+                      tooltip: 'Radarr Settings',
                     ),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.tv),
+                      onPressed: _showSonarrConfig,
+                      tooltip: 'Sonarr Settings',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.checklist),
+                      onPressed: _toggleMultiSelectMode,
+                      tooltip: 'Select Items',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Badge
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          // Scrollable items list
+          // Body
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final title = item['title'] ?? 'Unknown';
-                final year = item['year'];
-                final posterPath = item['poster_path'] as String?;
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.03),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      // Poster thumbnail
-                      if (posterPath != null && posterPath.isNotEmpty)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            'https://image.tmdb.org/t/p/w92$posterPath',
-                            width: 40,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 40,
-                              height: 60,
-                              color: Colors.grey.withOpacity(0.3),
-                              child: const Icon(Icons.movie, size: 20),
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          width: 40,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Icon(Icons.movie, size: 20),
-                        ),
-                      const SizedBox(width: 12),
-                      // Title and year
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87,
-                              ),
-                            ),
-                            if (year != null && year != 0)
-                              Text(
-                                year.toString(),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white.withOpacity(0.5)
-                                      : Colors.black.withOpacity(0.5),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: _buildBody(),
           ),
 
           // Bottom buttons
@@ -612,7 +671,7 @@ class _StagingModal extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(true),
+                    onPressed: _loading ? null : _handleConfirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: badgeColor,
                       foregroundColor: Colors.white,
@@ -633,6 +692,387 @@ class _StagingModal extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildBody() {
+    if (_loading) {
+      return Center(child: ZagLoader());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error Loading Operation', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_stagedOperation == null || _stagedOperation!.items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text('No Items', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _stagedOperation!.items.length,
+      itemBuilder: (context, index) {
+        final item = _stagedOperation!.items[index];
+        final isSelected = _selectedIndices.contains(index);
+
+        return GestureDetector(
+          onTap: () {
+            if (_isMultiSelectMode) {
+              _toggleItemSelection(index);
+            } else {
+              _showItemCustomization(item, index);
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected && _isMultiSelectMode
+                  ? ZagColours.accent.withOpacity(0.2)
+                  : Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(8),
+              border: isSelected && _isMultiSelectMode
+                  ? Border.all(color: ZagColours.accent, width: 2)
+                  : null,
+            ),
+            child: Row(
+              children: [
+                // Checkbox (if multi-select mode)
+                if (_isMultiSelectMode) ...[
+                  Icon(
+                    isSelected ? Icons.check_circle : Icons.circle_outlined,
+                    color: isSelected ? ZagColours.accent : Colors.grey,
+                  ),
+                  const SizedBox(width: 12),
+                ],
+
+                // Poster thumbnail
+                if (item.posterPath != null && item.posterPath!.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      'https://image.tmdb.org/t/p/w92${item.posterPath}',
+                      width: 40,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 40,
+                        height: 60,
+                        color: Colors.grey.withOpacity(0.3),
+                        child: const Icon(Icons.movie, size: 20),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    width: 40,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      item.isMovie ? Icons.movie : Icons.tv,
+                      size: 20,
+                    ),
+                  ),
+                const SizedBox(width: 12),
+
+                // Title and year
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
+                      ),
+                      if (item.year != null)
+                        Text(
+                          item.year.toString(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white.withOpacity(0.5)
+                                : Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Media type indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: item.isMovie ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    item.isMovie ? 'MOVIE' : 'TV',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: item.isMovie ? Colors.orange : Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showItemCustomization(StagedMediaItem item, int index) {
+    // TODO: Show dialog to customize quality profile, root folder, etc. for this specific item
+    // For now, just show a preview
+    showZagSnackBar(
+      title: 'Per-item Customization',
+      message: 'Tap and hold to customize settings for ${item.title}',
+      type: ZagSnackbarType.INFO,
+    );
+  }
+
+  void _showRadarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Radarr Settings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: _selectedRadarrQualityProfileName != null ? Text(_selectedRadarrQualityProfileName!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectRadarrQualityProfile();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: _selectedRadarrRootFolder != null ? Text(_selectedRadarrRootFolder!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectRadarrRootFolder();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    setState(() {
+                      _radarrSearchForMissing = value;
+                      ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                    });
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSonarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Sonarr Settings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: _selectedSonarrQualityProfileName != null ? Text(_selectedSonarrQualityProfileName!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrQualityProfile();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: _selectedSonarrRootFolder != null ? Text(_selectedSonarrRootFolder!) : null,
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  Navigator.pop(context);
+                  _selectSonarrRootFolder();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _sonarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    setState(() {
+                      _sonarrSearchForMissing = value;
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                    });
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectRadarrQualityProfile() async {
+    try {
+      final profiles = await context.read<RadarrState>().qualityProfiles;
+
+      if (profiles == null || profiles.isEmpty) {
+        showZagSnackBar(title: 'No Quality Profiles', message: 'No Radarr quality profiles found', type: ZagSnackbarType.INFO);
+        return;
+      }
+
+      final Tuple2<bool, RadarrQualityProfile?> result = await RadarrDialogs().editQualityProfile(context, profiles);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedRadarrQualityProfileId = result.item2!.id;
+          _selectedRadarrQualityProfileName = result.item2!.name;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(_selectedRadarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(_selectedRadarrQualityProfileName);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Radarr quality profile', e, stack);
+      showZagSnackBar(title: 'Error', message: 'Failed to load quality profiles', type: ZagSnackbarType.ERROR);
+    }
+  }
+
+  Future<void> _selectRadarrRootFolder() async {
+    try {
+      final folders = await context.read<RadarrState>().rootFolders;
+
+      if (folders == null || folders.isEmpty) {
+        showZagSnackBar(title: 'No Root Folders', message: 'No Radarr root folders found', type: ZagSnackbarType.INFO);
+        return;
+      }
+
+      final Tuple2<bool, RadarrRootFolder?> result = await RadarrDialogs().editRootFolder(context, folders);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedRadarrRootFolder = result.item2!.path;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(_selectedRadarrRootFolder);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Radarr root folder', e, stack);
+      showZagSnackBar(title: 'Error', message: 'Failed to load root folders', type: ZagSnackbarType.ERROR);
+    }
+  }
+
+  Future<void> _selectSonarrQualityProfile() async {
+    try {
+      final profiles = await context.read<SonarrState>().qualityProfiles;
+
+      if (profiles == null || profiles.isEmpty) {
+        showZagSnackBar(title: 'No Quality Profiles', message: 'No Sonarr quality profiles found', type: ZagSnackbarType.INFO);
+        return;
+      }
+
+      final Tuple2<bool, SonarrQualityProfile?> result = await SonarrDialogs().editQualityProfile(context, profiles);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedSonarrQualityProfileId = result.item2!.id;
+          _selectedSonarrQualityProfileName = result.item2!.name;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(_selectedSonarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(_selectedSonarrQualityProfileName);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr quality profile', e, stack);
+      showZagSnackBar(title: 'Error', message: 'Failed to load quality profiles', type: ZagSnackbarType.ERROR);
+    }
+  }
+
+  Future<void> _selectSonarrRootFolder() async {
+    try {
+      final folders = await context.read<SonarrState>().rootFolders;
+
+      if (folders == null || folders.isEmpty) {
+        showZagSnackBar(title: 'No Root Folders', message: 'No Sonarr root folders found', type: ZagSnackbarType.INFO);
+        return;
+      }
+
+      final Tuple2<bool, SonarrRootFolder?> result = await SonarrDialogs().editRootFolder(context, folders);
+
+      if (result.item1 && result.item2 != null) {
+        setState(() {
+          _selectedSonarrRootFolder = result.item2!.path;
+        });
+
+        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(_selectedSonarrRootFolder);
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Error selecting Sonarr root folder', e, stack);
+      showZagSnackBar(title: 'Error', message: 'Failed to load root folders', type: ZagSnackbarType.ERROR);
+    }
+  }
+
+  Future<void> _handleConfirm() async {
+    // TODO: Execute the staged operation via backend
+    // For now, just close the modal
+    Navigator.of(context).pop(true);
   }
 }
 
