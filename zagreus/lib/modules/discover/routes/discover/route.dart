@@ -5008,7 +5008,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<String> titles = [
     'Movies',
     'TV Shows',
-    'Z',
+    'Agent',
     'Search',
   ];
 
