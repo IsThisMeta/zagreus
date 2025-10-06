@@ -6,6 +6,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 class PersonDetailsRoute extends StatefulWidget {
   final int personId;
@@ -33,10 +34,43 @@ class _State extends State<PersonDetailsRoute>
   String _selectedRole = 'ALL'; // ALL, CAST, CREW
   bool _expandedBio = false;
 
+  // Radarr multi-add settings
+  int? _radarrQualityProfileId;
+  String? _radarrQualityProfileName;
+  String? _radarrRootFolder;
+  bool _radarrSearchForMissing = true;
+
+  // Sonarr multi-add settings
+  int? _sonarrQualityProfileId;
+  String? _sonarrQualityProfileName;
+  String? _sonarrRootFolder;
+  String? _sonarrMonitorType;
+  String? _sonarrSeriesType;
+  bool _sonarrSearchForMissing = true;
+
+  // Multi-select mode
+  bool _isMultiSelectMode = false;
+  Set<int> _selectedCreditIndices = {};
+
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     _loadPersonData();
+  }
+
+  void _loadSavedSettings() {
+    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+
+    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
   }
 
   Future<void> _loadPersonData() async {
@@ -94,11 +128,73 @@ class _State extends State<PersonDetailsRoute>
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      appBar: ZagAppBar(
-        title: widget.personName,
-      ) as PreferredSizeWidget,
+      appBar: _appBar(),
       body: _isLoading ? _loadingBody() : _body(),
     );
+  }
+
+  PreferredSizeWidget _appBar() {
+    if (_isMultiSelectMode) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = false;
+              _selectedCreditIndices.clear();
+            });
+          },
+        ),
+        title: Text('${_selectedCreditIndices.length} selected'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _selectedCreditIndices.isEmpty ? null : _addSelectedCredits,
+            tooltip: 'Add Selected',
+          ),
+        ],
+      );
+    }
+
+    return ZagAppBar(
+      title: widget.personName,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.movie),
+          onPressed: _showRadarrConfig,
+          tooltip: 'Radarr Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.tv),
+          onPressed: _showSonarrConfig,
+          tooltip: 'Sonarr Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = true;
+            });
+          },
+          tooltip: 'Multi-Select',
+        ),
+      ],
+    ) as PreferredSizeWidget;
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedCreditIndices.length == _filteredCredits.length) {
+        _selectedCreditIndices.clear();
+      } else {
+        _selectedCreditIndices = Set.from(List.generate(_filteredCredits.length, (i) => i));
+      }
+    });
   }
 
   Widget _loadingBody() {
@@ -489,7 +585,7 @@ class _State extends State<PersonDetailsRoute>
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final credit = _filteredCredits[index];
-            return _creditCard(credit);
+            return _creditCard(credit, index);
           },
           childCount: _filteredCredits.length,
         ),
@@ -497,9 +593,11 @@ class _State extends State<PersonDetailsRoute>
     );
   }
 
-  Widget _creditCard(Map<String, dynamic> credit) {
+  Widget _creditCard(Map<String, dynamic> credit, int index) {
+    final isSelected = _selectedCreditIndices.contains(index);
+
     return GestureDetector(
-      onTap: () => _handleCreditTap(credit),
+      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleCreditTap(credit),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         child: Column(
@@ -600,6 +698,31 @@ class _State extends State<PersonDetailsRoute>
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    // Selection indicator
+                    if (_isMultiSelectMode)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                            border: Border.all(
+                              color: isSelected ? Colors.blue : Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: isSelected
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16,
+                                )
+                              : null,
                         ),
                       ),
                   ],
@@ -844,6 +967,389 @@ class _State extends State<PersonDetailsRoute>
         type: ZagSnackbarType.ERROR,
       );
     }
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (_selectedCreditIndices.contains(index)) {
+        _selectedCreditIndices.remove(index);
+      } else {
+        _selectedCreditIndices.add(index);
+      }
+    });
+  }
+
+  void _showRadarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Radarr Batch Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.hd),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final profiles = await radarrState.api!.qualityProfile.getAll();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrQualityProfileId = profile.id;
+                              _radarrQualityProfileName = profile.name;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final folders = await radarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrRootFolder = folder.path;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Search for Missing'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    _radarrSearchForMissing = value;
+                  });
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSonarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sonarr Batch Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.hd),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+                onTap: () async {
+                  final sonarrState = context.read<SonarrState>();
+                  final profiles = await sonarrState.api!.profile.getQualityProfiles();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _sonarrQualityProfileId = profile.id;
+                              _sonarrQualityProfileName = profile.name;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_sonarrRootFolder ?? 'Not selected'),
+                onTap: () async {
+                  final sonarrState = context.read<SonarrState>();
+                  final folders = await sonarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _sonarrRootFolder = folder.path;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Search for Missing'),
+                value: _sonarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    _sonarrSearchForMissing = value;
+                  });
+                  ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addSelectedCredits() async {
+    final selectedCredits = _selectedCreditIndices.map((i) => _filteredCredits[i]).toList();
+
+    final movies = selectedCredits.where((c) => c['mediaType'] == 'movie').toList();
+    final shows = selectedCredits.where((c) => c['mediaType'] == 'tv').toList();
+
+    int movieSuccess = 0;
+    int movieFail = 0;
+    int showSuccess = 0;
+    int showFail = 0;
+
+    // Add movies to Radarr
+    if (movies.isNotEmpty) {
+      if (_radarrQualityProfileId == null || _radarrRootFolder == null) {
+        showZagSnackBar(
+          title: 'Radarr Configuration Required',
+          message: 'Please configure Radarr settings first',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final radarrState = context.read<RadarrState>();
+      if (!radarrState.enabled || radarrState.api == null) {
+        showZagSnackBar(
+          title: 'Radarr Not Available',
+          message: 'Radarr is not enabled or configured',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final profiles = await radarrState.qualityProfiles;
+      final folders = await radarrState.rootFolders;
+
+      if (profiles != null && folders != null) {
+        final selectedProfile = profiles.firstWhere(
+          (p) => p.id == _radarrQualityProfileId,
+          orElse: () => profiles.first,
+        );
+        final selectedFolder = folders.firstWhere(
+          (f) => f.path == _radarrRootFolder,
+          orElse: () => folders.first,
+        );
+
+        for (final movie in movies) {
+          try {
+            final tmdbId = movie['id'] as int?;
+            if (tmdbId == null) {
+              movieFail++;
+              continue;
+            }
+
+            final lookupResults = await radarrState.api!.movieLookup.get(
+              term: "tmdb:$tmdbId",
+            );
+
+            if (lookupResults.isEmpty || (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
+              movieFail++;
+              continue;
+            }
+
+            await radarrState.api!.movie.create(
+              movie: lookupResults.first,
+              rootFolder: selectedFolder,
+              monitored: true,
+              minimumAvailability: RadarrAvailability.ANNOUNCED,
+              qualityProfile: selectedProfile,
+              searchForMovie: _radarrSearchForMissing,
+            );
+
+            movieSuccess++;
+          } catch (e) {
+            movieFail++;
+          }
+        }
+      }
+    }
+
+    // Add shows to Sonarr
+    if (shows.isNotEmpty) {
+      if (_sonarrQualityProfileId == null || _sonarrRootFolder == null) {
+        showZagSnackBar(
+          title: 'Sonarr Configuration Required',
+          message: 'Please configure Sonarr settings first',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final sonarrState = context.read<SonarrState>();
+      if (!sonarrState.enabled || sonarrState.api == null) {
+        showZagSnackBar(
+          title: 'Sonarr Not Available',
+          message: 'Sonarr is not enabled or configured',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final profiles = await sonarrState.qualityProfiles;
+      final folders = await sonarrState.rootFolders;
+
+      if (profiles != null && folders != null) {
+        final selectedProfile = profiles.firstWhere(
+          (p) => p.id == _sonarrQualityProfileId,
+          orElse: () => profiles.first,
+        );
+        final selectedFolder = folders.firstWhere(
+          (f) => f.path == _sonarrRootFolder,
+          orElse: () => folders.first,
+        );
+
+        final monitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
+        final seriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
+
+        for (final show in shows) {
+          try {
+            final tmdbId = show['id'] as int?;
+            if (tmdbId == null) {
+              showFail++;
+              continue;
+            }
+
+            final lookupResults = await sonarrState.api!.seriesLookup.get(
+              term: "tmdb:$tmdbId",
+            );
+
+            if (lookupResults.isEmpty || (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
+              showFail++;
+              continue;
+            }
+
+            await sonarrState.api!.series.create(
+              series: lookupResults.first,
+              rootFolder: selectedFolder,
+              qualityProfile: selectedProfile,
+              seriesType: seriesType,
+              seasonFolder: true,
+              searchForMissingEpisodes: _sonarrSearchForMissing,
+              monitorType: monitorType,
+            );
+
+            showSuccess++;
+          } catch (e) {
+            showFail++;
+          }
+        }
+      }
+    }
+
+    showZagSnackBar(
+      title: 'Batch Add Complete',
+      message: 'Movies: $movieSuccess added, $movieFail failed. Shows: $showSuccess added, $showFail failed.',
+      type: (movieSuccess > 0 || showSuccess > 0) ? ZagSnackbarType.SUCCESS : ZagSnackbarType.ERROR,
+    );
+
+    setState(() {
+      _isMultiSelectMode = false;
+      _selectedCreditIndices.clear();
+    });
+
+    _loadPersonData();
   }
 
   Future<void> _handleCreditTap(Map<String, dynamic> credit) async {
