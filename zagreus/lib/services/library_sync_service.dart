@@ -99,6 +99,13 @@ class LibrarySyncService {
             final radarrMovies = await radarrState.api!.movie.getAll();
             print('  Received ${radarrMovies.length} movies from Radarr');
 
+            // Fetch quality profiles for name lookup
+            print('  Fetching Radarr quality profiles...');
+            final qualityProfiles = await radarrState.api!.qualityProfile.getAll();
+            final qualityProfileMap = {
+              for (var profile in qualityProfiles) profile.id: profile.name
+            };
+
             for (final movie in radarrMovies) {
               movies.add({
                 'title': movie.title,
@@ -106,6 +113,8 @@ class LibrarySyncService {
                 'tmdb_id': movie.tmdbId,
                 'has_file': movie.hasFile,
                 'quality': movie.movieFile?.quality?.quality?.name,
+                'quality_profile_id': movie.qualityProfileId,
+                'quality_profile_name': qualityProfileMap[movie.qualityProfileId],
                 'genres': movie.genres,
               });
             }
@@ -135,6 +144,13 @@ class LibrarySyncService {
             final sonarrShows = await sonarrState.api!.series.getAll();
             print('  Received ${sonarrShows.length} shows from Sonarr');
 
+            // Fetch quality profiles for name lookup
+            print('  Fetching Sonarr quality profiles...');
+            final qualityProfiles = await sonarrState.api!.profile.getQualityProfiles();
+            final qualityProfileMap = {
+              for (var profile in qualityProfiles) profile.id: profile.name
+            };
+
             for (final show in sonarrShows) {
               // Get season info with completion percentages
               final seasonsWithPercentages = show.seasons
@@ -155,6 +171,8 @@ class LibrarySyncService {
                 'tvdb_id': show.tvdbId,  // Sonarr uses TVDB IDs
                 'seasons': seasonsWithPercentages,
                 'has_file': seasonsWithPercentages.isNotEmpty,
+                'quality_profile_id': show.qualityProfileId,
+                'quality_profile_name': qualityProfileMap[show.qualityProfileId],
                 'genres': show.genres,
               });
             }

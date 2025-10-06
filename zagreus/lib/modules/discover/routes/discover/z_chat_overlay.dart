@@ -229,6 +229,26 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _executeQueueOperation(StagedOperation operation) async {
+    switch (operation.operation) {
+      case 'add':
+        await _executeAddOperation(operation);
+        break;
+      case 'update':
+        await _executeUpdateOperation(operation);
+        break;
+      case 'remove':
+        await _executeRemoveOperation(operation);
+        break;
+      default:
+        showZagSnackBar(
+          title: 'Unknown Operation',
+          message: 'Operation type "${operation.operation}" is not supported',
+          type: ZagSnackbarType.ERROR,
+        );
+    }
+  }
+
+  Future<void> _executeAddOperation(StagedOperation operation) async {
     try {
       // Split items by media type
       final movies = operation.items.where((item) => item.isMovie).toList();
@@ -410,6 +430,307 @@ class _ZChatPageState extends State<ZChatPage> {
       showZagSnackBar(
         title: 'Error',
         message: 'Failed to execute operation',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _executeUpdateOperation(StagedOperation operation) async {
+    try {
+      // Get target quality profile from params
+      final targetQualityProfileId = operation.params?['target_quality_profile_id'] as int?;
+      final targetQualityProfileName = operation.params?['target_quality_profile_name'] as String?;
+      final searchAfterUpdate = operation.params?['search_after_update'] as bool? ?? false;
+
+      if (targetQualityProfileId == null) {
+        showZagSnackBar(
+          title: 'Missing Configuration',
+          message: 'No target quality profile specified for update',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      // Split items by media type
+      final movies = operation.items.where((item) => item.isMovie).toList();
+      final shows = operation.items.where((item) => item.isShow).toList();
+
+      int successCount = 0;
+      int failCount = 0;
+
+      // Update movies in Radarr
+      if (movies.isNotEmpty) {
+        final radarrState = context.read<RadarrState>();
+
+        if (!radarrState.enabled || radarrState.api == null) {
+          showZagSnackBar(
+            title: 'Radarr Not Available',
+            message: 'Radarr is not enabled or configured',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        for (final movie in movies) {
+          try {
+            // Lookup movie in Radarr
+            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+
+            if (lookupResults.isEmpty) {
+              ZagLogger().warning('Movie not found in Radarr: ${movie.title}');
+              failCount++;
+              continue;
+            }
+
+            final radarrMovie = lookupResults.first;
+
+            // Check if movie is already in library
+            if (radarrMovie.id == null || radarrMovie.id! <= 0) {
+              ZagLogger().warning('Movie not in library: ${movie.title}');
+              failCount++;
+              continue;
+            }
+
+            // Update the quality profile
+            radarrMovie.qualityProfileId = targetQualityProfileId;
+
+            // Send update to Radarr
+            await radarrState.api!.movie.update(movie: radarrMovie);
+
+            // Optionally trigger search
+            if (searchAfterUpdate) {
+              await radarrState.api!.command.moviesSearch(movieIds: [radarrMovie.id!]);
+            }
+
+            successCount++;
+            ZagLogger().debug('Updated movie: ${movie.title} to quality profile: $targetQualityProfileName');
+          } catch (e) {
+            ZagLogger().error('Failed to update movie: ${movie.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
+
+      // Update shows in Sonarr
+      if (shows.isNotEmpty) {
+        final sonarrState = context.read<SonarrState>();
+
+        if (!sonarrState.enabled || sonarrState.api == null) {
+          showZagSnackBar(
+            title: 'Sonarr Not Available',
+            message: 'Sonarr is not enabled or configured',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        for (final show in shows) {
+          try {
+            // Skip if no TVDB ID
+            if (show.tvdbId == null) {
+              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              failCount++;
+              continue;
+            }
+
+            // Lookup show in Sonarr
+            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+
+            if (lookupResults.isEmpty) {
+              ZagLogger().warning('Show not found in Sonarr: ${show.title}');
+              failCount++;
+              continue;
+            }
+
+            final sonarrSeries = lookupResults.first;
+
+            // Check if show is already in library
+            if (sonarrSeries.id == null || sonarrSeries.id! <= 0) {
+              ZagLogger().warning('Show not in library: ${show.title}');
+              failCount++;
+              continue;
+            }
+
+            // Update the quality profile
+            sonarrSeries.qualityProfileId = targetQualityProfileId;
+
+            // Send update to Sonarr
+            await sonarrState.api!.series.update(series: sonarrSeries);
+
+            // Optionally trigger search
+            if (searchAfterUpdate) {
+              await sonarrState.api!.command.seriesSearch(seriesId: sonarrSeries.id!);
+            }
+
+            successCount++;
+            ZagLogger().debug('Updated show: ${show.title} to quality profile: $targetQualityProfileName');
+          } catch (e) {
+            ZagLogger().error('Failed to update show: ${show.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
+
+      // Show results
+      if (successCount > 0) {
+        showZagSnackBar(
+          title: 'Update Successful',
+          message: 'Updated $successCount item${successCount == 1 ? '' : 's'} to $targetQualityProfileName',
+          type: ZagSnackbarType.SUCCESS,
+        );
+      }
+
+      if (failCount > 0) {
+        showZagSnackBar(
+          title: 'Some Updates Failed',
+          message: '$failCount item${failCount == 1 ? '' : 's'} failed to update',
+          type: ZagSnackbarType.INFO,
+        );
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Update operation failed', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to execute update operation',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _executeRemoveOperation(StagedOperation operation) async {
+    try {
+      // Split items by media type
+      final movies = operation.items.where((item) => item.isMovie).toList();
+      final shows = operation.items.where((item) => item.isShow).toList();
+
+      int successCount = 0;
+      int failCount = 0;
+
+      // Remove movies from Radarr
+      if (movies.isNotEmpty) {
+        final radarrState = context.read<RadarrState>();
+
+        if (!radarrState.enabled || radarrState.api == null) {
+          showZagSnackBar(
+            title: 'Radarr Not Available',
+            message: 'Radarr is not enabled or configured',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        for (final movie in movies) {
+          try {
+            // Lookup movie in Radarr
+            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+
+            if (lookupResults.isEmpty) {
+              ZagLogger().warning('Movie not found in Radarr: ${movie.title}');
+              failCount++;
+              continue;
+            }
+
+            final radarrMovie = lookupResults.first;
+
+            // Check if movie is in library
+            if (radarrMovie.id == null || radarrMovie.id! <= 0) {
+              ZagLogger().warning('Movie not in library: ${movie.title}');
+              failCount++;
+              continue;
+            }
+
+            // Remove from Radarr (don't delete files by default, don't add to exclusion list)
+            await radarrState.api!.movie.delete(
+              movieId: radarrMovie.id!,
+              deleteFiles: false,
+              addImportExclusion: false,
+            );
+
+            successCount++;
+            ZagLogger().debug('Removed movie: ${movie.title}');
+          } catch (e) {
+            ZagLogger().error('Failed to remove movie: ${movie.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
+
+      // Remove shows from Sonarr
+      if (shows.isNotEmpty) {
+        final sonarrState = context.read<SonarrState>();
+
+        if (!sonarrState.enabled || sonarrState.api == null) {
+          showZagSnackBar(
+            title: 'Sonarr Not Available',
+            message: 'Sonarr is not enabled or configured',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+
+        for (final show in shows) {
+          try {
+            // Skip if no TVDB ID
+            if (show.tvdbId == null) {
+              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              failCount++;
+              continue;
+            }
+
+            // Lookup show in Sonarr
+            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+
+            if (lookupResults.isEmpty) {
+              ZagLogger().warning('Show not found in Sonarr: ${show.title}');
+              failCount++;
+              continue;
+            }
+
+            final sonarrSeries = lookupResults.first;
+
+            // Check if show is in library
+            if (sonarrSeries.id == null || sonarrSeries.id! <= 0) {
+              ZagLogger().warning('Show not in library: ${show.title}');
+              failCount++;
+              continue;
+            }
+
+            // Remove from Sonarr (don't delete files by default)
+            await sonarrState.api!.series.delete(
+              seriesId: sonarrSeries.id!,
+              deleteFiles: false,
+            );
+
+            successCount++;
+            ZagLogger().debug('Removed show: ${show.title}');
+          } catch (e) {
+            ZagLogger().error('Failed to remove show: ${show.title}', e, StackTrace.current);
+            failCount++;
+          }
+        }
+      }
+
+      // Show results
+      if (successCount > 0) {
+        showZagSnackBar(
+          title: 'Remove Successful',
+          message: 'Removed $successCount item${successCount == 1 ? '' : 's'} from library',
+          type: ZagSnackbarType.SUCCESS,
+        );
+      }
+
+      if (failCount > 0) {
+        showZagSnackBar(
+          title: 'Some Removals Failed',
+          message: '$failCount item${failCount == 1 ? '' : 's'} failed to remove',
+          type: ZagSnackbarType.INFO,
+        );
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Remove operation failed', e, stack);
+      showZagSnackBar(
+        title: 'Error',
+        message: 'Failed to execute remove operation',
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -698,7 +1019,24 @@ class _ZChatPageState extends State<ZChatPage> {
     try {
       // Create staged operation locally
       final service = StagedOperationsService();
-      final stageId = await service.createStagedOperation(operation, mockItems);
+
+      // Add params for UPDATE operation (simulating HD to 4K upgrade)
+      Map<String, dynamic>? params;
+      if (operation == 'update') {
+        // Simulate upgrading to a 4K quality profile
+        // In a real scenario, the AI would look up the actual profile ID
+        params = {
+          'target_quality_profile_id': 4,  // Example: 4K profile ID
+          'target_quality_profile_name': 'Ultra-HD',
+          'search_after_update': true,
+        };
+      }
+
+      final stageId = await service.createStagedOperation(
+        operation,
+        mockItems,
+        params: params,
+      );
 
       print('🎯 Mock $operation operation created: $stageId');
 
@@ -953,6 +1291,25 @@ class _StagingModalState extends State<_StagingModal> {
 
       setState(() {
         _stagedOperation = operation;
+
+        // Hot-load quality profiles from params for UPDATE operations
+        if (operation.operation == 'update' && operation.params != null) {
+          final targetQualityId = operation.params!['target_quality_profile_id'] as int?;
+          final targetQualityName = operation.params!['target_quality_profile_name'] as String?;
+
+          if (targetQualityId != null && targetQualityName != null) {
+            // Override Radarr settings with AI's target quality
+            _selectedRadarrQualityProfileId = targetQualityId;
+            _selectedRadarrQualityProfileName = targetQualityName;
+
+            // Override Sonarr settings with AI's target quality
+            _selectedSonarrQualityProfileId = targetQualityId;
+            _selectedSonarrQualityProfileName = targetQualityName;
+
+            ZagLogger().debug('Hot-loaded quality profile for UPDATE: $targetQualityName (ID: $targetQualityId)');
+          }
+        }
+
         _loading = false;
       });
     } catch (e, stack) {
@@ -1095,14 +1452,21 @@ class _StagingModalState extends State<_StagingModal> {
                     onPressed: () => Navigator.of(context).pop(false),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                      side: BorderSide(
+                        color: (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withOpacity(0.5),
+                      ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'CANCEL',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.red,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
                       ),
                     ),
                   ),
@@ -1509,9 +1873,71 @@ class _StagingModalState extends State<_StagingModal> {
   }
 
   Future<void> _handleConfirm() async {
-    // TODO: Execute the staged operation via backend
-    // For now, just close the modal
-    Navigator.of(context).pop(true);
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      if (_stagedOperation == null) {
+        showZagSnackBar(
+          title: 'Error',
+          message: 'No staged operation found',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      // Use the same execution methods based on operation type
+      final parentState = context.findAncestorStateOfType<_ZChatPageState>();
+      if (parentState != null) {
+        switch (_stagedOperation!.operation) {
+          case 'add':
+            await parentState._executeAddOperation(_stagedOperation!);
+            break;
+          case 'update':
+            // For UPDATE, override params with currently selected quality profiles
+            final updatedParams = {
+              ...?_stagedOperation!.params,
+              'target_quality_profile_id': _selectedRadarrQualityProfileId ?? _selectedSonarrQualityProfileId,
+              'target_quality_profile_name': _selectedRadarrQualityProfileName ?? _selectedSonarrQualityProfileName,
+              'search_after_update': true,
+            };
+
+            final modifiedOperation = StagedOperation(
+              stageId: _stagedOperation!.stageId,
+              operation: _stagedOperation!.operation,
+              items: _stagedOperation!.items,
+              status: _stagedOperation!.status,
+              userId: _stagedOperation!.userId,
+              createdAt: _stagedOperation!.createdAt,
+              params: updatedParams,
+            );
+
+            await parentState._executeUpdateOperation(modifiedOperation);
+            break;
+          case 'remove':
+            await parentState._executeRemoveOperation(_stagedOperation!);
+            break;
+          default:
+            showZagSnackBar(
+              title: 'Unknown Operation',
+              message: 'Operation type "${_stagedOperation!.operation}" is not supported',
+              type: ZagSnackbarType.ERROR,
+            );
+        }
+      }
+
+      // Close modal with success
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
 }
 

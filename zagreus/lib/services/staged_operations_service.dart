@@ -53,6 +53,7 @@ class StagedOperation {
   final String status;
   final String? userId;
   final DateTime createdAt;
+  final Map<String, dynamic>? params; // Operation parameters (e.g., target quality profile)
 
   StagedOperation({
     required this.stageId,
@@ -61,6 +62,7 @@ class StagedOperation {
     required this.status,
     this.userId,
     required this.createdAt,
+    this.params,
   });
 
   factory StagedOperation.fromJson(Map<String, dynamic> json) {
@@ -76,6 +78,7 @@ class StagedOperation {
       status: json['status'] as String,
       userId: json['user_id'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      params: json['params'] as Map<String, dynamic>?,
     );
   }
 }
@@ -149,21 +152,31 @@ class StagedOperationsService {
   }
 
   /// Create a staged operation (for testing)
-  Future<String> createStagedOperation(String operation, List<Map<String, dynamic>> items) async {
+  Future<String> createStagedOperation(
+    String operation,
+    List<Map<String, dynamic>> items,
+    {Map<String, dynamic>? params}
+  ) async {
     try {
       ZagLogger().debug('Creating staged operation: $operation with ${items.length} items');
 
       // Generate a stage ID
       final stageId = DateTime.now().millisecondsSinceEpoch.toString();
 
+      final insertData = {
+        'stage_id': stageId,
+        'operation': operation,
+        'items': items,
+        'status': 'pending',
+      };
+
+      if (params != null) {
+        insertData['params'] = params;
+      }
+
       await ZagSupabase.client
           .from('staged_operations')
-          .insert({
-            'stage_id': stageId,
-            'operation': operation,
-            'items': items,
-            'status': 'pending',
-          });
+          .insert(insertData);
 
       ZagLogger().debug('Staged operation created: $stageId');
       return stageId;
