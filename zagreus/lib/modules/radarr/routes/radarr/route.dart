@@ -14,14 +14,23 @@ class RadarrRoute extends StatefulWidget {
 
 class _State extends State<RadarrRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<State<RadarrMissingRoute>> _missingRouteKey = GlobalKey();
   ZagPageController? _pageController;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _currentPage = RadarrDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(
-      initialPage: RadarrDatabase.NAVIGATION_INDEX.read(),
-    );
+      initialPage: _currentPage,
+    )..addListener(() {
+        if (_pageController!.page?.round() != _currentPage) {
+          setState(() {
+            _currentPage = _pageController!.page!.round();
+          });
+        }
+      });
   }
 
   @override
@@ -61,6 +70,17 @@ class _State extends State<RadarrRoute> {
     if (context.watch<RadarrState>().enabled) {
       actions = [
         const RadarrAppBarAddMoviesAction(),
+        if (_currentPage == 2) // Missing tab
+          IconButton(
+            icon: const Icon(Icons.checklist),
+            onPressed: () {
+              final missingState = _missingRouteKey.currentState;
+              if (missingState != null) {
+                (missingState as dynamic).toggleMultiSelect();
+              }
+            },
+            tooltip: 'Multi-Select',
+          ),
         const RadarrAppBarGlobalSettingsAction(),
       ];
     }
@@ -98,11 +118,11 @@ class _State extends State<RadarrRoute> {
         
         return ZagPageView(
           controller: _pageController,
-          children: const [
-            RadarrCatalogueRoute(),
-            RadarrUpcomingRoute(),
-            RadarrMissingRoute(),
-            RadarrMoreRoute(),
+          children: [
+            const RadarrCatalogueRoute(),
+            const RadarrUpcomingRoute(),
+            RadarrMissingRoute(key: _missingRouteKey),
+            const RadarrMoreRoute(),
           ],
         );
       },

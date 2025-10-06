@@ -10,11 +10,17 @@ class RadarrMissingTile extends StatefulWidget {
 
   final RadarrMovie movie;
   final RadarrQualityProfile? profile;
+  final bool isMultiSelectMode;
+  final bool isSelected;
+  final VoidCallback onToggleSelection;
 
   const RadarrMissingTile({
     Key? key,
     required this.movie,
     required this.profile,
+    this.isMultiSelectMode = false,
+    this.isSelected = false,
+    required this.onToggleSelection,
   }) : super(key: key);
 
   @override
@@ -39,9 +45,31 @@ class _State extends State<RadarrMissingTile> {
           _subtitle2(),
           _subtitle3(),
         ],
-        trailing: _trailing(),
-        onTap: _onTap,
+        trailing: widget.isMultiSelectMode ? _selectionIndicator() : _trailing(),
+        onTap: widget.isMultiSelectMode ? widget.onToggleSelection : _onTap,
       ),
+    );
+  }
+
+  Widget _selectionIndicator() {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: widget.isSelected ? Colors.blue : Colors.grey.withOpacity(0.3),
+        border: Border.all(
+          color: widget.isSelected ? Colors.blue : Colors.grey,
+          width: 2,
+        ),
+      ),
+      child: widget.isSelected
+          ? const Icon(
+              Icons.check,
+              color: Colors.white,
+              size: 20,
+            )
+          : null,
     );
   }
 

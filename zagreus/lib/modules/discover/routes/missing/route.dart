@@ -18,10 +18,14 @@ class DiscoverMissingRoute extends StatefulWidget {
 
 class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   List<RadarrMovie> _movies = [];
   bool _isLoading = true;
   String? _error;
+
+  // Multi-select mode
+  bool _isMultiSelectMode = false;
+  Set<int> _selectedMovieIndices = {};
   
   @override
   void initState() {
@@ -95,15 +99,61 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   }
   
   PreferredSizeWidget _appBar() {
+    if (_isMultiSelectMode) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = false;
+              _selectedMovieIndices.clear();
+            });
+          },
+        ),
+        title: Text('${_selectedMovieIndices.length} selected'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _selectedMovieIndices.isEmpty ? null : _searchForSelectedMovies,
+            tooltip: 'Search Selected',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'Missing Movies',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = true;
+            });
+          },
+          tooltip: 'Multi-Select',
+        ),
         IconButton(
           icon: Icon(ZagIcons.REFRESH),
           onPressed: _loadMissingMovies,
         ),
       ],
     );
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedMovieIndices.length == _movies.length) {
+        _selectedMovieIndices.clear();
+      } else {
+        _selectedMovieIndices = Set.from(List.generate(_movies.length, (i) => i));
+      }
+    });
   }
   
   Widget _body() {
@@ -193,21 +243,16 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
           mainAxisSpacing: 16,
         ),
         itemCount: _movies.length,
-        itemBuilder: (context, index) => _movieTile(_movies[index]),
+        itemBuilder: (context, index) => _movieTile(_movies[index], index),
       ),
     );
   }
   
-  Widget _movieTile(RadarrMovie movie) {
+  Widget _movieTile(RadarrMovie movie, int index) {
+    final isSelected = _selectedMovieIndices.contains(index);
+
     return GestureDetector(
-      onTap: () {
-        // Navigate to movie details
-        RadarrRoutes.MOVIE.go(
-          params: {
-            'movie': movie.id.toString(),
-          },
-        );
-      },
+      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -283,11 +328,100 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
                   ],
                 ),
               ),
+              // Selection indicator
+              if (_isMultiSelectMode)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : null,
+                  ),
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (_selectedMovieIndices.contains(index)) {
+        _selectedMovieIndices.remove(index);
+      } else {
+        _selectedMovieIndices.add(index);
+      }
+    });
+  }
+
+  void _navigateToMovie(RadarrMovie movie) {
+    RadarrRoutes.MOVIE.go(
+      params: {
+        'movie': movie.id.toString(),
+      },
+    );
+  }
+
+  Future<void> _searchForSelectedMovies() async {
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled || radarrState.api == null) {
+      showZagSnackBar(
+        title: 'Radarr Not Available',
+        message: 'Radarr is not enabled or configured',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final selectedMovies = _selectedMovieIndices.map((i) => _movies[i]).toList();
+
+    showZagSnackBar(
+      title: 'Searching',
+      message: 'Searching for ${selectedMovies.length} missing movies...',
+      type: ZagSnackbarType.INFO,
+    );
+
+    try {
+      // Trigger search for all selected movies
+      await radarrState.api!.command.moviesSearch(
+        movieIds: selectedMovies.map((m) => m.id!).toList(),
+      );
+
+      showZagSnackBar(
+        title: 'Search Started',
+        message: 'Search started for ${selectedMovies.length} movies',
+        type: ZagSnackbarType.SUCCESS,
+      );
+
+      // Exit multi-select mode
+      setState(() {
+        _isMultiSelectMode = false;
+        _selectedMovieIndices.clear();
+      });
+    } catch (e, stack) {
+      ZagLogger().error('Failed to search for movies', e, stack);
+      showZagSnackBar(
+        title: 'Search Failed',
+        message: 'Failed to start search: $e',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
   
   Widget _buildPosterImage(BuildContext context, RadarrMovie movie) {
