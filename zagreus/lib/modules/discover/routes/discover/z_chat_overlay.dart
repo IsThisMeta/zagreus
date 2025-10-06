@@ -436,11 +436,14 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _executeUpdateOperation(StagedOperation operation) async {
+    print('🔧 _executeUpdateOperation called');
     try {
       // Get target quality profile from params
       final targetQualityProfileId = operation.params?['target_quality_profile_id'] as int?;
       final targetQualityProfileName = operation.params?['target_quality_profile_name'] as String?;
       final searchAfterUpdate = operation.params?['search_after_update'] as bool? ?? false;
+
+      print('📊 Target quality: $targetQualityProfileName (ID: $targetQualityProfileId)');
 
       if (targetQualityProfileId == null) {
         showZagSnackBar(
@@ -893,6 +896,25 @@ class _ZChatPageState extends State<ZChatPage> {
     );
   }
 
+  void _navigateToMosaicResults(String stageId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ZAssistantResultsRoute(
+          stageId: stageId,
+          onMovieTap: (tmdbId, title) {
+            // TODO: Implement movie tap handling
+            print('Movie tapped: $title (TMDB: $tmdbId)');
+          },
+          onShowTap: (tmdbId, title) {
+            // TODO: Implement show tap handling
+            print('Show tapped: $title (TMDB: $tmdbId)');
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _showStagingModal(String stageId, String operation) async {
     // Show the staging modal bottom sheet
     final result = await showModalBottomSheet<bool>(
@@ -1084,8 +1106,8 @@ class _ZChatPageState extends State<ZChatPage> {
       );
     }
 
-    // Check if message has a stage ID - if so, show only the button
-    if (message.stageId != null) {
+    // Check if message has stage IDs - if so, show buttons
+    if (message.stageId != null || message.mosaicStageId != null) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
@@ -1098,39 +1120,82 @@ class _ZChatPageState extends State<ZChatPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 12),
-                    // Stage button
-                    InkWell(
-                      onTap: () => _showStagingModal(message.stageId!, message.content ?? ''),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: ZagColours.accent.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: ZagColours.accent.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '📁',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Open Stage',
-                              style: TextStyle(
-                                color: ZagColours.accent,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        // Mosaic button (tile view)
+                        if (message.mosaicStageId != null)
+                          InkWell(
+                            onTap: () => _navigateToMosaicResults(message.mosaicStageId!),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: ZagColours.accent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: ZagColours.accent.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.grid_view,
+                                    size: 16,
+                                    color: ZagColours.accent,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Open Mosaic',
+                                    style: TextStyle(
+                                      color: ZagColours.accent,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        // Stage button (operations modal)
+                        if (message.stageId != null)
+                          InkWell(
+                            onTap: () => _showStagingModal(message.stageId!, message.content ?? ''),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: ZagColours.accent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: ZagColours.accent.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '📁',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Open Stage',
+                                    style: TextStyle(
+                                      color: ZagColours.accent,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -1192,11 +1257,13 @@ class _ZChatPageState extends State<ZChatPage> {
 class _ChatMessage {
   final String? content;
   final bool isUser;
-  final String? stageId;
+  final String? stageId;  // For operations (modal)
+  final String? mosaicStageId;  // For mosaic results (tile view)
 
   _ChatMessage({
     this.content,
     this.stageId,
+    this.mosaicStageId,
     required this.isUser,
   });
 }
@@ -1873,12 +1940,14 @@ class _StagingModalState extends State<_StagingModal> {
   }
 
   Future<void> _handleConfirm() async {
+    print('🔘 CONFIRM button pressed');
     setState(() {
       _loading = true;
     });
 
     try {
       if (_stagedOperation == null) {
+        print('❌ No staged operation found');
         showZagSnackBar(
           title: 'Error',
           message: 'No staged operation found',
@@ -1887,14 +1956,20 @@ class _StagingModalState extends State<_StagingModal> {
         return;
       }
 
+      print('📦 Staged operation: ${_stagedOperation!.operation}');
+
       // Use the same execution methods based on operation type
       final parentState = context.findAncestorStateOfType<_ZChatPageState>();
+      print('🔍 Parent state found: ${parentState != null}');
+
       if (parentState != null) {
         switch (_stagedOperation!.operation) {
           case 'add':
+            print('➡️ Executing ADD operation');
             await parentState._executeAddOperation(_stagedOperation!);
             break;
           case 'update':
+            print('➡️ Executing UPDATE operation');
             // For UPDATE, override params with currently selected quality profiles
             final updatedParams = {
               ...?_stagedOperation!.params,
@@ -1916,6 +1991,7 @@ class _StagingModalState extends State<_StagingModal> {
             await parentState._executeUpdateOperation(modifiedOperation);
             break;
           case 'remove':
+            print('➡️ Executing REMOVE operation');
             await parentState._executeRemoveOperation(_stagedOperation!);
             break;
           default:
