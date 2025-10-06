@@ -448,6 +448,16 @@ class _ZChatPageState extends State<ZChatPage> {
                                     : Colors.black.withOpacity(0.4),
                           ),
                         ),
+                        const SizedBox(height: 32),
+                        OutlinedButton.icon(
+                          onPressed: _showMockOperationPicker,
+                          icon: const Icon(Icons.science),
+                          label: const Text('Test Operations (Mock Data)'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: ZagColours.accent,
+                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
+                          ),
+                        ),
                       ],
                     ),
                   )
@@ -591,6 +601,117 @@ class _ZChatPageState extends State<ZChatPage> {
       });
     }
     _scrollToBottom();
+  }
+
+  Future<void> _showMockOperationPicker() async {
+    // Show dialog to pick operation type
+    final operation = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Operation Type'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add, color: Colors.green),
+              title: const Text('ADD'),
+              subtitle: const Text('Add items to your library'),
+              onTap: () => Navigator.pop(context, 'add'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.remove, color: Colors.red),
+              title: const Text('REMOVE'),
+              subtitle: const Text('Remove items from your library'),
+              onTap: () => Navigator.pop(context, 'remove'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.update, color: Color(0xFF89CFF0)),
+              title: const Text('UPDATE'),
+              subtitle: const Text('Update existing items'),
+              onTap: () => Navigator.pop(context, 'update'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (operation == null) return;
+
+    // Create mock data (same as discover search test)
+    final mockItems = [
+      {
+        "tmdb_id": 155,
+        "media_type": "movie",
+        "title": "The Dark Knight",
+        "year": 2008,
+        "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+        "overview": "",
+        "verified": true
+      },
+      {
+        "tmdb_id": 680,
+        "media_type": "movie",
+        "title": "Pulp Fiction",
+        "year": 1994,
+        "poster_path": "/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg",
+        "overview": "",
+        "verified": true
+      },
+      {
+        "tmdb_id": 27205,
+        "media_type": "movie",
+        "title": "Inception",
+        "year": 2010,
+        "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
+        "overview": "",
+        "verified": true
+      },
+      {
+        "tmdb_id": 49026,
+        "media_type": "movie",
+        "title": "The Dark Knight Rises",
+        "year": 2012,
+        "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
+        "overview": "",
+        "verified": true
+      },
+      {
+        "tmdb_id": 1396,
+        "media_type": "tv",
+        "title": "Breaking Bad",
+        "year": 2008,
+        "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+        "overview": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
+        "verified": true
+      },
+      {
+        "tmdb_id": 1399,
+        "media_type": "tv",
+        "title": "Game of Thrones",
+        "year": 2011,
+        "poster_path": "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg",
+        "overview": "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
+        "verified": true
+      },
+    ];
+
+    try {
+      // Create staged operation locally
+      final service = StagedOperationsService();
+      final stageId = await service.createStagedOperation(operation, mockItems);
+
+      print('🎯 Mock $operation operation created: $stageId');
+
+      // Show the modal
+      await _showStagingModal(stageId, operation);
+    } catch (e) {
+      print('❌ Mock operation error: $e');
+      showZagSnackBar(
+        title: 'Test Error',
+        message: 'Failed to create mock operation: $e',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 
   Widget _buildMessage(_ChatMessage message) {
@@ -882,10 +1003,9 @@ class _StagingModalState extends State<_StagingModal> {
         badgeColor = const Color(0xFF89CFF0); // Pastel blue
         badgeText = 'UPDATE ${_stagedOperation?.items.length ?? 0} ITEMS';
         break;
-      case 'discover':
       default:
-        badgeColor = ZagColours.accent;
-        badgeText = '${_stagedOperation?.items.length ?? 0} RESULTS';
+        badgeColor = Colors.grey;
+        badgeText = 'UNKNOWN OPERATION';
     }
 
     return Container(
