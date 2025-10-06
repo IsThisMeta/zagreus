@@ -434,13 +434,12 @@ class _ZChatPageState extends State<ZChatPage> {
                           'z',
                           style: TextStyle(
                             fontFamily: 'Zebrra',
-                            fontSize: 80,
+                            fontSize: 120,
                             color: ZagColours.accent.withOpacity(0.15),
                           ),
                         ),
-                        const SizedBox(height: 24),
                         Text(
-                          'Ask Z anything about movies or shows',
+                          'Ask anything...',
                           style: TextStyle(
                             fontSize: 16,
                             color:
@@ -483,7 +482,7 @@ class _ZChatPageState extends State<ZChatPage> {
                 fontSize: 16,
               ),
               decoration: InputDecoration(
-                hintText: 'Ask Z anything...',
+                hintText: '',
                 hintStyle: TextStyle(
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.white.withOpacity(0.3)

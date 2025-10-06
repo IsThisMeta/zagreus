@@ -1344,15 +1344,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                               )
                                             : Icon(
                                                 ZagreusMega.isEnabled
-                                                    ? Icons.psychology
+                                                    ? Icons.grid_view
                                                     : Icons.lock_outlined,
                                               ),
                                         label: Text(
                                           _isAskingZAssistant
-                                              ? 'Asking Z...'
+                                              ? 'Building...'
                                               : ZagreusMega.isEnabled
-                                                  ? 'Ask Z'
-                                                  : 'Ask Z (Mega)',
+                                                  ? 'Mosaic'
+                                                  : 'Mosaic (Mega)',
                                         ),
                                       ),
                                     ],
@@ -1632,7 +1632,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ],
         ),
         content: const Text(
-          'Ask Z is a Zagreus Mega exclusive feature.\n\n'
+          'Mosaic is a Zagreus Mega exclusive feature.\n\n'
           'Upgrade to Zagreus Mega to unlock AI-powered recommendations!',
         ),
         actions: [
@@ -1695,7 +1695,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       Future.delayed(const Duration(milliseconds: 2500), () {
         final syncService = LibrarySyncService();
         if (syncService.needsSync) {
-          ZagLogger().debug('Ask Z completed - triggering background library sync...');
+          ZagLogger().debug('Mosaic completed - triggering background library sync...');
           syncService.syncIfNeeded();
         }
       });
@@ -5008,7 +5008,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<String> titles = [
     'Movies',
     'TV Shows',
-    'Ask Z',
+    'Z',
     'Search',
   ];
 
