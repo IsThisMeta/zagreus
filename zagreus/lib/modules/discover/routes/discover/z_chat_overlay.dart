@@ -1028,11 +1028,27 @@ class _StagingModalState extends State<_StagingModal> {
                 ),
               ),
             ),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Icon buttons row
+                // Badge on left
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: badgeColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badgeText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                // Icon buttons on right
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.movie),
@@ -1048,27 +1064,6 @@ class _StagingModalState extends State<_StagingModal> {
                       icon: const Icon(Icons.checklist),
                       onPressed: _toggleMultiSelectMode,
                       tooltip: 'Select Items',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Badge
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        badgeText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
                   ],
                 ),
