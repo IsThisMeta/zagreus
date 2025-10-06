@@ -69,16 +69,11 @@ class RevenueCatService {
     _isUpdating = true;
 
     print('🔍 RevenueCat: Checking entitlements...');
-    print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
-    print('🔍 Active entitlements: ${_customerInfo?.entitlements.active.keys}');
 
     // Check Pro entitlement (both monthly and yearly)
     final isProMonthlyActive = _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
     final isProYearlyActive = _customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false;
     final isProActive = isProMonthlyActive || isProYearlyActive;
-    print('🔍 Pro Monthly "$_proEntitlementId" active: $isProMonthlyActive');
-    print('🔍 Pro Yearly "$_proYearlyEntitlementId" active: $isProYearlyActive');
-    print('🔍 Pro (any) active: $isProActive');
 
     if (isProActive) {
       // Get expiration and product ID from whichever Pro entitlement is active
@@ -111,8 +106,6 @@ class RevenueCatService {
 
     // Check Mega entitlement
     final isMegaActive = _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
-    print('🔍 Mega entitlement "$_megaEntitlementId" active: $isMegaActive');
-    print('🔍 All entitlements: ${_customerInfo?.entitlements.all.keys}');
 
     if (isMegaActive) {
       final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];

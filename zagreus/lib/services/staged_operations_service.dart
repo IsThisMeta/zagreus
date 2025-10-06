@@ -4,6 +4,7 @@ import 'package:zagreus/supabase/core.dart';
 /// Model for a staged media item from Z Assistant
 class StagedMediaItem {
   final int tmdbId;
+  final int? tvdbId; // For TV shows (Sonarr uses TVDB)
   final String title;
   final int? year;
   final String? posterPath;
@@ -13,6 +14,7 @@ class StagedMediaItem {
 
   StagedMediaItem({
     required this.tmdbId,
+    this.tvdbId,
     required this.title,
     this.year,
     this.posterPath,
@@ -24,6 +26,7 @@ class StagedMediaItem {
   factory StagedMediaItem.fromJson(Map<String, dynamic> json) {
     return StagedMediaItem(
       tmdbId: json['tmdb_id'] as int,
+      tvdbId: json['tvdb_id'] as int?,
       title: json['title'] as String,
       year: json['year'] as int?,
       posterPath: json['poster_path'] as String?,
@@ -153,8 +156,6 @@ class StagedOperationsService {
       // Generate a stage ID
       final stageId = DateTime.now().millisecondsSinceEpoch.toString();
 
-      final userId = ZagSupabase.client.auth.currentUser?.id;
-
       await ZagSupabase.client
           .from('staged_operations')
           .insert({
@@ -162,7 +163,6 @@ class StagedOperationsService {
             'operation': operation,
             'items': items,
             'status': 'pending',
-            'user_id': userId,
           });
 
       ZagLogger().debug('Staged operation created: $stageId');

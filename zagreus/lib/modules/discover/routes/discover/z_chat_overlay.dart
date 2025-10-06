@@ -350,6 +350,13 @@ class _ZChatPageState extends State<ZChatPage> {
 
         for (final show in shows) {
           try {
+            // Skip if no TVDB ID
+            if (show.tvdbId == null) {
+              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              failCount++;
+              continue;
+            }
+
             final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
 
             if (lookupResults.isEmpty) {
@@ -367,12 +374,11 @@ class _ZChatPageState extends State<ZChatPage> {
             await sonarrState.api!.series.create(
               series: sonarrSeries,
               rootFolder: selectedFolder,
-              monitored: true,
               qualityProfile: selectedProfile,
               seriesType: seriesType,
               seasonFolder: true,
               searchForMissingEpisodes: searchForMissing,
-              monitor: monitorType,
+              monitorType: monitorType,
             );
 
             successCount++;
