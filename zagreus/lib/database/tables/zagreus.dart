@@ -75,6 +75,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   // Discover module section order
   DISCOVER_MOVIES_SECTION_ORDER<List>([]),
   DISCOVER_TV_SECTION_ORDER<List>([]),
+  // Z Assistant settings
+  Z_ASSISTANT_LIBRARY_CACHE_ENABLED<bool>(false),
   // Z Assistant multi-add settings
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID<int?>(null),
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME<String?>(null),

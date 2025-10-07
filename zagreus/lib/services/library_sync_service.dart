@@ -47,6 +47,15 @@ class LibrarySyncService {
     }
     print('✓ Mega subscription active');
 
+    // Check if library cache is enabled
+    final cacheEnabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    if (!cacheEnabled && !force) {
+      print('ℹ️  SYNC SKIPPED: Library cache is disabled in settings');
+      ZagLogger().debug('Library sync skipped - library cache disabled');
+      return false;
+    }
+    print('✓ Library cache enabled');
+
     if (_isSyncing && !force) {
       print('❌ SYNC BLOCKED: Already in progress');
       ZagLogger().debug('Library sync already in progress');

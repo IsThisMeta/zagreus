@@ -48,6 +48,7 @@ import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/def
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_wake_on_lan/route.dart';
+import 'package:zagreus/modules/settings/routes/z_agent/route.dart';
 import 'package:zagreus/modules/settings/routes/notifications/route.dart';
 import 'package:zagreus/modules/settings/routes/profiles/route.dart';
 import 'package:zagreus/modules/settings/routes/resources/route.dart';
@@ -108,6 +109,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_TAUTULLI_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_WAKE_ON_LAN('wake_on_lan'),
+  Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
   RESOURCES('resources'),
@@ -252,6 +254,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationTautulliDefaultPagesRoute());
       case SettingsRoutes.CONFIGURATION_WAKE_ON_LAN:
         return route(widget: const ConfigurationWakeOnLANRoute());
+      case SettingsRoutes.Z_AGENT:
+        return route(widget: const ZAgentSettingsRoute());
       case SettingsRoutes.NOTIFICATIONS:
         return route(widget: const NotificationsRoute());
       case SettingsRoutes.PROFILES:
@@ -306,6 +310,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_SONARR.routes,
           SettingsRoutes.CONFIGURATION_TAUTULLI.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
+          SettingsRoutes.Z_AGENT.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
         return [

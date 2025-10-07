@@ -96,6 +96,12 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ),
         ZagDivider(),
         ..._moduleList(),
+        ZagBlock(
+          title: 'Z Agent',
+          body: [const TextSpan(text: 'Configure Z Agent')],
+          trailing: const ZagIconButton(icon: Icons.smart_toy),
+          onTap: SettingsRoutes.Z_AGENT.go,
+        ),
       ],
     );
   }
