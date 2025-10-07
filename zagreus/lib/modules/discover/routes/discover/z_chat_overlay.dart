@@ -25,7 +25,6 @@ class _ZChatPageState extends State<ZChatPage> {
   final FocusNode _focusNode = FocusNode();
   final StagedOperationsService _stagingService = StagedOperationsService();
   bool _isThinking = false;
-  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -61,55 +60,6 @@ class _ZChatPageState extends State<ZChatPage> {
         );
       }
     });
-  }
-
-  Future<void> _forceResync() async {
-    print('\n╔════════════════════════════════════════════╗');
-    print('║   MANUAL SYNC BUTTON PRESSED             ║');
-    print('╚════════════════════════════════════════════╝');
-
-    setState(() => _isSyncing = true);
-
-    try {
-      print('→ Calling LibrarySyncService().syncLibrary(force: true)...\n');
-      final success = await LibrarySyncService().syncLibrary(force: true);
-
-      print('\n→ Sync returned: $success');
-
-      if (mounted) {
-        if (success) {
-          print('→ Showing success snackbar');
-          showZagSnackBar(
-            title: 'Library Synced',
-            message: 'Your library has been synced to Z Assistant',
-            type: ZagSnackbarType.SUCCESS,
-          );
-        } else {
-          print('→ Sync returned false - showing warning');
-          showZagSnackBar(
-            title: 'Sync Issue',
-            message: 'Sync completed but may not have uploaded data. Check console.',
-            type: ZagSnackbarType.INFO,
-          );
-        }
-      }
-    } catch (e, stack) {
-      print('❌ EXCEPTION in _forceResync: $e');
-      print('Stack trace: $stack');
-      ZagLogger().error('Failed to sync library', e, stack);
-      if (mounted) {
-        showZagSnackBar(
-          title: 'Sync Failed',
-          message: 'Could not sync library. Please try again.',
-          type: ZagSnackbarType.ERROR,
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSyncing = false);
-        print('→ Sync button released\n');
-      }
-    }
   }
 
   Future<void> _sendMessage() async {
@@ -866,46 +816,6 @@ class _ZChatPageState extends State<ZChatPage> {
             ),
           ),
             ],
-          ),
-
-          // Sync button at top right
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _isSyncing ? null : _forceResync,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: _isSyncing
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              ZagColours.accent,
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.sync,
-                          size: 20,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white.withOpacity(0.7)
-                              : Colors.black.withOpacity(0.7),
-                        ),
-                ),
-              ),
-            ),
           ),
         ],
       ),

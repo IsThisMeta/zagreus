@@ -70,6 +70,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Z Assistant navigation history
   String? _lastZAssistantStageId;
 
+  // Library sync state
+  bool _isSyncing = false;
+
   @override
   void initState() {
     super.initState();
@@ -919,25 +922,45 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       appBar: ZagAppBar(
         title: 'Discover',
         useDrawer: true,
-        actions: _currentPageIndex != 2
+        actions: _currentPageIndex == 2
             ? [
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  child: Row(
-                    children: [
-                      _appBarToggleButton('Today', 'day'),
-                      const SizedBox(width: 8),
-                      _appBarToggleButton('This Week', 'week'),
-                    ],
-                  ),
+                // Sync button on Agent tab
+                IconButton(
+                  icon: _isSyncing
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                        )
+                      : const Icon(Icons.sync),
+                  onPressed: _isSyncing ? null : _forceLibrarySync,
+                  tooltip: 'Sync Library',
                 ),
+                if (_lastZAssistantStageId != null)
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: _navigateToLastZAssistantResults,
+                    tooltip: 'Return to Z Assistant Results',
+                  ),
               ]
-            : (_lastZAssistantStageId != null
+            : (_currentPageIndex != 3
                 ? [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_forward),
-                      onPressed: _navigateToLastZAssistantResults,
-                      tooltip: 'Return to Z Assistant Results',
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        children: [
+                          _appBarToggleButton('Today', 'day'),
+                          const SizedBox(width: 8),
+                          _appBarToggleButton('This Week', 'week'),
+                        ],
+                      ),
                     ),
                   ]
                 : null),
@@ -1725,6 +1748,43 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
+  }
+
+  Future<void> _forceLibrarySync() async {
+    setState(() => _isSyncing = true);
+
+    try {
+      final success = await LibrarySyncService().syncLibrary(force: true);
+
+      if (mounted) {
+        if (success) {
+          showZagSnackBar(
+            title: 'Library Synced',
+            message: 'Your library has been synced to Z Assistant',
+            type: ZagSnackbarType.SUCCESS,
+          );
+        } else {
+          showZagSnackBar(
+            title: 'Sync Not Available',
+            message: 'Library sync is only available for Mega subscribers',
+            type: ZagSnackbarType.INFO,
+          );
+        }
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync library', e, stack);
+      if (mounted) {
+        showZagSnackBar(
+          title: 'Sync Failed',
+          message: 'Could not sync library. Please try again.',
+          type: ZagSnackbarType.ERROR,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
   }
 
   Future<void> _spamTenCalls() async {
