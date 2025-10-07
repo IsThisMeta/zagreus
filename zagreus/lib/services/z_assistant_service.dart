@@ -118,6 +118,7 @@ class ZAssistantService {
         final responseText = response.data['response'] as String;
         final isStaged = response.data['staged'] == true;
         final stageId = response.data['stage_id'] as String?;
+        final mosaicId = response.data['mosaic_id'] as String?;
 
         // Parse commands if present
         final List<ZAssistantCommand> commands = [];
@@ -129,12 +130,13 @@ class ZAssistantService {
           ZagLogger().debug('Received ${commands.length} commands from Z Assistant');
         }
 
-        ZagLogger().debug('Z Assistant response: $responseText (staged: $isStaged)');
+        ZagLogger().debug('Z Assistant response: $responseText (staged: $isStaged, stage_id: $stageId, mosaic_id: $mosaicId)');
 
         return ZAssistantResponse(
           text: responseText.trim(),
           isStaged: isStaged,
           stageId: stageId,
+          mosaicId: mosaicId,
           commands: commands,
         );
       } else {
@@ -199,13 +201,15 @@ class ZAssistantService {
 class ZAssistantResponse {
   final String text;
   final bool isStaged;
-  final String? stageId;
+  final String? stageId;  // For operations (modal view)
+  final String? mosaicId;  // For browse results (tile view)
   final List<ZAssistantCommand> commands;
 
   ZAssistantResponse({
     required this.text,
     this.isStaged = false,
     this.stageId,
+    this.mosaicId,
     this.commands = const [],
   });
 }

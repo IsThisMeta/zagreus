@@ -189,6 +189,16 @@ class _ZChatPageState extends State<ZChatPage> {
 
           _showStagingModal(response.stageId!, response.text);
         }
+      } else if (response.mosaicId != null) {
+        // Mosaic/browse results - show button to navigate to tile view
+        setState(() {
+          _messages.add(_ChatMessage(
+            content: response.text,
+            isUser: false,
+            mosaicStageId: response.mosaicId,
+          ));
+        });
+        _scrollToBottom();
       } else {
         // Regular text response
         setState(() {
@@ -935,14 +945,8 @@ class _ZChatPageState extends State<ZChatPage> {
           isUser: false,
         ));
       });
-    } else if (result == false) {
-      setState(() {
-        _messages.add(_ChatMessage(
-          content: 'Operation cancelled.',
-          isUser: false,
-        ));
-      });
     }
+    // Comment removed per user request
     _scrollToBottom();
   }
 
