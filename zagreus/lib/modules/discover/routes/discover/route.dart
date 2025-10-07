@@ -1332,53 +1332,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           : Colors.black.withOpacity(0.4),
                                     ),
                                   ),
-                                  const SizedBox(height: 24),
-                                  OutlinedButton.icon(
-                                    onPressed: _loadTestZAssistantResults,
-                                    icon: const Icon(Icons.science),
-                                    label: const Text('Test Z Assistant (Mock Data)'),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  OutlinedButton.icon(
-                                    onPressed: _spamTenCalls,
-                                    icon: const Icon(Icons.refresh),
-                                    label: const Text('Spam 10 Calls (Test Rate Limit)'),
-                                  ),
-                                  if (_searchController.text.split(' ').length >= 4)
-                                    ...[
-                                      const SizedBox(height: 12),
-                                      ElevatedButton.icon(
-                                        onPressed: _isAskingZAssistant
-                                            ? null
-                                            : () {
-                                                if (!ZagreusMega.isEnabled) {
-                                                  _showMegaRequiredDialog();
-                                                } else {
-                                                  _askZAssistant(_searchController.text);
-                                                }
-                                              },
-                                        icon: _isAskingZAssistant
-                                            ? const SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                ),
-                                              )
-                                            : Icon(
-                                                ZagreusMega.isEnabled
-                                                    ? Icons.grid_view
-                                                    : Icons.lock_outlined,
-                                              ),
-                                        label: Text(
-                                          _isAskingZAssistant
-                                              ? 'Building...'
-                                              : ZagreusMega.isEnabled
-                                                  ? 'Mosaic'
-                                                  : 'Mosaic (Mega)',
-                                        ),
-                                      ),
-                                    ],
                                 ],
                               ),
                             )
@@ -5061,7 +5014,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<IconData> icons = [
     Icons.movie_rounded,
     Icons.tv_rounded,
-    Icons.chat_bubble_rounded, // Placeholder, will use custom Z
+    Icons.smart_toy, // Robot icon for Agent
     Icons.search_rounded,
   ];
 
