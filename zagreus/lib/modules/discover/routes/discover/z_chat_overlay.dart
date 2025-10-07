@@ -448,6 +448,12 @@ class _ZChatPageState extends State<ZChatPage> {
   Future<void> _executeUpdateOperation(StagedOperation operation) async {
     print('🔧 _executeUpdateOperation called');
     try {
+      // Sync library cache before updating to ensure we have latest data
+      print('🔄 Syncing library cache before update...');
+      final syncService = LibrarySyncService();
+      await syncService.syncLibrary(force: true);
+      print('✅ Library cache synced');
+
       // Get target quality profile from params
       final targetQualityProfileId = operation.params?['target_quality_profile_id'] as int?;
       final targetQualityProfileName = operation.params?['target_quality_profile_name'] as String?;
@@ -934,6 +940,7 @@ class _ZChatPageState extends State<ZChatPage> {
       builder: (context) => _StagingModal(
         stageId: stageId,
         operation: operation,
+        parentState: this,
       ),
     );
 
@@ -1276,10 +1283,12 @@ class _ChatMessage {
 class _StagingModal extends StatefulWidget {
   final String stageId;
   final String operation;
+  final _ZChatPageState parentState;
 
   const _StagingModal({
     required this.stageId,
     required this.operation,
+    required this.parentState,
   });
 
   @override
@@ -1962,49 +1971,44 @@ class _StagingModalState extends State<_StagingModal> {
 
       print('📦 Staged operation: ${_stagedOperation!.operation}');
 
-      // Use the same execution methods based on operation type
-      final parentState = context.findAncestorStateOfType<_ZChatPageState>();
-      print('🔍 Parent state found: ${parentState != null}');
+      // Use parent state passed from constructor
+      switch (_stagedOperation!.operation) {
+        case 'add':
+          print('➡️ Executing ADD operation');
+          await widget.parentState._executeAddOperation(_stagedOperation!);
+          break;
+        case 'update':
+          print('➡️ Executing UPDATE operation');
+          // For UPDATE, override params with currently selected quality profiles
+          final updatedParams = {
+            ...?_stagedOperation!.params,
+            'target_quality_profile_id': _selectedRadarrQualityProfileId ?? _selectedSonarrQualityProfileId,
+            'target_quality_profile_name': _selectedRadarrQualityProfileName ?? _selectedSonarrQualityProfileName,
+            'search_after_update': true,
+          };
 
-      if (parentState != null) {
-        switch (_stagedOperation!.operation) {
-          case 'add':
-            print('➡️ Executing ADD operation');
-            await parentState._executeAddOperation(_stagedOperation!);
-            break;
-          case 'update':
-            print('➡️ Executing UPDATE operation');
-            // For UPDATE, override params with currently selected quality profiles
-            final updatedParams = {
-              ...?_stagedOperation!.params,
-              'target_quality_profile_id': _selectedRadarrQualityProfileId ?? _selectedSonarrQualityProfileId,
-              'target_quality_profile_name': _selectedRadarrQualityProfileName ?? _selectedSonarrQualityProfileName,
-              'search_after_update': true,
-            };
+          final modifiedOperation = StagedOperation(
+            stageId: _stagedOperation!.stageId,
+            operation: _stagedOperation!.operation,
+            items: _stagedOperation!.items,
+            status: _stagedOperation!.status,
+            userId: _stagedOperation!.userId,
+            createdAt: _stagedOperation!.createdAt,
+            params: updatedParams,
+          );
 
-            final modifiedOperation = StagedOperation(
-              stageId: _stagedOperation!.stageId,
-              operation: _stagedOperation!.operation,
-              items: _stagedOperation!.items,
-              status: _stagedOperation!.status,
-              userId: _stagedOperation!.userId,
-              createdAt: _stagedOperation!.createdAt,
-              params: updatedParams,
-            );
-
-            await parentState._executeUpdateOperation(modifiedOperation);
-            break;
-          case 'remove':
-            print('➡️ Executing REMOVE operation');
-            await parentState._executeRemoveOperation(_stagedOperation!);
-            break;
-          default:
-            showZagSnackBar(
-              title: 'Unknown Operation',
-              message: 'Operation type "${_stagedOperation!.operation}" is not supported',
-              type: ZagSnackbarType.ERROR,
-            );
-        }
+          await widget.parentState._executeUpdateOperation(modifiedOperation);
+          break;
+        case 'remove':
+          print('➡️ Executing REMOVE operation');
+          await widget.parentState._executeRemoveOperation(_stagedOperation!);
+          break;
+        default:
+          showZagSnackBar(
+            title: 'Unknown Operation',
+            message: 'Operation type "${_stagedOperation!.operation}" is not supported',
+            type: ZagSnackbarType.ERROR,
+          );
       }
 
       // Close modal with success
