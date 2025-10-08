@@ -1604,7 +1604,7 @@ class _StagingModalState extends State<_StagingModal> {
                 // Icon buttons on right
                 Row(
                   children: [
-                    if (_operation?.operation != 'remove') ...[
+                    if (operationType != 'remove') ...[
                       IconButton(
                         icon: const Icon(Icons.movie),
                         onPressed: _showRadarrConfig,
