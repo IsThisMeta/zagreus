@@ -108,8 +108,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             Padding(
               padding: ZagDialog.textDialogContentPadding(),
               child: Text(
-                'Pro features are included with your Mega subscription!\n\n'
-                'You already have access to all Pro features.',
+                'Pro features are included with your Mega subscription!',
                 style: const TextStyle(
                   fontSize: ZagUI.FONT_SIZE_H2,
                 ),

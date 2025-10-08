@@ -709,6 +709,7 @@ class _ZChatPageState extends State<ZChatPage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
       child: Stack(
         children: [
           Column(
