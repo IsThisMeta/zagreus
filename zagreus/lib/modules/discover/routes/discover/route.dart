@@ -1918,7 +1918,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
           "overview":
               "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
-          "verified": true
+          "verified": true,
+          "tvdb_id": 81189
         },
         {
           "tmdb_id": 1399,
@@ -1928,7 +1929,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "poster_path": "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg",
           "overview":
               "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
-          "verified": true
+          "verified": true,
+          "tvdb_id": 121361
         },
       ];
 
