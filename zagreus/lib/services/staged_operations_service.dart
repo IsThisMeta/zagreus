@@ -11,7 +11,7 @@ class StagedMediaItem {
   final String? overview;
   final String mediaType; // "movie" or "tv"
   final bool verified;
-  final String? reason; // Why this item is recommended (for discover operations)
+  final String? reason; // Why this item is recommended (for explore operations)
 
   StagedMediaItem({
     required this.tmdbId,
@@ -56,7 +56,8 @@ class StagedOperation {
   final String status;
   final String? userId;
   final DateTime createdAt;
-  final Map<String, dynamic>? params; // Operation parameters (e.g., target quality profile)
+  final Map<String, dynamic>?
+      params; // Operation parameters (e.g., target quality profile)
 
   StagedOperation({
     required this.stageId,
@@ -114,7 +115,8 @@ class StagedOperationsService {
 
       final userId = ZagSupabase.client.auth.currentUser?.id;
       if (userId == null) {
-        ZagLogger().warning('No user logged in, cannot fetch staged operations');
+        ZagLogger()
+            .warning('No user logged in, cannot fetch staged operations');
         return [];
       }
 
@@ -156,12 +158,11 @@ class StagedOperationsService {
 
   /// Create a staged operation (for testing)
   Future<String> createStagedOperation(
-    String operation,
-    List<Map<String, dynamic>> items,
-    {Map<String, dynamic>? params}
-  ) async {
+      String operation, List<Map<String, dynamic>> items,
+      {Map<String, dynamic>? params}) async {
     try {
-      ZagLogger().debug('Creating staged operation: $operation with ${items.length} items');
+      ZagLogger().debug(
+          'Creating staged operation: $operation with ${items.length} items');
 
       // Generate a stage ID
       final stageId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -177,9 +178,7 @@ class StagedOperationsService {
         insertData['params'] = params;
       }
 
-      await ZagSupabase.client
-          .from('staged_operations')
-          .insert(insertData);
+      await ZagSupabase.client.from('staged_operations').insert(insertData);
 
       ZagLogger().debug('Staged operation created: $stageId');
       return stageId;

@@ -29,7 +29,8 @@ class ZAssistantService {
           // Get device ID - no auth required!
           final deviceId = DeviceIdService().deviceId;
           options.headers['X-Device-Id'] = deviceId;
-          ZagLogger().debug('Added device ID to Z Assistant request: ${deviceId.substring(0, 8)}...');
+          ZagLogger().debug(
+              'Added device ID to Z Assistant request: ${deviceId.substring(0, 8)}...');
 
           // Register device if needed (but not for the registration endpoint itself!)
           if (!options.path.contains('/device/register')) {
@@ -118,36 +119,42 @@ class ZAssistantService {
         final responseText = response.data['response'] as String;
         final isStaged = response.data['staged'] == true;
         final stageId = response.data['stage_id'] as String?;
-        final mosaicId = response.data['mosaic_id'] as String?;
+        final operation = response.data['operation'] as String?;
 
         // Parse commands if present
         final List<ZAssistantCommand> commands = [];
         if (response.data['commands'] != null) {
           final commandsData = response.data['commands'] as List<dynamic>;
           for (final cmdJson in commandsData) {
-            commands.add(ZAssistantCommand.fromJson(cmdJson as Map<String, dynamic>));
+            commands.add(
+                ZAssistantCommand.fromJson(cmdJson as Map<String, dynamic>));
           }
-          ZagLogger().debug('Received ${commands.length} commands from Z Assistant');
+          ZagLogger()
+              .debug('Received ${commands.length} commands from Z Assistant');
         }
 
-        ZagLogger().debug('Z Assistant response: $responseText (staged: $isStaged, stage_id: $stageId, mosaic_id: $mosaicId)');
+        ZagLogger().debug(
+            'Z Assistant response: $responseText (staged: $isStaged, stage_id: $stageId, operation: $operation)');
 
         return ZAssistantResponse(
           text: responseText.trim(),
           isStaged: isStaged,
           stageId: stageId,
-          mosaicId: mosaicId,
+          operation: operation,
           commands: commands,
         );
       } else {
-        throw Exception('Failed to get response from Z Assistant: ${response.statusCode}');
+        throw Exception(
+            'Failed to get response from Z Assistant: ${response.statusCode}');
       }
     } on dio.DioException catch (e, stack) {
       ZagLogger().error('Z Assistant API error', e, stack);
       if (e.type == dio.DioExceptionType.connectionTimeout) {
-        throw Exception('Connection timeout - Z Assistant took too long to respond');
+        throw Exception(
+            'Connection timeout - Z Assistant took too long to respond');
       } else if (e.type == dio.DioExceptionType.receiveTimeout) {
-        throw Exception('Receive timeout - Z Assistant took too long to respond');
+        throw Exception(
+            'Receive timeout - Z Assistant took too long to respond');
       } else {
         throw Exception('Failed to connect to Z Assistant: ${e.message}');
       }
@@ -157,14 +164,14 @@ class ZAssistantService {
     }
   }
 
-  /// Send a discover view search query to Z Assistant
+  /// Send an explore view search query to Z Assistant
   ///
   /// Returns a stage_id that can be used to fetch results from Supabase
-  Future<String> sendDiscoverQuery({
+  Future<String> sendExploreQuery({
     required String query,
   }) async {
     try {
-      ZagLogger().debug('Sending discover query: $query');
+      ZagLogger().debug('Sending explore query: $query');
 
       final response = await _dio.post(
         '/discover',
@@ -175,14 +182,16 @@ class ZAssistantService {
       );
 
       if (response.statusCode == 200) {
-        final stageId = response.data['stage_id'] as String? ?? response.data['response'] as String;
-        ZagLogger().debug('Discover stage_id: $stageId');
+        final stageId = response.data['stage_id'] as String? ??
+            response.data['response'] as String;
+        ZagLogger().debug('Explore stage_id: $stageId');
         return stageId.trim();
       } else {
-        throw Exception('Failed to get discover results: ${response.statusCode}');
+        throw Exception(
+            'Failed to get explore results: ${response.statusCode}');
       }
     } on dio.DioException catch (e, stack) {
-      ZagLogger().error('Discover API error', e, stack);
+      ZagLogger().error('Explore API error', e, stack);
       if (e.type == dio.DioExceptionType.connectionTimeout) {
         throw Exception('Connection timeout - search took too long');
       } else if (e.type == dio.DioExceptionType.receiveTimeout) {
@@ -191,7 +200,7 @@ class ZAssistantService {
         throw Exception('Failed to search: ${e.message}');
       }
     } catch (e, stack) {
-      ZagLogger().error('Unexpected discover error', e, stack);
+      ZagLogger().error('Unexpected explore error', e, stack);
       throw Exception('Search failed: $e');
     }
   }
@@ -201,15 +210,15 @@ class ZAssistantService {
 class ZAssistantResponse {
   final String text;
   final bool isStaged;
-  final String? stageId;  // For operations (modal view)
-  final String? mosaicId;  // For browse results (tile view)
+  final String? stageId; // For staged operations
+  final String? operation; // add/remove/update/explore/queue
   final List<ZAssistantCommand> commands;
 
   ZAssistantResponse({
     required this.text,
     this.isStaged = false,
     this.stageId,
-    this.mosaicId,
+    this.operation,
     this.commands = const [],
   });
 }

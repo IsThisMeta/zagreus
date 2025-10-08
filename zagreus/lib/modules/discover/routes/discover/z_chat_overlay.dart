@@ -88,7 +88,8 @@ class _ZChatPageState extends State<ZChatPage> {
         _isThinking = false;
       });
 
-      ZagLogger().debug('📨 Z Assistant response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
+      ZagLogger().debug(
+          '📨 Z Assistant response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
 
       // Execute any commands from the response
       if (response.commands.isNotEmpty) {
@@ -98,7 +99,8 @@ class _ZChatPageState extends State<ZChatPage> {
       // Check if response is staged operation
       if (response.isStaged && response.stageId != null) {
         // Fetch the staged operation to check if it's queue or stage
-        final stagedOp = await _stagingService.fetchStagedOperation(response.stageId!);
+        final stagedOp =
+            await _stagingService.fetchStagedOperation(response.stageId!);
 
         if (stagedOp == null) {
           setState(() {
@@ -110,10 +112,11 @@ class _ZChatPageState extends State<ZChatPage> {
           return;
         }
 
-        // Check operation type: queue = auto-execute, stage = show modal
+        // Check operation type: queue = auto-execute, explore = poster UI, others = modal
         if (stagedOp.operation == 'queue') {
           // Auto-execute queue operations (1-3 items)
-          ZagLogger().debug('Auto-executing queue operation with ${stagedOp.items.length} items');
+          ZagLogger().debug(
+              'Auto-executing queue operation with ${stagedOp.items.length} items');
 
           // Show AI's message
           setState(() {
@@ -126,29 +129,30 @@ class _ZChatPageState extends State<ZChatPage> {
 
           // Execute in background using existing batch code
           await _executeQueueOperation(stagedOp);
+        } else if (stagedOp.operation == 'explore') {
+          setState(() {
+            _messages.add(_ChatMessage(
+              content: response.text.isNotEmpty ? response.text : null,
+              isUser: false,
+              stageId: response.stageId,
+              operation: stagedOp.operation,
+            ));
+          });
+          _scrollToBottom();
         } else {
           // Show staging modal for review (4+ items or explicit staging)
           setState(() {
             _messages.add(_ChatMessage(
-              content: null,  // Don't show the stage ID as text
+              content: response.text.isNotEmpty ? response.text : null,
               isUser: false,
               stageId: response.stageId,
+              operation: stagedOp.operation,
             ));
           });
           _scrollToBottom();
 
-          _showStagingModal(response.stageId!, response.text);
+          _showStagingModal(response.stageId!, stagedOp.operation);
         }
-      } else if (response.mosaicId != null) {
-        // Mosaic/browse results - show button to navigate to tile view
-        setState(() {
-          _messages.add(_ChatMessage(
-            content: response.text,
-            isUser: false,
-            mosaicStageId: response.mosaicId,
-          ));
-        });
-        _scrollToBottom();
       } else {
         // Regular text response
         setState(() {
@@ -222,9 +226,13 @@ class _ZChatPageState extends State<ZChatPage> {
         final radarrState = context.read<RadarrState>();
 
         // Get saved settings
-        final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
-        final rootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
-        final searchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+        final qualityProfileId =
+            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+        final rootFolder =
+            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+        final searchForMissing =
+            ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ??
+                true;
 
         if (qualityProfileId == null || rootFolder == null) {
           showZagSnackBar(
@@ -247,12 +255,14 @@ class _ZChatPageState extends State<ZChatPage> {
           return;
         }
 
-        final selectedProfile = profiles.firstWhere((p) => p.id == qualityProfileId);
+        final selectedProfile =
+            profiles.firstWhere((p) => p.id == qualityProfileId);
         final selectedFolder = folders.firstWhere((f) => f.path == rootFolder);
 
         for (final movie in movies) {
           try {
-            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+            final lookupResults = await radarrState.api!.movieLookup
+                .get(term: "tmdb:${movie.tmdbId}");
 
             if (lookupResults.isEmpty) {
               failCount++;
@@ -277,7 +287,8 @@ class _ZChatPageState extends State<ZChatPage> {
 
             successCount++;
           } catch (e) {
-            ZagLogger().error('Failed to add movie: ${movie.title}', e, StackTrace.current);
+            ZagLogger().error(
+                'Failed to add movie: ${movie.title}', e, StackTrace.current);
             failCount++;
           }
         }
@@ -288,11 +299,17 @@ class _ZChatPageState extends State<ZChatPage> {
         final sonarrState = context.read<SonarrState>();
 
         // Get saved settings
-        final qualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
-        final rootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
-        final searchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
-        final monitorTypeValue = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
-        final seriesTypeValue = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+        final qualityProfileId =
+            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+        final rootFolder =
+            ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+        final searchForMissing =
+            ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ??
+                true;
+        final monitorTypeValue =
+            ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+        final seriesTypeValue =
+            ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
 
         if (qualityProfileId == null || rootFolder == null) {
           showZagSnackBar(
@@ -315,7 +332,8 @@ class _ZChatPageState extends State<ZChatPage> {
           return;
         }
 
-        final selectedProfile = profiles.firstWhere((p) => p.id == qualityProfileId);
+        final selectedProfile =
+            profiles.firstWhere((p) => p.id == qualityProfileId);
         final selectedFolder = folders.firstWhere((f) => f.path == rootFolder);
 
         // Get monitor and series types
@@ -332,12 +350,14 @@ class _ZChatPageState extends State<ZChatPage> {
           try {
             // Skip if no TVDB ID
             if (show.tvdbId == null) {
-              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              ZagLogger()
+                  .warning('Show ${show.title} has no TVDB ID, skipping');
               failCount++;
               continue;
             }
 
-            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+            final lookupResults = await sonarrState.api!.seriesLookup
+                .get(term: "tvdb:${show.tvdbId}");
 
             if (lookupResults.isEmpty) {
               failCount++;
@@ -363,7 +383,8 @@ class _ZChatPageState extends State<ZChatPage> {
 
             successCount++;
           } catch (e) {
-            ZagLogger().error('Failed to add show: ${show.title}', e, StackTrace.current);
+            ZagLogger().error(
+                'Failed to add show: ${show.title}', e, StackTrace.current);
             failCount++;
           }
         }
@@ -373,7 +394,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (successCount > 0) {
         showZagSnackBar(
           title: 'Success',
-          message: 'Added $successCount item${successCount == 1 ? '' : 's'} to library',
+          message:
+              'Added $successCount item${successCount == 1 ? '' : 's'} to library',
           type: ZagSnackbarType.SUCCESS,
         );
       }
@@ -381,7 +403,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (failCount > 0) {
         showZagSnackBar(
           title: 'Warning',
-          message: '$failCount item${failCount == 1 ? '' : 's'} failed or already in library',
+          message:
+              '$failCount item${failCount == 1 ? '' : 's'} failed or already in library',
           type: ZagSnackbarType.INFO,
         );
       }
@@ -405,11 +428,15 @@ class _ZChatPageState extends State<ZChatPage> {
       print('✅ Library cache synced');
 
       // Get target quality profile from params
-      final targetQualityProfileId = operation.params?['target_quality_profile_id'] as int?;
-      final targetQualityProfileName = operation.params?['target_quality_profile_name'] as String?;
-      final searchAfterUpdate = operation.params?['search_after_update'] as bool? ?? false;
+      final targetQualityProfileId =
+          operation.params?['target_quality_profile_id'] as int?;
+      final targetQualityProfileName =
+          operation.params?['target_quality_profile_name'] as String?;
+      final searchAfterUpdate =
+          operation.params?['search_after_update'] as bool? ?? false;
 
-      print('📊 Target quality: $targetQualityProfileName (ID: $targetQualityProfileId)');
+      print(
+          '📊 Target quality: $targetQualityProfileName (ID: $targetQualityProfileId)');
 
       if (targetQualityProfileId == null) {
         showZagSnackBar(
@@ -443,7 +470,8 @@ class _ZChatPageState extends State<ZChatPage> {
         for (final movie in movies) {
           try {
             // Lookup movie in Radarr
-            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+            final lookupResults = await radarrState.api!.movieLookup
+                .get(term: "tmdb:${movie.tmdbId}");
 
             if (lookupResults.isEmpty) {
               ZagLogger().warning('Movie not found in Radarr: ${movie.title}');
@@ -468,13 +496,16 @@ class _ZChatPageState extends State<ZChatPage> {
 
             // Optionally trigger search
             if (searchAfterUpdate) {
-              await radarrState.api!.command.moviesSearch(movieIds: [radarrMovie.id!]);
+              await radarrState.api!.command
+                  .moviesSearch(movieIds: [radarrMovie.id!]);
             }
 
             successCount++;
-            ZagLogger().debug('Updated movie: ${movie.title} to quality profile: $targetQualityProfileName');
+            ZagLogger().debug(
+                'Updated movie: ${movie.title} to quality profile: $targetQualityProfileName');
           } catch (e) {
-            ZagLogger().error('Failed to update movie: ${movie.title}', e, StackTrace.current);
+            ZagLogger().error('Failed to update movie: ${movie.title}', e,
+                StackTrace.current);
             failCount++;
           }
         }
@@ -497,13 +528,15 @@ class _ZChatPageState extends State<ZChatPage> {
           try {
             // Skip if no TVDB ID
             if (show.tvdbId == null) {
-              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              ZagLogger()
+                  .warning('Show ${show.title} has no TVDB ID, skipping');
               failCount++;
               continue;
             }
 
             // Lookup show in Sonarr
-            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+            final lookupResults = await sonarrState.api!.seriesLookup
+                .get(term: "tvdb:${show.tvdbId}");
 
             if (lookupResults.isEmpty) {
               ZagLogger().warning('Show not found in Sonarr: ${show.title}');
@@ -528,13 +561,16 @@ class _ZChatPageState extends State<ZChatPage> {
 
             // Optionally trigger search
             if (searchAfterUpdate) {
-              await sonarrState.api!.command.seriesSearch(seriesId: sonarrSeries.id!);
+              await sonarrState.api!.command
+                  .seriesSearch(seriesId: sonarrSeries.id!);
             }
 
             successCount++;
-            ZagLogger().debug('Updated show: ${show.title} to quality profile: $targetQualityProfileName');
+            ZagLogger().debug(
+                'Updated show: ${show.title} to quality profile: $targetQualityProfileName');
           } catch (e) {
-            ZagLogger().error('Failed to update show: ${show.title}', e, StackTrace.current);
+            ZagLogger().error(
+                'Failed to update show: ${show.title}', e, StackTrace.current);
             failCount++;
           }
         }
@@ -544,7 +580,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (successCount > 0) {
         showZagSnackBar(
           title: 'Update Successful',
-          message: 'Updated $successCount item${successCount == 1 ? '' : 's'} to $targetQualityProfileName',
+          message:
+              'Updated $successCount item${successCount == 1 ? '' : 's'} to $targetQualityProfileName',
           type: ZagSnackbarType.SUCCESS,
         );
       }
@@ -552,7 +589,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (failCount > 0) {
         showZagSnackBar(
           title: 'Some Updates Failed',
-          message: '$failCount item${failCount == 1 ? '' : 's'} failed to update',
+          message:
+              '$failCount item${failCount == 1 ? '' : 's'} failed to update',
           type: ZagSnackbarType.INFO,
         );
       }
@@ -591,7 +629,8 @@ class _ZChatPageState extends State<ZChatPage> {
         for (final movie in movies) {
           try {
             // Lookup movie in Radarr
-            final lookupResults = await radarrState.api!.movieLookup.get(term: "tmdb:${movie.tmdbId}");
+            final lookupResults = await radarrState.api!.movieLookup
+                .get(term: "tmdb:${movie.tmdbId}");
 
             if (lookupResults.isEmpty) {
               ZagLogger().warning('Movie not found in Radarr: ${movie.title}');
@@ -618,7 +657,8 @@ class _ZChatPageState extends State<ZChatPage> {
             successCount++;
             ZagLogger().debug('Removed movie: ${movie.title}');
           } catch (e) {
-            ZagLogger().error('Failed to remove movie: ${movie.title}', e, StackTrace.current);
+            ZagLogger().error('Failed to remove movie: ${movie.title}', e,
+                StackTrace.current);
             failCount++;
           }
         }
@@ -641,13 +681,15 @@ class _ZChatPageState extends State<ZChatPage> {
           try {
             // Skip if no TVDB ID
             if (show.tvdbId == null) {
-              ZagLogger().warning('Show ${show.title} has no TVDB ID, skipping');
+              ZagLogger()
+                  .warning('Show ${show.title} has no TVDB ID, skipping');
               failCount++;
               continue;
             }
 
             // Lookup show in Sonarr
-            final lookupResults = await sonarrState.api!.seriesLookup.get(term: "tvdb:${show.tvdbId}");
+            final lookupResults = await sonarrState.api!.seriesLookup
+                .get(term: "tvdb:${show.tvdbId}");
 
             if (lookupResults.isEmpty) {
               ZagLogger().warning('Show not found in Sonarr: ${show.title}');
@@ -673,7 +715,8 @@ class _ZChatPageState extends State<ZChatPage> {
             successCount++;
             ZagLogger().debug('Removed show: ${show.title}');
           } catch (e) {
-            ZagLogger().error('Failed to remove show: ${show.title}', e, StackTrace.current);
+            ZagLogger().error(
+                'Failed to remove show: ${show.title}', e, StackTrace.current);
             failCount++;
           }
         }
@@ -683,7 +726,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (successCount > 0) {
         showZagSnackBar(
           title: 'Remove Successful',
-          message: 'Removed $successCount item${successCount == 1 ? '' : 's'} from library',
+          message:
+              'Removed $successCount item${successCount == 1 ? '' : 's'} from library',
           type: ZagSnackbarType.SUCCESS,
         );
       }
@@ -691,7 +735,8 @@ class _ZChatPageState extends State<ZChatPage> {
       if (failCount > 0) {
         showZagSnackBar(
           title: 'Some Removals Failed',
-          message: '$failCount item${failCount == 1 ? '' : 's'} failed to remove',
+          message:
+              '$failCount item${failCount == 1 ? '' : 's'} failed to remove',
           type: ZagSnackbarType.INFO,
         );
       }
@@ -716,106 +761,109 @@ class _ZChatPageState extends State<ZChatPage> {
             children: [
               // Messages
               Expanded(
-            child: _messages.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'z',
-                          style: TextStyle(
-                            fontFamily: 'Zebrra',
-                            fontSize: 120,
-                            color: ZagColours.accent.withOpacity(0.15),
-                          ),
+                child: _messages.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'z',
+                              style: TextStyle(
+                                fontFamily: 'Zebrra',
+                                fontSize: 120,
+                                color: ZagColours.accent.withOpacity(0.15),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            OutlinedButton.icon(
+                              onPressed: _loadTestZAssistantResults,
+                              icon: const Icon(Icons.science),
+                              label: const Text('Test Z Assistant (Mock Data)'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ZagColours.accent,
+                                side: BorderSide(
+                                    color: ZagColours.accent.withOpacity(0.5)),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: _showMockOperationPicker,
+                              icon: const Icon(Icons.science),
+                              label: const Text('Test Operations (Mock Data)'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ZagColours.accent,
+                                side: BorderSide(
+                                    color: ZagColours.accent.withOpacity(0.5)),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        OutlinedButton.icon(
-                          onPressed: _loadTestZAssistantResults,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Z Assistant (Mock Data)'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ZagColours.accent,
-                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _showMockOperationPicker,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Operations (Mock Data)'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ZagColours.accent,
-                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: _messages.length + (_isThinking ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _messages.length && _isThinking) {
-                        return _buildThinkingIndicator();
-                      }
-                      return _buildMessage(_messages[index]);
-                    },
-                  ),
-          ),
-
-          // Input bar at bottom
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              maxLines: null,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _sendMessage(),
-              onChanged: (_) => setState(() {}), // Update UI for send button
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black87,
-                fontSize: 16,
-              ),
-              decoration: InputDecoration(
-                hintText: '',
-                hintStyle: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.3),
-                ),
-                suffixIcon: _controller.text.isNotEmpty && !_isThinking
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.arrow_upward_rounded,
-                          color: ZagColours.accent,
-                        ),
-                        onPressed: _sendMessage,
                       )
-                    : null,
-                filled: true,
-                fillColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: ZagColours.accent,
-                    width: 2,
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        itemCount: _messages.length + (_isThinking ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _messages.length && _isThinking) {
+                            return _buildThinkingIndicator();
+                          }
+                          return _buildMessage(_messages[index]);
+                        },
+                      ),
+              ),
+
+              // Input bar at bottom
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  maxLines: null,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  onChanged: (_) =>
+                      setState(() {}), // Update UI for send button
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.3)
+                          : Colors.black.withOpacity(0.3),
+                    ),
+                    suffixIcon: _controller.text.isNotEmpty && !_isThinking
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.arrow_upward_rounded,
+                              color: ZagColours.accent,
+                            ),
+                            onPressed: _sendMessage,
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: ZagColours.accent,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
             ],
           ),
         ],
@@ -823,7 +871,7 @@ class _ZChatPageState extends State<ZChatPage> {
     );
   }
 
-  void _navigateToMosaicResults(String stageId) {
+  void _openExploreResults(String stageId) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -946,7 +994,8 @@ class _ZChatPageState extends State<ZChatPage> {
         "title": "Breaking Bad",
         "year": 2008,
         "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
-        "overview": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
+        "overview":
+            "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
         "verified": true
       },
       {
@@ -955,7 +1004,8 @@ class _ZChatPageState extends State<ZChatPage> {
         "title": "Game of Thrones",
         "year": 2011,
         "poster_path": "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg",
-        "overview": "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
+        "overview":
+            "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
         "verified": true
       },
     ];
@@ -970,7 +1020,7 @@ class _ZChatPageState extends State<ZChatPage> {
         // Simulate upgrading to a 4K quality profile
         // In a real scenario, the AI would look up the actual profile ID
         params = {
-          'target_quality_profile_id': 4,  // Example: 4K profile ID
+          'target_quality_profile_id': 4, // Example: 4K profile ID
           'target_quality_profile_name': 'Ultra-HD',
           'search_after_update': true,
         };
@@ -1010,7 +1060,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Nolan's debut feature; neo-noir riff\nLean runtime keeps the paranoia tight\nGreat control sample for three-line cards"
+          "reason":
+              "Nolan's debut feature; neo-noir riff\nLean runtime keeps the paranoia tight\nGreat control sample for three-line cards"
         },
         {
           "tmdb_id": 77,
@@ -1020,7 +1071,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Reverse chronology thriller with an amnesia hook\nHandwritten clues fold into the puzzle box structure\nPsychological stakes stay raw and unnerving\nChecks how four-line blurbs flow"
+          "reason":
+              "Reverse chronology thriller with an amnesia hook\nHandwritten clues fold into the puzzle box structure\nPsychological stakes stay raw and unnerving\nChecks how four-line blurbs flow"
         },
         {
           "tmdb_id": 272,
@@ -1030,7 +1082,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Realistic superhero origin story; grounded action and moral complexity"
+          "reason":
+              "Realistic superhero origin story; grounded action and moral complexity"
         },
         {
           "tmdb_id": 1124,
@@ -1040,7 +1093,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/2ZOzyhoW08neG27DVySMCcq2emd.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Rival magicians thriller; themes of obsession and sacrifice"
+          "reason":
+              "Rival magicians thriller; themes of obsession and sacrifice"
         },
         {
           "tmdb_id": 155,
@@ -1050,7 +1104,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Crime epic with iconic villain; moral dilemmas and chaos theory"
+          "reason":
+              "Crime epic with iconic villain; moral dilemmas and chaos theory"
         },
         {
           "tmdb_id": 27205,
@@ -1060,7 +1115,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Dream heist thriller with nested realities\nPractical effects sell the gravity-bending corridors\nLiminal cityscapes folding in on themselves\nUrgent pacing despite dense exposition\nPerfect specimen for five-line wrapping"
+          "reason":
+              "Dream heist thriller with nested realities\nPractical effects sell the gravity-bending corridors\nLiminal cityscapes folding in on themselves\nUrgent pacing despite dense exposition\nPerfect specimen for five-line wrapping"
         },
         {
           "tmdb_id": 49026,
@@ -1070,7 +1126,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Epic trilogy conclusion; themes of redemption and revolution"
+          "reason":
+              "Epic trilogy conclusion; themes of redemption and revolution"
         },
         {
           "tmdb_id": 157336,
@@ -1080,7 +1137,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Space exploration epic anchored in family stakes\nRelativity and time dilation stretch every goodbye\nOrgan-heavy Zimmer score injects cosmic awe\nHelpful four-line test for taller tiles"
+          "reason":
+              "Space exploration epic anchored in family stakes\nRelativity and time dilation stretch every goodbye\nOrgan-heavy Zimmer score injects cosmic awe\nHelpful four-line test for taller tiles"
         },
         {
           "tmdb_id": 324857,
@@ -1090,7 +1148,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
           "overview": "",
           "verified": true,
-          "reason": "WWII evacuation told across land, sea, and air\nSparse dialogue but relentless ticking dread\nGood benchmark for three-line descriptions"
+          "reason":
+              "WWII evacuation told across land, sea, and air\nSparse dialogue but relentless ticking dread\nGood benchmark for three-line descriptions"
         },
         {
           "tmdb_id": 577922,
@@ -1100,7 +1159,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Time inversion spy thriller; palindromic structure and temporal manipulation"
+          "reason":
+              "Time inversion spy thriller; palindromic structure and temporal manipulation"
         },
         {
           "tmdb_id": 872585,
@@ -1110,19 +1170,20 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Atomic bomb biopic; moral weight of creation and political persecution"
+          "reason":
+              "Atomic bomb biopic; moral weight of creation and political persecution"
         },
       ];
 
       // Create staged operation locally
       final service = StagedOperationsService();
-      final stageId = await service.createStagedOperation('discover', mockItems);
+      final stageId = await service.createStagedOperation('explore', mockItems);
 
       print('🎯 Test stage created: $stageId');
 
       // Navigate to results
       if (!mounted) return;
-      _navigateToMosaicResults(stageId);
+      _openExploreResults(stageId);
     } catch (e) {
       print('❌ Test Z Assistant error: $e');
       showZagSnackBar(
@@ -1165,8 +1226,9 @@ class _ZChatPageState extends State<ZChatPage> {
       );
     }
 
-    // Check if message has stage IDs - if so, show buttons
-    if (message.stageId != null || message.mosaicStageId != null) {
+    // Staged operations render buttons for further action
+    if (message.stageId != null) {
+      final isExplore = message.operation == 'explore';
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
@@ -1178,82 +1240,71 @@ class _ZChatPageState extends State<ZChatPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 12),
+                    if (message.content != null &&
+                        message.content!.isNotEmpty) ...[
+                      Text(
+                        message.content!,
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.4,
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ] else
+                      const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        // Mosaic button (tile view)
-                        if (message.mosaicStageId != null)
-                          InkWell(
-                            onTap: () => _navigateToMosaicResults(message.mosaicStageId!),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: ZagColours.accent.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: ZagColours.accent.withOpacity(0.3),
-                                  width: 1,
-                                ),
+                        InkWell(
+                          onTap: () {
+                            if (isExplore) {
+                              _openExploreResults(message.stageId!);
+                            } else {
+                              _showStagingModal(message.stageId!,
+                                  message.operation ?? 'unknown');
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: ZagColours.accent.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: ZagColours.accent.withOpacity(0.3),
+                                width: 1,
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.grid_view,
-                                    size: 16,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isExplore
+                                      ? Icons.grid_view
+                                      : Icons.folder_open,
+                                  size: 16,
+                                  color: ZagColours.accent,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isExplore
+                                      ? 'View Explore Results'
+                                      : 'Open Stage',
+                                  style: TextStyle(
                                     color: ZagColours.accent,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Open Mosaic',
-                                    style: TextStyle(
-                                      color: ZagColours.accent,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        // Stage button (operations modal)
-                        if (message.stageId != null)
-                          InkWell(
-                            onTap: () => _showStagingModal(message.stageId!, message.content ?? ''),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: ZagColours.accent.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: ZagColours.accent.withOpacity(0.3),
-                                  width: 1,
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '📁',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Open Stage',
-                                    style: TextStyle(
-                                      color: ZagColours.accent,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ],
@@ -1316,13 +1367,13 @@ class _ZChatPageState extends State<ZChatPage> {
 class _ChatMessage {
   final String? content;
   final bool isUser;
-  final String? stageId;  // For operations (modal)
-  final String? mosaicStageId;  // For mosaic results (tile view)
+  final String? stageId; // For staged operations
+  final String? operation; // add/remove/update/explore/queue
 
   _ChatMessage({
     this.content,
     this.stageId,
-    this.mosaicStageId,
+    this.operation,
     required this.isUser,
   });
 }
@@ -1376,26 +1427,38 @@ class _StagingModalState extends State<_StagingModal> {
   }
 
   void _loadSavedSettings() {
-    _selectedRadarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
-    _selectedRadarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
-    _selectedRadarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
-    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
+    _selectedRadarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _selectedRadarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _selectedRadarrRootFolder =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read() ?? true;
 
-    _selectedSonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
-    _selectedSonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
-    _selectedSonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
-    final savedMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _selectedSonarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _selectedSonarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _selectedSonarrRootFolder =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    final savedMonitorType =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
     _sonarrMonitorType = SonarrSeriesMonitorType.values.firstWhere(
       (type) => type.value == savedMonitorType,
       orElse: () => SonarrSeriesMonitorType.ALL,
     );
-    final savedSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    final savedSeriesType =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
     _sonarrSeriesType = SonarrSeriesType.values.firstWhere(
       (type) => type.value == savedSeriesType,
       orElse: () => SonarrSeriesType.STANDARD,
     );
-    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
-    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ?? false;
+    _sonarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read() ?? true;
+    _sonarrSearchForCutoffUnmet =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read() ??
+            false;
   }
 
   Future<void> _loadData() async {
@@ -1422,8 +1485,10 @@ class _StagingModalState extends State<_StagingModal> {
 
         // Hot-load quality profiles from params for UPDATE operations
         if (operation.operation == 'update' && operation.params != null) {
-          final targetQualityId = operation.params!['target_quality_profile_id'] as int?;
-          final targetQualityName = operation.params!['target_quality_profile_name'] as String?;
+          final targetQualityId =
+              operation.params!['target_quality_profile_id'] as int?;
+          final targetQualityName =
+              operation.params!['target_quality_profile_name'] as String?;
 
           if (targetQualityId != null && targetQualityName != null) {
             // Override Radarr settings with AI's target quality
@@ -1434,7 +1499,8 @@ class _StagingModalState extends State<_StagingModal> {
             _selectedSonarrQualityProfileId = targetQualityId;
             _selectedSonarrQualityProfileName = targetQualityName;
 
-            ZagLogger().debug('Hot-loaded quality profile for UPDATE: $targetQualityName (ID: $targetQualityId)');
+            ZagLogger().debug(
+                'Hot-loaded quality profile for UPDATE: $targetQualityName (ID: $targetQualityId)');
           }
         }
 
@@ -1518,7 +1584,8 @@ class _StagingModalState extends State<_StagingModal> {
               children: [
                 // Badge on left
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: badgeColor,
                     borderRadius: BorderRadius.circular(8),
@@ -1637,11 +1704,14 @@ class _StagingModalState extends State<_StagingModal> {
           children: [
             Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error Loading Operation', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Error Loading Operation',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(_error!, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+              child: Text(_error!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey)),
             ),
           ],
         ),
@@ -1655,7 +1725,8 @@ class _StagingModalState extends State<_StagingModal> {
           children: [
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            Text('No Items', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('No Items',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -1753,9 +1824,10 @@ class _StagingModalState extends State<_StagingModal> {
                           item.year.toString(),
                           style: TextStyle(
                             fontSize: 13,
-                            color: Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white.withOpacity(0.5)
-                                : Colors.black.withOpacity(0.5),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white.withOpacity(0.5)
+                                    : Colors.black.withOpacity(0.5),
                           ),
                         ),
                     ],
@@ -1764,9 +1836,12 @@ class _StagingModalState extends State<_StagingModal> {
 
                 // Media type indicator
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: item.isMovie ? Colors.orange.withOpacity(0.2) : Colors.blue.withOpacity(0.2),
+                    color: item.isMovie
+                        ? Colors.orange.withOpacity(0.2)
+                        : Colors.blue.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -1806,12 +1881,15 @@ class _StagingModalState extends State<_StagingModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Radarr Settings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Radarr Settings',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.high_quality),
                 title: const Text('Quality Profile'),
-                subtitle: _selectedRadarrQualityProfileName != null ? Text(_selectedRadarrQualityProfileName!) : null,
+                subtitle: _selectedRadarrQualityProfileName != null
+                    ? Text(_selectedRadarrQualityProfileName!)
+                    : null,
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   Navigator.pop(context);
@@ -1821,7 +1899,9 @@ class _StagingModalState extends State<_StagingModal> {
               ListTile(
                 leading: const Icon(Icons.folder),
                 title: const Text('Root Folder'),
-                subtitle: _selectedRadarrRootFolder != null ? Text(_selectedRadarrRootFolder!) : null,
+                subtitle: _selectedRadarrRootFolder != null
+                    ? Text(_selectedRadarrRootFolder!)
+                    : null,
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   Navigator.pop(context);
@@ -1836,7 +1916,8 @@ class _StagingModalState extends State<_StagingModal> {
                   setModalState(() {
                     setState(() {
                       _radarrSearchForMissing = value;
-                      ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                      ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                          .update(value);
                     });
                   });
                 },
@@ -1858,12 +1939,15 @@ class _StagingModalState extends State<_StagingModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Sonarr Settings', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Sonarr Settings',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.high_quality),
                 title: const Text('Quality Profile'),
-                subtitle: _selectedSonarrQualityProfileName != null ? Text(_selectedSonarrQualityProfileName!) : null,
+                subtitle: _selectedSonarrQualityProfileName != null
+                    ? Text(_selectedSonarrQualityProfileName!)
+                    : null,
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   Navigator.pop(context);
@@ -1873,7 +1957,9 @@ class _StagingModalState extends State<_StagingModal> {
               ListTile(
                 leading: const Icon(Icons.folder),
                 title: const Text('Root Folder'),
-                subtitle: _selectedSonarrRootFolder != null ? Text(_selectedSonarrRootFolder!) : null,
+                subtitle: _selectedSonarrRootFolder != null
+                    ? Text(_selectedSonarrRootFolder!)
+                    : null,
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   Navigator.pop(context);
@@ -1888,7 +1974,8 @@ class _StagingModalState extends State<_StagingModal> {
                   setModalState(() {
                     setState(() {
                       _sonarrSearchForMissing = value;
-                      ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING
+                          .update(value);
                     });
                   });
                 },
@@ -1905,11 +1992,15 @@ class _StagingModalState extends State<_StagingModal> {
       final profiles = await context.read<RadarrState>().qualityProfiles;
 
       if (profiles == null || profiles.isEmpty) {
-        showZagSnackBar(title: 'No Quality Profiles', message: 'No Radarr quality profiles found', type: ZagSnackbarType.INFO);
+        showZagSnackBar(
+            title: 'No Quality Profiles',
+            message: 'No Radarr quality profiles found',
+            type: ZagSnackbarType.INFO);
         return;
       }
 
-      final Tuple2<bool, RadarrQualityProfile?> result = await RadarrDialogs().editQualityProfile(context, profiles);
+      final Tuple2<bool, RadarrQualityProfile?> result =
+          await RadarrDialogs().editQualityProfile(context, profiles);
 
       if (result.item1 && result.item2 != null) {
         setState(() {
@@ -1917,12 +2008,17 @@ class _StagingModalState extends State<_StagingModal> {
           _selectedRadarrQualityProfileName = result.item2!.name;
         });
 
-        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(_selectedRadarrQualityProfileId);
-        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(_selectedRadarrQualityProfileName);
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+            .update(_selectedRadarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+            .update(_selectedRadarrQualityProfileName);
       }
     } catch (e, stack) {
       ZagLogger().error('Error selecting Radarr quality profile', e, stack);
-      showZagSnackBar(title: 'Error', message: 'Failed to load quality profiles', type: ZagSnackbarType.ERROR);
+      showZagSnackBar(
+          title: 'Error',
+          message: 'Failed to load quality profiles',
+          type: ZagSnackbarType.ERROR);
     }
   }
 
@@ -1931,22 +2027,30 @@ class _StagingModalState extends State<_StagingModal> {
       final folders = await context.read<RadarrState>().rootFolders;
 
       if (folders == null || folders.isEmpty) {
-        showZagSnackBar(title: 'No Root Folders', message: 'No Radarr root folders found', type: ZagSnackbarType.INFO);
+        showZagSnackBar(
+            title: 'No Root Folders',
+            message: 'No Radarr root folders found',
+            type: ZagSnackbarType.INFO);
         return;
       }
 
-      final Tuple2<bool, RadarrRootFolder?> result = await RadarrDialogs().editRootFolder(context, folders);
+      final Tuple2<bool, RadarrRootFolder?> result =
+          await RadarrDialogs().editRootFolder(context, folders);
 
       if (result.item1 && result.item2 != null) {
         setState(() {
           _selectedRadarrRootFolder = result.item2!.path;
         });
 
-        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(_selectedRadarrRootFolder);
+        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+            .update(_selectedRadarrRootFolder);
       }
     } catch (e, stack) {
       ZagLogger().error('Error selecting Radarr root folder', e, stack);
-      showZagSnackBar(title: 'Error', message: 'Failed to load root folders', type: ZagSnackbarType.ERROR);
+      showZagSnackBar(
+          title: 'Error',
+          message: 'Failed to load root folders',
+          type: ZagSnackbarType.ERROR);
     }
   }
 
@@ -1955,11 +2059,15 @@ class _StagingModalState extends State<_StagingModal> {
       final profiles = await context.read<SonarrState>().qualityProfiles;
 
       if (profiles == null || profiles.isEmpty) {
-        showZagSnackBar(title: 'No Quality Profiles', message: 'No Sonarr quality profiles found', type: ZagSnackbarType.INFO);
+        showZagSnackBar(
+            title: 'No Quality Profiles',
+            message: 'No Sonarr quality profiles found',
+            type: ZagSnackbarType.INFO);
         return;
       }
 
-      final Tuple2<bool, SonarrQualityProfile?> result = await SonarrDialogs().editQualityProfile(context, profiles);
+      final Tuple2<bool, SonarrQualityProfile?> result =
+          await SonarrDialogs().editQualityProfile(context, profiles);
 
       if (result.item1 && result.item2 != null) {
         setState(() {
@@ -1967,12 +2075,17 @@ class _StagingModalState extends State<_StagingModal> {
           _selectedSonarrQualityProfileName = result.item2!.name;
         });
 
-        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(_selectedSonarrQualityProfileId);
-        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(_selectedSonarrQualityProfileName);
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+            .update(_selectedSonarrQualityProfileId);
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+            .update(_selectedSonarrQualityProfileName);
       }
     } catch (e, stack) {
       ZagLogger().error('Error selecting Sonarr quality profile', e, stack);
-      showZagSnackBar(title: 'Error', message: 'Failed to load quality profiles', type: ZagSnackbarType.ERROR);
+      showZagSnackBar(
+          title: 'Error',
+          message: 'Failed to load quality profiles',
+          type: ZagSnackbarType.ERROR);
     }
   }
 
@@ -1981,22 +2094,30 @@ class _StagingModalState extends State<_StagingModal> {
       final folders = await context.read<SonarrState>().rootFolders;
 
       if (folders == null || folders.isEmpty) {
-        showZagSnackBar(title: 'No Root Folders', message: 'No Sonarr root folders found', type: ZagSnackbarType.INFO);
+        showZagSnackBar(
+            title: 'No Root Folders',
+            message: 'No Sonarr root folders found',
+            type: ZagSnackbarType.INFO);
         return;
       }
 
-      final Tuple2<bool, SonarrRootFolder?> result = await SonarrDialogs().editRootFolder(context, folders);
+      final Tuple2<bool, SonarrRootFolder?> result =
+          await SonarrDialogs().editRootFolder(context, folders);
 
       if (result.item1 && result.item2 != null) {
         setState(() {
           _selectedSonarrRootFolder = result.item2!.path;
         });
 
-        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(_selectedSonarrRootFolder);
+        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+            .update(_selectedSonarrRootFolder);
       }
     } catch (e, stack) {
       ZagLogger().error('Error selecting Sonarr root folder', e, stack);
-      showZagSnackBar(title: 'Error', message: 'Failed to load root folders', type: ZagSnackbarType.ERROR);
+      showZagSnackBar(
+          title: 'Error',
+          message: 'Failed to load root folders',
+          type: ZagSnackbarType.ERROR);
     }
   }
 
@@ -2030,8 +2151,10 @@ class _StagingModalState extends State<_StagingModal> {
           // For UPDATE, override params with currently selected quality profiles
           final updatedParams = {
             ...?_stagedOperation!.params,
-            'target_quality_profile_id': _selectedRadarrQualityProfileId ?? _selectedSonarrQualityProfileId,
-            'target_quality_profile_name': _selectedRadarrQualityProfileName ?? _selectedSonarrQualityProfileName,
+            'target_quality_profile_id': _selectedRadarrQualityProfileId ??
+                _selectedSonarrQualityProfileId,
+            'target_quality_profile_name': _selectedRadarrQualityProfileName ??
+                _selectedSonarrQualityProfileName,
             'search_after_update': true,
           };
 
@@ -2054,7 +2177,8 @@ class _StagingModalState extends State<_StagingModal> {
         default:
           showZagSnackBar(
             title: 'Unknown Operation',
-            message: 'Operation type "${_stagedOperation!.operation}" is not supported',
+            message:
+                'Operation type "${_stagedOperation!.operation}" is not supported',
             type: ZagSnackbarType.ERROR,
           );
       }

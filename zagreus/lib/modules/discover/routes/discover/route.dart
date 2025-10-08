@@ -917,7 +917,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget build(BuildContext context) {
     return ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
       builder: (context, _) {
-        final libraryCacheEnabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+        final libraryCacheEnabled =
+            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
         return ZagScaffold(
           scaffoldKey: _scaffoldKey,
           module: ZagModule.DISCOVER,
@@ -929,50 +930,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ? [
                     // Sync button on Agent tab (only if library cache is enabled)
                     if (libraryCacheEnabled)
-                  IconButton(
-                    icon: _isSyncing
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
-                            ),
-                          )
-                        : const Icon(Icons.sync),
-                    onPressed: _isSyncing ? null : _forceLibrarySync,
-                    tooltip: 'Sync Library',
-                  ),
-                if (_lastZAssistantStageId != null)
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: _navigateToLastZAssistantResults,
-                    tooltip: 'Return to Z Assistant Results',
-                  ),
-              ]
-            : (_currentPageIndex != 3
-                ? [
-                    Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      child: Row(
-                        children: [
-                          _appBarToggleButton('Today', 'day'),
-                          const SizedBox(width: 8),
-                          _appBarToggleButton('This Week', 'week'),
-                        ],
+                      IconButton(
+                        icon: _isSyncing
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              )
+                            : const Icon(Icons.sync),
+                        onPressed: _isSyncing ? null : _forceLibrarySync,
+                        tooltip: 'Sync Library',
                       ),
-                    ),
+                    if (_lastZAssistantStageId != null)
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward),
+                        onPressed: _navigateToLastZAssistantResults,
+                        tooltip: 'Return to Z Assistant Results',
+                      ),
                   ]
-                : null),
-      ),
-      body: _body(),
-      bottomNavigationBar: _DiscoverNavigationBar(
-        pageController: _pageController,
-      ),
+                : (_currentPageIndex != 3
+                    ? [
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          child: Row(
+                            children: [
+                              _appBarToggleButton('Today', 'day'),
+                              const SizedBox(width: 8),
+                              _appBarToggleButton('This Week', 'week'),
+                            ],
+                          ),
+                        ),
+                      ]
+                    : null),
+          ),
+          body: _body(),
+          bottomNavigationBar: _DiscoverNavigationBar(
+            pageController: _pageController,
+          ),
         );
       },
     );
@@ -1067,23 +1069,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     ];
 
     // Get saved order or use default
-    final savedOrder = ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
-    final sectionOrder = savedOrder.isNotEmpty
-        ? List<String>.from(savedOrder)
-        : defaultOrder;
+    final savedOrder =
+        ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
+    final sectionOrder =
+        savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
 
     // Map of section builders
     final sectionBuilders = <String, Widget Function()>{
       'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
-          ? Column(children: [_recentlyDownloadedSection(), const SizedBox(height: 12)])
+          ? Column(children: [
+              _recentlyDownloadedSection(),
+              const SizedBox(height: 12)
+            ])
           : const SizedBox.shrink(),
-      'recommended': () => Column(children: [_recommendedMoviesSection(), const SizedBox(height: 12)]),
+      'recommended': () => Column(
+          children: [_recommendedMoviesSection(), const SizedBox(height: 12)]),
       'missing': () => _missingMovies.isNotEmpty
-          ? Column(children: [_missingMoviesSection(), const SizedBox(height: 12)])
+          ? Column(
+              children: [_missingMoviesSection(), const SizedBox(height: 12)])
           : const SizedBox.shrink(),
-      'downloading_soon': () => Column(children: [_downloadingSoonSection(), const SizedBox(height: 12)]),
-      'popular_movies': () => Column(children: [_popularMoviesSection(), const SizedBox(height: 12)]),
-      'popular_people': () => Column(children: [_popularPeopleSection(), const SizedBox(height: 12)]),
+      'downloading_soon': () => Column(
+          children: [_downloadingSoonSection(), const SizedBox(height: 12)]),
+      'popular_movies': () => Column(
+          children: [_popularMoviesSection(), const SizedBox(height: 12)]),
+      'popular_people': () => Column(
+          children: [_popularPeopleSection(), const SizedBox(height: 12)]),
     };
 
     // Build sections in saved order
@@ -1126,9 +1136,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     // Get saved order or use default
     final savedOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
-    final sectionOrder = savedOrder.isNotEmpty
-        ? List<String>.from(savedOrder)
-        : defaultOrder;
+    final sectionOrder =
+        savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
 
     // Map of section builders
     final sectionBuilders = <String, Widget Function()>{
@@ -1138,8 +1147,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'airing_next': () => _airingNextShows.isNotEmpty
           ? _airingNextSection()
           : const SizedBox.shrink(),
-      'popular_tv_shows': () => Column(children: [_popularTVShowsSection(), const SizedBox(height: 12)]),
-      'trending_new_tv_shows': () => Column(children: [_trendingNewTVShowsSection(), const SizedBox(height: 12)]),
+      'popular_tv_shows': () => Column(
+          children: [_popularTVShowsSection(), const SizedBox(height: 12)]),
+      'trending_new_tv_shows': () => Column(
+          children: [_trendingNewTVShowsSection(), const SizedBox(height: 12)]),
       'most_anticipated': () => _mostAnticipatedShowsSection(),
     };
 
@@ -1319,31 +1330,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                           )
                         : Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.search_off_rounded,
-                                      size: 60,
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white.withOpacity(0.2)
-                                          : Colors.black.withOpacity(0.2),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'No results found',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.white.withOpacity(0.4)
-                                            : Colors.black.withOpacity(0.4),
-                                      ),
-                                    ),
-                                  ],
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 60,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white.withOpacity(0.2)
+                                      : Colors.black.withOpacity(0.2),
                                 ),
-                              )
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No results found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withOpacity(0.4)
+                                        : Colors.black.withOpacity(0.4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
                     : _buildSearchResults(),
           ),
         ),
@@ -1439,8 +1450,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         final maxPopularity = indexedResults.fold<double>(
           0,
           (current, entry) {
-            final value =
-                (entry.value['popularity'] as num?)?.toDouble() ?? 0;
+            final value = (entry.value['popularity'] as num?)?.toDouble() ?? 0;
             return math.max(current, value);
           },
         );
@@ -1448,8 +1458,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         final maxVoteLog = indexedResults.fold<double>(
           0,
           (current, entry) {
-            final votes =
-                (entry.value['vote_count'] as num?)?.toDouble() ?? 0;
+            final votes = (entry.value['vote_count'] as num?)?.toDouble() ?? 0;
             final voteLog = math.log(votes + 1);
             return math.max(current, voteLog);
           },
@@ -1651,7 +1660,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       print('🤖 Asking Z Assistant: $query');
       final service = ZAssistantService();
-      final stageId = await service.sendDiscoverQuery(query: query);
+      final stageId = await service.sendExploreQuery(query: query);
 
       setState(() {
         _isAskingZAssistant = false;
@@ -1671,8 +1680,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         MaterialPageRoute(
           builder: (context) => ZAssistantResultsRoute(
             stageId: stageId,
-            onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
-            onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+            onMovieTap: (tmdbId, title) =>
+                _openMovieInRadarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title) =>
+                _openSeriesInSonarr(tmdbId: tmdbId, title: title),
           ),
         ),
       );
@@ -1681,7 +1692,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       Future.delayed(const Duration(milliseconds: 2500), () {
         final syncService = LibrarySyncService();
         if (syncService.needsSync) {
-          ZagLogger().debug('Mosaic completed - triggering background library sync...');
+          ZagLogger().debug(
+              'Mosaic completed - triggering background library sync...');
           syncService.syncIfNeeded();
         }
       });
@@ -1706,8 +1718,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       MaterialPageRoute(
         builder: (context) => ZAssistantResultsRoute(
           stageId: _lastZAssistantStageId!,
-          onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
-          onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+          onMovieTap: (tmdbId, title) =>
+              _openMovieInRadarr(tmdbId: tmdbId, title: title),
+          onShowTap: (tmdbId, title) =>
+              _openSeriesInSonarr(tmdbId: tmdbId, title: title),
         ),
       ),
     );
@@ -1757,7 +1771,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     for (int i = 1; i <= 10; i++) {
       try {
         print('📡 Call #$i...');
-        await zAssistant.sendDiscoverQuery(query: 'test call $i');
+        await zAssistant.sendExploreQuery(query: 'test call $i');
         print('✅ Call #$i successful');
       } catch (e) {
         print('❌ Call #$i failed: $e');
@@ -1780,7 +1794,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final zAssistant = ZAssistantService();
       try {
         print('📡 Testing Z Assistant API call...');
-        await zAssistant.sendDiscoverQuery(query: 'test rate limiting');
+        await zAssistant.sendExploreQuery(query: 'test rate limiting');
         print('✅ Z Assistant API call successful');
       } catch (e) {
         print('⚠️ Z Assistant API call failed (expected if not Mega): $e');
@@ -1902,7 +1916,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Breaking Bad",
           "year": 2008,
           "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
-          "overview": "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
+          "overview":
+              "A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine in order to secure his family's future.",
           "verified": true
         },
         {
@@ -1911,14 +1926,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           "title": "Game of Thrones",
           "year": 2011,
           "poster_path": "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg",
-          "overview": "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
+          "overview":
+              "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.",
           "verified": true
         },
       ];
 
       // Create staged operation locally
       final service = StagedOperationsService();
-      final stageId = await service.createStagedOperation('discover', mockItems);
+      final stageId = await service.createStagedOperation('explore', mockItems);
 
       print('🎯 Test stage created: $stageId');
 
@@ -1934,8 +1950,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         MaterialPageRoute(
           builder: (context) => ZAssistantResultsRoute(
             stageId: stageId,
-            onMovieTap: (tmdbId, title) => _openMovieInRadarr(tmdbId: tmdbId, title: title),
-            onShowTap: (tmdbId, title) => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+            onMovieTap: (tmdbId, title) =>
+                _openMovieInRadarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title) =>
+                _openSeriesInSonarr(tmdbId: tmdbId, title: title),
           ),
         ),
       );
@@ -2863,15 +2881,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: GestureDetector(
-            onTap: _popularMovies.isNotEmpty ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TMDBPopularMoviesRoute(
-                    initialData: _popularMovies,
-                  ),
-                ),
-              );
-            } : null,
+            onTap: _popularMovies.isNotEmpty
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TMDBPopularMoviesRoute(
+                          initialData: _popularMovies,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             child: Row(
               children: [
                 Icon(
@@ -3095,15 +3115,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: GestureDetector(
-            onTap: _popularTVShows.isNotEmpty ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TMDBPopularTVShowsRoute(
-                    initialData: _popularTVShows,
-                  ),
-                ),
-              );
-            } : null,
+            onTap: _popularTVShows.isNotEmpty
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TMDBPopularTVShowsRoute(
+                          initialData: _popularTVShows,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             child: Row(
               children: [
                 Icon(
@@ -3337,15 +3359,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: GestureDetector(
-            onTap: _trendingNewTVShows.isNotEmpty ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TMDBTrendingNewTVShowsRoute(
-                    initialData: _trendingNewTVShows,
-                  ),
-                ),
-              );
-            } : null,
+            onTap: _trendingNewTVShows.isNotEmpty
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TMDBTrendingNewTVShowsRoute(
+                          initialData: _trendingNewTVShows,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             child: Row(
               children: [
                 Icon(
@@ -3635,7 +3659,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
-  Future<void> _openSeriesInSonarr({int? tmdbId, int? tvdbId, String? title}) async {
+  Future<void> _openSeriesInSonarr(
+      {int? tmdbId, int? tvdbId, String? title}) async {
     final sonarrState = context.read<SonarrState>();
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
@@ -3756,15 +3781,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: GestureDetector(
-            onTap: _mostAnticipatedShows.isNotEmpty ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TraktMostAnticipatedShowsRoute(
-                    initialData: _mostAnticipatedShows,
-                  ),
-                ),
-              );
-            } : null,
+            onTap: _mostAnticipatedShows.isNotEmpty
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TraktMostAnticipatedShowsRoute(
+                          initialData: _mostAnticipatedShows,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             child: Row(
               children: [
                 Icon(
@@ -3984,15 +4011,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: GestureDetector(
-            onTap: _popularPeople.isNotEmpty ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TMDBPopularPeopleRoute(
-                    initialData: _popularPeople,
-                  ),
-                ),
-              );
-            } : null,
+            onTap: _popularPeople.isNotEmpty
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TMDBPopularPeopleRoute(
+                          initialData: _popularPeople,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
             child: Row(
               children: [
                 Icon(
