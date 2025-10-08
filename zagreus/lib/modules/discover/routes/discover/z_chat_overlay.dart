@@ -729,16 +729,6 @@ class _ZChatPageState extends State<ZChatPage> {
                             color: ZagColours.accent.withOpacity(0.15),
                           ),
                         ),
-                        Text(
-                          'Ask anything...',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white.withOpacity(0.4)
-                                    : Colors.black.withOpacity(0.4),
-                          ),
-                        ),
                         const SizedBox(height: 24),
                         OutlinedButton.icon(
                           onPressed: _loadTestZAssistantResults,
@@ -1132,14 +1122,7 @@ class _ZChatPageState extends State<ZChatPage> {
 
       // Navigate to results
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ZAssistantResultsRoute(
-            stageId: stageId,
-          ),
-        ),
-      );
+      _navigateToMosaicResults(stageId);
     } catch (e) {
       print('❌ Test Z Assistant error: $e');
       showZagSnackBar(

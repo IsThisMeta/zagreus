@@ -361,29 +361,53 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                         size: 28,
                       ),
                     ),
+                ),
+                if (item.year != null)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        item.year.toString(),
+                        style: TextStyle(
+                          color: ZagColours.accentLight,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-          if (item.year != null)
-            Text(
-              item.year.toString(),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+          Text(
+            item.title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (item.reason != null) ...[
             const SizedBox(height: 4),
-            Text(
-              item.reason!,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
+            GestureDetector(
+              onTap: () => _showReasonPreview(item),
+              child: Text(
+                item.reason!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ],
@@ -397,6 +421,20 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     } else if (item.isShow && widget.onShowTap != null) {
       widget.onShowTap!(item.tmdbId, item.title);
     }
+  }
+
+  Future<void> _showReasonPreview(StagedMediaItem item) async {
+    if (!mounted) return;
+    final reason = item.reason;
+    if (reason == null || reason.isEmpty) {
+      return;
+    }
+
+    await ZagDialogs().textPreview(
+      context,
+      item.title,
+      reason,
+    );
   }
 
   Future<void> _showItemPreview(StagedMediaItem item) async {
