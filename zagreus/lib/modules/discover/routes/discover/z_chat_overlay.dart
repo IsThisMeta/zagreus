@@ -1604,16 +1604,18 @@ class _StagingModalState extends State<_StagingModal> {
                 // Icon buttons on right
                 Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.movie),
-                      onPressed: _showRadarrConfig,
-                      tooltip: 'Radarr Settings',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.tv),
-                      onPressed: _showSonarrConfig,
-                      tooltip: 'Sonarr Settings',
-                    ),
+                    if (_operation?.operation != 'remove') ...[
+                      IconButton(
+                        icon: const Icon(Icons.movie),
+                        onPressed: _showRadarrConfig,
+                        tooltip: 'Radarr Settings',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.tv),
+                        onPressed: _showSonarrConfig,
+                        tooltip: 'Sonarr Settings',
+                      ),
+                    ],
                     IconButton(
                       icon: const Icon(Icons.checklist),
                       onPressed: _toggleMultiSelectMode,
