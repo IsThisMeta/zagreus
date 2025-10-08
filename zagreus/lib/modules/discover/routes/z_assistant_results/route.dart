@@ -366,15 +366,6 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            item.title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
           if (item.year != null)
             Text(
               item.year.toString(),
