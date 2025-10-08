@@ -1020,7 +1020,7 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Nolan's debut feature; neo-noir structure and non-linear storytelling"
+          "reason": "Nolan's debut feature; neo-noir riff\nLean runtime keeps the paranoia tight\nGreat control sample for three-line cards"
         },
         {
           "tmdb_id": 77,
@@ -1030,7 +1030,7 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Reverse chronology thriller; psychological complexity and mind-bending narrative"
+          "reason": "Reverse chronology thriller with an amnesia hook\nHandwritten clues fold into the puzzle box structure\nPsychological stakes stay raw and unnerving\nChecks how four-line blurbs flow"
         },
         {
           "tmdb_id": 272,
@@ -1070,7 +1070,7 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Dream heist thriller; layered reality and stunning practical effects"
+          "reason": "Dream heist thriller with nested realities\nPractical effects sell the gravity-bending corridors\nLiminal cityscapes folding in on themselves\nUrgent pacing despite dense exposition\nPerfect specimen for five-line wrapping"
         },
         {
           "tmdb_id": 49026,
@@ -1090,7 +1090,7 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
           "overview": "",
           "verified": true,
-          "reason": "Space exploration epic; relativity, time dilation, and human survival"
+          "reason": "Space exploration epic anchored in family stakes\nRelativity and time dilation stretch every goodbye\nOrgan-heavy Zimmer score injects cosmic awe\nHelpful four-line test for taller tiles"
         },
         {
           "tmdb_id": 324857,
@@ -1100,7 +1100,7 @@ class _ZChatPageState extends State<ZChatPage> {
           "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
           "overview": "",
           "verified": true,
-          "reason": "WWII evacuation; three timelines converge with minimal dialogue"
+          "reason": "WWII evacuation told across land, sea, and air\nSparse dialogue but relentless ticking dread\nGood benchmark for three-line descriptions"
         },
         {
           "tmdb_id": 577922,

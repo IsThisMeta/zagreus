@@ -288,7 +288,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         padding: const EdgeInsets.all(20),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 2 / 3,
+          childAspectRatio: 0.55,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -390,9 +390,8 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[500],
-                fontStyle: FontStyle.italic,
               ),
-              maxLines: 3,
+              maxLines: 5,
               overflow: TextOverflow.ellipsis,
             ),
           ],
