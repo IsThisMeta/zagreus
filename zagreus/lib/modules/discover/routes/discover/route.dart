@@ -915,34 +915,38 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ZagScaffold(
-      scaffoldKey: _scaffoldKey,
-      module: ZagModule.DISCOVER,
-      drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
-      appBar: ZagAppBar(
-        title: 'Discover',
-        useDrawer: true,
-        actions: _currentPageIndex == 2
-            ? [
-                // Sync button on Agent tab
-                IconButton(
-                  icon: _isSyncing
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black,
+    return ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+      builder: (context, _) {
+        final libraryCacheEnabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+        return ZagScaffold(
+          scaffoldKey: _scaffoldKey,
+          module: ZagModule.DISCOVER,
+          drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
+          appBar: ZagAppBar(
+            title: 'Discover',
+            useDrawer: true,
+            actions: _currentPageIndex == 2
+                ? [
+                    // Sync button on Agent tab (only if library cache is enabled)
+                    if (libraryCacheEnabled)
+                  IconButton(
+                    icon: _isSyncing
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
                             ),
-                          ),
-                        )
-                      : const Icon(Icons.sync),
-                  onPressed: _isSyncing ? null : _forceLibrarySync,
-                  tooltip: 'Sync Library',
-                ),
+                          )
+                        : const Icon(Icons.sync),
+                    onPressed: _isSyncing ? null : _forceLibrarySync,
+                    tooltip: 'Sync Library',
+                  ),
                 if (_lastZAssistantStageId != null)
                   IconButton(
                     icon: const Icon(Icons.arrow_forward),
@@ -969,6 +973,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       bottomNavigationBar: _DiscoverNavigationBar(
         pageController: _pageController,
       ),
+        );
+      },
     );
   }
 

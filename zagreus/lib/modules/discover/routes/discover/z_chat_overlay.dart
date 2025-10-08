@@ -739,15 +739,15 @@ class _ZChatPageState extends State<ZChatPage> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        OutlinedButton.icon(
-                          onPressed: _showMockOperationPicker,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Operations (Mock Data)'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ZagColours.accent,
-                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
-                          ),
-                        ),
+                        // OutlinedButton.icon(
+                        //   onPressed: _showMockOperationPicker,
+                        //   icon: const Icon(Icons.science),
+                        //   label: const Text('Test Operations (Mock Data)'),
+                        //   style: OutlinedButton.styleFrom(
+                        //     foregroundColor: ZagColours.accent,
+                        //     side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
+                        //   ),
+                        // ),
                       ],
                     ),
                   )
