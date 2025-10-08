@@ -383,6 +383,19 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                 color: Colors.grey[600],
               ),
             ),
+          if (item.reason != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              item.reason!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[500],
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ],
       ),
     );

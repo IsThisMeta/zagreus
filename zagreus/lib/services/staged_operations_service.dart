@@ -11,6 +11,7 @@ class StagedMediaItem {
   final String? overview;
   final String mediaType; // "movie" or "tv"
   final bool verified;
+  final String? reason; // Why this item is recommended (for discover operations)
 
   StagedMediaItem({
     required this.tmdbId,
@@ -21,6 +22,7 @@ class StagedMediaItem {
     this.overview,
     required this.mediaType,
     required this.verified,
+    this.reason,
   });
 
   factory StagedMediaItem.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class StagedMediaItem {
       overview: json['overview'] as String?,
       mediaType: json['media_type'] as String,
       verified: json['verified'] as bool? ?? true,
+      reason: json['reason'] as String?,
     );
   }
 

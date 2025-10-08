@@ -739,16 +739,26 @@ class _ZChatPageState extends State<ZChatPage> {
                                     : Colors.black.withOpacity(0.4),
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        // OutlinedButton.icon(
-                        //   onPressed: _showMockOperationPicker,
-                        //   icon: const Icon(Icons.science),
-                        //   label: const Text('Test Operations (Mock Data)'),
-                        //   style: OutlinedButton.styleFrom(
-                        //     foregroundColor: ZagColours.accent,
-                        //     side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
-                        //   ),
-                        // ),
+                        const SizedBox(height: 24),
+                        OutlinedButton.icon(
+                          onPressed: _loadTestZAssistantResults,
+                          icon: const Icon(Icons.science),
+                          label: const Text('Test Z Assistant (Mock Data)'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: ZagColours.accent,
+                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _showMockOperationPicker,
+                          icon: const Icon(Icons.science),
+                          label: const Text('Test Operations (Mock Data)'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: ZagColours.accent,
+                            side: BorderSide(color: ZagColours.accent.withOpacity(0.5)),
+                          ),
+                        ),
                       ],
                     ),
                   )
@@ -991,6 +1001,150 @@ class _ZChatPageState extends State<ZChatPage> {
       showZagSnackBar(
         title: 'Test Error',
         message: 'Failed to create mock operation: $e',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _loadTestZAssistantResults() async {
+    try {
+      print('🧪 Creating mock Z Assistant results');
+
+      // Mock Christopher Nolan movies with posters + reasons for testing
+      final mockItems = [
+        {
+          "tmdb_id": 496,
+          "media_type": "movie",
+          "title": "Following",
+          "year": 1999,
+          "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Nolan's debut feature; neo-noir structure and non-linear storytelling"
+        },
+        {
+          "tmdb_id": 77,
+          "media_type": "movie",
+          "title": "Memento",
+          "year": 2000,
+          "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Reverse chronology thriller; psychological complexity and mind-bending narrative"
+        },
+        {
+          "tmdb_id": 272,
+          "media_type": "movie",
+          "title": "Batman Begins",
+          "year": 2005,
+          "poster_path": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Realistic superhero origin story; grounded action and moral complexity"
+        },
+        {
+          "tmdb_id": 1124,
+          "media_type": "movie",
+          "title": "The Prestige",
+          "year": 2006,
+          "poster_path": "/2ZOzyhoW08neG27DVySMCcq2emd.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Rival magicians thriller; themes of obsession and sacrifice"
+        },
+        {
+          "tmdb_id": 155,
+          "media_type": "movie",
+          "title": "The Dark Knight",
+          "year": 2008,
+          "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Crime epic with iconic villain; moral dilemmas and chaos theory"
+        },
+        {
+          "tmdb_id": 27205,
+          "media_type": "movie",
+          "title": "Inception",
+          "year": 2010,
+          "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Dream heist thriller; layered reality and stunning practical effects"
+        },
+        {
+          "tmdb_id": 49026,
+          "media_type": "movie",
+          "title": "The Dark Knight Rises",
+          "year": 2012,
+          "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Epic trilogy conclusion; themes of redemption and revolution"
+        },
+        {
+          "tmdb_id": 157336,
+          "media_type": "movie",
+          "title": "Interstellar",
+          "year": 2014,
+          "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Space exploration epic; relativity, time dilation, and human survival"
+        },
+        {
+          "tmdb_id": 324857,
+          "media_type": "movie",
+          "title": "Dunkirk",
+          "year": 2017,
+          "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "WWII evacuation; three timelines converge with minimal dialogue"
+        },
+        {
+          "tmdb_id": 577922,
+          "media_type": "movie",
+          "title": "Tenet",
+          "year": 2020,
+          "poster_path": "/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Time inversion spy thriller; palindromic structure and temporal manipulation"
+        },
+        {
+          "tmdb_id": 872585,
+          "media_type": "movie",
+          "title": "Oppenheimer",
+          "year": 2023,
+          "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+          "overview": "",
+          "verified": true,
+          "reason": "Atomic bomb biopic; moral weight of creation and political persecution"
+        },
+      ];
+
+      // Create staged operation locally
+      final service = StagedOperationsService();
+      final stageId = await service.createStagedOperation('discover', mockItems);
+
+      print('🎯 Test stage created: $stageId');
+
+      // Navigate to results
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ZAssistantResultsRoute(
+            stageId: stageId,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('❌ Test Z Assistant error: $e');
+      showZagSnackBar(
+        title: 'Test Error',
+        message: 'Failed to create mock results: $e',
         type: ZagSnackbarType.ERROR,
       );
     }

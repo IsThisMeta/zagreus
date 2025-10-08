@@ -16,7 +16,7 @@ class ZAssistantService {
           dio.BaseOptions(
             baseUrl: _baseUrl,
             connectTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 120),
+            receiveTimeout: const Duration(minutes: 5),
             sendTimeout: const Duration(seconds: 30),
             contentType: dio.Headers.jsonContentType,
             responseType: dio.ResponseType.json,
