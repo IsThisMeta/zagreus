@@ -1280,68 +1280,72 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         // Search results
         Expanded(
-          child: _isSearching
-              ? Center(
-                  child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(ZagColours.accent),
-                  ),
-                )
-              : _searchResults.isEmpty
-                  ? _searchController.text.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_rounded,
-                                size: 60,
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.white.withOpacity(0.2)
-                                    : Colors.black.withOpacity(0.2),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Search for movies, TV shows, and people',
-                                style: TextStyle(
-                                  fontSize: 16,
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.opaque,
+            child: _isSearching
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(ZagColours.accent),
+                    ),
+                  )
+                : _searchResults.isEmpty
+                    ? _searchController.text.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_rounded,
+                                  size: 60,
                                   color: Theme.of(context).brightness ==
                                           Brightness.dark
-                                      ? Colors.white.withOpacity(0.4)
-                                      : Colors.black.withOpacity(0.4),
+                                      ? Colors.white.withOpacity(0.2)
+                                      : Colors.black.withOpacity(0.2),
                                 ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.search_off_rounded,
-                                    size: 60,
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Search for movies, TV shows, and people',
+                                  style: TextStyle(
+                                    fontSize: 16,
                                     color: Theme.of(context).brightness ==
                                             Brightness.dark
-                                        ? Colors.white.withOpacity(0.2)
-                                        : Colors.black.withOpacity(0.2),
+                                        ? Colors.white.withOpacity(0.4)
+                                        : Colors.black.withOpacity(0.4),
                                   ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No results found',
-                                    style: TextStyle(
-                                      fontSize: 16,
+                                ),
+                              ],
+                            ),
+                          )
+                        : Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off_rounded,
+                                      size: 60,
                                       color: Theme.of(context).brightness ==
                                               Brightness.dark
-                                          ? Colors.white.withOpacity(0.4)
-                                          : Colors.black.withOpacity(0.4),
+                                          ? Colors.white.withOpacity(0.2)
+                                          : Colors.black.withOpacity(0.2),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            )
-                  : _buildSearchResults(),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No results found',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white.withOpacity(0.4)
+                                            : Colors.black.withOpacity(0.4),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                    : _buildSearchResults(),
+          ),
         ),
       ],
     );
