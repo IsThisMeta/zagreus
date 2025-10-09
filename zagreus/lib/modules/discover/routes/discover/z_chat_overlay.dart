@@ -432,8 +432,14 @@ class _ZChatPageState extends State<ZChatPage> {
           operation.params?['target_quality_profile_id'] as int?;
       final targetQualityProfileName =
           operation.params?['target_quality_profile_name'] as String?;
-      final searchAfterUpdate =
-          operation.params?['search_after_update'] as bool? ?? false;
+      final searchAfterUpdateRadarr =
+          operation.params?['radarr_search_after_update'] as bool? ??
+              operation.params?['search_after_update'] as bool? ??
+              false;
+      final searchAfterUpdateSonarr =
+          operation.params?['sonarr_search_after_update'] as bool? ??
+              operation.params?['search_after_update'] as bool? ??
+              false;
 
       print(
           '📊 Target quality: $targetQualityProfileName (ID: $targetQualityProfileId)');
@@ -495,7 +501,7 @@ class _ZChatPageState extends State<ZChatPage> {
             await radarrState.api!.movie.update(movie: radarrMovie);
 
             // Optionally trigger search
-            if (searchAfterUpdate) {
+            if (searchAfterUpdateRadarr) {
               await radarrState.api!.command
                   .moviesSearch(movieIds: [radarrMovie.id!]);
             }
@@ -560,7 +566,7 @@ class _ZChatPageState extends State<ZChatPage> {
             await sonarrState.api!.series.update(series: sonarrSeries);
 
             // Optionally trigger search
-            if (searchAfterUpdate) {
+            if (searchAfterUpdateSonarr) {
               await sonarrState.api!.command
                   .seriesSearch(seriesId: sonarrSeries.id!);
             }
@@ -2202,13 +2208,21 @@ class _StagingModalState extends State<_StagingModal> {
         case 'update':
           print('➡️ Executing UPDATE operation');
           // For UPDATE, override params with currently selected quality profiles
+          final hasMovies = trimmedOperation.items.any((item) => item.isMovie);
+          final hasShows = trimmedOperation.items.any((item) => item.isShow);
+
           final updatedParams = {
             ...?trimmedOperation.params,
             'target_quality_profile_id': _selectedRadarrQualityProfileId ??
                 _selectedSonarrQualityProfileId,
             'target_quality_profile_name': _selectedRadarrQualityProfileName ??
                 _selectedSonarrQualityProfileName,
-            'search_after_update': true,
+            if (hasMovies)
+              'radarr_search_after_update': _radarrSearchForMissing,
+            if (hasShows)
+              'sonarr_search_after_update': _sonarrSearchForMissing,
+            'search_after_update': (_radarrSearchForMissing && hasMovies) ||
+                (_sonarrSearchForMissing && hasShows),
           };
 
           final modifiedOperation = StagedOperation(
