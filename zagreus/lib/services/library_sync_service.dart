@@ -3,6 +3,7 @@ import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/supabase/core.dart';
 
 String? _normalizeTmdbPosterPath(String? url) {
@@ -30,6 +31,27 @@ String? _normalizeTmdbPosterPath(String? url) {
   return '/$path';
 }
 
+enum LibrarySyncError {
+  noMega,
+  cacheDisabled,
+  alreadySyncing,
+  uploadFailed,
+  unknown,
+}
+
+class LibrarySyncResult {
+  final bool success;
+  final LibrarySyncError? error;
+  final String? errorMessage;
+
+  LibrarySyncResult.success()
+      : success = true,
+        error = null,
+        errorMessage = null;
+
+  LibrarySyncResult.failure(this.error, [this.errorMessage]) : success = false;
+}
+
 /// Service for syncing library cache to Supabase
 /// Ensures zero-knowledge architecture - backend never calls user servers
 /// Only syncs for Mega subscribers, max once per 24 hours
@@ -49,9 +71,9 @@ class LibrarySyncService {
   }
 
   /// Sync library to Supabase cache
-  /// Returns true if successful
+  /// Returns LibrarySyncResult with success status and error details
   /// Only syncs for Mega subscribers
-  Future<bool> syncLibrary({
+  Future<LibrarySyncResult> syncLibrary({
     bool force = false,
     bool syncRadarr = true,
     bool syncSonarr = true,
@@ -65,10 +87,14 @@ class LibrarySyncService {
 
     // Check for Mega subscription - library sync is Mega-only feature
     final rcService = RevenueCatService();
-    if (!rcService.isMegaActive) {
+    final hasMega = rcService.isMegaActive || ZagreusMega.isEnabled;
+    if (!hasMega) {
       print('❌ SYNC BLOCKED: Mega subscription required');
       ZagLogger().debug('Library sync skipped - Mega subscription required');
-      return false;
+      return LibrarySyncResult.failure(
+        LibrarySyncError.noMega,
+        'Mega subscription required',
+      );
     }
     print('✓ Mega subscription active');
 
@@ -77,20 +103,26 @@ class LibrarySyncService {
     if (!cacheEnabled && !force) {
       print('ℹ️  SYNC SKIPPED: Library cache is disabled in settings');
       ZagLogger().debug('Library sync skipped - library cache disabled');
-      return false;
+      return LibrarySyncResult.failure(
+        LibrarySyncError.cacheDisabled,
+        'Library cache disabled in settings',
+      );
     }
     print('✓ Library cache enabled');
 
     if (_isSyncing && !force) {
       print('❌ SYNC BLOCKED: Already in progress');
       ZagLogger().debug('Library sync already in progress');
-      return false;
+      return LibrarySyncResult.failure(
+        LibrarySyncError.alreadySyncing,
+        'Sync already in progress',
+      );
     }
 
     if (!needsSync && !force) {
       print('ℹ️  SYNC SKIPPED: Not needed (last sync: ${_lastSyncTime})');
       ZagLogger().debug('Library sync not needed (last sync: ${_lastSyncTime})');
-      return true;
+      return LibrarySyncResult.success();
     }
 
     _isSyncing = true;
@@ -278,7 +310,7 @@ class LibrarySyncService {
         print('   Time: ${DateTime.now()}');
         print('═══════════════════════════════════════\n');
 
-        return true;
+        return LibrarySyncResult.success();
       } catch (e, stack) {
         print('❌ ERROR uploading to Supabase: $e');
         print('Stack trace: $stack');
@@ -299,14 +331,20 @@ class LibrarySyncService {
           print('❌ Failed to clear is_syncing flag: $clearError');
         }
 
-        return false;
+        return LibrarySyncResult.failure(
+          LibrarySyncError.uploadFailed,
+          e.toString(),
+        );
       }
     } catch (e, stack) {
       print('❌ FATAL ERROR during library sync: $e');
       print('Stack trace: $stack');
       ZagLogger().error('Library sync failed', e, stack);
       _isSyncing = false;
-      return false;
+      return LibrarySyncResult.failure(
+        LibrarySyncError.unknown,
+        e.toString(),
+      );
     }
   }
 

@@ -1731,20 +1731,54 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     setState(() => _isSyncing = true);
 
     try {
-      final success = await LibrarySyncService().syncLibrary(force: true);
+      final result = await LibrarySyncService().syncLibrary(force: true);
 
       if (mounted) {
-        if (success) {
+        if (result.success) {
           showZagSnackBar(
             title: 'Library Synced',
             message: 'Your library has been synced to Z Assistant',
             type: ZagSnackbarType.SUCCESS,
           );
         } else {
+          // Show specific error message based on error type
+          String title;
+          String message;
+          ZagSnackbarType type;
+
+          switch (result.error) {
+            case LibrarySyncError.noMega:
+              title = 'Sync Not Available';
+              message = 'Library sync is only available for Mega subscribers';
+              type = ZagSnackbarType.INFO;
+              break;
+            case LibrarySyncError.cacheDisabled:
+              title = 'Sync Disabled';
+              message = 'Library cache is disabled in settings';
+              type = ZagSnackbarType.INFO;
+              break;
+            case LibrarySyncError.alreadySyncing:
+              title = 'Sync In Progress';
+              message = 'A sync is already running';
+              type = ZagSnackbarType.INFO;
+              break;
+            case LibrarySyncError.uploadFailed:
+              title = 'Sync Failed';
+              message = result.errorMessage ?? 'Could not upload to server';
+              type = ZagSnackbarType.ERROR;
+              break;
+            case LibrarySyncError.unknown:
+            default:
+              title = 'Sync Failed';
+              message = 'An unexpected error occurred';
+              type = ZagSnackbarType.ERROR;
+              break;
+          }
+
           showZagSnackBar(
-            title: 'Sync Not Available',
-            message: 'Library sync is only available for Mega subscribers',
-            type: ZagSnackbarType.INFO,
+            title: title,
+            message: message,
+            type: type,
           );
         }
       }
