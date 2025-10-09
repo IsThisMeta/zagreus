@@ -1407,6 +1407,32 @@ class _StagingModalState extends State<_StagingModal> {
   final Set<int> _selectedIndices = {};
   bool _isMultiSelectMode = false;
 
+  int get _totalItemCount => _stagedOperation?.items.length ?? 0;
+
+  int get _activeItemCount {
+    if (_isMultiSelectMode && _selectedIndices.isNotEmpty) {
+      return _selectedIndices.length;
+    }
+    return _totalItemCount;
+  }
+
+  bool get _hasActionableItems => _activeItemCount > 0;
+
+  List<StagedMediaItem> _selectedItemsOrAll() {
+    if (_stagedOperation == null) {
+      return [];
+    }
+
+    if (_isMultiSelectMode && _selectedIndices.isNotEmpty) {
+      return _selectedIndices
+          .where((index) => index >= 0 && index < _stagedOperation!.items.length)
+          .map((index) => _stagedOperation!.items[index])
+          .toList();
+    }
+
+    return _stagedOperation!.items;
+  }
+
   // Radarr/Sonarr config state
   int? _selectedRadarrQualityProfileId;
   String? _selectedRadarrQualityProfileName;
@@ -1542,19 +1568,21 @@ class _StagingModalState extends State<_StagingModal> {
     Color badgeColor;
     String badgeText;
     final operationType = _stagedOperation?.operation ?? widget.operation;
+    final itemCount = _activeItemCount;
+    final itemLabel = 'ITEM${itemCount == 1 ? '' : 'S'}';
 
     switch (operationType) {
       case 'add':
         badgeColor = Colors.green;
-        badgeText = 'ADD ${_stagedOperation?.items.length ?? 0} ITEMS';
+        badgeText = 'ADD $itemCount $itemLabel';
         break;
       case 'remove':
         badgeColor = Colors.red;
-        badgeText = 'REMOVE ${_stagedOperation?.items.length ?? 0} ITEMS';
+        badgeText = 'REMOVE $itemCount $itemLabel';
         break;
       case 'update':
         badgeColor = const Color(0xFF89CFF0); // Pastel blue
-        badgeText = 'UPDATE ${_stagedOperation?.items.length ?? 0} ITEMS';
+        badgeText = 'UPDATE $itemCount $itemLabel';
         break;
       default:
         badgeColor = Colors.grey;
@@ -1617,7 +1645,7 @@ class _StagingModalState extends State<_StagingModal> {
                       ),
                     ],
                     IconButton(
-                      icon: const Icon(Icons.checklist),
+                      icon: Icon(_isMultiSelectMode ? Icons.done_all : Icons.checklist),
                       onPressed: _toggleMultiSelectMode,
                       tooltip: 'Select Items',
                     ),
@@ -1673,7 +1701,7 @@ class _StagingModalState extends State<_StagingModal> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _loading ? null : _handleConfirm,
+                    onPressed: _loading || !_hasActionableItems ? null : _handleConfirm,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: badgeColor,
                       foregroundColor: Colors.white,
@@ -2144,17 +2172,38 @@ class _StagingModalState extends State<_StagingModal> {
 
       print('📦 Staged operation: ${_stagedOperation!.operation}');
 
+      final selectedItems = _selectedItemsOrAll();
+      if (selectedItems.isEmpty) {
+        print('⚠️ No items selected for operation');
+        showZagSnackBar(
+          title: 'Select Items',
+          message: 'Pick at least one item to continue',
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
+      final trimmedOperation = StagedOperation(
+        stageId: _stagedOperation!.stageId,
+        operation: _stagedOperation!.operation,
+        items: selectedItems,
+        status: _stagedOperation!.status,
+        userId: _stagedOperation!.userId,
+        createdAt: _stagedOperation!.createdAt,
+        params: _stagedOperation!.params,
+      );
+
       // Use parent state passed from constructor
       switch (_stagedOperation!.operation) {
         case 'add':
           print('➡️ Executing ADD operation');
-          await widget.parentState._executeAddOperation(_stagedOperation!);
+          await widget.parentState._executeAddOperation(trimmedOperation);
           break;
         case 'update':
           print('➡️ Executing UPDATE operation');
           // For UPDATE, override params with currently selected quality profiles
           final updatedParams = {
-            ...?_stagedOperation!.params,
+            ...?trimmedOperation.params,
             'target_quality_profile_id': _selectedRadarrQualityProfileId ??
                 _selectedSonarrQualityProfileId,
             'target_quality_profile_name': _selectedRadarrQualityProfileName ??
@@ -2163,12 +2212,12 @@ class _StagingModalState extends State<_StagingModal> {
           };
 
           final modifiedOperation = StagedOperation(
-            stageId: _stagedOperation!.stageId,
-            operation: _stagedOperation!.operation,
-            items: _stagedOperation!.items,
-            status: _stagedOperation!.status,
-            userId: _stagedOperation!.userId,
-            createdAt: _stagedOperation!.createdAt,
+            stageId: trimmedOperation.stageId,
+            operation: trimmedOperation.operation,
+            items: trimmedOperation.items,
+            status: trimmedOperation.status,
+            userId: trimmedOperation.userId,
+            createdAt: trimmedOperation.createdAt,
             params: updatedParams,
           );
 
@@ -2176,7 +2225,7 @@ class _StagingModalState extends State<_StagingModal> {
           break;
         case 'remove':
           print('➡️ Executing REMOVE operation');
-          await widget.parentState._executeRemoveOperation(_stagedOperation!);
+          await widget.parentState._executeRemoveOperation(trimmedOperation);
           break;
         default:
           showZagSnackBar(
