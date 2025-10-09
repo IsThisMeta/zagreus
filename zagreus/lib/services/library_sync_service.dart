@@ -5,6 +5,31 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/supabase/core.dart';
 
+String? _normalizeTmdbPosterPath(String? url) {
+  if (url == null || url.isEmpty) {
+    return null;
+  }
+
+  const marker = '/t/p/';
+  final markerIndex = url.indexOf(marker);
+  if (markerIndex == -1) {
+    return null;
+  }
+
+  final remainder = url.substring(markerIndex + marker.length);
+  final slashIndex = remainder.indexOf('/');
+  if (slashIndex == -1 || slashIndex + 1 >= remainder.length) {
+    return null;
+  }
+
+  final path = remainder.substring(slashIndex + 1).split('?').first.trim();
+  if (path.isEmpty) {
+    return null;
+  }
+
+  return '/$path';
+}
+
 /// Service for syncing library cache to Supabase
 /// Ensures zero-knowledge architecture - backend never calls user servers
 /// Only syncs for Mega subscribers, max once per 24 hours
@@ -94,6 +119,8 @@ class LibrarySyncService {
 
       final List<Map<String, dynamic>> movies = [];
       final List<Map<String, dynamic>> shows = [];
+      final List<Map<String, dynamic>> radarrProfiles = [];
+      final List<Map<String, dynamic>> sonarrProfiles = [];
 
       // Fetch Radarr library
       if (syncRadarr) {
@@ -114,8 +141,16 @@ class LibrarySyncService {
             final qualityProfileMap = {
               for (var profile in qualityProfiles) profile.id: profile.name
             };
+            radarrProfiles.addAll(qualityProfiles.map((profile) => {
+                  'id': profile.id,
+                  'name': profile.name,
+                  'upgrade_allowed': profile.upgradeAllowed ?? false,
+                  'cutoff_id': profile.cutoff,
+                }));
 
             for (final movie in radarrMovies) {
+              final posterPath = _normalizeTmdbPosterPath(movie.remotePoster);
+
               movies.add({
                 'title': movie.title,
                 'year': movie.year,
@@ -125,6 +160,8 @@ class LibrarySyncService {
                 'quality_profile_id': movie.qualityProfileId,
                 'quality_profile_name': qualityProfileMap[movie.qualityProfileId],
                 'genres': movie.genres,
+                'poster_path': posterPath,
+                'remote_poster': movie.remotePoster,
               });
             }
 
@@ -159,6 +196,12 @@ class LibrarySyncService {
             final qualityProfileMap = {
               for (var profile in qualityProfiles) profile.id: profile.name
             };
+            sonarrProfiles.addAll(qualityProfiles.map((profile) => {
+                  'id': profile.id,
+                  'name': profile.name,
+                  'upgrade_allowed': profile.upgradeAllowed ?? false,
+                  'cutoff_id': profile.cutoff,
+                }));
 
             for (final show in sonarrShows) {
               // Get season info with completion percentages
@@ -174,6 +217,8 @@ class LibrarySyncService {
                   })
                   .toList() ?? [];
 
+              final posterPath = _normalizeTmdbPosterPath(show.remotePoster);
+
               shows.add({
                 'title': show.title,
                 'year': show.year,
@@ -183,6 +228,8 @@ class LibrarySyncService {
                 'quality_profile_id': show.qualityProfileId,
                 'quality_profile_name': qualityProfileMap[show.qualityProfileId],
                 'genres': show.genres,
+                'poster_path': posterPath,
+                'remote_poster': show.remotePoster,
               });
             }
 
@@ -208,6 +255,8 @@ class LibrarySyncService {
           'device_id': deviceId,
           'movies': movies,
           'shows': shows,
+          'radarr_profiles': radarrProfiles,
+          'sonarr_profiles': sonarrProfiles,
           'synced_at': DateTime.now().toIso8601String(),
           'is_syncing': false,
         };
