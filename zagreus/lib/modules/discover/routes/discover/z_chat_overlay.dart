@@ -777,37 +777,39 @@ class _ZChatPageState extends State<ZChatPage> {
                             Text(
                               'z',
                               style: TextStyle(
-                                fontFamily: 'Zebrra',
-                                fontSize: 120,
-                                color: ZagColours.accent.withOpacity(0.15),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            OutlinedButton.icon(
-                              onPressed: _loadTestZAssistantResults,
-                              icon: const Icon(Icons.science),
-                              label: const Text('Test Z Assistant (Mock Data)'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ZagColours.accent,
-                                side: BorderSide(
-                                    color: ZagColours.accent.withOpacity(0.5)),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: _showMockOperationPicker,
-                              icon: const Icon(Icons.science),
-                              label: const Text('Test Operations (Mock Data)'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ZagColours.accent,
-                                side: BorderSide(
-                                    color: ZagColours.accent.withOpacity(0.5)),
-                              ),
-                            ),
-                          ],
+                            fontFamily: 'Zebrra',
+                            fontSize: 120,
+                            color: ZagColours.accent.withOpacity(0.15),
+                          ),
                         ),
-                      )
-                    : ListView.builder(
+                        // const SizedBox(height: 24),
+                        // OutlinedButton.icon(
+                        //   onPressed: _loadTestZAssistantResults,
+                        //   icon: const Icon(Icons.science),
+                        //   label: const Text('Test Z Assistant (Mock Data)'),
+                        //   style: OutlinedButton.styleFrom(
+                        //     foregroundColor: ZagColours.accent,
+                        //     side: BorderSide(
+                        //       color: ZagColours.accent.withOpacity(0.5),
+                        //     ),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 12),
+                        // OutlinedButton.icon(
+                        //   onPressed: _showMockOperationPicker,
+                        //   icon: const Icon(Icons.science),
+                        //   label: const Text('Test Operations (Mock Data)'),
+                        //   style: OutlinedButton.styleFrom(
+                        //     foregroundColor: ZagColours.accent,
+                        //     side: BorderSide(
+                        //       color: ZagColours.accent.withOpacity(0.5),
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
