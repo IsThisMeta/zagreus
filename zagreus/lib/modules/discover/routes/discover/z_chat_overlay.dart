@@ -27,6 +27,7 @@ class _ZChatPageState extends State<ZChatPage> {
   final FocusNode _focusNode = FocusNode();
   final StagedOperationsService _stagingService = StagedOperationsService();
   bool _isThinking = false;
+  final Set<String> _autoOpenedExploreStages = {};
 
   @override
   void initState() {
@@ -141,6 +142,7 @@ class _ZChatPageState extends State<ZChatPage> {
             ));
           });
           _scrollToBottom();
+          _maybeAutoOpenExplore(stagedOp.stageId);
         } else {
           // Show staging modal for review (4+ items or explicit staging)
           setState(() {
@@ -894,6 +896,15 @@ class _ZChatPageState extends State<ZChatPage> {
         ),
       ),
     );
+  }
+
+  void _maybeAutoOpenExplore(String stageId) {
+    if (_autoOpenedExploreStages.contains(stageId)) return;
+    _autoOpenedExploreStages.add(stageId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _openExploreResults(stageId);
+    });
   }
 
   Future<void> _openMovieFromExplore({
