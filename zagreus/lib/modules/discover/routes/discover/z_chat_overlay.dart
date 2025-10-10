@@ -1066,7 +1066,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Following",
           "year": 1999,
           "poster_path": "/3bX6VVSMf0dvzk5pMT4ALG5A92d.jpg",
-          "overview": "",
+          "overview":
+              "A restless young writer shadows strangers through London and is pulled into a heist when a charismatic thief decides to make him an accomplice.",
           "verified": true,
           "reason":
               "Nolan's debut feature; neo-noir riff\nLean runtime keeps the paranoia tight\nGreat control sample for three-line cards"
@@ -1077,7 +1078,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Memento",
           "year": 2000,
           "poster_path": "/fKTPH2WvH8nHTXeBYBVhawtRqtR.jpg",
-          "overview": "",
+          "overview":
+              "Leonard Shelby hunts for his wife's killer while battling short-term memory loss, piecing together clues through tattoos and Polaroids.",
           "verified": true,
           "reason":
               "Reverse chronology thriller with an amnesia hook\nHandwritten clues fold into the puzzle box structure\nPsychological stakes stay raw and unnerving\nChecks how four-line blurbs flow"
@@ -1088,7 +1090,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Batman Begins",
           "year": 2005,
           "poster_path": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
-          "overview": "",
+          "overview":
+              "Bruce Wayne returns to Gotham City and forges the persona of Batman to fight corruption that has infected his home since his parents' murders.",
           "verified": true,
           "reason":
               "Realistic superhero origin story; grounded action and moral complexity"
@@ -1099,7 +1102,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "The Prestige",
           "year": 2006,
           "poster_path": "/2ZOzyhoW08neG27DVySMCcq2emd.jpg",
-          "overview": "",
+          "overview":
+              "Rival magicians wage an escalating feud in Victorian London, sacrificing everything to outdo one another with the ultimate illusion.",
           "verified": true,
           "reason":
               "Rival magicians thriller; themes of obsession and sacrifice"
@@ -1110,7 +1114,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "The Dark Knight",
           "year": 2008,
           "poster_path": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-          "overview": "",
+          "overview":
+              "Batman faces the Joker, a manic criminal mastermind who pushes Gotham into chaos and forces the hero to question the limits of justice.",
           "verified": true,
           "reason":
               "Crime epic with iconic villain; moral dilemmas and chaos theory"
@@ -1121,7 +1126,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Inception",
           "year": 2010,
           "poster_path": "/ljsZTbVsrQSqZgWeep2B1QiDKuh.jpg",
-          "overview": "",
+          "overview":
+              "A skilled thief who steals secrets through dream invasion must plant an idea in a CEO's mind, diving into multilayered subconscious heists.",
           "verified": true,
           "reason":
               "Dream heist thriller with nested realities\nPractical effects sell the gravity-bending corridors\nLiminal cityscapes folding in on themselves\nUrgent pacing despite dense exposition\nPerfect specimen for five-line wrapping"
@@ -1132,7 +1138,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "The Dark Knight Rises",
           "year": 2012,
           "poster_path": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
-          "overview": "",
+          "overview":
+              "Eight years after taking the fall for Harvey Dent, Bruce Wayne must dawn the cape again when the merciless Bane lays siege to Gotham.",
           "verified": true,
           "reason":
               "Epic trilogy conclusion; themes of redemption and revolution"
@@ -1143,7 +1150,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Interstellar",
           "year": 2014,
           "poster_path": "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-          "overview": "",
+          "overview":
+              "With Earth on the brink of collapse, a pilot joins a team journeying through a wormhole in search of a new home for humanity.",
           "verified": true,
           "reason":
               "Space exploration epic anchored in family stakes\nRelativity and time dilation stretch every goodbye\nOrgan-heavy Zimmer score injects cosmic awe\nHelpful four-line test for taller tiles"
@@ -1154,7 +1162,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Dunkirk",
           "year": 2017,
           "poster_path": "/b4Oe15CGLL61Ped0RAS9JpqdmCt.jpg",
-          "overview": "",
+          "overview":
+              "Allied soldiers from Britain, Belgium, and France fight to survive as they are surrounded by enemy forces on the beaches of Dunkirk.",
           "verified": true,
           "reason":
               "WWII evacuation told across land, sea, and air\nSparse dialogue but relentless ticking dread\nGood benchmark for three-line descriptions"
@@ -1165,7 +1174,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Tenet",
           "year": 2020,
           "poster_path": "/aCIFMriQh8rvhxpN1IWGgvH0Tlg.jpg",
-          "overview": "",
+          "overview":
+              "A secret agent manipulates time through inversion to stop a future threat that could trigger World War III.",
           "verified": true,
           "reason":
               "Time inversion spy thriller; palindromic structure and temporal manipulation"
@@ -1176,7 +1186,8 @@ class _ZChatPageState extends State<ZChatPage> {
           "title": "Oppenheimer",
           "year": 2023,
           "poster_path": "/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
-          "overview": "",
+          "overview":
+              "Physicist J. Robert Oppenheimer leads the Manhattan Project, grappling with the moral fallout of creating the atomic bomb.",
           "verified": true,
           "reason":
               "Atomic bomb biopic; moral weight of creation and political persecution"

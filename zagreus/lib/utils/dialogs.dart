@@ -75,7 +75,10 @@ class ZagDialogs {
             }),
       ],
       content: [
-        ZagDialog.textContent(text: text),
+        ZagDialog.textContent(
+          text: text,
+          textAlign: alignLeft ? TextAlign.start : TextAlign.center,
+        ),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -86,7 +89,7 @@ class ZagDialogs {
   /// Used for adding media items to Radarr/Sonarr with saved settings.
   Future<void> textPreviewWithAdd(
       BuildContext context, String? dialogTitle, String text,
-      {required VoidCallback onAdd}) async {
+      {required VoidCallback onAdd, bool alignLeft = false}) async {
     await ZagDialog.dialog(
       context: context,
       title: dialogTitle,
@@ -100,7 +103,10 @@ class ZagDialogs {
             }),
       ],
       content: [
-        ZagDialog.textContent(text: text),
+        ZagDialog.textContent(
+          text: text,
+          textAlign: alignLeft ? TextAlign.start : TextAlign.center,
+        ),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );

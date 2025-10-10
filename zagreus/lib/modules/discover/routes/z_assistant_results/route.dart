@@ -449,6 +449,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         item.title,
         overview,
         onAdd: () => _addMovieToRadarr(item),
+        alignLeft: true,
       );
     } else if (item.isShow) {
       await ZagDialogs().textPreviewWithAdd(
@@ -456,6 +457,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         item.title,
         overview,
         onAdd: () => _addShowToSonarr(item),
+        alignLeft: true,
       );
     }
   }
