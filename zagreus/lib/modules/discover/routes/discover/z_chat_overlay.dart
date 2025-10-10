@@ -779,11 +779,11 @@ class _ZChatPageState extends State<ZChatPage> {
                             Text(
                               'z',
                               style: TextStyle(
-                            fontFamily: 'Zebrra',
-                            fontSize: 120,
-                            color: ZagColours.accent.withOpacity(0.15),
-                          ),
-                        ),
+                                fontFamily: 'Zebrra',
+                                fontSize: 156,
+                                color: ZagColours.accent.withOpacity(0.18),
+                              ),
+                            ),
                         // const SizedBox(height: 24),
                         // OutlinedButton.icon(
                         //   onPressed: _loadTestZAssistantResults,
