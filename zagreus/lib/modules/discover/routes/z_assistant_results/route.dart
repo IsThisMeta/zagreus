@@ -9,7 +9,7 @@ import 'package:zagreus/extensions/string/string.dart';
 class ZAssistantResultsRoute extends StatefulWidget {
   final String stageId;
   final Function(int tmdbId, String title)? onMovieTap;
-  final Function(int tmdbId, String title)? onShowTap;
+  final Function(int tmdbId, String title, int? tvdbId)? onShowTap;
 
   const ZAssistantResultsRoute({
     super.key,
@@ -419,7 +419,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     if (item.isMovie && widget.onMovieTap != null) {
       widget.onMovieTap!(item.tmdbId, item.title);
     } else if (item.isShow && widget.onShowTap != null) {
-      widget.onShowTap!(item.tmdbId, item.title);
+      widget.onShowTap!(item.tmdbId, item.title, item.tvdbId);
     }
   }
 

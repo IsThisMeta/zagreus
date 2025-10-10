@@ -1682,8 +1682,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             stageId: stageId,
             onMovieTap: (tmdbId, title) =>
                 _openMovieInRadarr(tmdbId: tmdbId, title: title),
-            onShowTap: (tmdbId, title) =>
-                _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title, tvdbId) =>
+                _openSeriesInSonarr(tmdbId: tmdbId, tvdbId: tvdbId, title: title),
           ),
         ),
       );
@@ -1720,8 +1720,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           stageId: _lastZAssistantStageId!,
           onMovieTap: (tmdbId, title) =>
               _openMovieInRadarr(tmdbId: tmdbId, title: title),
-          onShowTap: (tmdbId, title) =>
-              _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+          onShowTap: (tmdbId, title, tvdbId) =>
+              _openSeriesInSonarr(tmdbId: tmdbId, tvdbId: tvdbId, title: title),
         ),
       ),
     );
@@ -1988,8 +1988,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             stageId: stageId,
             onMovieTap: (tmdbId, title) =>
                 _openMovieInRadarr(tmdbId: tmdbId, title: title),
-            onShowTap: (tmdbId, title) =>
-                _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+            onShowTap: (tmdbId, title, tvdbId) => _openSeriesInSonarr(
+              tmdbId: tmdbId,
+              tvdbId: tvdbId,
+              title: title,
+            ),
           ),
         ),
       );

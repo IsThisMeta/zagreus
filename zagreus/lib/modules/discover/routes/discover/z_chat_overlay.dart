@@ -8,6 +8,8 @@ import 'package:zagreus/database/config.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/router/routes/sonarr.dart';
 
 /// Simple stateless Z chat page for Discover module
 /// Resets conversation when you leave Discover
@@ -883,17 +885,197 @@ class _ZChatPageState extends State<ZChatPage> {
       MaterialPageRoute(
         builder: (context) => ZAssistantResultsRoute(
           stageId: stageId,
-          onMovieTap: (tmdbId, title) {
-            // TODO: Implement movie tap handling
-            print('Movie tapped: $title (TMDB: $tmdbId)');
-          },
-          onShowTap: (tmdbId, title) {
-            // TODO: Implement show tap handling
-            print('Show tapped: $title (TMDB: $tmdbId)');
-          },
+          onMovieTap: (tmdbId, title) =>
+              _openMovieFromExplore(tmdbId: tmdbId, title: title),
+          onShowTap: (tmdbId, title, tvdbId) =>
+              _openShowFromExplore(tmdbId: tmdbId, tvdbId: tvdbId, title: title),
         ),
       ),
     );
+  }
+
+  Future<void> _openMovieFromExplore({
+    required int tmdbId,
+    required String title,
+  }) async {
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled || radarrState.api == null) {
+      showZagSnackBar(
+        title: title,
+        message: 'Connect Radarr to manage movies from Discover.',
+        type: ZagSnackbarType.INFO,
+      );
+      return;
+    }
+
+    bool loaderShown = false;
+    void dismissLoader() {
+      if (loaderShown && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loaderShown = false;
+      }
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: ZagLoader()),
+    );
+    loaderShown = true;
+
+    try {
+      final results = await radarrState.api!.movieLookup.get(
+        term: 'tmdb:$tmdbId',
+      );
+
+      if (!mounted) {
+        dismissLoader();
+        return;
+      }
+
+      dismissLoader();
+
+      if (results.isEmpty) {
+        showZagSnackBar(
+          title: title,
+          message: 'Could not find TMDB ID $tmdbId in Radarr.',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final radarrMovie = results.first;
+
+      if (radarrMovie.id != null) {
+        RadarrRoutes.MOVIE.go(
+          params: {'movie': radarrMovie.id!.toString()},
+        );
+        return;
+      }
+
+      RadarrRoutes.ADD_MOVIE_DETAILS.go(
+        extra: radarrMovie,
+        queryParams: {'isDiscovery': 'true'},
+      );
+    } catch (error, stack) {
+      dismissLoader();
+      if (!mounted) return;
+      ZagLogger().error('Failed to open Radarr add flow', error, stack);
+      showZagSnackBar(
+        title: title,
+        message: 'Something went wrong talking to Radarr.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _openShowFromExplore({
+    required int tmdbId,
+    int? tvdbId,
+    required String title,
+  }) async {
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) {
+      showZagSnackBar(
+        title: title,
+        message: 'Connect Sonarr to manage shows from Discover.',
+        type: ZagSnackbarType.INFO,
+      );
+      return;
+    }
+
+    bool loaderShown = false;
+    void dismissLoader() {
+      if (loaderShown && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loaderShown = false;
+      }
+    }
+
+    try {
+      SonarrSeries? match;
+      if (sonarrState.series != null) {
+        final seriesMap = await sonarrState.series!;
+        final lowerTitle = title.toLowerCase();
+        for (final series in seriesMap.values) {
+          final candidate = series.title?.toLowerCase();
+          if (candidate != null && candidate == lowerTitle) {
+            match = series;
+            break;
+          }
+        }
+      }
+
+      if (match != null && match.id != null) {
+        SonarrRoutes.SERIES.go(
+          params: {'series': match.id!.toString()},
+        );
+        return;
+      }
+
+      final hasTmdb = tmdbId > 0;
+      final query = tvdbId != null
+          ? 'tvdb:$tvdbId'
+          : hasTmdb
+              ? 'tmdb:$tmdbId'
+              : (title.trim().isNotEmpty ? title.trim() : '');
+
+      if (query.isEmpty) {
+        showZagSnackBar(
+          title: title,
+          message: 'Unable to open this show in Sonarr.',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: ZagLoader()),
+      );
+      loaderShown = true;
+
+      final results = await sonarrState.api!.seriesLookup.get(term: query);
+
+      if (!mounted) {
+        dismissLoader();
+        return;
+      }
+
+      dismissLoader();
+
+      if (results.isEmpty) {
+        showZagSnackBar(
+          title: title,
+          message: tvdbId != null
+              ? 'Could not find TVDB ID $tvdbId in Sonarr.'
+              : 'Could not find TMDB ID $tmdbId in Sonarr.',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      final sonarrSeries = results.first;
+
+      if (sonarrSeries.id != null) {
+        SonarrRoutes.SERIES.go(
+          params: {'series': sonarrSeries.id!.toString()},
+        );
+        return;
+      }
+
+      SonarrRoutes.ADD_SERIES_DETAILS.go(extra: sonarrSeries);
+    } catch (error, stack) {
+      dismissLoader();
+      if (!mounted) return;
+      ZagLogger().error('Failed to open Sonarr add flow', error, stack);
+      showZagSnackBar(
+        title: title,
+        message: 'Something went wrong talking to Sonarr.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 
   Future<void> _showStagingModal(String stageId, String operation) async {
