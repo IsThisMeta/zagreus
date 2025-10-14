@@ -258,6 +258,9 @@ class _State extends State<ConfigurationGeneralRoute>
           value: _db.read(),
           onChanged: (value) {
             _db.update(value);
+            // Update background opacity based on theme
+            // LunaSea: 20%, Zagreus: 25%
+            ZagreusDatabase.THEME_IMAGE_BACKGROUND_OPACITY.update(value ? 20 : 25);
             ZagTheme().initialize();
             ZagState.reset(context);
             showZagSnackBar(
