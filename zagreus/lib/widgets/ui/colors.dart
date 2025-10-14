@@ -41,8 +41,8 @@ class ZagColours {
     blueGrey,
   ];
 
-  /// Core accent colour
-  static const Color accent = Color(0xFF236969);
+  /// Core accent colour (dark teal with subtle blue undertone)
+  static const Color accent = Color(0xFF2A7A82);
 
   /// Dark mode accent colour - using brighter color for better visibility
   static const Color accentDark = Color(0xFF6FE0CC);
