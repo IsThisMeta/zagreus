@@ -71,7 +71,7 @@ class ZagreusPro {
     ZagreusDatabase.LAST_SUBSCRIPTION_VERIFY
         .update(DateTime.now().toUtc().toIso8601String());
 
-    _setProBootModule();
+    setProBootModule();
   }
 
 
@@ -79,24 +79,33 @@ class ZagreusPro {
     _disablePro();
   }
 
-  static void _setProBootModule() {
+  /// Set up boot module for first Pro/Mega activation
+  /// Public so it can be called from both Pro and Mega classes
+  static void setProBootModule() {
     try {
-      final currentModule = BIOSDatabase.BOOT_MODULE.read();
-      final userModuleSaved = ZagreusDatabase.USER_BOOT_MODULE.read();
-
-      // Set to Discover if not already, and save user's preference
-      if (currentModule != ZagModule.DISCOVER) {
-        // Only save current as user preference if we haven't saved one yet
-        // (dashboard is the default, so if it's still dashboard, this is first time)
-        if (userModuleSaved == 'dashboard' || userModuleSaved.isEmpty) {
-          ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
-        }
-        // Always set to Discover when Pro is activated
-        BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
-        print('Pro activated: Setting boot module to Discover');
+      // Check if we've already done the first-time setup
+      if (ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.read()) {
+        print('Pro/Mega already activated before - respecting user boot module preference');
+        return;
       }
+
+      // First time Pro/Mega is being activated - set up boot module
+      final currentModule = BIOSDatabase.BOOT_MODULE.read();
+
+      // Save current module as user preference (for when they toggle off)
+      if (currentModule != ZagModule.DISCOVER) {
+        ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
+      }
+
+      // Set boot module to Discover
+      BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
+
+      // Mark first activation as complete so we don't do this again
+      ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.update(true);
+
+      print('Pro/Mega first activation: Setting boot module to Discover');
     } catch (e) {
-      print('Error setting Pro boot module: $e');
+      print('Error setting Pro/Mega boot module: $e');
     }
   }
 

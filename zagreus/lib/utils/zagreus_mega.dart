@@ -1,5 +1,6 @@
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ZagreusMega {
 
@@ -63,6 +64,9 @@ class ZagreusMega {
     );
     ZagreusDatabase.LAST_SUBSCRIPTION_VERIFY
         .update(DateTime.now().toUtc().toIso8601String());
+
+    // Mega includes Pro features, so set up boot module on first activation
+    ZagreusPro.setProBootModule();
   }
 
   static void disable() {

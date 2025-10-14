@@ -38,6 +38,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   ZAGREUS_PRO_ENABLED<bool>(false),
   ZAGREUS_PRO_EXPIRY<String>(''),
   ZAGREUS_PRO_SUBSCRIPTION_TYPE<String>(''),
+  ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE<bool>(false),
   ZAGREUS_MEGA_ENABLED<bool>(false),
   ZAGREUS_MEGA_EXPIRY<String>(''),
   ZAGREUS_MEGA_SUBSCRIPTION_TYPE<String>(''),
