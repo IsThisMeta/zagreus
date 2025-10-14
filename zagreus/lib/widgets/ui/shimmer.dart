@@ -15,7 +15,7 @@ class ZagShimmer extends StatelessWidget {
     return Shimmer.fromColors(
       child: child,
       baseColor: Theme.of(context).primaryColor,
-      highlightColor: ZagColours.accent,
+      highlightColor: ZagColours.currentAccent,
     );
   }
 }

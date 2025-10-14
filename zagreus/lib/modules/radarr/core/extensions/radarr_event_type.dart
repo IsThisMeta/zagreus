@@ -13,7 +13,7 @@ extension ZagRadarrEventType on RadarrEventType {
       case RadarrEventType.DOWNLOAD_FAILED:
         return ZagColours.red;
       case RadarrEventType.DOWNLOAD_FOLDER_IMPORTED:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case RadarrEventType.DOWNLOAD_IGNORED:
         return ZagColours.purple;
       case RadarrEventType.MOVIE_FILE_DELETED:
@@ -21,7 +21,7 @@ extension ZagRadarrEventType on RadarrEventType {
       case RadarrEventType.MOVIE_FILE_RENAMED:
         return ZagColours.blue;
       case RadarrEventType.MOVIE_FOLDER_IMPORTED:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
     }
   }
 

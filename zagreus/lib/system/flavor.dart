@@ -79,7 +79,7 @@ extension ZagFlavorExtension on ZagFlavor {
       case ZagFlavor.BETA:
         return ZagColours.blue;
       case ZagFlavor.STABLE:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
     }
   }
 }

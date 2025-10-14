@@ -781,7 +781,7 @@ class _ZChatPageState extends State<ZChatPage> {
                               style: TextStyle(
                                 fontFamily: 'Zebrra',
                                 fontSize: 156,
-                                color: ZagColours.accent.withOpacity(0.18),
+                                color: ZagColours.currentAccent.withOpacity(0.18),
                               ),
                             ),
                         // const SizedBox(height: 24),
@@ -790,9 +790,9 @@ class _ZChatPageState extends State<ZChatPage> {
                         //   icon: const Icon(Icons.science),
                         //   label: const Text('Test Z Assistant (Mock Data)'),
                         //   style: OutlinedButton.styleFrom(
-                        //     foregroundColor: ZagColours.accent,
+                        //     foregroundColor: ZagColours.currentAccent,
                         //     side: BorderSide(
-                        //       color: ZagColours.accent.withOpacity(0.5),
+                        //       color: ZagColours.currentAccent.withOpacity(0.5),
                         //     ),
                         //   ),
                         // ),
@@ -802,9 +802,9 @@ class _ZChatPageState extends State<ZChatPage> {
                         //   icon: const Icon(Icons.science),
                         //   label: const Text('Test Operations (Mock Data)'),
                         //   style: OutlinedButton.styleFrom(
-                        //     foregroundColor: ZagColours.accent,
+                        //     foregroundColor: ZagColours.currentAccent,
                         //     side: BorderSide(
-                        //       color: ZagColours.accent.withOpacity(0.5),
+                        //       color: ZagColours.currentAccent.withOpacity(0.5),
                         //     ),
                         //   ),
                         // ),
@@ -853,7 +853,7 @@ class _ZChatPageState extends State<ZChatPage> {
                         ? IconButton(
                             icon: Icon(
                               Icons.arrow_upward_rounded,
-                              color: ZagColours.accent,
+                              color: ZagColours.currentAccent,
                             ),
                             onPressed: _sendMessage,
                           )
@@ -869,7 +869,7 @@ class _ZChatPageState extends State<ZChatPage> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: ZagColours.accent,
+                        color: ZagColours.currentAccent,
                         width: 2,
                       ),
                     ),
@@ -1424,7 +1424,7 @@ class _ZChatPageState extends State<ZChatPage> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: ZagColours.accent,
+                color: ZagColours.currentAccent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
@@ -1487,10 +1487,10 @@ class _ZChatPageState extends State<ZChatPage> {
                             padding: const EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 12),
                             decoration: BoxDecoration(
-                              color: ZagColours.accent.withOpacity(0.1),
+                              color: ZagColours.currentAccent.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: ZagColours.accent.withOpacity(0.3),
+                                color: ZagColours.currentAccent.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -1502,7 +1502,7 @@ class _ZChatPageState extends State<ZChatPage> {
                                       ? Icons.grid_view
                                       : Icons.folder_open,
                                   size: 16,
-                                  color: ZagColours.accent,
+                                  color: ZagColours.currentAccent,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -1510,7 +1510,7 @@ class _ZChatPageState extends State<ZChatPage> {
                                       ? 'View Explore Results'
                                       : 'Open Stage',
                                   style: TextStyle(
-                                    color: ZagColours.accent,
+                                    color: ZagColours.currentAccent,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -1996,13 +1996,13 @@ class _StagingModalState extends State<_StagingModal> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: isSelected && _isMultiSelectMode
-                  ? ZagColours.accent.withOpacity(0.2)
+                  ? ZagColours.currentAccent.withOpacity(0.2)
                   : Theme.of(context).brightness == Brightness.dark
                       ? Colors.white.withOpacity(0.05)
                       : Colors.black.withOpacity(0.03),
               borderRadius: BorderRadius.circular(8),
               border: isSelected && _isMultiSelectMode
-                  ? Border.all(color: ZagColours.accent, width: 2)
+                  ? Border.all(color: ZagColours.currentAccent, width: 2)
                   : null,
             ),
             child: Row(
@@ -2011,7 +2011,7 @@ class _StagingModalState extends State<_StagingModal> {
                 if (_isMultiSelectMode) ...[
                   Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
-                    color: isSelected ? ZagColours.accent : Colors.grey,
+                    color: isSelected ? ZagColours.currentAccent : Colors.grey,
                   ),
                   const SizedBox(width: 12),
                 ],
@@ -2512,7 +2512,7 @@ class _BouncingDotState extends State<_BouncingDot>
         width: 6,
         height: 6,
         decoration: BoxDecoration(
-          color: ZagColours.accent,
+          color: ZagColours.currentAccent,
           shape: BoxShape.circle,
         ),
       ),

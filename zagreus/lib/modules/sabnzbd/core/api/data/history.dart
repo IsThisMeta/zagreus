@@ -50,7 +50,7 @@ class SABnzbdHistoryData {
   Color get statusColor {
     switch (status.toLowerCase()) {
       case 'completed':
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case 'queued':
         return ZagColours.blue;
       case 'extracting':

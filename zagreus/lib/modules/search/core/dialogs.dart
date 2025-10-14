@@ -32,22 +32,22 @@ class SearchDialogs {
                       Expanded(
                         child: Text(
                           ZagreusDatabase.ENABLED_PROFILE.read(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: ZagUI.FONT_SIZE_H3,
                           ),
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_drop_down_rounded,
-                        color: ZagColours.accent,
+                        color: ZagColours.currentAccent,
                       ),
                     ],
                   ),
                   padding: const EdgeInsets.only(bottom: 2.0),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: ZagColours.accent,
+                        color: ZagColours.currentAccent,
                         width: 2.0,
                       ),
                     ),

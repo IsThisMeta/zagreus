@@ -71,7 +71,7 @@ class LidarrHistoryDataGeneric extends LidarrHistoryData {
       ),
       TextSpan(
         text: eventType,
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.purple,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -99,7 +99,7 @@ class LidarrHistoryDataGrabbed extends LidarrHistoryData {
       ),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} $indexer',
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.orange,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -125,8 +125,8 @@ class LidarrHistoryDataTrackFileImported extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} ($quality)',
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       )
@@ -151,8 +151,8 @@ class LidarrHistoryDataDownloadImported extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} ($quality)',
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       )
@@ -174,7 +174,7 @@ class LidarrHistoryDataAlbumImportIncomplete extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.orange,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -201,7 +201,7 @@ class LidarrHistoryDataTrackFileDeleted extends LidarrHistoryData {
       TextSpan(
         text:
             '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} (${super.historyReasonMessages[reason] ?? reason})',
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.red,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -224,7 +224,7 @@ class LidarrHistoryDataTrackFileRenamed extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.blue,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -247,7 +247,7 @@ class LidarrHistoryDataTrackFileRetagged extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
-        style: const TextStyle(
+        style: TextStyle(
           color: ZagColours.blue,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),

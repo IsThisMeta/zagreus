@@ -6,7 +6,7 @@ class ZagFloatingActionButtonAnimated extends StatelessWidget {
   final AnimatedIconData icon;
   final AnimationController? controller;
   final Color color;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Function onPressed;
 
   const ZagFloatingActionButtonAnimated({
@@ -14,7 +14,7 @@ class ZagFloatingActionButtonAnimated extends StatelessWidget {
     required this.onPressed,
     required this.icon,
     required this.controller,
-    this.backgroundColor = ZagColours.accent,
+    this.backgroundColor,
     this.color = Colors.white,
     this.heroTag,
   }) : super(key: key);

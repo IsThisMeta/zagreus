@@ -147,7 +147,7 @@ class _State extends State<RadarrCatalogueRoute>
                               '"${query.substring(0, min(20, query.length))}${ZagUI.TEXT_ELLIPSIS}"'
                             ])
                           : 'radarr.SearchFor'.tr(args: ['"$query"']),
-                      backgroundColor: ZagColours.accent,
+                      backgroundColor: ZagColours.currentAccent,
                       onTap: () => RadarrRoutes.ADD_MOVIE.go(queryParams: {
                         'query': query,
                       }),

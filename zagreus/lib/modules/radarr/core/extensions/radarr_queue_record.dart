@@ -31,7 +31,7 @@ extension ZagRadarrQueueRecord on RadarrQueueRecord {
   }
 
   Color get zagProtocolColor {
-    if (this.protocol == RadarrProtocol.USENET) return ZagColours.accent;
+    if (this.protocol == RadarrProtocol.USENET) return ZagColours.currentAccent;
     return ZagColours.blue;
   }
 

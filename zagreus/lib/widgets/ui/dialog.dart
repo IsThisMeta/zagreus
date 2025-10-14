@@ -14,7 +14,7 @@ abstract class ZagDialog {
       Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: ZagDialog.HEADER_SIZE,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
@@ -28,7 +28,7 @@ abstract class ZagDialog {
       TextSpan(
         text: text,
         style: TextStyle(
-          color: color ?? ZagColours.accent,
+          color: color ?? ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           fontSize: fontSize,
         ),
@@ -40,7 +40,7 @@ abstract class ZagDialog {
   }) =>
       RichText(
         text: TextSpan(
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: ZagDialog.BODY_SIZE,
           ),
           children: children,
@@ -119,7 +119,7 @@ abstract class ZagDialog {
   }) =>
       TextSpan(
         text: text,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
           fontSize: ZagDialog.BODY_SIZE,
         ),
@@ -136,24 +136,24 @@ abstract class ZagDialog {
         controller: controller,
         decoration: InputDecoration(
           labelText: title,
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             color: ZagColours.grey,
             decoration: TextDecoration.none,
             fontSize: ZagDialog.BODY_SIZE,
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: ZagColours.accent),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: ZagColours.currentAccent),
           ),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-                color: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH)),
+                color: ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH)),
           ),
         ),
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
           fontSize: ZagDialog.BODY_SIZE,
         ),
-        cursorColor: ZagColours.accent,
+        cursorColor: ZagColours.currentAccent,
         textInputAction: TextInputAction.done,
         onSubmitted: onSubmitted,
       );
@@ -180,19 +180,19 @@ abstract class ZagDialog {
               decoration: TextDecoration.none,
               fontSize: ZagDialog.BODY_SIZE,
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: ZagColours.accent),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: ZagColours.currentAccent),
             ),
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                  color: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH)),
+                  color: ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH)),
             ),
           ),
           style: TextStyle(
             color: Theme.of(context).textTheme.bodyLarge?.color,
             fontSize: ZagDialog.BODY_SIZE,
           ),
-          cursorColor: ZagColours.accent,
+          cursorColor: ZagColours.currentAccent,
           textInputAction: TextInputAction.done,
           validator: validator,
           onFieldSubmitted: onSubmitted,
@@ -212,13 +212,13 @@ abstract class ZagDialog {
           children: <Widget>[
             Icon(
               icon ?? Icons.error_outline_rounded,
-              color: iconColor ?? ZagColours.accent,
+              color: iconColor ?? ZagColours.currentAccent,
             ),
           ],
         ),
         title: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: ZagDialog.BODY_SIZE,
           ),
         ),
@@ -240,7 +240,7 @@ abstract class ZagDialog {
       CheckboxListTile(
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: BODY_SIZE,
           ),
         ),
@@ -280,7 +280,7 @@ abstract class ZagDialog {
             ZagDialog.cancel(
               context,
               text: cancelButtonText,
-              textColor: buttons == null ? ZagColours.accentLight : null,
+              textColor: buttons == null ? ZagColours.currentAccentLight : null,
             ),
           if (buttons != null) ...buttons,
         ],

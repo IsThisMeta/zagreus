@@ -33,8 +33,8 @@ class _State extends State<LidarrDetailsAlbumTile> {
         TextSpan(text: widget.data.tracks),
         TextSpan(
           text: widget.data.releaseDateString,
-          style: const TextStyle(
-            color: ZagColours.accent,
+          style: TextStyle(
+            color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),

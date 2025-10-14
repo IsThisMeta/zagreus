@@ -32,7 +32,7 @@ class _State extends State<CalendarView> {
   late final TextStyle dayStyle = _getTextStyle(ZagColours.white);
   late final TextStyle outsideStyle = _getTextStyle(ZagColours.white70);
   late final TextStyle unavailableStyle = _getTextStyle(ZagColours.white10);
-  late final TextStyle weekdayStyle = _getTextStyle(ZagColours.accent);
+  late final TextStyle weekdayStyle = _getTextStyle(ZagColours.currentAccent);
 
   TextStyle _getTextStyle(Color color) {
     return TextStyle(
@@ -76,7 +76,7 @@ class _State extends State<CalendarView> {
         color = ZagColours.blueGrey;
         break;
       case 0:
-        color = ZagColours.accent;
+        color = ZagColours.currentAccent;
         break;
       case 1:
         color = ZagColours.orange;
@@ -151,7 +151,7 @@ class _State extends State<CalendarView> {
                   outsideDaysVisible: false,
                   selectedDecoration: BoxDecoration(
                     color:
-                        ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH),
+                        ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH),
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
@@ -163,8 +163,8 @@ class _State extends State<CalendarView> {
                   defaultTextStyle: dayStyle,
                   disabledTextStyle: unavailableStyle,
                   outsideTextStyle: outsideStyle,
-                  selectedTextStyle: const TextStyle(
-                    color: ZagColours.accent,
+                  selectedTextStyle: TextStyle(
+                    color: ZagColours.currentAccent,
                     fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                   ),
                   markersAlignment: Alignment.bottomCenter,

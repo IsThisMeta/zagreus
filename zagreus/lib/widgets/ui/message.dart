@@ -132,7 +132,7 @@ class ZagMessage extends StatelessWidget {
                   icon: null,
                   onTap: onTap,
                   color: Colors.white,
-                  backgroundColor: ZagColours.accent,
+                  backgroundColor: ZagColours.currentAccent,
                 ),
               ],
             ),

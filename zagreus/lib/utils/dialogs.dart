@@ -150,7 +150,7 @@ class ZagDialogs {
         (index) => ZagDialog.tile(
           text: messages[index],
           icon: Icons.info_outline_rounded,
-          iconColor: ZagColours.accent,
+          iconColor: ZagColours.currentAccent,
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),

@@ -71,7 +71,7 @@ class NZBGetHistoryData {
   Color get statusColor {
     switch (status.substring(0, min(7, status.length))) {
       case 'SUCCESS':
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case 'WARNING':
         return ZagColours.orange;
       case 'DELETED':

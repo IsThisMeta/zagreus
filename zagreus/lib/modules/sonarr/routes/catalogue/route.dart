@@ -152,7 +152,7 @@ class _State extends State<SonarrCatalogueRoute>
                               '"${query.substring(0, min(20, query.length))}${ZagUI.TEXT_ELLIPSIS}"'
                             ])
                           : 'sonarr.SearchFor'.tr(args: ['"$query"']),
-                      backgroundColor: ZagColours.accent,
+                      backgroundColor: ZagColours.currentAccent,
                       onTap: () async {
                         SonarrRoutes.ADD_SERIES.go(queryParams: {
                           'query': query,

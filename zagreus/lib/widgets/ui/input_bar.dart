@@ -103,9 +103,9 @@ class _State extends State<ZagTextInputBar> {
         ),
         suffixIcon: AnimatedOpacity(
           child: InkWell(
-            child: const Icon(
+            child: Icon(
               Icons.close_rounded,
-              color: ZagColours.accent,
+              color: ZagColours.currentAccent,
               size: 24.0,
             ),
             onTap: !_isFocused || widget.controller!.text == ''
@@ -127,7 +127,7 @@ class _State extends State<ZagTextInputBar> {
         icon: Padding(
           child: Icon(
             widget.labelIcon,
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
           ),
           padding: const EdgeInsets.only(left: 16.0),
         ),
@@ -141,7 +141,7 @@ class _State extends State<ZagTextInputBar> {
         controller: widget.controller,
         decoration: _sharedInputDecoration,
         style: _sharedTextStyle,
-        cursorColor: ZagColours.accent,
+        cursorColor: ZagColours.currentAccent,
         textInputAction: widget.action,
         obscureText: widget.obscureText,
         autocorrect: false,
@@ -160,7 +160,7 @@ class _State extends State<ZagTextInputBar> {
         controller: widget.controller,
         decoration: _sharedInputDecoration,
         style: _sharedTextStyle,
-        cursorColor: ZagColours.accent,
+        cursorColor: ZagColours.currentAccent,
         textInputAction: widget.action,
         obscureText: widget.obscureText,
         autocorrect: false,

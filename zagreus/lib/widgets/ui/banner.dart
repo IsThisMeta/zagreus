@@ -7,7 +7,7 @@ class ZagBanner extends StatelessWidget {
   final String headerText;
   final String? bodyText;
   final IconData icon;
-  final Color iconColor;
+  final Color? iconColor;
   final Color? backgroundColor;
   final Color? headerColor;
   final Color? bodyColor;
@@ -20,7 +20,7 @@ class ZagBanner extends StatelessWidget {
     required this.headerText,
     this.bodyText,
     this.icon = Icons.info_outline_rounded,
-    this.iconColor = ZagColours.accent,
+    this.iconColor,
     this.backgroundColor,
     this.headerColor,
     this.bodyColor,
@@ -46,7 +46,7 @@ class ZagBanner extends StatelessWidget {
                     child: Icon(
                       icon,
                       size: 20.0,
-                      color: iconColor,
+                      color: iconColor ?? ZagColours.currentAccent,
                     ),
                     padding: EdgeInsets.only(
                         right: ZagUI.MARGIN_DEFAULT.right - 2.0),
@@ -63,10 +63,10 @@ class ZagBanner extends StatelessWidget {
                   ),
                   if (dismissCallback != null)
                     InkWell(
-                      child: const Icon(
+                      child: Icon(
                         Icons.close_rounded,
                         size: 20.0,
-                        color: ZagColours.accent,
+                        color: ZagColours.currentAccent,
                       ),
                       borderRadius: BorderRadius.circular(24.0),
                       onTap: dismissCallback as void Function()?,

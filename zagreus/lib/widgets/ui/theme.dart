@@ -28,7 +28,7 @@ class ZagTheme {
   
   /// Get the current accent color based on theme
   static Color get currentAccent {
-    return themeMode == 'light' ? ZagColours.accentLight : ZagColours.accent;
+    return themeMode == 'light' ? ZagColours.currentAccentLight : ZagColours.currentAccent;
   }
 
   static bool get isAMOLEDTheme => ZagreusDatabase.THEME_AMOLED.read();
@@ -38,24 +38,30 @@ class ZagTheme {
 
   /// Midnight theme (Default)
   ThemeData _midnightTheme() {
+    // Check if LunaSea colors are enabled
+    final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
+    final primary = useLunaColors ? LunaColours.primary : ZagColours.primary;
+    final secondary = useLunaColors ? LunaColours.secondary : ZagColours.secondary;
+    final accent = useLunaColors ? LunaColours.accent : ZagColours.currentAccent;
+
     return ThemeData(
       useMaterial3: false,
       brightness: Brightness.dark,
-      canvasColor: ZagColours.primary,
-      primaryColor: ZagColours.secondary,
-      highlightColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      cardColor: ZagColours.secondary,
-      hoverColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      splashColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH),
+      canvasColor: primary,
+      primaryColor: secondary,
+      highlightColor: accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      cardColor: secondary,
+      hoverColor: accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      splashColor: accent.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
-        backgroundColor: ZagColours.secondary,
+        backgroundColor: secondary,
       ),
       iconTheme: const IconThemeData(
         color: Colors.white,
       ),
-      tooltipTheme: const TooltipThemeData(
+      tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
-          color: ZagColours.secondary,
+          color: secondary,
           borderRadius: BorderRadius.all(Radius.circular(ZagUI.BORDER_RADIUS)),
         ),
         textStyle: TextStyle(
@@ -66,22 +72,26 @@ class ZagTheme {
       ),
       unselectedWidgetColor: Colors.white,
       textTheme: _sharedTextTheme,
-      textButtonTheme: _sharedTextButtonThemeData,
+      textButtonTheme: _sharedTextButtonThemeData(accent),
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
   }
 
   /// AMOLED/Pure black theme
   ThemeData _pureBlackTheme() {
+    // Check if LunaSea colors are enabled for accent color
+    final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
+    final accent = useLunaColors ? LunaColours.accent : ZagColours.currentAccent;
+
     return ThemeData(
       useMaterial3: false,
       brightness: Brightness.dark,
       canvasColor: Colors.black,
       primaryColor: Colors.black,
-      highlightColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      highlightColor: accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
       cardColor: Colors.black,
-      hoverColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      splashColor: ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH),
+      hoverColor: accent.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      splashColor: accent.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.black,
       ),
@@ -104,7 +114,7 @@ class ZagTheme {
       ),
       unselectedWidgetColor: Colors.white,
       textTheme: _sharedTextTheme,
-      textButtonTheme: _sharedTextButtonThemeData,
+      textButtonTheme: _sharedTextButtonThemeData(accent),
       visualDensity: VisualDensity.adaptivePlatformDensity,
     );
   }
@@ -116,10 +126,10 @@ class ZagTheme {
       brightness: Brightness.light,
       canvasColor: ZagColours.primaryLight,
       primaryColor: ZagColours.secondaryLight,
-      highlightColor: ZagColours.accentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      highlightColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
       cardColor: ZagColours.secondaryLight,
-      hoverColor: ZagColours.accentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      splashColor: ZagColours.accentLight.withOpacity(ZagUI.OPACITY_SPLASH),
+      hoverColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
+      splashColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
         backgroundColor: ZagColours.secondaryLight,
       ),
@@ -197,11 +207,11 @@ class ZagTheme {
     );
   }
 
-  TextButtonThemeData get _sharedTextButtonThemeData {
+  TextButtonThemeData _sharedTextButtonThemeData(Color accentColor) {
     return TextButtonThemeData(
       style: ButtonStyle(
         overlayColor: MaterialStateProperty.all<Color>(
-          ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH),
+          accentColor.withOpacity(ZagUI.OPACITY_SPLASH),
         ),
       ),
     );
@@ -232,7 +242,7 @@ class ZagTheme {
     return TextButtonThemeData(
       style: ButtonStyle(
         overlayColor: MaterialStateProperty.all<Color>(
-          ZagColours.accentLight.withOpacity(ZagUI.OPACITY_SPLASH),
+          ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH),
         ),
       ),
     );

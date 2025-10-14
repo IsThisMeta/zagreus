@@ -68,7 +68,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
               icon: isMega || isPro ? Icons.star_rounded : Icons.lock_open_rounded,
-              color: isMega || isPro ? ZagColours.orange : ZagColours.accent,
+              color: isMega || isPro ? ZagColours.orange : ZagColours.currentAccent,
             ),
           ),
           onTap: () => _showProDialog(context),
@@ -141,7 +141,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           if (!isPro) ...[
             ZagDialog.tile(
               icon: Icons.calendar_month_rounded,
-              iconColor: ZagColours.accent,
+              iconColor: ZagColours.currentAccent,
               text: 'Monthly • \$0.79/month',
               subtitle: RichText(
                 text: TextSpan(
@@ -205,7 +205,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                           'Terms of Service',
                           style: TextStyle(
                             fontSize: 12,
-                            color: ZagColours.accentLight,
+                            color: ZagColours.currentAccentLight,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -227,7 +227,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                           'Privacy Policy',
                           style: TextStyle(
                             fontSize: 12,
-                            color: ZagColours.accentLight,
+                            color: ZagColours.currentAccentLight,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -249,7 +249,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   'Restore Purchases',
                   style: TextStyle(
                     fontSize: 16,
-                    color: ZagColours.accentLight,
+                    color: ZagColours.currentAccentLight,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -343,7 +343,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         'Terms of Service',
                         style: TextStyle(
                           fontSize: 12,
-                          color: ZagColours.accentLight,
+                          color: ZagColours.currentAccentLight,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -365,7 +365,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         'Privacy Policy',
                         style: TextStyle(
                           fontSize: 12,
-                          color: ZagColours.accentLight,
+                          color: ZagColours.currentAccentLight,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -387,7 +387,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                 'Restore Purchases',
                 style: TextStyle(
                   fontSize: 16,
-                  color: ZagColours.accentLight,
+                  color: ZagColours.currentAccentLight,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -568,7 +568,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'Got it',
-              style: TextStyle(color: ZagColours.accentLight),
+              style: TextStyle(color: ZagColours.currentAccentLight),
             ),
           ),
         ],

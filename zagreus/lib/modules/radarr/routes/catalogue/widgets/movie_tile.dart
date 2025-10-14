@@ -93,8 +93,8 @@ class _State extends State<RadarrCatalogueTile> {
   TextSpan _buildChildTextSpan(String? text, RadarrMoviesSorting sorting) {
     TextStyle? style;
     if (context.read<RadarrState>().moviesSortType == sorting)
-      style = const TextStyle(
-        color: ZagColours.accent,
+      style = TextStyle(
+        color: ZagColours.currentAccent,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       );
     return TextSpan(
@@ -188,7 +188,7 @@ class _State extends State<RadarrCatalogueTile> {
           ),
           _buildReleaseIcon(
             Icons.check_circle_rounded,
-            ZagColours.accent,
+            ZagColours.currentAccent,
             widget.movie.hasFile!,
           ),
           Container(

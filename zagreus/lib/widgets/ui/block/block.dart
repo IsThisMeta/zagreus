@@ -24,7 +24,7 @@ class ZagBlock extends StatelessWidget {
   /// must match the length of [body]. If a specific line does not need a
   /// leading icon, pass in null.
   final List<IconData?>? bodyLeadingIcons;
-  final Color bodyLeadingIconsColor;
+  final Color? bodyLeadingIconsColor;
 
   final Widget? leading;
   final Widget? trailing;
@@ -52,7 +52,7 @@ class ZagBlock extends StatelessWidget {
     this.backgroundColor,
     this.body,
     this.bodyLeadingIcons,
-    this.bodyLeadingIconsColor = ZagColours.accent,
+    this.bodyLeadingIconsColor,
     this.bottom,
     this.bottomHeight = SUBTITLE_HEIGHT,
     this.customBodyMaxLines,

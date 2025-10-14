@@ -43,7 +43,7 @@ class CalendarSonarrData extends CalendarData {
         ],
       ),
       TextSpan(
-        style: const TextStyle(
+        style: TextStyle(
           fontStyle: FontStyle.italic,
         ),
         text: episodeTitle,
@@ -59,9 +59,9 @@ class CalendarSonarrData extends CalendarData {
       if (hasFile)
         TextSpan(
           text: 'Downloaded ($fileQualityProfile)',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
           ),
         ),
     ];

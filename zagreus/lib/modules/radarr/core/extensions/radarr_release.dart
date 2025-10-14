@@ -24,7 +24,7 @@ extension RadarrReleaseExtension on RadarrRelease {
   }
 
   Color get zagProtocolColor {
-    if (this.protocol == RadarrProtocol.USENET) return ZagColours.accent;
+    if (this.protocol == RadarrProtocol.USENET) return ZagColours.currentAccent;
     int seeders = this.seeders ?? 0;
     if (seeders > 10) return ZagColours.blue;
     if (seeders > 0) return ZagColours.orange;

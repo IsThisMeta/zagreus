@@ -18,8 +18,8 @@ class RadarrRootFolderTile extends StatelessWidget {
         TextSpan(text: rootFolder.zagSpace),
         TextSpan(
           text: rootFolder.zagUnmappedFolders,
-          style: const TextStyle(
-            color: ZagColours.accent,
+          style: TextStyle(
+            color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         )

@@ -53,6 +53,7 @@ class _State extends State<ConfigurationGeneralRoute>
       ZagHeader(text: 'settings.Appearance'.tr()),
       _themeMode(),
       _imageBackgroundOpacity(),
+      _useLunaseaColors(),
       _amoledTheme(),
       _amoledThemeBorders(),
       _lightThemeBorders(),
@@ -245,6 +246,31 @@ class _State extends State<ConfigurationGeneralRoute>
     );
   }
 
+  Widget _useLunaseaColors() {
+    const _db = ZagreusDatabase.THEME_USE_LUNASEA_COLORS;
+    return _db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Use Original Colors',
+        body: [
+          TextSpan(text: 'Enable legacy teal color scheme'),
+        ],
+        trailing: ZagSwitch(
+          value: _db.read(),
+          onChanged: (value) {
+            _db.update(value);
+            ZagTheme().initialize();
+            ZagState.reset(context);
+            showZagSnackBar(
+              title: 'Theme Changed',
+              message: 'Restart the app to fully apply color changes',
+              type: ZagSnackbarType.INFO,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _themeMode() {
     return ZagBox.zagreus.listenableBuilder(
       selectItems: [
@@ -254,7 +280,7 @@ class _State extends State<ConfigurationGeneralRoute>
       builder: (context, _) {
         final isFollowingSystem = ZagreusDatabase.THEME_FOLLOW_SYSTEM.read();
         final currentMode = ZagreusDatabase.THEME_MODE.read();
-        
+
         return Column(
           children: [
             ZagBlock(

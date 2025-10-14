@@ -29,8 +29,8 @@ class _State extends State<TautulliStatisticsStreamTile> {
       TextSpan(
         text: widget.data['count'].toString() +
             (widget.data['count'] == 1 ? ' Play' : ' Plays'),
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       ),
@@ -44,7 +44,7 @@ class _State extends State<TautulliStatisticsStreamTile> {
                       DateTime.fromMillisecondsSinceEpoch(
                           int.tryParse(widget.data['started'])! * 1000)),
             )
-          : const TextSpan(text: ZagUI.TEXT_EMDASH),
+          : TextSpan(text: ZagUI.TEXT_EMDASH),
     ];
   }
 }

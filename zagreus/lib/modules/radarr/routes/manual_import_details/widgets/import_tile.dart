@@ -32,7 +32,7 @@ class RadarrManualImportDetailsTile extends StatelessWidget {
                 .watch<RadarrManualImportDetailsState>()
                 .selectedFiles
                 .contains(manualImport.id)
-            ? ZagColours.accent.withOpacity(ZagUI.OPACITY_SPLASH)
+            ? ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH)
             : null,
       ),
     );
@@ -68,9 +68,9 @@ class RadarrManualImportDetailsTile extends StatelessWidget {
           .watch<RadarrManualImportDetailsTileState>()
           .manualImport
           .zagMovie,
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-        color: ZagColours.accent,
+        color: ZagColours.currentAccent,
       ),
     );
   }

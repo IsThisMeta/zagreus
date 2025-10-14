@@ -63,7 +63,7 @@ class ZagButton extends Card {
   /// If [ZagLoadingState] is passed in, will build the correct button based on the type.
   factory ZagButton({
     required ZagButtonType type,
-    Color color = ZagColours.accent,
+    Color? color,
     Color? backgroundColor,
     String? text,
     IconData? icon,
@@ -157,7 +157,7 @@ class ZagButton extends Card {
     required String text,
     required IconData? icon,
     double iconSize = ZagUI.ICON_SIZE,
-    Color color = ZagColours.accent,
+    Color? color,
     Color? backgroundColor,
     EdgeInsets margin = ZagUI.MARGIN_HALF,
     double height = DEFAULT_HEIGHT,
@@ -178,7 +178,7 @@ class ZagButton extends Card {
                 child: Builder(
                   builder: (context) => Icon(
                     icon,
-                    color: color == ZagColours.accent 
+                    color: color == ZagColours.currentAccent 
                         ? color 
                         : (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -225,7 +225,7 @@ class ZagButton extends Card {
   /// Build a button that contains a [ZagLoader].
   factory ZagButton.loader({
     EdgeInsets margin = ZagUI.MARGIN_HALF,
-    Color color = ZagColours.accent,
+    Color? color,
     Color? backgroundColor,
     double height = DEFAULT_HEIGHT,
     Alignment alignment = Alignment.center,
@@ -254,7 +254,7 @@ class ZagButton extends Card {
   /// Build a button that contains a single, centered [Icon].
   factory ZagButton.icon({
     required IconData? icon,
-    Color color = ZagColours.accent,
+    Color? color,
     Color? backgroundColor,
     EdgeInsets margin = ZagUI.MARGIN_HALF,
     double height = DEFAULT_HEIGHT,

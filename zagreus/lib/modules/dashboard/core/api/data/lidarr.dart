@@ -25,7 +25,7 @@ class CalendarLidarrData extends CalendarData {
     return [
       TextSpan(
         text: albumTitle,
-        style: const TextStyle(
+        style: TextStyle(
           fontStyle: FontStyle.italic,
         ),
       ),
@@ -33,7 +33,7 @@ class CalendarLidarrData extends CalendarData {
         text: totalTrackCount == 1 ? '1 Track' : '$totalTrackCount Tracks',
       ),
       if (!hasAllFiles)
-        const TextSpan(
+        TextSpan(
           text: 'Not Downloaded',
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -41,11 +41,11 @@ class CalendarLidarrData extends CalendarData {
           ),
         ),
       if (hasAllFiles)
-        const TextSpan(
+        TextSpan(
           text: 'Downloaded',
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
           ),
         )
     ];

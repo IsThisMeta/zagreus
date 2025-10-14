@@ -33,6 +33,6 @@ extension ZagRadarrDiskSpaceExtension on RadarrDiskSpace {
     int percentage = this.zagPercentage;
     if (percentage >= 90) return ZagColours.red;
     if (percentage >= 80) return ZagColours.orange;
-    return ZagColours.accent;
+    return ZagColours.currentAccent;
   }
 }

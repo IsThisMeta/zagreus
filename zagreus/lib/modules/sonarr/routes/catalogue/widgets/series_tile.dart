@@ -91,8 +91,8 @@ class _State extends State<SonarrSeriesTile> {
   TextSpan _buildChildTextSpan(String? text, SonarrSeriesSorting sorting) {
     TextStyle? style;
     if (context.read<SonarrState>().seriesSortType == sorting) {
-      style = const TextStyle(
-        color: ZagColours.accent,
+      style = TextStyle(
+        color: ZagColours.currentAccent,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         fontSize: ZagUI.FONT_SIZE_H3,
       );

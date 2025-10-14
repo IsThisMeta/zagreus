@@ -67,7 +67,7 @@ enum ZagLogType {
       case ZagLogType.ERROR:
         return ZagColours.red;
       case ZagLogType.CRITICAL:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagLogType.DEBUG:
         return ZagColours.blueGrey;
     }

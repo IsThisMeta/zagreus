@@ -27,8 +27,8 @@ class TautulliLogsLoginsLogTile extends StatelessWidget {
       TextSpan(text: '${login.host}\n'),
       TextSpan(
         text: login.timestamp!.asDateTime(),
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       ),

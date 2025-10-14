@@ -107,8 +107,8 @@ class _State extends State<SettingsAccountSignedOutPage> {
             child: InkWell(
               child: Text(
                 'settings.ForgotYourPassword'.tr(),
-                style: const TextStyle(
-                  color: ZagColours.accent,
+                style: TextStyle(
+                  color: ZagColours.currentAccent,
                   fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                   fontSize: ZagUI.FONT_SIZE_H3,
                 ),

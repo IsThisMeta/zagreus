@@ -52,9 +52,9 @@ class CalendarRadarrData extends CalendarData {
       if (hasFile)
         TextSpan(
           text: 'Downloaded ($fileQualityProfile)',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
           ),
         )
     ];

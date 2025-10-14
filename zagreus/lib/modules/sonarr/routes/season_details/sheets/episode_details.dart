@@ -44,7 +44,7 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
         ZagHighlightedNode(
           backgroundColor: episodeFile!.qualityCutoffNotMet!
               ? ZagColours.orange
-              : ZagColours.accent,
+              : ZagColours.currentAccent,
           text: episodeFile!.quality?.quality?.name ?? ZagUI.TEXT_EMDASH,
         ),
       if (episode!.hasFile! &&
@@ -53,7 +53,7 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
         ZagHighlightedNode(
           backgroundColor: episodeFile!.languageCutoffNotMet!
               ? ZagColours.orange
-              : ZagColours.accent,
+              : ZagColours.currentAccent,
           text: episodeFile!.language?.name ?? ZagUI.TEXT_EMDASH,
         ),
       if (episode!.hasFile! && episodeFile != null)

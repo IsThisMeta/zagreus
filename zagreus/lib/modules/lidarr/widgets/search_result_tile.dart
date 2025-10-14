@@ -111,7 +111,7 @@ class _State extends State<LidarrReleasesTile> {
   }
 
   Color get zagProtocolColor {
-    if (!widget.release.isTorrent) return ZagColours.accent;
+    if (!widget.release.isTorrent) return ZagColours.currentAccent;
     int seeders = widget.release.seeders ?? 0;
     if (seeders > 10) return ZagColours.blue;
     if (seeders > 0) return ZagColours.orange;

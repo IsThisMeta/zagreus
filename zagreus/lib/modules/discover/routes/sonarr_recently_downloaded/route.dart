@@ -177,7 +177,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.accent),
+          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
         ),
       );
     }
@@ -332,7 +332,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
                               'Downloaded',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: ZagColours.accent,
+                                color: ZagColours.currentAccent,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

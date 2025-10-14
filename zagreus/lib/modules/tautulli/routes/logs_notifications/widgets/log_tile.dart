@@ -27,8 +27,8 @@ class TautulliLogsNotificationLogTile extends StatelessWidget {
       TextSpan(text: notification.bodyText),
       TextSpan(
         text: notification.timestamp!.asDateTime(),
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       ),

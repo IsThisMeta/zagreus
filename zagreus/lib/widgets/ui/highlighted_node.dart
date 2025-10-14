@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 
 class ZagHighlightedNode extends StatelessWidget {
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final Color textColor;
   final String text;
 
   const ZagHighlightedNode({
     Key? key,
     required this.text,
-    this.backgroundColor = ZagColours.accent,
+    this.backgroundColor,
     this.textColor = Colors.white,
   }) : super(key: key);
 

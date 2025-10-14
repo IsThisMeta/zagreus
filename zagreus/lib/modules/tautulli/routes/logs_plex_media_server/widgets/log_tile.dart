@@ -27,8 +27,8 @@ class TautulliLogsPlexMediaServerLogTile extends StatelessWidget {
   TextSpan _subtitle2() {
     return TextSpan(
       text: log.level ?? ZagUI.TEXT_EMDASH,
-      style: const TextStyle(
-        color: ZagColours.accent,
+      style: TextStyle(
+        color: ZagColours.currentAccent,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       ),
     );

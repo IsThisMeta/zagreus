@@ -1269,7 +1269,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: ZagColours.accent,
+                  color: ZagColours.currentAccent,
                   width: 2,
                 ),
               ),
@@ -1298,7 +1298,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ? Center(
                     child: CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(ZagColours.accent),
+                          AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
                     ),
                   )
                 : _searchResults.isEmpty
@@ -4942,7 +4942,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               episode['airDateUtc'], episode['network']),
                           style: TextStyle(
                             fontSize: 10,
-                            color: ZagColours.accent,
+                            color: ZagColours.currentAccent,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,

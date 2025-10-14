@@ -69,8 +69,8 @@ class TautulliSyncedItemTile extends StatelessWidget {
     String _state = syncedItem.state ?? 'zagreus.Unknown'.tr();
     return TextSpan(
       text: _state.toTitleCase(),
-      style: const TextStyle(
-        color: ZagColours.accent,
+      style: TextStyle(
+        color: ZagColours.currentAccent,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       ),
     );

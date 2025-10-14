@@ -20,15 +20,15 @@ class LidarrTrackData {
 
   TextSpan file(bool monitored) {
     if (hasFile) {
-      return const TextSpan(
+      return TextSpan(
         text: 'Downloaded',
         style: TextStyle(
-          color: ZagColours.accent,
+          color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
       );
     } else {
-      return const TextSpan(
+      return TextSpan(
         text: 'Not Downloaded',
         style: TextStyle(
           color: ZagColours.red,

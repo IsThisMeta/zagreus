@@ -52,7 +52,7 @@ extension SonarrEpisodeExtension on SonarrEpisode {
     }
     if (file == null) return ZagColours.blueGrey;
     if (file.qualityCutoffNotMet!) return ZagColours.orange;
-    return ZagColours.accent;
+    return ZagColours.currentAccent;
   }
 
   String zagSeasonEpisode() {

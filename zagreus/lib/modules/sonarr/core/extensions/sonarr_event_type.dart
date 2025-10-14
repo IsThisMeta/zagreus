@@ -12,7 +12,7 @@ extension SonarrEventTypeZagExtension on SonarrEventType {
       case SonarrEventType.EPISODE_FILE_DELETED:
         return ZagColours.red;
       case SonarrEventType.DOWNLOAD_FOLDER_IMPORTED:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case SonarrEventType.DOWNLOAD_FAILED:
         return ZagColours.red;
       case SonarrEventType.DOWNLOAD_IGNORED:
@@ -20,7 +20,7 @@ extension SonarrEventTypeZagExtension on SonarrEventType {
       case SonarrEventType.GRABBED:
         return ZagColours.orange;
       case SonarrEventType.SERIES_FOLDER_IMPORTED:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
     }
   }
 

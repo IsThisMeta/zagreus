@@ -68,13 +68,13 @@ class _State<T> extends State<ZagPagedListView<T>> {
               ),
               padding: const EdgeInsets.only(bottom: 0.0),
             ),
-            newPageErrorIndicatorBuilder: (context) => const ZagIconButton(
+            newPageErrorIndicatorBuilder: (context) => ZagIconButton(
               icon: Icons.error_rounded,
               color: ZagColours.red,
             ),
-            noMoreItemsIndicatorBuilder: (context) => const ZagIconButton(
+            noMoreItemsIndicatorBuilder: (context) => ZagIconButton(
               icon: Icons.check_rounded,
-              color: ZagColours.accent,
+              color: ZagColours.currentAccent,
             ),
             noItemsFoundIndicatorBuilder: (context) => ZagMessage(
               text: widget.noItemsFoundMessage,

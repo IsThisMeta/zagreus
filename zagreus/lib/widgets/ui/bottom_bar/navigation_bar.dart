@@ -94,7 +94,7 @@ class _State extends State<ZagBottomNavigationBar> {
             gap: ZagUI.MARGIN_SIZE_HALF,
             duration: const Duration(milliseconds: ZagUI.ANIMATION_SPEED),
             tabBackgroundColor: Theme.of(context).canvasColor.dimmed(),
-            activeColor: ZagColours.accent,
+            activeColor: ZagColours.currentAccent,
             tabs: List.generate(
                 widget.icons.length,
                 (index) => GButton(
@@ -116,7 +116,7 @@ class _State extends State<ZagBottomNavigationBar> {
                             ? Colors.white
                             : Colors.black87,
                       ),
-                      iconActiveColor: ZagColours.accent,
+                      iconActiveColor: ZagColours.currentAccent,
                       leading: widget.leadingOnTab == null
                           ? null
                           : widget.leadingOnTab![index],

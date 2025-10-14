@@ -12,7 +12,7 @@ class ZagNavigationBarBadge extends badges.Badge {
   }) : super(
           key: key,
           badgeStyle: badges.BadgeStyle(
-            badgeColor: ZagColours.accent.dimmed(),
+            badgeColor: ZagColours.currentAccent.dimmed(),
             elevation: ZagUI.ELEVATION,
             shape: badges.BadgeShape.circle,
           ),
@@ -30,7 +30,7 @@ class ZagNavigationBarBadge extends badges.Badge {
           ),
           child: Icon(
             icon,
-            color: isActive ? ZagColours.accent : Colors.white,
+            color: isActive ? ZagColours.currentAccent : Colors.white,
           ),
           showBadge: showBadge,
         );

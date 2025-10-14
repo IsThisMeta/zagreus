@@ -6,7 +6,7 @@ class ZagActionBarCard extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Color? backgroundColor;
-  final Color color;
+  final Color? color;
   final IconData icon;
   final Function? onTap;
   final Function? onLongPress;
@@ -20,7 +20,7 @@ class ZagActionBarCard extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.backgroundColor,
-    this.color = ZagColours.accent,
+    this.color,
     this.icon = ZagIcons.ARROW_RIGHT,
     this.checkboxState,
     this.checkboxOnChanged,

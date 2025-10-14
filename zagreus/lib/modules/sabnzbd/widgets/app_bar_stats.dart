@@ -24,20 +24,20 @@ class SABnzbdAppBarStats extends StatelessWidget {
           child: Center(
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(
+                style: TextStyle(
                   color: ZagColours.grey,
                   fontSize: ZagUI.FONT_SIZE_H3,
                 ),
                 children: [
                   TextSpan(
                     text: _status(data.item1, data.item2),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                       fontSize: ZagUI.FONT_SIZE_HEADER,
-                      color: ZagColours.accent,
+                      color: ZagColours.currentAccent,
                     ),
                   ),
-                  const TextSpan(text: '\n'),
+                  TextSpan(text: '\n'),
                   TextSpan(text: data.item3 == '0:00:00' ? '―' : data.item3),
                   TextSpan(text: ZagUI.TEXT_BULLET.pad()),
                   TextSpan(text: data.item4 == '0.0 B' ? '―' : data.item4)

@@ -224,7 +224,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.accent),
+          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
         ),
       );
     }
@@ -364,7 +364,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
                             Icon(
                               Icons.access_time_rounded,
                               size: 10,
-                              color: ZagColours.accent,
+                              color: ZagColours.currentAccent,
                             ),
                             const SizedBox(width: 4),
                             Expanded(
@@ -372,7 +372,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
                                 _formatAiringTime(episode['airDateUtc'], episode['network']),
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: ZagColours.accent,
+                                  color: ZagColours.currentAccent,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,

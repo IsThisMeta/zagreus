@@ -1,6 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 
+/// LunaSea original colors - for legacy theme toggle
+class LunaColours {
+  /// Core accent colour (LunaSea teal)
+  static const Color accent = Color(0xFF4ECCA3);
+
+  /// Core primary colour (background)
+  static const Color primary = Color(0xFF32323E);
+
+  /// Core secondary colour (appbar, bottom bar, etc.)
+  static const Color secondary = Color(0xFF282834);
+
+  static const Color blue = Color(0xFF00A8E8);
+  static const Color blueGrey = Color(0xFF848FA5);
+  static const Color grey = Color(0xFFBBBBBB);
+  static const Color orange = Color(0xFFFF9000);
+  static const Color purple = Color(0xFF9649CB);
+  static const Color red = Color(0xFFF71735);
+
+  /// Shades of White
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color white70 = Color(0xB3FFFFFF);
+  static const Color white10 = Color(0x1AFFFFFF);
+}
+
 class ZagColours {
   /// List of Zagreus colours in order that the should appear in a list.
   ///
@@ -57,7 +81,7 @@ class ZagColours {
   Color byGraphLayer(int index) {
     switch (index) {
       case 0:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case 1:
         return ZagColours.purple;
       case 2:
@@ -89,6 +113,18 @@ class ZagColours {
   static Color accentColor(BuildContext context) {
     bool isLight = Theme.of(context).brightness == Brightness.light;
     return isLight ? accentLight : accentDark;
+  }
+
+  /// Get current accent color (respects LunaSea toggle)
+  static Color get currentAccent {
+    final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
+    return useLunaColors ? LunaColours.accent : accent;
+  }
+
+  /// Get current accent color for light mode (respects LunaSea toggle)
+  static Color get currentAccentLight {
+    final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
+    return useLunaColors ? LunaColours.accent : accentLight;
   }
 }
 

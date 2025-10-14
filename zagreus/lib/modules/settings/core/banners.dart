@@ -47,7 +47,7 @@ extension SettingsBannersExtension on SettingsBanners {
       case SettingsBanners.QUICK_ACTIONS_SUPPORT:
       case SettingsBanners.PROFILES_SUPPORT:
       default:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
     }
   }
 

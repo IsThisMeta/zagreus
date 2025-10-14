@@ -35,15 +35,15 @@ class TautulliCheckForUpdatesTautulliTile extends StatelessWidget {
   List<TextSpan> _subtitle() {
     return [
       if (!(update.update ?? false))
-        const TextSpan(
+        TextSpan(
           text: 'No Updates Available',
           style: TextStyle(
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
       if (update.update ?? false)
-        const TextSpan(
+        TextSpan(
           text: 'Update Available',
           style: TextStyle(
             color: ZagColours.orange,
@@ -53,7 +53,7 @@ class TautulliCheckForUpdatesTautulliTile extends StatelessWidget {
       if (update.update ?? false)
         TextSpan(
           children: [
-            const TextSpan(text: 'Current Version: '),
+            TextSpan(text: 'Current Version: '),
             TextSpan(
               text: update.currentRelease ??
                   update.currentVersion?.substring(
@@ -67,7 +67,7 @@ class TautulliCheckForUpdatesTautulliTile extends StatelessWidget {
       if (update.update ?? false)
         TextSpan(
           children: [
-            const TextSpan(text: 'Latest Version: '),
+            TextSpan(text: 'Latest Version: '),
             TextSpan(
               text: update.latestRelease ??
                   update.latestVersion?.substring(

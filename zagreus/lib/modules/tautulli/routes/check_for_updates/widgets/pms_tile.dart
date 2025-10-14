@@ -36,10 +36,10 @@ class TautulliCheckForUpdatesPMSTile extends StatelessWidget {
   List<TextSpan> _subtitle() {
     return [
       if (!(update.updateAvailable ?? false))
-        const TextSpan(
+        TextSpan(
           text: 'No Updates Available',
           style: TextStyle(
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
@@ -47,7 +47,7 @@ class TautulliCheckForUpdatesPMSTile extends StatelessWidget {
         TextSpan(
             text: 'Current Version: ${update.version ?? ZagUI.TEXT_EMDASH}'),
       if (update.updateAvailable ?? false)
-        const TextSpan(
+        TextSpan(
           text: 'Update Available',
           style: TextStyle(
             color: ZagColours.orange,

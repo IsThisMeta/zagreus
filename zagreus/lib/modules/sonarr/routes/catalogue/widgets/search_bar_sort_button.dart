@@ -58,7 +58,7 @@ class _State extends State<SonarrSeriesSearchBarSortButton> {
                             ? Icons.arrow_upward_rounded
                             : Icons.arrow_downward_rounded,
                         size: ZagUI.FONT_SIZE_H2,
-                        color: ZagColours.accent,
+                        color: ZagColours.currentAccent,
                       ),
                   ],
                 ),

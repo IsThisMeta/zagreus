@@ -190,7 +190,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.accent),
+          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
         ),
       );
     }

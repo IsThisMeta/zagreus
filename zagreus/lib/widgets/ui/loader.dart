@@ -25,7 +25,7 @@ class ZagLoader extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             SpinKitThreeBounce(
-              color: color ?? ZagColours.accent,
+              color: color ?? ZagColours.currentAccent,
               size: size,
             ),
           ],

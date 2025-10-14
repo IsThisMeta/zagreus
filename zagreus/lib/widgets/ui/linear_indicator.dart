@@ -7,13 +7,13 @@ class ZagLinearPercentIndicator extends StatelessWidget {
   static const double height = _LINE_HEIGHT + ZagUI.DEFAULT_MARGIN_SIZE / 2;
 
   final double? percent;
-  final Color progressColor;
+  final Color? progressColor;
   final Color? backgroundColor;
 
   const ZagLinearPercentIndicator({
     Key? key,
     this.percent,
-    this.progressColor = ZagColours.accent,
+    this.progressColor,
     this.backgroundColor,
   }) : super(key: key);
 
@@ -29,7 +29,7 @@ class ZagLinearPercentIndicator extends StatelessWidget {
         progressColor: progressColor,
         barRadius: const Radius.circular(ZagUI.BORDER_RADIUS),
         backgroundColor:
-            backgroundColor ?? progressColor.withOpacity(ZagUI.OPACITY_SPLASH),
+            backgroundColor ?? (progressColor ?? ZagColours.currentAccent).withOpacity(ZagUI.OPACITY_SPLASH),
       ),
     );
   }

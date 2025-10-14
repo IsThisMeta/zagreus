@@ -218,7 +218,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   Color get color {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagModule.LIDARR:
         return const Color(0xFF159552);
       case ZagModule.NZBGET:
@@ -228,9 +228,9 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.SABNZBD:
         return const Color(0xFFFECC2B);
       case ZagModule.SEARCH:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagModule.SETTINGS:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagModule.SONARR:
         return const Color(0xFF3FC6F4);
       case ZagModule.TAUTULLI:
@@ -238,9 +238,9 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.OVERSEERR:
         return const Color(0xFF6366F1);
       case ZagModule.WAKE_ON_LAN:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagModule.EXTERNAL_MODULES:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagModule.DISCOVER:
         return const Color(0xFF6688FF); // RGB(0.4, 0.533, 1.0) = #6688FF
     }

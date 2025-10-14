@@ -97,8 +97,8 @@ extension ZagRadarrMovieExtension on RadarrMovie {
     if (this.hasFile!)
       return Text(
         zagFileSize,
-        style: const TextStyle(
-          color: ZagColours.accent,
+        style: TextStyle(
+          color: ZagColours.currentAccent,
           fontSize: ZagUI.FONT_SIZE_H3,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),

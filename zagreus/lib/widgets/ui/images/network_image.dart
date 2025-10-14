@@ -23,7 +23,7 @@ class ZagNetworkImage extends ClipRRect {
                     child: placeholderIcon != null
                         ? Icon(
                             placeholderIcon,
-                            color: ZagColours.accent,
+                            color: ZagColours.currentAccent,
                             size: width * 0.40,
                           )
                         : null,

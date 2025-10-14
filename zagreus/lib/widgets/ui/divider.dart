@@ -7,7 +7,7 @@ class ZagDivider extends Divider {
   }) : super(
           key: key,
           thickness: 1.0,
-          color: ZagColours.accent.dimmed(),
+          color: ZagColours.currentAccent.dimmed(),
           indent: ZagUI.DEFAULT_MARGIN_SIZE * 5,
           endIndent: ZagUI.DEFAULT_MARGIN_SIZE * 5,
         );

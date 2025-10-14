@@ -56,8 +56,8 @@ class RadarrQueueTile extends StatelessWidget {
       children: [
         TextSpan(
           text: record.zagQuality,
-          style: const TextStyle(
-            color: ZagColours.accent,
+          style: TextStyle(
+            color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
@@ -91,7 +91,7 @@ class RadarrQueueTile extends StatelessWidget {
       ),
       ZagHighlightedNode(
         text: record.zagQuality,
-        backgroundColor: ZagColours.accent,
+        backgroundColor: ZagColours.currentAccent,
       ),
       if ((record.customFormats?.length ?? 0) != 0)
         for (int i = 0; i < record.customFormats!.length; i++)

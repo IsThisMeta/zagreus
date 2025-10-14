@@ -13,7 +13,7 @@ extension ZagSnackbarTypeExtension on ZagSnackbarType {
   Color get color {
     switch (this) {
       case ZagSnackbarType.SUCCESS:
-        return ZagColours.accent;
+        return ZagColours.currentAccent;
       case ZagSnackbarType.ERROR:
         return ZagColours.red;
       case ZagSnackbarType.INFO:
@@ -101,9 +101,9 @@ Future<void> showZagSnackBar({
           ? TextButton(
               child: Text(
                 buttonText.toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-                  color: ZagColours.accent,
+                  color: ZagColours.currentAccent,
                 ),
               ),
               onPressed: () {

@@ -36,7 +36,7 @@ class _State extends State<SonarrEpisodeTile> {
               .read<SonarrSeasonDetailsState>()
               .selectedEpisodes
               .contains(widget.episode.id)
-          ? ZagColours.accent.selected()
+          ? ZagColours.currentAccent.selected()
           : null,
     );
   }

@@ -47,9 +47,9 @@ class TautulliActivityTile extends StatelessWidget {
               text: 'tautulli.Episode'.tr(args: [
             session.mediaIndex?.toString() ?? ZagUI.TEXT_EMDASH
           ])),
-          const TextSpan(text: ': '),
+          TextSpan(text: ': '),
           TextSpan(
-            style: const TextStyle(
+            style: TextStyle(
               fontStyle: FontStyle.italic,
             ),
             text: session.title ?? ZagUI.TEXT_EMDASH,
@@ -66,7 +66,7 @@ class TautulliActivityTile extends StatelessWidget {
           TextSpan(text: session.parentTitle),
           TextSpan(text: ZagUI.TEXT_EMDASH.pad()),
           TextSpan(
-            style: const TextStyle(
+            style: TextStyle(
               fontStyle: FontStyle.italic,
             ),
             text: session.title,
@@ -77,7 +77,7 @@ class TautulliActivityTile extends StatelessWidget {
     if (session.mediaType == TautulliMediaType.LIVE) {
       return TextSpan(text: session.title);
     }
-    return const TextSpan(text: ZagUI.TEXT_EMDASH);
+    return TextSpan(text: ZagUI.TEXT_EMDASH);
   }
 
   TextSpan _subtitle2() {
@@ -87,9 +87,9 @@ class TautulliActivityTile extends StatelessWidget {
   TextSpan _subtitle3() {
     return TextSpan(
       text: session.formattedStream(),
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-        color: ZagColours.accent,
+        color: ZagColours.currentAccent,
       ),
     );
   }
@@ -102,14 +102,14 @@ class TautulliActivityTile extends StatelessWidget {
         children: [
           ZagLinearPercentIndicator(
             percent: session.zagTranscodeProgress,
-            progressColor: ZagColours.accent.withOpacity(
+            progressColor: ZagColours.currentAccent.withOpacity(
               ZagUI.OPACITY_SPLASH,
             ),
             backgroundColor: Colors.transparent,
           ),
           ZagLinearPercentIndicator(
             percent: session.zagProgressPercent,
-            progressColor: ZagColours.accent,
+            progressColor: ZagColours.currentAccent,
             backgroundColor: ZagColours.grey.withOpacity(
               ZagUI.OPACITY_SPLASH,
             ),

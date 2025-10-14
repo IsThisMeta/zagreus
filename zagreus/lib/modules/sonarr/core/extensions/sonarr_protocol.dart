@@ -6,7 +6,7 @@ extension ZagSonarrProtocolExtension on SonarrProtocol {
   Color zagProtocolColor({
     SonarrRelease? release,
   }) {
-    if (this == SonarrProtocol.USENET) return ZagColours.accent;
+    if (this == SonarrProtocol.USENET) return ZagColours.currentAccent;
     if (release == null) return ZagColours.blue;
 
     int seeders = release.seeders ?? 0;

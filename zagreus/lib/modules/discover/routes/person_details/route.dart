@@ -200,7 +200,7 @@ class _State extends State<PersonDetailsRoute>
   Widget _loadingBody() {
     return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(ZagColours.accent),
+        valueColor: AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
       ),
     );
   }
@@ -335,7 +335,7 @@ class _State extends State<PersonDetailsRoute>
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: ZagColours.accent,
+                      color: ZagColours.currentAccent,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -361,7 +361,7 @@ class _State extends State<PersonDetailsRoute>
                       child: Text(
                         _expandedBio ? 'Show Less' : 'Read More',
                         style: TextStyle(
-                          color: ZagColours.accent,
+                          color: ZagColours.currentAccent,
                           fontSize: 12,
                         ),
                       ),
@@ -383,7 +383,7 @@ class _State extends State<PersonDetailsRoute>
           Icon(
             icon,
             size: 16,
-            color: ZagColours.accent,
+            color: ZagColours.currentAccent,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -514,10 +514,10 @@ class _State extends State<PersonDetailsRoute>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? ZagColours.accent : Colors.grey.shade800,
+          color: selected ? ZagColours.currentAccent : Colors.grey.shade800,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? ZagColours.accent : Colors.grey.shade700,
+            color: selected ? ZagColours.currentAccent : Colors.grey.shade700,
             width: 1,
           ),
         ),
@@ -661,7 +661,7 @@ class _State extends State<PersonDetailsRoute>
                           child: Text(
                             credit['year'],
                             style: TextStyle(
-                              color: ZagColours.accentLight,
+                              color: ZagColours.currentAccentLight,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),

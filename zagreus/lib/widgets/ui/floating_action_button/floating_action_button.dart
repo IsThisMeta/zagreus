@@ -3,7 +3,7 @@ import 'package:zagreus/core.dart';
 
 class ZagFloatingActionButton extends StatelessWidget {
   final Color color;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final IconData icon;
   final String? label;
   final void Function() onPressed;
@@ -14,7 +14,7 @@ class ZagFloatingActionButton extends StatelessWidget {
     required this.icon,
     this.label,
     required this.onPressed,
-    this.backgroundColor = ZagColours.accent,
+    this.backgroundColor,
     this.color = Colors.white,
     this.heroTag,
   }) : super(key: key);

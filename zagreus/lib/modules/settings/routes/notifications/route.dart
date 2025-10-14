@@ -332,8 +332,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               ? Icon(
                   Icons.check_circle,
                   color: Theme.of(context).brightness == Brightness.light
-                      ? ZagColours.accentLight
-                      : ZagColours.accent,
+                      ? ZagColours.currentAccentLight
+                      : ZagColours.currentAccent,
                   size: 24,
                 )
               : isFailed
@@ -372,7 +372,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'OK',
-              style: TextStyle(color: ZagColours.accentLight),
+              style: TextStyle(color: ZagColours.currentAccentLight),
             ),
           ),
         ],
@@ -491,7 +491,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                           onPressed: () => Navigator.of(context).pop(true),
                           child: Text(
                             'Continue',
-                            style: TextStyle(color: ZagColours.accentLight),
+                            style: TextStyle(color: ZagColours.currentAccentLight),
                           ),
                         ),
                       ],

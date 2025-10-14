@@ -67,8 +67,8 @@ class _State extends State<TautulliSearchResultTile> {
   TextSpan _library() {
     return TextSpan(
       text: widget.result.libraryName,
-      style: const TextStyle(
-        color: ZagColours.accent,
+      style: TextStyle(
+        color: ZagColours.currentAccent,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       ),
     );
