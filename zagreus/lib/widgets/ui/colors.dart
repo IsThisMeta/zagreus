@@ -6,6 +6,9 @@ class LunaColours {
   /// Core accent colour (LunaSea teal)
   static const Color accent = Color(0xFF4ECCA3);
 
+  /// Light mode accent colour (darker teal for readability)
+  static const Color accentLight = Color(0xFF2AA88F);
+
   /// Core primary colour (background)
   static const Color primary = Color(0xFF32323E);
 
@@ -115,16 +118,22 @@ class ZagColours {
     return isLight ? accentLight : accentDark;
   }
 
-  /// Get current accent color (respects LunaSea toggle)
+  /// Get current accent color (respects LunaSea toggle and light/dark theme)
   static Color get currentAccent {
     final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
+    final themeMode = ZagreusDatabase.THEME_MODE.read();
+    final isLightMode = themeMode == 'light';
+
+    if (isLightMode) {
+      return useLunaColors ? LunaColours.accentLight : accentLight;
+    }
     return useLunaColors ? LunaColours.accent : accent;
   }
 
   /// Get current accent color for light mode (respects LunaSea toggle)
   static Color get currentAccentLight {
     final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
-    return useLunaColors ? LunaColours.accent : accentLight;
+    return useLunaColors ? LunaColours.accentLight : accentLight;
   }
 }
 
