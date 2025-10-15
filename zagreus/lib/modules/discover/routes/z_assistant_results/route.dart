@@ -185,7 +185,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       title: 'Results',
       actions: [
         IconButton(
-          icon: const Icon(Icons.settings),
+          icon: const Icon(Icons.tune),
           onPressed: _showMergedSettings,
           tooltip: 'Settings',
         ),
@@ -465,7 +465,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         builder: (context, setModalState) => DefaultTabController(
           length: 2,
           child: Container(
-            height: MediaQuery.of(context).size.height * 0.7,
+            height: MediaQuery.of(context).size.height * 0.55,
             child: Column(
               children: [
                 Container(
