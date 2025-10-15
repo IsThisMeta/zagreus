@@ -107,15 +107,21 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget> _moduleList() {
+    final bool isPro = ZagreusPro.isEnabled;
     final modules = [ZagModule.DASHBOARD, ...ZagModule.active]
         .where((module) => module.settingsRoute != null)
         .toList();
 
-    // Move DISCOVER to right after DASHBOARD
-    final discoverIndex = modules.indexOf(ZagModule.DISCOVER);
-    if (discoverIndex > 1) {
-      modules.removeAt(discoverIndex);
-      modules.insert(1, ZagModule.DISCOVER);
+    // Remove DISCOVER if user doesn't have Pro
+    if (!isPro) {
+      modules.removeWhere((module) => module == ZagModule.DISCOVER);
+    } else {
+      // Move DISCOVER to right after DASHBOARD if user has Pro
+      final discoverIndex = modules.indexOf(ZagModule.DISCOVER);
+      if (discoverIndex > 1) {
+        modules.removeAt(discoverIndex);
+        modules.insert(1, ZagModule.DISCOVER);
+      }
     }
 
     return modules.map(_tileFromModuleMap).toList();
@@ -124,26 +130,20 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   Widget _tileFromModuleMap(ZagModule module) {
     final bool isDiscoverModule = module == ZagModule.DISCOVER;
     final bool isPro = ZagreusPro.isEnabled;
-    final bool isLocked = isDiscoverModule && !isPro;
 
     return ZagBlock(
       title: module.title,
       body: [
         TextSpan(
-          text: isLocked
-            ? 'Zagreus Pro • \$0.79/mo or \$3.99/yr'
-            : isDiscoverModule && isPro
+          text: isDiscoverModule && isPro
               ? 'Customize the order of sections in Discover'
               : 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
       trailing: ZagIconButton(
-        icon: isLocked ? Icons.lock_rounded : module.icon,
-        color: isLocked ? ZagColours.orange : null,
+        icon: module.icon,
       ),
-      onTap: isLocked
-        ? () => _showProPurchaseDialog(context)
-        : module.settingsRoute!.go,
+      onTap: module.settingsRoute!.go,
     );
   }
   
