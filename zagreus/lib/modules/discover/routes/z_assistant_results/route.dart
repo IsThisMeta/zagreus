@@ -185,14 +185,9 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       title: 'Results',
       actions: [
         IconButton(
-          icon: const Icon(Icons.movie),
-          onPressed: _showRadarrConfig,
-          tooltip: 'Radarr Settings',
-        ),
-        IconButton(
-          icon: const Icon(Icons.tv),
-          onPressed: _showSonarrConfig,
-          tooltip: 'Sonarr Settings',
+          icon: const Icon(Icons.settings),
+          onPressed: _showMergedSettings,
+          tooltip: 'Settings',
         ),
         IconButton(
           icon: const Icon(Icons.checklist),
@@ -460,6 +455,172 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         alignLeft: true,
       );
     }
+  }
+
+  void _showMergedSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => DefaultTabController(
+          length: 2,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Column(
+              children: [
+                Container(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? ZagColours.secondary
+                      : ZagColours.secondaryLight,
+                  child: TabBar(
+                    indicatorColor: ZagColours.accentColor(context),
+                    labelColor: ZagColours.accentColor(context),
+                    unselectedLabelColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                    tabs: [
+                      Tab(text: 'Movies'),
+                      Tab(text: 'TV Shows'),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildRadarrSettings(setModalState),
+                      _buildSonarrSettings(setModalState),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadarrSettings(StateSetter setModalState) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality),
+            title: const Text('Quality Profile'),
+            subtitle: _selectedRadarrQualityProfileName != null ? Text(_selectedRadarrQualityProfileName!) : null,
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectRadarrQualityProfile();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Root Folder'),
+            subtitle: _selectedRadarrRootFolder != null ? Text(_selectedRadarrRootFolder!) : null,
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectRadarrRootFolder();
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.search),
+            title: const Text('Start search for missing'),
+            value: _radarrSearchForMissing,
+            onChanged: (value) {
+              setModalState(() {
+                setState(() {
+                  _radarrSearchForMissing = value;
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                });
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSonarrSettings(StateSetter setModalState) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality),
+            title: const Text('Quality Profile'),
+            subtitle: _selectedSonarrQualityProfileName != null ? Text(_selectedSonarrQualityProfileName!) : null,
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectSonarrQualityProfile();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Root Folder'),
+            subtitle: _selectedSonarrRootFolder != null ? Text(_selectedSonarrRootFolder!) : null,
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectSonarrRootFolder();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.view_list_rounded),
+            title: const Text('Monitoring Options'),
+            subtitle: Text(_sonarrMonitorType.zagName),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectSonarrMonitorType();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_open_rounded),
+            title: const Text('Series Type'),
+            subtitle: Text(_sonarrSeriesType.value!.toTitleCase()),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pop(context);
+              _selectSonarrSeriesType();
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.search),
+            title: const Text('Start search for missing'),
+            value: _sonarrSearchForMissing,
+            onChanged: (value) {
+              setModalState(() {
+                setState(() {
+                  _sonarrSearchForMissing = value;
+                  ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                });
+              });
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.cut),
+            title: const Text('Search for cutoff unmet'),
+            value: _sonarrSearchForCutoffUnmet,
+            onChanged: (value) {
+              setModalState(() {
+                setState(() {
+                  _sonarrSearchForCutoffUnmet = value;
+                  ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+                });
+              });
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   void _showRadarrConfig() {
