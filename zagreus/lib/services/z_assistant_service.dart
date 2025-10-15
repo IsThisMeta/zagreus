@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
+import 'package:zagreus/supabase/auth.dart';
 
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
@@ -69,6 +70,9 @@ class ZAssistantService {
       // Use the original app user ID as the receipt token
       final receiptToken = customerInfo.originalAppUserId;
 
+      // Get Supabase user ID for tier-based rate limiting
+      final supabaseUserId = ZagSupabaseAuth().uid;
+
       ZagLogger().debug('🔐 Registering device with Z Assistant...');
 
       final response = await _dio.post(
@@ -77,6 +81,7 @@ class ZAssistantService {
           'device_id': deviceId,
           'hmac_key': hmacKey,
           'receipt_token': receiptToken,
+          if (supabaseUserId != null) 'user_id': supabaseUserId,
         },
       );
 

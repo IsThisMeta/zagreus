@@ -56,7 +56,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   ? 'Included with Mega'
                   : isPro
                       ? 'Active • ${ZagreusPro.subscriptionType} subscription'
-                      : 'Unlock the Discover module',
+                      : 'Unlock Discover module with Z Assistant',
             )
           ],
           trailing: GestureDetector(
@@ -80,8 +80,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           body: [
             TextSpan(
               text: isMega
-                  ? 'Active'
-                  : 'Unlock Z Assistant features • \$1.79/month'
+                  ? 'Active • Mega subscription'
+                  : 'Unlock higher usage limits with Z Assistant • \$1.79/month'
             )
           ],
           trailing: ZagIconButton(
@@ -132,7 +132,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               isPro
                   ? 'You have an active ${ZagreusPro.subscriptionType} subscription.\n\n'
                       'Thank you for supporting Zagreus!'
-                  : 'Unlock the Discover module and support continued development!',
+                  : 'Unlock the Discover module and Z Assistant with 1 message every 12 hours!\n\n'
+                      'Support continued development!',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -285,10 +286,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? 'You have an active Mega subscription.\n\n'
+                  ? 'You have an active Mega subscription with 25 messages every 12 hours.\n\n'
                       'Thank you for supporting Zagreus!'
-                  : 'Unlock Z Assistant features!\n\n'
-                      'Get AI-powered recommendations with Ask Z and more exclusive features.',
+                  : 'Unlock Z Assistant with 25x more usage!\n\n'
+                      'Get 25 messages every 12 hours for AI-powered recommendations with Ask Z and more exclusive features.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
