@@ -67,8 +67,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             },
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
-              icon: isMega || isPro ? Icons.star_rounded : Icons.lock_open_rounded,
-              color: isMega || isPro ? ZagColours.orange : ZagColours.currentAccent,
+              icon: isMega || isPro ? Icons.star_rounded : Icons.star_border_rounded,
+              color: ZagColours.orange,
             ),
           ),
           onTap: () => _showProDialog(context),
@@ -81,7 +81,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             TextSpan(
               text: isMega
                   ? 'Active • Mega subscription'
-                  : 'Unlock higher usage limits with Z Assistant • \$1.79/month'
+                  : 'Unlock higher usage limits with Z Assistant'
             )
           ],
           trailing: ZagIconButton(
