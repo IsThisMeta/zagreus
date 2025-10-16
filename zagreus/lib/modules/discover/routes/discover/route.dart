@@ -4640,7 +4640,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'From Sonarr',
+                  'Sonarr',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -4757,7 +4757,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'From Sonarr',
+                  'Sonarr',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

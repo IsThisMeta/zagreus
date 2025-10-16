@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
@@ -23,15 +24,40 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
   List<Map<String, dynamic>> _shows = [];
   bool _isLoading = true;
   String? _error;
+
+  // Sonarr multi-add settings
+  int? _sonarrQualityProfileId;
+  String? _sonarrQualityProfileName;
+  String? _sonarrRootFolder;
+  String? _sonarrMonitorType;
+  String? _sonarrSeriesType;
+  bool _sonarrSearchForMissing = true;
+  bool _sonarrSearchForCutoffUnmet = false;
+
+  // Multi-select mode
+  bool _isMultiSelectMode = false;
+  Set<int> _selectedShowIndices = {};
+
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     if (widget.initialData != null) {
       _shows = widget.initialData!;
       _isLoading = false;
     } else {
       _loadTrendingShows();
     }
+  }
+
+  void _loadSavedSettings() {
+    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
+    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
   Future<void> _loadTrendingShows() async {
@@ -102,15 +128,66 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    if (_isMultiSelectMode) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = false;
+              _selectedShowIndices.clear();
+            });
+          },
+        ),
+        title: Text('${_selectedShowIndices.length} selected'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _selectedShowIndices.isEmpty ? null : _addSelectedShows,
+            tooltip: 'Add Selected',
+          ),
+        ],
+      ) as PreferredSizeWidget;
+    }
+
     return ZagAppBar(
       title: 'Trending New TV Shows',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.tune),
+          onPressed: _showSonarrConfig,
+          tooltip: 'Batch Add Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = true;
+            });
+          },
+          tooltip: 'Multi-Select',
+        ),
         IconButton(
           icon: Icon(ZagIcons.REFRESH),
           onPressed: _loadTrendingShows,
         ),
       ],
     );
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedShowIndices.length == _shows.length) {
+        _selectedShowIndices.clear();
+      } else {
+        _selectedShowIndices = Set.from(List.generate(_shows.length, (i) => i));
+      }
+    });
   }
 
   Widget _body() {
@@ -202,9 +279,11 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     final int? serviceItemId = show['serviceItemId'] as int?;
     final int? tmdbId = show['tmdbId'] as int?;
     final bool isNew = show['isNew'] == true;
+    final int index = _shows.indexOf(show);
+    final bool isSelected = _selectedShowIndices.contains(index);
 
     return GestureDetector(
-      onTap: () => _handleShowTap(show),
+      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -231,7 +310,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                 ),
               ),
               // Library indicator - bottom right
-              if (inLibrary)
+              if (inLibrary && !_isMultiSelectMode)
                 Positioned(
                   bottom: 14,
                   right: 14,
@@ -249,6 +328,31 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                         ),
                       ],
                     ),
+                  ),
+                ),
+              // Selection indicator
+              if (_isMultiSelectMode)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue : Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 16,
+                          )
+                        : null,
                   ),
                 ),
               // Rating badge - bottom left
@@ -467,5 +571,380 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
         type: ZagSnackbarType.ERROR,
       );
     }
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (_selectedShowIndices.contains(index)) {
+        _selectedShowIndices.remove(index);
+      } else {
+        _selectedShowIndices.add(index);
+      }
+    });
+  }
+
+  void _showSonarrConfig() {
+    // Helper to get monitor type enum from string
+    final currentMonitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+        ? SonarrSeriesMonitorType.values.firstWhere(
+            (type) => type.value == _sonarrMonitorType,
+            orElse: () => SonarrSeriesMonitorType.ALL,
+          )
+        : SonarrSeriesMonitorType.ALL;
+
+    // Helper to get series type enum from string
+    final currentSeriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+        ? SonarrSeriesType.values.firstWhere(
+            (type) => type.value == _sonarrSeriesType,
+            orElse: () => SonarrSeriesType.STANDARD,
+          )
+        : SonarrSeriesType.STANDARD;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.6,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sonarr Batch Add Settings',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  children: [
+                    // Quality Profile
+                    ListTile(
+                      title: const Text('Quality Profile'),
+                      subtitle: Text(_sonarrQualityProfileName ?? 'Not set'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () async {
+                        final sonarrState = context.read<SonarrState>();
+                        final profiles = await sonarrState.qualityProfiles;
+                        if (profiles == null || !mounted) return;
+
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Select Quality Profile',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: profiles.length,
+                                    itemBuilder: (context, index) {
+                                      final profile = profiles[index];
+                                      return ListTile(
+                                        title: Text(profile.name ?? 'Unknown'),
+                                        onTap: () {
+                                          setState(() {
+                                            _sonarrQualityProfileId = profile.id;
+                                            _sonarrQualityProfileName = profile.name;
+                                          });
+                                          ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
+                                          ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                                          Navigator.pop(context);
+                                          setModalState(() {});
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    // Root Folder
+                    ListTile(
+                      title: const Text('Root Folder'),
+                      subtitle: Text(_sonarrRootFolder ?? 'Not set'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () async {
+                        final sonarrState = context.read<SonarrState>();
+                        final folders = await sonarrState.rootFolders;
+                        if (folders == null || !mounted) return;
+
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Select Root Folder',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: folders.length,
+                                    itemBuilder: (context, index) {
+                                      final folder = folders[index];
+                                      return ListTile(
+                                        title: Text(folder.path ?? 'Unknown'),
+                                        onTap: () {
+                                          setState(() {
+                                            _sonarrRootFolder = folder.path;
+                                          });
+                                          ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                                          Navigator.pop(context);
+                                          setModalState(() {});
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    // Monitoring Options
+                    ListTile(
+                      title: const Text('Monitoring Options'),
+                      subtitle: Text(currentMonitorType.name),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Select Monitoring Option',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: SonarrSeriesMonitorType.values.length,
+                                    itemBuilder: (context, index) {
+                                      final type = SonarrSeriesMonitorType.values[index];
+                                      return ListTile(
+                                        title: Text(type.name),
+                                        onTap: () {
+                                          setState(() {
+                                            _sonarrMonitorType = type.value;
+                                          });
+                                          ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(type.value);
+                                          Navigator.pop(context);
+                                          setModalState(() {});
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    // Series Type
+                    ListTile(
+                      title: const Text('Series Type'),
+                      subtitle: Text(currentSeriesType.name),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Select Series Type',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: SonarrSeriesType.values.length,
+                                    itemBuilder: (context, index) {
+                                      final type = SonarrSeriesType.values[index];
+                                      return ListTile(
+                                        title: Text(type.name),
+                                        onTap: () {
+                                          setState(() {
+                                            _sonarrSeriesType = type.value;
+                                          });
+                                          ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type.value);
+                                          Navigator.pop(context);
+                                          setModalState(() {});
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    // Search for missing
+                    SwitchListTile(
+                      title: const Text('Search for missing episodes'),
+                      value: _sonarrSearchForMissing,
+                      onChanged: (value) {
+                        setState(() {
+                          _sonarrSearchForMissing = value;
+                        });
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                        setModalState(() {});
+                      },
+                    ),
+                    // Search for cutoff unmet
+                    SwitchListTile(
+                      title: const Text('Search for cutoff unmet episodes'),
+                      value: _sonarrSearchForCutoffUnmet,
+                      onChanged: (value) {
+                        setState(() {
+                          _sonarrSearchForCutoffUnmet = value;
+                        });
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+                        setModalState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addSelectedShows() async {
+    final selectedShows = _selectedShowIndices.map((i) => _shows[i]).toList();
+
+    if (_sonarrQualityProfileId == null || _sonarrRootFolder == null) {
+      showZagSnackBar(
+        title: 'Sonarr Configuration Required',
+        message: 'Please configure Sonarr settings first',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) {
+      showZagSnackBar(
+        title: 'Sonarr Not Available',
+        message: 'Sonarr is not enabled or configured',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final profiles = await sonarrState.qualityProfiles;
+    final folders = await sonarrState.rootFolders;
+
+    if (profiles == null || folders == null) {
+      showZagSnackBar(
+        title: 'Sonarr Configuration Error',
+        message: 'Could not load Sonarr profiles or folders',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final selectedProfile = profiles.firstWhere(
+      (p) => p.id == _sonarrQualityProfileId,
+      orElse: () => profiles.first,
+    );
+    final selectedFolder = folders.firstWhere(
+      (f) => f.path == _sonarrRootFolder,
+      orElse: () => folders.first,
+    );
+
+    final monitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+        ? SonarrSeriesMonitorType.values.firstWhere(
+            (type) => type.value == _sonarrMonitorType,
+            orElse: () => SonarrSeriesMonitorType.ALL,
+          )
+        : SonarrSeriesMonitorType.ALL;
+    final seriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+        ? SonarrSeriesType.values.firstWhere(
+            (type) => type.value == _sonarrSeriesType,
+            orElse: () => SonarrSeriesType.STANDARD,
+          )
+        : SonarrSeriesType.STANDARD;
+
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final show in selectedShows) {
+      try {
+        final tmdbId = show['tmdbId'] as int?;
+        if (tmdbId == null) {
+          failCount++;
+          continue;
+        }
+
+        final lookupResults = await sonarrState.api!.seriesLookup.get(
+          term: "tmdb:$tmdbId",
+        );
+
+        if (lookupResults.isEmpty || (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
+          failCount++;
+          continue;
+        }
+
+        await sonarrState.api!.series.create(
+          series: lookupResults.first,
+          rootFolder: selectedFolder,
+          qualityProfile: selectedProfile,
+          seriesType: seriesType,
+          seasonFolder: true,
+          searchForMissingEpisodes: _sonarrSearchForMissing,
+          searchForCutoffUnmetEpisodes: _sonarrSearchForCutoffUnmet,
+          monitorType: monitorType,
+        );
+
+        successCount++;
+      } catch (e) {
+        failCount++;
+      }
+    }
+
+    showZagSnackBar(
+      title: 'Batch Add Complete',
+      message: '$successCount added, $failCount failed.',
+      type: successCount > 0 ? ZagSnackbarType.SUCCESS : ZagSnackbarType.ERROR,
+    );
+
+    setState(() {
+      _isMultiSelectMode = false;
+      _selectedShowIndices.clear();
+    });
+
+    _loadTrendingShows();
   }
 }
