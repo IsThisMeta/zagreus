@@ -178,8 +178,8 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
       displayColor = ZagColours.orange;
     } else {
       displayText = 'Manage subscriptions';
-      displayIcon = Icons.shopping_bag_outlined;
-      displayColor = ZagColours.currentAccent;
+      displayIcon = Icons.star_border_rounded;
+      displayColor = Colors.white;
     }
 
     return ZagBlock(
