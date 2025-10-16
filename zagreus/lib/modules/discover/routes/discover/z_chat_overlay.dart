@@ -784,30 +784,32 @@ class _ZChatPageState extends State<ZChatPage> {
                                 color: ZagColours.currentAccent.withOpacity(0.18),
                               ),
                             ),
-                        const SizedBox(height: 24),
-                        OutlinedButton.icon(
-                          onPressed: _loadTestZAssistantResults,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Z Assistant (Mock Data)'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ZagColours.currentAccent,
-                            side: BorderSide(
-                              color: ZagColours.currentAccent.withOpacity(0.5),
+                            /* Temporary test buttons
+                            const SizedBox(height: 24),
+                            OutlinedButton.icon(
+                              onPressed: _loadTestZAssistantResults,
+                              icon: const Icon(Icons.science),
+                              label: const Text('Test Z Assistant (Mock Data)'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ZagColours.currentAccent,
+                                side: BorderSide(
+                                  color: ZagColours.currentAccent.withOpacity(0.5),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _showMockOperationPicker,
-                          icon: const Icon(Icons.science),
-                          label: const Text('Test Operations (Mock Data)'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ZagColours.currentAccent,
-                            side: BorderSide(
-                              color: ZagColours.currentAccent.withOpacity(0.5),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: _showMockOperationPicker,
+                              icon: const Icon(Icons.science),
+                              label: const Text('Test Operations (Mock Data)'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ZagColours.currentAccent,
+                                side: BorderSide(
+                                  color: ZagColours.currentAccent.withOpacity(0.5),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                            */
                       ],
                     ),
                   )
