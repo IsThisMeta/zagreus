@@ -1144,9 +1144,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'recently_downloaded_shows': () => _recentlyDownloadedShows.isNotEmpty
           ? _recentlyDownloadedShowsSection()
           : const SizedBox.shrink(),
-      'airing_next': () => _airingNextShows.isNotEmpty
-          ? _airingNextSection()
-          : const SizedBox.shrink(),
+      'airing_next': () => _airingNextSection(),
       'popular_tv_shows': () => Column(
           children: [_popularTVShowsSection(), const SizedBox(height: 12)]),
       'trending_new_tv_shows': () => Column(
@@ -4788,6 +4786,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
+              if (displayItems.isEmpty)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF35C5F4).withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF35C5F4).withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'No Shows Airing Soon',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               ...displayItems
                   .map((episode) => _airingNextCard(episode))
                   .toList(),
