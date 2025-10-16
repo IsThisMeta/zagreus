@@ -2928,6 +2928,12 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
   }
 
   Widget _buildSonarrSettings() {
+    // Helper to get monitor type enum from string
+    final currentMonitorType = widget.sonarrMonitorType;
+
+    // Helper to get series type enum from string
+    final currentSeriesType = widget.sonarrSeriesType;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3010,6 +3016,60 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
             }
           },
         ),
+        ListTile(
+          leading: const Icon(Icons.view_list_rounded),
+          title: const Text('Monitoring Options'),
+          subtitle: Text(currentMonitorType.zagName),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => ListView.builder(
+                itemCount: SonarrSeriesMonitorType.values.length,
+                itemBuilder: (context, index) {
+                  final monitorType = SonarrSeriesMonitorType.values[index];
+                  return ListTile(
+                    title: Text(monitorType.zagName),
+                    onTap: () {
+                      widget.onSonarrMonitorTypeChanged(monitorType);
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE
+                          .update(monitorType.value);
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.folder_open_rounded),
+          title: const Text('Series Type'),
+          subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => ListView.builder(
+                itemCount: SonarrSeriesType.values.length,
+                itemBuilder: (context, index) {
+                  final seriesType = SonarrSeriesType.values[index];
+                  return ListTile(
+                    title: Text(seriesType.value?.toUpperCase() ?? 'Unknown'),
+                    onTap: () {
+                      widget.onSonarrSeriesTypeChanged(seriesType);
+                      ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE
+                          .update(seriesType.value);
+                      setState(() {});
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
+            );
+          },
+        ),
         SwitchListTile(
           secondary: const Icon(Icons.search),
           title: const Text('Start search for missing'),
@@ -3017,6 +3077,16 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
           onChanged: (value) {
             widget.onSonarrSearchForMissingChanged(value);
             ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+            setState(() {});
+          },
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.cut),
+          title: const Text('Search for cutoff unmet'),
+          value: widget.sonarrSearchForCutoffUnmet,
+          onChanged: (value) {
+            widget.onSonarrSearchForCutoffUnmetChanged(value);
+            ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
             setState(() {});
           },
         ),
