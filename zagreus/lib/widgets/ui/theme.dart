@@ -127,17 +127,17 @@ class ZagTheme {
       canvasColor: ZagColours.primaryLight,
       primaryColor: ZagColours.secondaryLight,
       highlightColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      cardColor: Colors.white,
+      cardColor: ZagColours.secondaryLight,
       hoverColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
       splashColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: ZagColours.secondaryLight,
       ),
       iconTheme: const IconThemeData(
         color: Colors.black87,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: ZagColours.secondaryLight,
         foregroundColor: Colors.black87,
         titleTextStyle: TextStyle(
           color: Colors.black87,
