@@ -1619,6 +1619,9 @@ class _StagingModalState extends State<_StagingModal> {
   final Set<int> _selectedIndices = {};
   bool _isMultiSelectMode = false;
 
+  // Tab state
+  String _selectedTab = 'all'; // 'all', 'movies', 'tv'
+
   int get _totalItemCount => _stagedOperation?.items.length ?? 0;
 
   int get _activeItemCount {
@@ -1643,6 +1646,23 @@ class _StagingModalState extends State<_StagingModal> {
     }
 
     return _stagedOperation!.items;
+  }
+
+  List<StagedMediaItem> _getFilteredItems() {
+    if (_stagedOperation == null) {
+      return [];
+    }
+
+    final items = _stagedOperation!.items;
+
+    switch (_selectedTab) {
+      case 'movies':
+        return items.where((item) => item.isMovie).toList();
+      case 'tv':
+        return items.where((item) => item.isShow).toList();
+      default:
+        return items;
+    }
   }
 
   // Radarr/Sonarr config state
@@ -1844,18 +1864,12 @@ class _StagingModalState extends State<_StagingModal> {
                 // Icon buttons on right
                 Row(
                   children: [
-                    if (operationType != 'remove') ...[
+                    if (operationType != 'remove')
                       IconButton(
-                        icon: const Icon(Icons.tune),
-                        onPressed: _showRadarrConfig,
-                        tooltip: 'Radarr Settings',
+                        icon: const Icon(Icons.settings),
+                        onPressed: _showCombinedSettings,
+                        tooltip: 'Settings',
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.tune),
-                        onPressed: _showSonarrConfig,
-                        tooltip: 'Sonarr Settings',
-                      ),
-                    ],
                     IconButton(
                       icon: Icon(_isMultiSelectMode ? Icons.done_all : Icons.checklist),
                       onPressed: _toggleMultiSelectMode,
@@ -1863,6 +1877,29 @@ class _StagingModalState extends State<_StagingModal> {
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+
+          // Tab bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildTabButton('all', 'All'),
+                const SizedBox(width: 8),
+                _buildTabButton('movies', 'Movies'),
+                const SizedBox(width: 8),
+                _buildTabButton('tv', 'TV Shows'),
               ],
             ),
           ),
@@ -1936,6 +1973,50 @@ class _StagingModalState extends State<_StagingModal> {
     );
   }
 
+  Widget _buildTabButton(String tabValue, String label) {
+    final isSelected = _selectedTab == tabValue;
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedTab = tabValue;
+            _selectedIndices.clear();
+          });
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? ZagColours.currentAccent
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? ZagColours.currentAccent
+                  : (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.3)),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected
+                  ? Colors.white
+                  : (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody() {
     if (_loading) {
       return Center(child: ZagLoader());
@@ -1976,19 +2057,22 @@ class _StagingModalState extends State<_StagingModal> {
       );
     }
 
+    final filteredItems = _getFilteredItems();
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _stagedOperation!.items.length,
+      itemCount: filteredItems.length,
       itemBuilder: (context, index) {
-        final item = _stagedOperation!.items[index];
-        final isSelected = _selectedIndices.contains(index);
+        final item = filteredItems[index];
+        final originalIndex = _stagedOperation!.items.indexOf(item);
+        final isSelected = _selectedIndices.contains(originalIndex);
 
         return GestureDetector(
           onTap: () {
             if (_isMultiSelectMode) {
-              _toggleItemSelection(index);
+              _toggleItemSelection(originalIndex);
             } else {
-              _showItemCustomization(item, index);
+              _showItemCustomization(item, originalIndex);
             }
           },
           child: Container(
@@ -2112,6 +2196,73 @@ class _StagingModalState extends State<_StagingModal> {
       title: 'Per-item Customization',
       message: 'Tap and hold to customize settings for ${item.title}',
       type: ZagSnackbarType.INFO,
+    );
+  }
+
+  void _showCombinedSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _CombinedSettingsModal(
+        selectedRadarrQualityProfileId: _selectedRadarrQualityProfileId,
+        selectedRadarrQualityProfileName: _selectedRadarrQualityProfileName,
+        selectedRadarrRootFolder: _selectedRadarrRootFolder,
+        radarrSearchForMissing: _radarrSearchForMissing,
+        selectedSonarrQualityProfileId: _selectedSonarrQualityProfileId,
+        selectedSonarrQualityProfileName: _selectedSonarrQualityProfileName,
+        selectedSonarrRootFolder: _selectedSonarrRootFolder,
+        sonarrMonitorType: _sonarrMonitorType,
+        sonarrSeriesType: _sonarrSeriesType,
+        sonarrSearchForMissing: _sonarrSearchForMissing,
+        sonarrSearchForCutoffUnmet: _sonarrSearchForCutoffUnmet,
+        onRadarrQualityProfileChanged: (id, name) {
+          setState(() {
+            _selectedRadarrQualityProfileId = id;
+            _selectedRadarrQualityProfileName = name;
+          });
+        },
+        onRadarrRootFolderChanged: (folder) {
+          setState(() {
+            _selectedRadarrRootFolder = folder;
+          });
+        },
+        onRadarrSearchForMissingChanged: (value) {
+          setState(() {
+            _radarrSearchForMissing = value;
+          });
+        },
+        onSonarrQualityProfileChanged: (id, name) {
+          setState(() {
+            _selectedSonarrQualityProfileId = id;
+            _selectedSonarrQualityProfileName = name;
+          });
+        },
+        onSonarrRootFolderChanged: (folder) {
+          setState(() {
+            _selectedSonarrRootFolder = folder;
+          });
+        },
+        onSonarrMonitorTypeChanged: (type) {
+          setState(() {
+            _sonarrMonitorType = type;
+          });
+        },
+        onSonarrSeriesTypeChanged: (type) {
+          setState(() {
+            _sonarrSeriesType = type;
+          });
+        },
+        onSonarrSearchForMissingChanged: (value) {
+          setState(() {
+            _sonarrSearchForMissing = value;
+          });
+        },
+        onSonarrSearchForCutoffUnmetChanged: (value) {
+          setState(() {
+            _sonarrSearchForCutoffUnmet = value;
+          });
+        },
+      ),
     );
   }
 
@@ -2516,6 +2667,360 @@ class _BouncingDotState extends State<_BouncingDot>
           shape: BoxShape.circle,
         ),
       ),
+    );
+  }
+}
+
+// Combined Settings Modal with Movies/TV tabs
+class _CombinedSettingsModal extends StatefulWidget {
+  final int? selectedRadarrQualityProfileId;
+  final String? selectedRadarrQualityProfileName;
+  final String? selectedRadarrRootFolder;
+  final bool radarrSearchForMissing;
+  final int? selectedSonarrQualityProfileId;
+  final String? selectedSonarrQualityProfileName;
+  final String? selectedSonarrRootFolder;
+  final SonarrSeriesMonitorType sonarrMonitorType;
+  final SonarrSeriesType sonarrSeriesType;
+  final bool sonarrSearchForMissing;
+  final bool sonarrSearchForCutoffUnmet;
+  final Function(int?, String?) onRadarrQualityProfileChanged;
+  final Function(String?) onRadarrRootFolderChanged;
+  final Function(bool) onRadarrSearchForMissingChanged;
+  final Function(int?, String?) onSonarrQualityProfileChanged;
+  final Function(String?) onSonarrRootFolderChanged;
+  final Function(SonarrSeriesMonitorType) onSonarrMonitorTypeChanged;
+  final Function(SonarrSeriesType) onSonarrSeriesTypeChanged;
+  final Function(bool) onSonarrSearchForMissingChanged;
+  final Function(bool) onSonarrSearchForCutoffUnmetChanged;
+
+  const _CombinedSettingsModal({
+    required this.selectedRadarrQualityProfileId,
+    required this.selectedRadarrQualityProfileName,
+    required this.selectedRadarrRootFolder,
+    required this.radarrSearchForMissing,
+    required this.selectedSonarrQualityProfileId,
+    required this.selectedSonarrQualityProfileName,
+    required this.selectedSonarrRootFolder,
+    required this.sonarrMonitorType,
+    required this.sonarrSeriesType,
+    required this.sonarrSearchForMissing,
+    required this.sonarrSearchForCutoffUnmet,
+    required this.onRadarrQualityProfileChanged,
+    required this.onRadarrRootFolderChanged,
+    required this.onRadarrSearchForMissingChanged,
+    required this.onSonarrQualityProfileChanged,
+    required this.onSonarrRootFolderChanged,
+    required this.onSonarrMonitorTypeChanged,
+    required this.onSonarrSeriesTypeChanged,
+    required this.onSonarrSearchForMissingChanged,
+    required this.onSonarrSearchForCutoffUnmetChanged,
+  });
+
+  @override
+  State<_CombinedSettingsModal> createState() => _CombinedSettingsModalState();
+}
+
+class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
+  String _selectedTab = 'movies'; // 'movies' or 'tv'
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: const Text(
+              'Settings',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+
+          // Tab bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildTabButton('movies', 'Movies'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildTabButton('tv', 'TV Shows'),
+                ),
+              ],
+            ),
+          ),
+
+          // Body
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: _selectedTab == 'movies'
+                  ? _buildRadarrSettings()
+                  : _buildSonarrSettings(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String tabValue, String label) {
+    final isSelected = _selectedTab == tabValue;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedTab = tabValue;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? ZagColours.currentAccent : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? ZagColours.currentAccent
+                : (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.3)),
+          ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected
+                ? Colors.white
+                : (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadarrSettings() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.high_quality),
+          title: const Text('Quality Profile'),
+          subtitle: widget.selectedRadarrQualityProfileName != null
+              ? Text(widget.selectedRadarrQualityProfileName!)
+              : const Text('Not selected'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            try {
+              final profiles =
+                  await context.read<RadarrState>().qualityProfiles;
+
+              if (profiles == null || profiles.isEmpty) {
+                showZagSnackBar(
+                    title: 'No Quality Profiles',
+                    message: 'No Radarr quality profiles found',
+                    type: ZagSnackbarType.INFO);
+                return;
+              }
+
+              final result =
+                  await RadarrDialogs().editQualityProfile(context, profiles);
+
+              if (result.item1 && result.item2 != null) {
+                widget.onRadarrQualityProfileChanged(
+                    result.item2!.id, result.item2!.name);
+                ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                    .update(result.item2!.id);
+                ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                    .update(result.item2!.name);
+                setState(() {});
+              }
+            } catch (e, stack) {
+              ZagLogger().error('Error selecting Radarr quality profile', e, stack);
+              showZagSnackBar(
+                  title: 'Error',
+                  message: 'Failed to load quality profiles',
+                  type: ZagSnackbarType.ERROR);
+            }
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.folder),
+          title: const Text('Root Folder'),
+          subtitle: widget.selectedRadarrRootFolder != null
+              ? Text(widget.selectedRadarrRootFolder!)
+              : const Text('Not selected'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            try {
+              final folders = await context.read<RadarrState>().rootFolders;
+
+              if (folders == null || folders.isEmpty) {
+                showZagSnackBar(
+                    title: 'No Root Folders',
+                    message: 'No Radarr root folders found',
+                    type: ZagSnackbarType.INFO);
+                return;
+              }
+
+              final result =
+                  await RadarrDialogs().editRootFolder(context, folders);
+
+              if (result.item1 && result.item2 != null) {
+                widget.onRadarrRootFolderChanged(result.item2!.path);
+                ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                    .update(result.item2!.path);
+                setState(() {});
+              }
+            } catch (e, stack) {
+              ZagLogger().error('Error selecting Radarr root folder', e, stack);
+              showZagSnackBar(
+                  title: 'Error',
+                  message: 'Failed to load root folders',
+                  type: ZagSnackbarType.ERROR);
+            }
+          },
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.search),
+          title: const Text('Start search for missing'),
+          value: widget.radarrSearchForMissing,
+          onChanged: (value) {
+            widget.onRadarrSearchForMissingChanged(value);
+            ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+            setState(() {});
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSonarrSettings() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.high_quality),
+          title: const Text('Quality Profile'),
+          subtitle: widget.selectedSonarrQualityProfileName != null
+              ? Text(widget.selectedSonarrQualityProfileName!)
+              : const Text('Not selected'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            try {
+              final profiles =
+                  await context.read<SonarrState>().qualityProfiles;
+
+              if (profiles == null || profiles.isEmpty) {
+                showZagSnackBar(
+                    title: 'No Quality Profiles',
+                    message: 'No Sonarr quality profiles found',
+                    type: ZagSnackbarType.INFO);
+                return;
+              }
+
+              final result =
+                  await SonarrDialogs().editQualityProfile(context, profiles);
+
+              if (result.item1 && result.item2 != null) {
+                widget.onSonarrQualityProfileChanged(
+                    result.item2!.id, result.item2!.name);
+                ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                    .update(result.item2!.id);
+                ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                    .update(result.item2!.name);
+                setState(() {});
+              }
+            } catch (e, stack) {
+              ZagLogger().error('Error selecting Sonarr quality profile', e, stack);
+              showZagSnackBar(
+                  title: 'Error',
+                  message: 'Failed to load quality profiles',
+                  type: ZagSnackbarType.ERROR);
+            }
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.folder),
+          title: const Text('Root Folder'),
+          subtitle: widget.selectedSonarrRootFolder != null
+              ? Text(widget.selectedSonarrRootFolder!)
+              : const Text('Not selected'),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () async {
+            try {
+              final folders = await context.read<SonarrState>().rootFolders;
+
+              if (folders == null || folders.isEmpty) {
+                showZagSnackBar(
+                    title: 'No Root Folders',
+                    message: 'No Sonarr root folders found',
+                    type: ZagSnackbarType.INFO);
+                return;
+              }
+
+              final result =
+                  await SonarrDialogs().editRootFolder(context, folders);
+
+              if (result.item1 && result.item2 != null) {
+                widget.onSonarrRootFolderChanged(result.item2!.path);
+                ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+                    .update(result.item2!.path);
+                setState(() {});
+              }
+            } catch (e, stack) {
+              ZagLogger().error('Error selecting Sonarr root folder', e, stack);
+              showZagSnackBar(
+                  title: 'Error',
+                  message: 'Failed to load root folders',
+                  type: ZagSnackbarType.ERROR);
+            }
+          },
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.search),
+          title: const Text('Start search for missing'),
+          value: widget.sonarrSearchForMissing,
+          onChanged: (value) {
+            widget.onSonarrSearchForMissingChanged(value);
+            ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+            setState(() {});
+          },
+        ),
+      ],
     );
   }
 }
