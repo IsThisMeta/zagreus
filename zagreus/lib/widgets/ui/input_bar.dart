@@ -82,7 +82,7 @@ class _State extends State<ZagTextInputBar> {
           ),
         ),
         height: ZagTextInputBar.defaultHeight,
-        color: Theme.of(context).canvasColor,
+        color: Theme.of(context).cardColor,
       );
 
   TextStyle get _sharedTextStyle => TextStyle(

@@ -50,7 +50,7 @@ class _State extends State<RadarrCatalogueSearchBarFilterButton> {
       height: ZagTextInputBar.defaultHeight,
       width: ZagTextInputBar.defaultHeight,
       margin: const EdgeInsets.only(left: ZagUI.DEFAULT_MARGIN_SIZE),
-      color: Theme.of(context).canvasColor,
+      color: Theme.of(context).cardColor,
     );
   }
 }
