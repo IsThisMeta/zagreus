@@ -196,7 +196,7 @@ class _State extends State<DiscoverRecommendedRoute>
       title: 'Recommended Movies',
       actions: [
         IconButton(
-          icon: const Icon(Icons.movie),
+          icon: const Icon(Icons.tune),
           onPressed: _showRadarrConfig,
           tooltip: 'Radarr Settings',
         ),

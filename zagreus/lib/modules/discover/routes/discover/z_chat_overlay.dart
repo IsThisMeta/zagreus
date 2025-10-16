@@ -1846,12 +1846,12 @@ class _StagingModalState extends State<_StagingModal> {
                   children: [
                     if (operationType != 'remove') ...[
                       IconButton(
-                        icon: const Icon(Icons.movie),
+                        icon: const Icon(Icons.tune),
                         onPressed: _showRadarrConfig,
                         tooltip: 'Radarr Settings',
                       ),
                       IconButton(
-                        icon: const Icon(Icons.tv),
+                        icon: const Icon(Icons.tune),
                         onPressed: _showSonarrConfig,
                         tooltip: 'Sonarr Settings',
                       ),

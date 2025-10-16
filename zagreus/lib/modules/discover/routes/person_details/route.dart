@@ -165,12 +165,12 @@ class _State extends State<PersonDetailsRoute>
       title: widget.personName,
       actions: [
         IconButton(
-          icon: const Icon(Icons.movie),
+          icon: const Icon(Icons.tune),
           onPressed: _showRadarrConfig,
           tooltip: 'Radarr Settings',
         ),
         IconButton(
-          icon: const Icon(Icons.tv),
+          icon: const Icon(Icons.tune),
           onPressed: _showSonarrConfig,
           tooltip: 'Sonarr Settings',
         ),
