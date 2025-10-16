@@ -68,7 +68,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
               icon: isMega || isPro ? Icons.star_rounded : Icons.star_border_rounded,
-              color: ZagColours.orange,
+              color: ZagColours.currentAccent,
             ),
           ),
           onTap: () => _showProDialog(context),
@@ -86,7 +86,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           ],
           trailing: ZagIconButton(
             icon: isMega ? Icons.star_rounded : Icons.star_border_rounded,
-            color: ZagColours.purple,
+            color: ZagColours.orange,
           ),
           onTap: () => _showMegaDialog(context),
         ),
