@@ -55,9 +55,9 @@ class ZagColours {
   static const Color secondaryDark = Color(0xFF1A1B28);
   
   // Light Mode Colors
-  // Using softer whites to reduce eye strain
-  static const Color primaryLight = Color(0xFFF2F2F2);  // Soft off-white for both
-  static const Color secondaryLight = Color(0xFFF2F2F2);  // Soft off-white for both
+  // Using lighter background with subtle contrast to white cards
+  static const Color primaryLight = Color(0xFFF8F8F8);  // Very light gray background
+  static const Color secondaryLight = Color(0xFFF8F8F8);  // Very light gray background
   
   /// Zagreus app black background - RGB(35, 37, 52)
   static const Color zagreusBackground = Color(0xFF232534);

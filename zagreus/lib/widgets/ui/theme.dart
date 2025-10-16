@@ -131,13 +131,13 @@ class ZagTheme {
       hoverColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
       splashColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
-        backgroundColor: ZagColours.secondaryLight,
+        backgroundColor: Colors.white,
       ),
       iconTheme: const IconThemeData(
         color: Colors.black87,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: ZagColours.secondaryLight,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         titleTextStyle: TextStyle(
           color: Colors.black87,
