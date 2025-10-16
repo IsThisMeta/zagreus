@@ -127,7 +127,7 @@ class ZagTheme {
       canvasColor: ZagColours.primaryLight,
       primaryColor: ZagColours.secondaryLight,
       highlightColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
-      cardColor: ZagColours.secondaryLight,
+      cardColor: Colors.white,
       hoverColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH / 2),
       splashColor: ZagColours.currentAccentLight.withOpacity(ZagUI.OPACITY_SPLASH),
       dialogTheme: DialogThemeData(
