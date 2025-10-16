@@ -57,7 +57,7 @@ class ZagColours {
   // Light Mode Colors
   // Pure white background with subtle gray cards
   static const Color primaryLight = Color(0xFFFFFFFF);  // Pure white background
-  static const Color secondaryLight = Color(0xFFF8F8F8);  // Very light gray for cards
+  static const Color secondaryLight = Color(0xFFF9F9F9);  // Very light gray for cards (249, 249, 249)
   
   /// Zagreus app black background - RGB(35, 37, 52)
   static const Color zagreusBackground = Color(0xFF232534);
