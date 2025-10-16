@@ -1866,7 +1866,7 @@ class _StagingModalState extends State<_StagingModal> {
                   children: [
                     if (operationType != 'remove')
                       IconButton(
-                        icon: const Icon(Icons.settings),
+                        icon: const Icon(Icons.tune),
                         onPressed: _showCombinedSettings,
                         tooltip: 'Settings',
                       ),
@@ -2754,7 +2754,6 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
 
           // Tab bar
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -2766,13 +2765,8 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: _buildTabButton('movies', 'Movies'),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTabButton('tv', 'TV Shows'),
-                ),
+                _buildTabButton('movies', 'Movies'),
+                _buildTabButton('tv', 'TV Shows'),
               ],
             ),
           ),
@@ -2793,37 +2787,37 @@ class _CombinedSettingsModalState extends State<_CombinedSettingsModal> {
 
   Widget _buildTabButton(String tabValue, String label) {
     final isSelected = _selectedTab == tabValue;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedTab = tabValue;
-        });
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? ZagColours.currentAccent : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? ZagColours.currentAccent
-                : (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.3)),
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedTab = tabValue;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected
+                    ? ZagColours.currentAccent
+                    : Colors.transparent,
+                width: 2,
+              ),
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected
-                ? Colors.white
-                : (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black87),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              color: isSelected
+                  ? ZagColours.currentAccent
+                  : (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade600),
+            ),
           ),
         ),
       ),
