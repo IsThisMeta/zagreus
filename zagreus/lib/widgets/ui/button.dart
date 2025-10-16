@@ -50,7 +50,7 @@ class ZagButton extends Card {
           color: backgroundColor != null
               ? backgroundColor.withOpacity(ZagUI.OPACITY_DIMMED)
               : Theme.of(ZagState.context)
-                  .canvasColor
+                  .cardColor
                   .withOpacity(ZagUI.OPACITY_DIMMED),
           shape:
               backgroundColor != null ? ZagShapeBorder() : ZagUI.shapeBorder,
