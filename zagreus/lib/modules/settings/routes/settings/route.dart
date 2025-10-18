@@ -171,11 +171,11 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
     if (isMega) {
       displayText = 'Zagreus Mega Active';
       displayIcon = Icons.star_rounded;
-      displayColor = ZagColours.purple;
+      displayColor = ZagColours.orange;
     } else if (isPro) {
       displayText = 'Zagreus Pro Active';
       displayIcon = Icons.star_rounded;
-      displayColor = ZagColours.orange;
+      displayColor = ZagColours.currentAccent;
     } else {
       displayText = 'Manage subscriptions';
       displayIcon = Icons.star_border_rounded;

@@ -55,8 +55,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               text: isMega
                   ? 'Included with Mega'
                   : isPro
-                      ? 'Active • ${ZagreusPro.subscriptionType} subscription'
-                      : 'Unlock Discover module with Z Assistant',
+                      ? 'Active • ${ZagreusPro.subscriptionType} plan'
+                      : 'Unlock Discover plus Ask Z (limited)',
             )
           ],
           trailing: GestureDetector(
@@ -80,8 +80,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           body: [
             TextSpan(
               text: isMega
-                  ? 'Active • Mega subscription'
-                  : 'Unlock higher usage limits with Z Assistant'
+                  ? 'Active • Mega plan'
+                  : 'Upgrade for higher Ask Z usage and every Pro perk'
             )
           ],
           trailing: ZagIconButton(
@@ -108,7 +108,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             Padding(
               padding: ZagDialog.textDialogContentPadding(),
               child: Text(
-                'Pro features are included with your Mega subscription!',
+                'Mega already includes every Pro feature.',
                 style: const TextStyle(
                   fontSize: ZagUI.FONT_SIZE_H2,
                 ),
@@ -130,10 +130,12 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? 'You have an active ${ZagreusPro.subscriptionType} subscription.\n\n'
-                      'Thank you for supporting Zagreus!'
-                  : 'Unlock the Discover module and Z Assistant with 1 message every 12 hours!\n\n'
-                      'Support continued development!',
+                  ? "You're on the ${ZagreusPro.subscriptionType} plan.\n\n"
+                      'Thanks for supporting Zagreus!'
+                  : 'Zagreus Pro unlocks:\n'
+                      '• Discover module\n'
+                      '• Ask Z with limited usage\n\n'
+                      'Choose a plan to get started.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -160,7 +162,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ),
             ZagDialog.tile(
               icon: Icons.star_rounded,
-              iconColor: ZagColours.orange,
+              iconColor: ZagColours.currentAccent,
               text: 'Yearly • \$3.99/year',
               subtitle: RichText(
                 text: TextSpan(
@@ -286,10 +288,12 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? 'You have an active Mega subscription with 25 messages every 12 hours.\n\n'
+                  ? 'You have an active Mega subscription with 15 messages every 12 hours.\n\n'
                       'Thank you for supporting Zagreus!'
-                  : 'Unlock Z Assistant with 25x more usage!\n\n'
-                      'Get 25 messages every 12 hours for AI-powered recommendations with Ask Z and more exclusive features.',
+                  : 'Zagreus Mega includes:\n'
+                      '• Higher Ask Z usage limits\n'
+                      '• Every Zagreus Pro feature\n\n'
+                      'Enjoy more AI-powered recommendations with Ask Z.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),

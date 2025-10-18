@@ -156,12 +156,12 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Unlock the Discover module and support Zagreus development!\n\n'
+              'Zagreus Pro unlocks Discover with limited Ask Z access.\n\n'
               '• Beautiful movie & TV discovery\n'
               '• Trending & popular content\n'
               '• Recommended based on your library\n'
               '• Missing movies from collections\n\n'
-              'Choose your plan:',
+              'Choose a plan:',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -178,7 +178,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ),
           ZagDialog.tile(
             icon: Icons.star_rounded,
-            iconColor: ZagColours.orange,
+            iconColor: ZagColours.currentAccent,
             text: 'Yearly • \$3.99/year',
             onTap: () {
               Navigator.of(context).pop();
