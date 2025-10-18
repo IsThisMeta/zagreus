@@ -70,21 +70,43 @@ class RevenueCatService {
 
     print('🔍 RevenueCat: Checking entitlements...');
 
-    // Check Pro entitlement (both monthly and yearly)
-    final isProMonthlyActive = _customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false;
-    final isProYearlyActive = _customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false;
-    final isProActive = isProMonthlyActive || isProYearlyActive;
+    // Check Pro entitlements (monthly + yearly) and pick the one with the longer expiry
+    final proMonthlyEntitlement = _customerInfo?.entitlements.all[_proEntitlementId];
+    final proYearlyEntitlement = _customerInfo?.entitlements.all[_proYearlyEntitlementId];
+    final activeProEntitlement = [
+      if (proMonthlyEntitlement?.isActive ?? false) proMonthlyEntitlement!,
+      if (proYearlyEntitlement?.isActive ?? false) proYearlyEntitlement!,
+    ].fold<EntitlementInfo?>(null, (best, current) {
+      if (best == null) return current;
 
-    if (isProActive) {
-      // Get expiration and product ID from whichever Pro entitlement is active
-      final activeProEntitlement = isProMonthlyActive
-        ? _customerInfo?.entitlements.all[_proEntitlementId]
-        : _customerInfo?.entitlements.all[_proYearlyEntitlementId];
-      final expirationDate = activeProEntitlement?.expirationDate;
+      DateTime? bestExpiry;
+      DateTime? currentExpiry;
+      try {
+        final raw = best.expirationDate;
+        if (raw != null) bestExpiry = DateTime.parse(raw);
+      } catch (_) {}
+      try {
+        final raw = current.expirationDate;
+        if (raw != null) currentExpiry = DateTime.parse(raw);
+      } catch (_) {}
+
+      if (bestExpiry == null && currentExpiry == null) {
+        // Neither has expiry info – prefer the current (likely most recent purchase)
+        return current;
+      }
+      if (bestExpiry == null) return current;
+      if (currentExpiry == null) return best;
+
+      return currentExpiry.isAfter(bestExpiry) ? current : best;
+    });
+
+    if (activeProEntitlement != null) {
+      final expirationDate = activeProEntitlement.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
-        final productId = activeProEntitlement?.productIdentifier ?? 'revenuecat_pro';
-        print('🎯 RevenueCat: Pro active until $expiry (product: $productId)');
+        final productId = activeProEntitlement.productIdentifier ?? 'revenuecat_pro';
+        final entitlementId = activeProEntitlement.identifier;
+        print('🎯 RevenueCat: Pro active until $expiry (entitlement: $entitlementId, product: $productId)');
 
         // Update local storage from RevenueCat (source of truth)
         ZagreusPro.applySubscription(

@@ -43,6 +43,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   Widget _body() {
     final bool isPro = ZagreusPro.isEnabled;
     final bool isMega = ZagreusMega.isEnabled;
+    final String proPlanType = ZagreusPro.subscriptionType;
+    final String? proPlanLabel =
+        isPro ? 'Active • ${_formatPlanName(proPlanType)} plan' : null;
 
     return ZagListView(
       controller: scrollController,
@@ -55,8 +58,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               text: isMega
                   ? 'Included with Mega'
                   : isPro
-                      ? 'Active • ${ZagreusPro.subscriptionType} plan'
-                      : 'Unlock Discover plus Ask Z (limited)',
+                      ? proPlanLabel!
+                      : 'Access Discover and limited Ask Z',
             )
           ],
           trailing: GestureDetector(
@@ -81,7 +84,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             TextSpan(
               text: isMega
                   ? 'Active • Mega plan'
-                  : 'Upgrade for higher Ask Z usage and every Pro perk'
+                  : 'Higher Ask Z limits + all Pro features'
             )
           ],
           trailing: ZagIconButton(
@@ -130,7 +133,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${ZagreusPro.subscriptionType} plan.\n\nEnjoy Discover and Ask Z with limited usage."
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover and Ask Z with limited usage."
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
                       '• Ask Z with limited usage\n\n'
@@ -401,6 +404,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
     );
+  }
+
+  String _formatPlanName(String raw) {
+    if (raw.isEmpty) return 'Pro';
+    final lower = raw.toLowerCase();
+    if (lower.contains('year')) return 'Yearly';
+    if (lower.contains('month')) return 'Monthly';
+    return raw[0].toUpperCase() + raw.substring(1);
   }
 
   void _purchasePro(bool isMonthly) async {
