@@ -7,6 +7,7 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/backup_tile.dart';
+import 'package:zagreus/modules/settings/routes/system/widgets/build_details.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/demo_config.dart';
@@ -44,6 +45,8 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     return ZagListView(
       controller: scrollController,
       children: <Widget>[
+        const BuildDetails(),
+        ZagDivider(),
         const SettingsSystemBackupRestoreBackupTile(),
         const SettingsSystemBackupRestoreRestoreTile(),
         ZagDivider(),
