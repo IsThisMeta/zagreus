@@ -29,6 +29,7 @@ class _State extends State<SABnzbdQueueTile> {
       bottomHeight: ZagLinearPercentIndicator.height,
       bottom: ZagLinearPercentIndicator(
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
+        progressColor: ZagColours.currentAccent,
       ),
       trailing: ZagReorderableListViewDragger(index: widget.index),
       onTap: _handlePopup,
