@@ -130,8 +130,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${ZagreusPro.subscriptionType} plan.\n\n"
-                      'Thanks for supporting Zagreus!'
+                  ? "You're on the ${ZagreusPro.subscriptionType} plan.\n\nEnjoy Discover and Ask Z with limited usage."
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
                       '• Ask Z with limited usage\n\n'
@@ -288,8 +287,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? 'You have an active Mega subscription with 15 messages every 12 hours.\n\n'
-                      'Thank you for supporting Zagreus!'
+                  ? "You have an active Mega subscription.\n\nEnjoy Discover plus higher Ask Z limits."
                   : 'Zagreus Mega includes:\n'
                       '• Higher Ask Z usage limits\n'
                       '• Every Zagreus Pro feature\n\n'
