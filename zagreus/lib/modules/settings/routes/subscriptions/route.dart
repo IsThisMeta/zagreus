@@ -303,7 +303,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           if (!isMega) ...[
           ZagDialog.tile(
             icon: Icons.rocket_launch_rounded,
-            iconColor: ZagColours.purple,
+            iconColor: ZagColours.orange,
             text: 'Monthly • \$1.79/month',
             subtitle: RichText(
               text: TextSpan(

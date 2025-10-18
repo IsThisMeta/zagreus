@@ -784,6 +784,7 @@ class _ZChatPageState extends State<ZChatPage> {
                                 color: ZagColours.currentAccent.withOpacity(0.18),
                               ),
                             ),
+                            /* Temporary test buttons
                             const SizedBox(height: 24),
                             OutlinedButton.icon(
                               onPressed: _loadTestZAssistantResults,
@@ -808,6 +809,7 @@ class _ZChatPageState extends State<ZChatPage> {
                                 ),
                               ),
                             ),
+                            */
                           ],
                         ),
                       )
