@@ -125,7 +125,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     final progress = parity.progress?.clamp(0.0, 100.0);
 
     return ZagBlock(
-      title: 'PARITY',
+      title: 'Parity',
       bodyLeadingIcons: [
         Icons.check_circle_rounded,
         Icons.event_rounded,
@@ -254,7 +254,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ZagBlock(
-          title: 'ARRAY',
+          title: 'Array',
           body: [
             TextSpan(
               text:
@@ -298,7 +298,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ZagBlock(
-          title: 'CACHE',
+          title: 'Cache',
           body: [
             TextSpan(
               text: '${totalUsedTB.toStringAsFixed(1)} TB used of '
