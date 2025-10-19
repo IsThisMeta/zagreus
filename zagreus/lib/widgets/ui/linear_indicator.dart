@@ -3,7 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class ZagLinearPercentIndicator extends StatelessWidget {
-  static const _LINE_HEIGHT = 4.0;
+  static const _LINE_HEIGHT = 8.0;
   static const double height = _LINE_HEIGHT + ZagUI.DEFAULT_MARGIN_SIZE / 2;
 
   final double? percent;
@@ -25,7 +25,7 @@ class ZagLinearPercentIndicator extends StatelessWidget {
       child: LinearPercentIndicator(
         percent: percent!,
         padding: EdgeInsets.zero,
-        lineHeight: 4.0,
+        lineHeight: 8.0,
         progressColor: progressColor,
         barRadius: const Radius.circular(ZagUI.BORDER_RADIUS),
         backgroundColor:
