@@ -14,6 +14,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
 import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/modules/tautulli.dart';
+import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 
@@ -32,6 +33,7 @@ const MODULE_SONARR_KEY = 'sonarr';
 const MODULE_TAUTULLI_KEY = 'tautulli';
 const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
+const MODULE_SERVER_KEY = 'server';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -60,7 +62,9 @@ enum ZagModule {
   @HiveField(10)
   WAKE_ON_LAN(MODULE_WAKE_ON_LAN_KEY),
   @HiveField(12)
-  DISCOVER(MODULE_DISCOVER_KEY);
+  DISCOVER(MODULE_DISCOVER_KEY),
+  @HiveField(13)
+  SERVER(MODULE_SERVER_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -93,6 +97,8 @@ enum ZagModule {
         return ZagModule.EXTERNAL_MODULES;
       case MODULE_DISCOVER_KEY:
         return ZagModule.DISCOVER;
+      case MODULE_SERVER_KEY:
+        return ZagModule.SERVER;
     }
     return null;
   }
@@ -114,6 +120,8 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.WAKE_ON_LAN:
         return ZagWakeOnLAN.isSupported;
       case ZagModule.DISCOVER:
+        return true;
+      case ZagModule.SERVER:
         return true;
       default:
         return true;
@@ -148,6 +156,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return !ZagBox.externalModules.isEmpty;
       case ZagModule.DISCOVER:
         return true;
+      case ZagModule.SERVER:
+        return ZagProfile.current.serverEnabled;
     }
   }
 }
@@ -181,6 +191,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'zagreus.ExternalModules'.tr();
       case ZagModule.DISCOVER:
         return 'Discover';
+      case ZagModule.SERVER:
+        return 'Server';
     }
   }
 
@@ -212,6 +224,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.settings_ethernet_rounded;
       case ZagModule.DISCOVER:
         return Icons.explore_rounded;
+      case ZagModule.SERVER:
+        return Icons.dns_rounded;
     }
   }
 
@@ -243,6 +257,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagColours.currentAccent;
       case ZagModule.DISCOVER:
         return const Color(0xFF6688FF); // RGB(0.4, 0.533, 1.0) = #6688FF
+      case ZagModule.SERVER:
+        return const Color(0xFFFF8C2F); // Unraid orange
     }
   }
 
@@ -274,6 +290,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.DISCOVER:
         return null;
+      case ZagModule.SERVER:
+        return 'https://unraid.net';
     }
   }
 
@@ -304,6 +322,8 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return null;
       case ZagModule.DISCOVER:
+        return null;
+      case ZagModule.SERVER:
         return null;
     }
   }
@@ -336,6 +356,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Access External Modules';
       case ZagModule.DISCOVER:
         return 'Browse and Discover Content';
+      case ZagModule.SERVER:
+        return 'Manage Your Unraid Server';
     }
   }
 
@@ -367,6 +389,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Zagreus allows you to add links to additional modules that are not currently supported allowing you to open the module\'s web GUI without having to leave Zagreus!';
       case ZagModule.DISCOVER:
         return 'Discover new movies and TV shows, browse what\'s trending, see what\'s coming soon, and explore your recently downloaded content.';
+      case ZagModule.SERVER:
+        return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
     }
   }
 }
@@ -400,6 +424,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.externalModules.root.path;
       case ZagModule.DISCOVER:
         return ZagRoutes.discover.root.path;
+      case ZagModule.SERVER:
+        return ZagRoutes.server.root.path;
     }
   }
 
@@ -431,6 +457,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES;
       case ZagModule.DISCOVER:
         return SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS;
+      case ZagModule.SERVER:
+        return SettingsRoutes.CONFIGURATION_SERVER;
     }
   }
 
@@ -528,6 +556,8 @@ extension ZagModuleExtension on ZagModule {
         return null;
       case ZagModule.DISCOVER:
         return null;
+      case ZagModule.SERVER:
+        return context.read<ServerState>();
     }
   }
 

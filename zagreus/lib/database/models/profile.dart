@@ -149,6 +149,22 @@ class ZagProfile extends HiveObject {
   @HiveField(43, defaultValue: <String, String>{})
   Map<String, String> overseerrHeaders;
 
+  @JsonKey()
+  @HiveField(44, defaultValue: false)
+  bool serverEnabled;
+
+  @JsonKey()
+  @HiveField(45, defaultValue: '')
+  String serverHost;
+
+  @JsonKey()
+  @HiveField(46, defaultValue: '')
+  String serverKey;
+
+  @JsonKey()
+  @HiveField(47, defaultValue: <String, String>{})
+  Map<String, String> serverHeaders;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -190,6 +206,11 @@ class ZagProfile extends HiveObject {
     required this.overseerrHost,
     required this.overseerrKey,
     required this.overseerrHeaders,
+    //Server
+    required this.serverEnabled,
+    required this.serverHost,
+    required this.serverKey,
+    required this.serverHeaders,
   });
 
   factory ZagProfile({
@@ -233,6 +254,11 @@ class ZagProfile extends HiveObject {
     String? overseerrHost,
     String? overseerrKey,
     Map<String, String>? overseerrHeaders,
+    //Server
+    bool? serverEnabled,
+    String? serverHost,
+    String? serverKey,
+    Map<String, String>? serverHeaders,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -275,6 +301,11 @@ class ZagProfile extends HiveObject {
       overseerrHost: overseerrHost ?? '',
       overseerrKey: overseerrKey ?? '',
       overseerrHeaders: overseerrHeaders ?? {},
+      // Server
+      serverEnabled: serverEnabled ?? false,
+      serverHost: serverHost ?? '',
+      serverKey: serverKey ?? '',
+      serverHeaders: serverHeaders ?? {},
     );
   }
 

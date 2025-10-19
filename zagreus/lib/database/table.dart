@@ -12,6 +12,7 @@ import 'package:zagreus/database/tables/sabnzbd.dart';
 import 'package:zagreus/database/tables/search.dart';
 import 'package:zagreus/database/tables/sonarr.dart';
 import 'package:zagreus/database/tables/tautulli.dart';
+import 'package:zagreus/database/tables/server.dart';
 import 'package:zagreus/vendor.dart';
 
 enum ZagTable<T extends ZagTableMixin> {
@@ -24,7 +25,8 @@ enum ZagTable<T extends ZagTableMixin> {
   sabnzbd<SABnzbdDatabase>('sabnzbd', items: SABnzbdDatabase.values),
   search<SearchDatabase>('search', items: SearchDatabase.values),
   sonarr<SonarrDatabase>('sonarr', items: SonarrDatabase.values),
-  tautulli<TautulliDatabase>('tautulli', items: TautulliDatabase.values);
+  tautulli<TautulliDatabase>('tautulli', items: TautulliDatabase.values),
+  server<ServerDatabase>('server', items: ServerDatabase.values);
 
   final String key;
   final List<T> items;

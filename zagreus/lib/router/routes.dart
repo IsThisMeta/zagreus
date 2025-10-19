@@ -14,6 +14,7 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/router/routes/tautulli.dart';
 import 'package:zagreus/router/routes/discover.dart';
+import 'package:zagreus/router/routes/server.dart';
 import 'package:zagreus/vendor.dart';
 import 'package:zagreus/widgets/pages/not_enabled.dart';
 
@@ -29,7 +30,8 @@ enum ZagRoutes {
   settings('settings', root: SettingsRoutes.HOME),
   sonarr('sonarr', root: SonarrRoutes.HOME),
   tautulli('tautulli', root: TautulliRoutes.HOME),
-  discover('discover', root: DiscoverRoutes.HOME);
+  discover('discover', root: DiscoverRoutes.HOME),
+  server('server', root: ServerRoutes.HOME);
 
   final String key;
   final ZagRoutesMixin root;
