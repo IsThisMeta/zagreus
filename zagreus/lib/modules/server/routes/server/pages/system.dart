@@ -141,6 +141,16 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     final capacity = _arrayInfo!.capacity!;
     final percentUsed = capacity.percentUsed ?? 0;
 
+    // Helper to format storage size (TB or GB)
+    String formatStorage(double? tb) {
+      if (tb == null) return '?';
+      if (tb < 1.0) {
+        final gb = tb * 1024;
+        return '${gb.toStringAsFixed(1)} GB';
+      }
+      return '${tb.toStringAsFixed(1)} TB';
+    }
+
     return ZagBlock(
       title: 'ARRAY CAPACITY',
       leading: const Icon(
@@ -150,7 +160,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       ),
       body: [
         TextSpan(
-          text: '${capacity.totalTB?.toStringAsFixed(1) ?? '?'} TB Total',
+          text: '${formatStorage(capacity.totalTB)} Total',
         ),
       ],
       bottomHeight: ZagLinearPercentIndicator.height + 28,
@@ -159,7 +169,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         children: [
           Text(
             '${percentUsed.toStringAsFixed(0)}% used '
-            '(${capacity.freeTB?.toStringAsFixed(1) ?? '?'} TB free)',
+            '(${formatStorage(capacity.freeTB)} free)',
             style: const TextStyle(fontSize: 14, color: Colors.white70),
           ),
           const SizedBox(height: 8),
