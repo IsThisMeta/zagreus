@@ -136,25 +136,58 @@ class _ServerVmPageState extends State<ServerVmPage>
   Widget _buildVmCard(UnraidVirtualMachine vm) {
     final pendingAction = _pendingActions[vm.id];
 
-    return ZagBlock(
-      title: vm.name,
-      leading: _buildVmAvatar(vm),
-      trailing: Icon(
-        _statusIcon(vm),
-        color: _stateColor(vm),
+    return Container(
+      margin: const EdgeInsets.only(
+        left: ZagUI.DEFAULT_MARGIN_SIZE,
+        right: ZagUI.DEFAULT_MARGIN_SIZE,
+        bottom: ZagUI.DEFAULT_MARGIN_SIZE,
       ),
-      body: [
-        TextSpan(
-          text: vm.displayState,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: _stateColor(vm),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ZagColours.white10,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row with icon, name, and status icon
+          Row(
+            children: [
+              _buildVmAvatar(vm),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  vm.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                _statusIcon(vm),
+                color: _stateColor(vm),
+                size: 24,
+              ),
+            ],
           ),
-        ),
-      ],
-      bottom: _buildActionRow(vm, pendingAction),
-      bottomHeight: 60,
+          const SizedBox(height: 12),
+          // Status text
+          Text(
+            vm.displayState,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _stateColor(vm),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Action buttons
+          _buildActionRow(vm, pendingAction),
+        ],
+      ),
     );
   }
 
@@ -182,21 +215,13 @@ class _ServerVmPageState extends State<ServerVmPage>
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: ZagUI.DEFAULT_MARGIN_SIZE,
-        right: ZagUI.DEFAULT_MARGIN_SIZE,
-        bottom: ZagUI.DEFAULT_MARGIN_SIZE,
-        top: 4,
-      ),
-      child: Row(
-        children: [
-          for (int index = 0; index < buttons.length; index++) ...[
-            Expanded(child: buttons[index]),
-            if (index < buttons.length - 1) const SizedBox(width: 8),
-          ],
+    return Row(
+      children: [
+        for (int index = 0; index < buttons.length; index++) ...[
+          Expanded(child: buttons[index]),
+          if (index < buttons.length - 1) const SizedBox(width: 8),
         ],
-      ),
+      ],
     );
   }
 
@@ -240,22 +265,48 @@ class _ServerVmPageState extends State<ServerVmPage>
     return buttons;
   }
 
-  ZagButton _buildVmButton({
+  Widget _buildVmButton({
     required String label,
     required IconData icon,
     required Color color,
     required bool loading,
     required VoidCallback? onTap,
   }) {
-    return ZagButton(
-      type: ZagButtonType.TEXT,
-      text: label,
-      icon: icon,
-      backgroundColor: color,
-      margin: EdgeInsets.zero,
-      height: 44,
-      loadingState: loading ? ZagLoadingState.ACTIVE : null,
-      onTap: onTap,
+    return Material(
+      color: color,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: loading ? null : onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          height: 48,
+          alignment: Alignment.center,
+          child: loading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 
