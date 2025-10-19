@@ -126,7 +126,6 @@ class _ServerArrayPageState extends State<ServerArrayPage>
 
     return ZagBlock(
       title: 'PARITY',
-      leading: _buildParityAvatar(statusColor),
       bodyLeadingIcons: [
         Icons.check_circle_rounded,
         Icons.event_rounded,
@@ -196,23 +195,6 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           isRunning && progress != null ? _buildParityProgress(progress) : null,
       bottomHeight:
           isRunning && progress != null ? 74 : ZagBlock.SUBTITLE_HEIGHT,
-    );
-  }
-
-  Widget _buildParityAvatar(Color accent) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.monitor_heart_rounded,
-        color: accent,
-        size: 24,
-      ),
     );
   }
 
