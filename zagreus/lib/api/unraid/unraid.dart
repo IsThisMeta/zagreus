@@ -146,10 +146,19 @@ class UnraidAPI {
           name
           version
         }
+        registration {
+          type
+        }
         info {
           os {
             uptime
             distro
+          }
+          memory {
+            layout {
+              type
+              clockSpeed
+            }
           }
         }
       }
@@ -157,11 +166,13 @@ class UnraidAPI {
 
     final data = await _query(query);
 
-    // Combine vars and info into a single response
+    // Combine vars, registration, and info into a single response
     final Map<String, dynamic> combinedData = {
       'name': data['vars']?['name'],
       'version': data['vars']?['version'],
+      'registrationType': data['registration']?['type'],
       'os': data['info']?['os'],
+      'memory': data['info']?['memory'],
     };
 
     return UnraidSystemInfo.fromJson(combinedData);
@@ -538,5 +549,38 @@ class UnraidAPI {
         'stopId': id,
       },
     );
+  }
+
+  /// Fetch UPS/Power information
+  Future<UnraidUpsInfo?> getUpsInfo() async {
+    const query = '''
+      query {
+        upsDevices {
+          id
+          name
+          model
+          status
+          battery {
+            chargeLevel
+            estimatedRuntime
+            health
+          }
+          power {
+            loadPercentage
+          }
+        }
+      }
+    ''';
+
+    final data = await _query(query);
+    final upsDevices = data['upsDevices'] as List?;
+
+    if (upsDevices == null || upsDevices.isEmpty) {
+      return null;
+    }
+
+    // Return the first UPS device
+    final firstDevice = upsDevices.first as Map<String, dynamic>;
+    return UnraidUpsInfo.fromJson(firstDevice);
   }
 }

@@ -15,6 +15,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     with ZagScrollControllerMixin {
   UnraidSystemInfo? _systemInfo;
   UnraidArrayInfo? _arrayInfo;
+  UnraidUpsInfo? _upsInfo;
   bool _loading = true;
   String? _error;
 
@@ -46,11 +47,21 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       final systemInfo = await api.getSystemInfo();
       final arrayInfo = await api.getArrayInfo();
 
+      // Try to fetch UPS info (optional - may not exist)
+      UnraidUpsInfo? upsInfo;
+      try {
+        upsInfo = await api.getUpsInfo();
+      } catch (e) {
+        ZagLogger().debug('UPS info not available: $e');
+        upsInfo = null;
+      }
+
       if (!mounted) return;
 
       setState(() {
         _systemInfo = systemInfo;
         _arrayInfo = arrayInfo;
+        _upsInfo = upsInfo;
         _loading = false;
       });
     } catch (e, stackTrace) {
@@ -88,6 +99,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           if (_systemInfo != null) _buildServerInfoCard(),
           if (_arrayInfo?.capacity != null) _buildArrayCapacityCard(),
           if (_systemInfo?.memory != null) _buildMemoryCard(),
+          if (_upsInfo?.hasUps == true) _buildPowerCard(),
         ],
       ),
     );
@@ -98,19 +110,30 @@ class _ServerSystemPageState extends State<ServerSystemPage>
 
     return ZagBlock(
       title: info.name.toUpperCase(),
+      leading: const Icon(
+        Icons.info_outline,
+        size: 32,
+        color: Colors.white70,
+      ),
       body: [
-        TextSpan(text: 'Version: ${info.version}\n'),
-        TextSpan(text: 'Uptime: ${info.os.formattedUptime}\n'),
+        TextSpan(text: 'Version: ${info.version}'),
+        const TextSpan(text: '\n'),
+        if (info.registrationType != null) ...[
+          const TextSpan(text: 'Registration: '),
+          TextSpan(text: info.formattedRegistrationType),
+          const TextSpan(text: '\n'),
+        ],
+        TextSpan(text: 'Uptime: ${info.os.formattedUptime}'),
+        const TextSpan(text: '\n'),
+        const TextSpan(text: 'Array: '),
         TextSpan(
-          text: 'Array: ${_arrayInfo?.state ?? "Unknown"}',
+          text: _arrayInfo?.state ?? "Unknown",
           style: TextStyle(
-            color: _arrayInfo?.isStarted == true
-                ? Colors.green
-                : Colors.orange,
-            fontWeight: FontWeight.bold,
+            color: _arrayInfo?.isStarted == true ? Colors.green : Colors.grey,
           ),
         ),
       ],
+      customBodyMaxLines: 5,
     );
   }
 
@@ -120,23 +143,35 @@ class _ServerSystemPageState extends State<ServerSystemPage>
 
     return ZagBlock(
       title: 'ARRAY CAPACITY',
+      leading: const Icon(
+        Icons.storage,
+        size: 32,
+        color: Colors.white70,
+      ),
       body: [
         TextSpan(
-          text: '${capacity.totalTB?.toStringAsFixed(1) ?? '?'} TB Total\n',
-        ),
-        TextSpan(
-          text: '${percentUsed.toStringAsFixed(0)}% used '
-                '(${capacity.freeTB?.toStringAsFixed(1) ?? '?'} TB free)',
+          text: '${capacity.totalTB?.toStringAsFixed(1) ?? '?'} TB Total',
         ),
       ],
-      bottomHeight: ZagLinearPercentIndicator.height,
-      bottom: ZagLinearPercentIndicator(
-        percent: percentUsed / 100,
-        progressColor: percentUsed > 90
-            ? ZagColours.red
-            : percentUsed > 75
-                ? ZagColours.orange
-                : ZagColours.accent,
+      bottomHeight: ZagLinearPercentIndicator.height + 28,
+      bottom: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${percentUsed.toStringAsFixed(0)}% used '
+            '(${capacity.freeTB?.toStringAsFixed(1) ?? '?'} TB free)',
+            style: const TextStyle(fontSize: 14, color: Colors.white70),
+          ),
+          const SizedBox(height: 8),
+          ZagLinearPercentIndicator(
+            percent: percentUsed / 100,
+            progressColor: percentUsed > 90
+                ? ZagColours.red
+                : percentUsed > 75
+                    ? ZagColours.orange
+                    : ZagColours.orange,
+          ),
+        ],
       ),
     );
   }
@@ -144,29 +179,85 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   Widget _buildMemoryCard() {
     final memory = _systemInfo!.memory!;
     final percentUsed = memory.percentUsed ?? 0;
-    final totalGB = (memory.total ?? 0) / 1024 / 1024 / 1024;
-    final freeGB = (memory.free ?? 0) / 1024 / 1024 / 1024;
+    final totalGB = memory.totalGB ?? 0;
+    final freeGB = memory.freeGB ?? 0;
+    final memoryTypeSpeed = memory.formattedTypeAndSpeed;
 
     return ZagBlock(
       title: 'MEMORY',
+      leading: const Icon(
+        Icons.memory,
+        size: 32,
+        color: Colors.white70,
+      ),
       body: [
         TextSpan(
-          text: 'Total Memory: ${totalGB.toStringAsFixed(1)} GB\n',
+          text: 'Total Memory: ${totalGB.toStringAsFixed(1)} GB',
         ),
-        TextSpan(
-          text: '${percentUsed.toStringAsFixed(0)}% used '
-                '(${freeGB.toStringAsFixed(1)} GB free)',
-        ),
+        if (memoryTypeSpeed.isNotEmpty) ...[
+          const TextSpan(text: ' '),
+          TextSpan(text: memoryTypeSpeed),
+        ],
       ],
-      bottomHeight: ZagLinearPercentIndicator.height,
-      bottom: ZagLinearPercentIndicator(
-        percent: percentUsed / 100,
-        progressColor: percentUsed > 90
-            ? ZagColours.red
-            : percentUsed > 75
-                ? ZagColours.orange
-                : ZagColours.accent,
+      bottomHeight: ZagLinearPercentIndicator.height + 28,
+      bottom: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${percentUsed.toStringAsFixed(0)}% used '
+            '(${freeGB.toStringAsFixed(1)} GB free)',
+            style: const TextStyle(fontSize: 14, color: Colors.white70),
+          ),
+          const SizedBox(height: 8),
+          ZagLinearPercentIndicator(
+            percent: percentUsed / 100,
+            progressColor: percentUsed > 90
+                ? ZagColours.red
+                : percentUsed > 75
+                    ? ZagColours.orange
+                    : Colors.green,
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildPowerCard() {
+    final ups = _upsInfo!;
+
+    return ZagBlock(
+      title: 'POWER',
+      leading: const Icon(
+        Icons.power,
+        size: 32,
+        color: Colors.white70,
+      ),
+      body: [
+        TextSpan(text: 'UPS Model: ${ups.displayName}'),
+        const TextSpan(text: '\n\n'),
+        const TextSpan(text: 'Status: '),
+        TextSpan(
+          text: ups.status ?? 'Unknown',
+          style: TextStyle(
+            color: ups.isOnline ? Colors.green : Colors.orange,
+          ),
+        ),
+        if (ups.power?.loadPercentage != null) ...[
+          const TextSpan(text: '\n'),
+          TextSpan(text: 'UPS load: ${ups.power!.loadPercentage}%'),
+        ],
+        if (ups.battery?.chargeLevel != null) ...[
+          const TextSpan(text: '\n'),
+          TextSpan(text: 'Battery charge: ${ups.battery!.chargeLevel}%'),
+        ],
+        if (ups.battery?.estimatedRuntime != null) ...[
+          const TextSpan(text: '\n'),
+          TextSpan(
+            text: 'Runtime left: ${ups.battery!.estimatedRuntime} Minutes',
+          ),
+        ],
+      ],
+      customBodyMaxLines: 7,
     );
   }
 }

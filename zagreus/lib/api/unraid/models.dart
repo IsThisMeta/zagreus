@@ -3,3 +3,4 @@ export 'models/system_info.dart';
 export 'models/array_info.dart';
 export 'models/parity_info.dart';
 export 'models/docker_info.dart';
+export 'models/ups_info.dart';

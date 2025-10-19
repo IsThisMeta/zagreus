@@ -12,6 +12,9 @@ class UnraidSystemInfo {
   @JsonKey(name: 'version')
   final String version;
 
+  @JsonKey(name: 'registrationType')
+  final String? registrationType;
+
   @JsonKey(name: 'os')
   final UnraidOSInfo os;
 
@@ -24,6 +27,7 @@ class UnraidSystemInfo {
   UnraidSystemInfo({
     required this.name,
     required this.version,
+    this.registrationType,
     required this.os,
     this.cpu,
     this.memory,
@@ -33,6 +37,13 @@ class UnraidSystemInfo {
       _$UnraidSystemInfoFromJson(json);
 
   Map<String, dynamic> toJson() => _$UnraidSystemInfoToJson(this);
+
+  /// Format registration type for display (e.g., "PRO" → "Unraid OS Pro")
+  String get formattedRegistrationType {
+    if (registrationType == null) return '';
+    final type = registrationType!.toUpperCase();
+    return 'Unraid OS $type';
+  }
 }
 
 /// OS information
@@ -133,10 +144,14 @@ class UnraidMemoryInfo {
   @JsonKey(name: 'used', fromJson: parseNullableInt)
   final int? used; // in bytes
 
+  @JsonKey(name: 'layout')
+  final List<UnraidMemoryLayout>? layout;
+
   UnraidMemoryInfo({
     this.total,
     this.free,
     this.used,
+    this.layout,
   });
 
   factory UnraidMemoryInfo.fromJson(Map<String, dynamic> json) {
@@ -144,6 +159,9 @@ class UnraidMemoryInfo {
       total: parseNullableInt(json['total']),
       free: parseNullableInt(json['free']),
       used: parseNullableInt(json['used']),
+      layout: (json['layout'] as List?)
+          ?.map((e) => UnraidMemoryLayout.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -154,4 +172,53 @@ class UnraidMemoryInfo {
     if (total == null || used == null || total == 0) return null;
     return (used! / total!) * 100.0;
   }
+
+  /// Get formatted memory type and speed (e.g., "DDR3 (1867 MHz)")
+  String get formattedTypeAndSpeed {
+    if (layout == null || layout!.isEmpty) return '';
+    final first = layout!.first;
+    if (first.type == null && first.clockSpeed == null) return '';
+    if (first.type != null && first.clockSpeed != null) {
+      return '${first.type} (${first.clockSpeed} MHz)';
+    }
+    if (first.type != null) return first.type!;
+    if (first.clockSpeed != null) return '${first.clockSpeed} MHz';
+    return '';
+  }
+
+  /// Get total memory in GB
+  double? get totalGB {
+    if (total == null) return null;
+    return total! / 1024 / 1024 / 1024;
+  }
+
+  /// Get free memory in GB
+  double? get freeGB {
+    if (free == null) return null;
+    return free! / 1024 / 1024 / 1024;
+  }
+}
+
+/// Memory layout information (type and speed)
+@JsonSerializable()
+class UnraidMemoryLayout {
+  @JsonKey(name: 'type')
+  final String? type; // e.g., "DDR3", "DDR4"
+
+  @JsonKey(name: 'clockSpeed', fromJson: parseNullableInt)
+  final int? clockSpeed; // in MHz
+
+  UnraidMemoryLayout({
+    this.type,
+    this.clockSpeed,
+  });
+
+  factory UnraidMemoryLayout.fromJson(Map<String, dynamic> json) {
+    return UnraidMemoryLayout(
+      type: json['type'] as String?,
+      clockSpeed: parseNullableInt(json['clockSpeed']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$UnraidMemoryLayoutToJson(this);
 }
