@@ -313,6 +313,48 @@ class UnraidAPI {
     return UnraidDockerInfo(containers: containers);
   }
 
+  /// Fetch virtual machines information
+  Future<UnraidVmInfo> getVmInfo() async {
+    const query = '''
+      query {
+        vms {
+          domains {
+            id
+            name
+            state
+            uuid
+          }
+        }
+      }
+    ''';
+
+    final data = await _query(query);
+    final vmsData = data['vms'] as Map<String, dynamic>?;
+    final domains = vmsData?['domains'] as List?;
+
+    if (domains == null) {
+      return UnraidVmInfo(virtualMachines: const []);
+    }
+
+    final machines = <UnraidVirtualMachine>[];
+    for (final entry in domains) {
+      if (entry is! Map<String, dynamic>) continue;
+      final vm = _parseVirtualMachine(entry);
+      if (vm != null) {
+        machines.add(vm);
+      }
+    }
+
+    machines.sort((a, b) {
+      final aScore = a.isRunning ? 0 : 1;
+      final bScore = b.isRunning ? 0 : 1;
+      if (aScore != bScore) return aScore - bScore;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+
+    return UnraidVmInfo(virtualMachines: List.unmodifiable(machines));
+  }
+
   UnraidDockerContainer? _parseDockerContainer(Map<String, dynamic> json) {
     final rawId = json['id'];
     if (rawId == null) {
@@ -363,6 +405,26 @@ class UnraidAPI {
     );
   }
 
+  UnraidVirtualMachine? _parseVirtualMachine(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    if (rawId == null) {
+      ZagLogger().debug('Skipping VM with missing id: $json');
+      return null;
+    }
+
+    final id = rawId.toString();
+    final name = _stringOrNull(json['name']) ?? _fallbackVmName(id);
+    final state = UnraidVmStateX.fromGraphQl(json['state']?.toString());
+    final uuid = _stringOrNull(json['uuid']);
+
+    return UnraidVirtualMachine(
+      id: id,
+      name: name,
+      state: state,
+      uuid: uuid,
+    );
+  }
+
   Map<String, dynamic> _normalizeLabels(dynamic labels) {
     if (labels is Map<String, dynamic>) {
       return labels;
@@ -394,6 +456,11 @@ class UnraidAPI {
   String _fallbackName(String id) {
     if (id.length <= 6) return 'Container $id';
     return 'Container ${id.substring(id.length - 6)}';
+  }
+
+  String _fallbackVmName(String id) {
+    if (id.length <= 6) return 'VM $id';
+    return 'VM ${id.substring(id.length - 6)}';
   }
 
   String _cleanStatus(String status) {
@@ -547,6 +614,60 @@ class UnraidAPI {
       mutation,
       variables: {
         'stopId': id,
+      },
+    );
+  }
+
+  /// Start a virtual machine.
+  Future<void> startVm(String id) async {
+    const mutation = '''
+      mutation StartVM(\$startId: PrefixedID!) {
+        vm {
+          start(id: \$startId)
+        }
+      }
+    ''';
+
+    await _query(
+      mutation,
+      variables: {
+        'startId': id,
+      },
+    );
+  }
+
+  /// Stop a virtual machine.
+  Future<void> stopVm(String id) async {
+    const mutation = '''
+      mutation StopVM(\$stopId: PrefixedID!) {
+        vm {
+          stop(id: \$stopId)
+        }
+      }
+    ''';
+
+    await _query(
+      mutation,
+      variables: {
+        'stopId': id,
+      },
+    );
+  }
+
+  /// Reboot a virtual machine.
+  Future<void> rebootVm(String id) async {
+    const mutation = '''
+      mutation RebootVM(\$rebootId: PrefixedID!) {
+        vm {
+          reboot(id: \$rebootId)
+        }
+      }
+    ''';
+
+    await _query(
+      mutation,
+      variables: {
+        'rebootId': id,
       },
     );
   }

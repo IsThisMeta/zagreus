@@ -5,6 +5,7 @@ import 'package:zagreus/modules/server/routes/server/widgets/navigation_bar.dart
 import 'package:zagreus/modules/server/routes/server/pages/system.dart';
 import 'package:zagreus/modules/server/routes/server/pages/array.dart';
 import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
+import 'package:zagreus/modules/server/routes/server/pages/vms.dart';
 
 class ServerRoute extends StatefulWidget {
   const ServerRoute({Key? key}) : super(key: key);
@@ -55,17 +56,8 @@ class _State extends State<ServerRoute> {
         const ServerSystemPage(),
         const ServerArrayPage(),
         const ServerDockerPage(),
-        _buildPlaceholder('VMs'),
+        const ServerVmPage(),
       ],
-    );
-  }
-
-  Widget _buildPlaceholder(String name) {
-    return Center(
-      child: Text(
-        name,
-        style: const TextStyle(fontSize: 32),
-      ),
     );
   }
 }
