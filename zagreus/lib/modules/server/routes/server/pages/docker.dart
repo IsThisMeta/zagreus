@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
+import 'package:zagreus/modules/server/routes/server/pages/docker_detail.dart';
 
 class ServerDockerPage extends StatefulWidget {
   const ServerDockerPage({Key? key}) : super(key: key);
@@ -16,7 +17,6 @@ class _ServerDockerPageState extends State<ServerDockerPage>
   UnraidDockerInfo? _dockerInfo;
   bool _loading = true;
   String? _error;
-  String? _expandedContainerId;
 
   @override
   void initState() {
@@ -121,27 +121,29 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     }
 
     return containers.map((container) {
-      final isExpanded = _expandedContainerId == container.id;
-      return _buildContainerCard(container, isExpanded);
+      return _buildContainerCard(container);
     }).toList();
   }
 
-  Widget _buildContainerCard(UnraidDockerContainer container, bool isExpanded) {
+  Widget _buildContainerCard(UnraidDockerContainer container) {
     return ZagBlock(
       title: container.name,
       leading: _buildContainerIcon(container),
-      body: _buildContainerBody(container, isExpanded),
+      body: _buildContainerBody(container),
       trailing: _buildContainerTrailing(container),
       onTap: () {
-        setState(() {
-          _expandedContainerId = isExpanded ? null : container.id;
-        });
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => DockerContainerDetailPage(
+              container: container,
+            ),
+          ),
+        );
       },
     );
   }
 
-  List<TextSpan> _buildContainerBody(
-      UnraidDockerContainer container, bool isExpanded) {
+  List<TextSpan> _buildContainerBody(UnraidDockerContainer container) {
     List<TextSpan> spans = [];
 
     // Status line
@@ -156,42 +158,6 @@ class _ServerDockerPageState extends State<ServerDockerPage>
         color: _getContainerStateColor(container),
       ),
     ));
-
-    // Show expanded details
-    if (isExpanded) {
-      spans.add(const TextSpan(text: '\n\n'));
-
-      // Auto start status
-      if (container.autostart != null) {
-        spans.add(TextSpan(
-          text: container.hasAutoStart
-              ? 'Auto Start Enabled'
-              : 'Auto Start Disabled',
-          style: TextStyle(
-            color: container.hasAutoStart ? Colors.green : Colors.grey,
-          ),
-        ));
-        spans.add(const TextSpan(text: '\n'));
-      }
-
-      // Version info
-      if (container.version != null || container.updated != null) {
-        String versionText = '';
-        if (container.version != null) {
-          versionText = container.version!;
-        }
-        if (container.updated != null) {
-          if (versionText.isNotEmpty) versionText += ' • ';
-          versionText += container.updated!;
-        }
-        if (versionText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: versionText,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ));
-        }
-      }
-    }
 
     return spans;
   }
