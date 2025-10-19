@@ -5,7 +5,7 @@ import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
 
 class ServerArrayPage extends StatefulWidget {
-  const ServerArrayPage({Key? key}) : super(key: key);
+  const ServerArrayPage({super.key});
 
   @override
   State<ServerArrayPage> createState() => _ServerArrayPageState();
@@ -49,7 +49,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
       UnraidParityInfo? parityInfo;
       try {
         parityInfo = await api.getParityInfo();
-      } catch (e, stackTrace) {
+      } catch (e) {
         // Parity info may not exist if no parity checks have been run
         ZagLogger().debug('Parity info not available: $e');
         parityInfo = null;
@@ -96,7 +96,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
         children: [
           if (_parityInfo != null) _buildParityCard(),
           if (_arrayInfo != null) _buildArrayCard(),
-          if (_arrayInfo?.caches.isNotEmpty == true) _buildCacheCard(),
+          if ((_arrayInfo?.caches ?? const []).isNotEmpty) _buildCacheCard(),
         ],
       ),
     );
@@ -105,33 +105,163 @@ class _ServerArrayPageState extends State<ServerArrayPage>
   Widget _buildParityCard() {
     final parity = _parityInfo!;
 
+    final status = parity.status?.isNotEmpty == true
+        ? parity.status!
+        : parity.isValid
+            ? 'Parity is valid'
+            : 'Parity has errors';
+    final statusColor = parity.isValid ? Colors.green : ZagColours.red;
+    final relativeAge = _formatRelativeAge(parity);
+    final relativeAgeColor = _relativeAgeColor(parity.daysAgo);
+    final duration = parity.formattedDuration.isNotEmpty
+        ? parity.formattedDuration
+        : 'Unknown duration';
+    final averageSpeed =
+        parity.speed?.isNotEmpty ?? false ? parity.speed! : 'Unknown speed';
+    final errorsCount = parity.errors ?? 0;
+    final errorsColor = errorsCount == 0 ? Colors.green : ZagColours.red;
+
+    final isRunning = parity.running == true;
+    final progress = parity.progress?.clamp(0.0, 100.0);
+
     return ZagBlock(
       title: 'PARITY',
+      leading: _buildParityAvatar(statusColor),
+      bodyLeadingIcons: [
+        Icons.check_circle_rounded,
+        Icons.event_rounded,
+        Icons.access_time_rounded,
+        Icons.speed_rounded,
+        Icons.bug_report_rounded,
+      ],
+      bodyLeadingIconsColor: Colors.grey.shade500,
       body: [
         TextSpan(
-          text: parity.isValid ? 'Parity is valid' : 'Parity has errors',
+          text: status,
           style: TextStyle(
-            color: parity.isValid ? Colors.green : ZagColours.red,
+            color: statusColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const TextSpan(text: '\n\n'),
         TextSpan(
-          text: 'Last ran on ${parity.formattedDate} (${parity.daysAgo}d ago)',
+          children: [
+            const TextSpan(text: 'Last ran on '),
+            TextSpan(
+              text: parity.formattedDate,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            if (relativeAge != null)
+              TextSpan(
+                text: ' $relativeAge',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: relativeAgeColor,
+                ),
+              ),
+          ],
         ),
-        const TextSpan(text: '\n'),
         TextSpan(
-          text: 'It took ${parity.formattedDuration}',
+          children: [
+            const TextSpan(text: 'It took '),
+            TextSpan(
+              text: duration,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
-        const TextSpan(text: '\n'),
         TextSpan(
-          text: 'Average speed was ${parity.speed}',
+          children: [
+            const TextSpan(text: 'Average speed was '),
+            TextSpan(
+              text: averageSpeed,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
-        const TextSpan(text: '\n'),
         TextSpan(
-          text: 'And found ${parity.errors} errors',
+          children: [
+            const TextSpan(text: 'And found '),
+            TextSpan(
+              text: '$errorsCount ',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: errorsColor,
+              ),
+            ),
+            const TextSpan(text: 'errors'),
+          ],
         ),
       ],
-      customBodyMaxLines: 8,
+      bottom:
+          isRunning && progress != null ? _buildParityProgress(progress) : null,
+      bottomHeight:
+          isRunning && progress != null ? 74 : ZagBlock.SUBTITLE_HEIGHT,
+    );
+  }
+
+  Widget _buildParityAvatar(Color accent) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.monitor_heart_rounded,
+        color: accent,
+        size: 24,
+      ),
+    );
+  }
+
+  String? _formatRelativeAge(UnraidParityInfo parity) {
+    final days = parity.daysAgo;
+    if (days < 0) return null;
+    if (days == 0) return '(today)';
+    if (days == 1) return '(yesterday)';
+    if (days < 7) return '(${days}d ago)';
+    if (days < 30) {
+      final weeks = (days / 7).floor();
+      return '(${weeks}w ago)';
+    }
+    if (days < 365) {
+      final months = (days / 30).floor();
+      return '(${months}mo ago)';
+    }
+    final years = (days / 365).floor();
+    return '(${years}y ago)';
+  }
+
+  Color _relativeAgeColor(int days) {
+    if (days < 0) return Colors.grey.shade400;
+    if (days <= 30) return Colors.green;
+    if (days <= 90) return ZagColours.orange;
+    return ZagColours.red;
+  }
+
+  Widget _buildParityProgress(double progress) {
+    final percent = progress / 100;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Parity check running • ${progress.toStringAsFixed(0)}%',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade300,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ZagLinearPercentIndicator(
+          percent: percent.clamp(0.0, 1.0),
+          progressColor: ZagColours.accent,
+          backgroundColor: Colors.white.withValues(alpha: 0.08),
+        ),
+      ],
     );
   }
 
@@ -145,8 +275,9 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           title: 'ARRAY',
           body: [
             TextSpan(
-              text: '${array.capacity?.usedTB?.toStringAsFixed(1) ?? '?'} TB used of '
-                    '${array.capacity?.totalTB?.toStringAsFixed(1) ?? '?'} TB',
+              text:
+                  '${array.capacity?.usedTB?.toStringAsFixed(1) ?? '?'} TB used of '
+                  '${array.capacity?.totalTB?.toStringAsFixed(1) ?? '?'} TB',
             ),
           ],
         ),
@@ -189,7 +320,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           body: [
             TextSpan(
               text: '${totalUsedTB.toStringAsFixed(1)} TB used of '
-                    '${totalSizeTB.toStringAsFixed(1)} TB',
+                  '${totalSizeTB.toStringAsFixed(1)} TB',
             ),
           ],
         ),
@@ -210,7 +341,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
   }
 
   Widget _buildDiskRow(UnraidDisk disk) {
-    final percentUsed = disk.percentUsed ?? 0;
+    final percentUsed = (disk.percentUsed ?? 0).toDouble();
     final isHealthy = disk.isHealthy;
 
     return Padding(
