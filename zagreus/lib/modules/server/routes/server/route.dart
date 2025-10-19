@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/server/routes/server/widgets/navigation_bar.dart';
 import 'package:zagreus/modules/server/routes/server/pages/system.dart';
+import 'package:zagreus/modules/server/routes/server/pages/array.dart';
 import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
 
 class ServerRoute extends StatefulWidget {
@@ -52,7 +53,7 @@ class _State extends State<ServerRoute> {
       controller: _pageController,
       children: [
         const ServerSystemPage(),
-        _buildPlaceholder('Array'),
+        const ServerArrayPage(),
         const ServerDockerPage(),
         _buildPlaceholder('VMs'),
       ],

@@ -175,4 +175,19 @@ class UnraidDisk {
     if (warning != null && temp! >= warning!) return 'warning';
     return 'normal';
   }
+
+  /// Get device name (placeholder for now - might come from additional API data)
+  String? get deviceName => null;
+
+  /// Get total size in TB
+  double? get totalTB {
+    if (size == null) return null;
+    return size! / 1024 / 1024 / 1024 / 1024;
+  }
+
+  /// Get used size in TB
+  double? get usedTB {
+    if (fsUsed == null) return null;
+    return fsUsed! / 1024 / 1024 / 1024 / 1024;
+  }
 }

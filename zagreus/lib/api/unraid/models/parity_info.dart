@@ -79,6 +79,55 @@ class UnraidParityInfo {
     return parts.join(', ');
   }
 
+  /// Format date as human-readable string
+  String get formattedDate {
+    if (date == null || date!.isEmpty) return 'Unknown';
+
+    try {
+      // Parse the date string (format: "YYYY-MM-DD HH:MM:SS" or ISO)
+      DateTime dateTime = DateTime.parse(date!);
+
+      // Get month name
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+
+      // Get day suffix (1st, 2nd, 3rd, 4th, etc.)
+      String getDaySuffix(int day) {
+        if (day >= 11 && day <= 13) return 'th';
+        switch (day % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      }
+
+      String month = months[dateTime.month - 1];
+      String day = '${dateTime.day}${getDaySuffix(dateTime.day)}';
+      String year = '${dateTime.year}';
+
+      return '$month $day, $year';
+    } catch (e) {
+      return date ?? 'Unknown';
+    }
+  }
+
+  /// Get days since parity check
+  int get daysAgo {
+    if (date == null || date!.isEmpty) return -1;
+
+    try {
+      DateTime dateTime = DateTime.parse(date!);
+      DateTime now = DateTime.now();
+      Duration difference = now.difference(dateTime);
+      return difference.inDays;
+    } catch (e) {
+      return -1;
+    }
+  }
+
   /// Is parity check valid (no errors)
   bool get isValid => errors == null || errors == 0;
 }

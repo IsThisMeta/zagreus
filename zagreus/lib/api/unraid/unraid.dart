@@ -223,27 +223,23 @@ class UnraidAPI {
   Future<UnraidParityInfo?> getParityInfo() async {
     const query = '''
       query {
-        array {
-          parityHistory {
-            date
-            duration
-            speed
-            status
-            errors
-            progress
-            correcting
-            paused
-            running
-          }
+        parityHistory {
+          date
+          duration
+          speed
+          status
+          errors
+          progress
+          correcting
+          paused
+          running
         }
       }
     ''';
 
     final data = await _query(query);
-    final arrayData = data['array'] as Map<String, dynamic>?;
-    if (arrayData == null) return null;
 
-    final historyList = arrayData['parityHistory'] as List?;
+    final historyList = data['parityHistory'] as List?;
     if (historyList == null || historyList.isEmpty) return null;
 
     // Return the most recent parity check
