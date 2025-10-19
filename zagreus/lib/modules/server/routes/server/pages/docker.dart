@@ -169,95 +169,58 @@ class _ServerDockerPageState extends State<ServerDockerPage>
   }
 
   Widget? _buildContainerIcon(UnraidDockerContainer container) {
-    // Build the play/pause indicator
-    Widget playIndicator = Icon(
-      container.isRunning ? Icons.play_arrow : Icons.stop,
-      size: 20,
-      color: container.isRunning ? Colors.green : Colors.grey,
+    if (container.icon == null || container.icon!.isEmpty) {
+      return null;
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: Image.network(
+        container.icon!,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: ZagColours.accent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              Icons.apps,
+              size: 18,
+              color: ZagColours.accent,
+            ),
+          );
+        },
+      ),
     );
-
-    // Build the container icon
-    Widget? containerIcon;
-    if (container.icon != null && container.icon!.isNotEmpty) {
-      containerIcon = ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: Image.network(
-          container.icon!,
-          width: 32,
-          height: 32,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: ZagColours.accent.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Icon(
-                Icons.apps,
-                size: 18,
-                color: ZagColours.accent,
-              ),
-            );
-          },
-        ),
-      );
-    }
-
-    // Combine play indicator and container icon
-    if (containerIcon != null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          playIndicator,
-          const SizedBox(width: 8),
-          containerIcon,
-        ],
-      );
-    }
-
-    return playIndicator;
   }
 
   Widget _buildContainerTrailing(UnraidDockerContainer container) {
     List<Widget> indicators = [];
 
-    // Auto start indicator (only show if disabled)
-    if (container.autostart != null && !container.hasAutoStart) {
-      indicators.add(Icon(
-        Icons.block,
-        size: 18,
-        color: Colors.grey.shade600,
+    // Auto start indicator - "A" that's lit or unlit
+    if (container.autostart != null) {
+      indicators.add(Text(
+        'A',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: container.hasAutoStart ? ZagColours.accent : Colors.grey.shade700,
+        ),
       ));
-      indicators.add(const SizedBox(width: 8));
+      indicators.add(const SizedBox(width: 12));
     }
 
-    // Health indicator icon
-    IconData icon;
-    Color color;
-
-    if (container.isHealthy) {
-      icon = Icons.check_circle;
-      color = Colors.green;
-    } else if (container.isUnhealthy) {
-      icon = Icons.warning;
-      color = ZagColours.orange;
-    } else if (container.isStarting) {
-      icon = Icons.hourglass_empty;
-      color = Colors.grey;
-    } else if (container.isStopped) {
-      icon = Icons.stop_circle;
-      color = Colors.grey;
-    } else if (container.isRunning) {
-      icon = Icons.check_circle_outline;
-      color = ZagColours.accent;
-    } else {
-      icon = Icons.help_outline;
-      color = Colors.grey;
-    }
-
-    indicators.add(Icon(icon, color: color, size: 20));
+    // Running status - checkmark or cancel
+    indicators.add(Icon(
+      container.isRunning ? Icons.check_circle : Icons.cancel,
+      color: container.isRunning ? Colors.green : Colors.grey,
+      size: 20,
+    ));
 
     return Row(
       mainAxisSize: MainAxisSize.min,
