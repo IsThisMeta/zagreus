@@ -224,27 +224,34 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           text: '${formatStorage(capacity.totalTB)} Total',
         ),
       ],
-      bottomHeight: ZagLinearPercentIndicator.height + 12,
-      bottom: Stack(
-        alignment: Alignment.center,
-        children: [
-          ZagLinearPercentIndicator(
-            percent: percentUsed / 100,
-            progressColor: percentUsed > 90
-                ? ZagColours.red
-                : percentUsed > 75
-                    ? ZagColours.orange
-                    : ZagColours.orange,
-          ),
-          Text(
-            '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)',
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+      bottomHeight: ZagLinearPercentIndicator.height,
+      bottom: SizedBox(
+        height: ZagLinearPercentIndicator.height,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: ZagLinearPercentIndicator(
+                percent: percentUsed / 100,
+                progressColor: percentUsed > 90
+                    ? ZagColours.red
+                    : percentUsed > 75
+                        ? ZagColours.orange
+                        : ZagColours.orange,
+              ),
             ),
-          ),
-        ],
+            Center(
+              child: Text(
+                '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -272,27 +279,34 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           TextSpan(text: memoryTypeSpeed),
         ],
       ],
-      bottomHeight: ZagLinearPercentIndicator.height + 12,
-      bottom: Stack(
-        alignment: Alignment.center,
-        children: [
-          ZagLinearPercentIndicator(
-            percent: percentUsed / 100,
-            progressColor: percentUsed > 90
-                ? ZagColours.red
-                : percentUsed > 75
-                    ? ZagColours.orange
-                    : Colors.green,
-          ),
-          Text(
-            '${percentUsed.toStringAsFixed(0)}% used (${freeGB.toStringAsFixed(1)} GB free)',
-            style: const TextStyle(
-              fontSize: 13,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+      bottomHeight: ZagLinearPercentIndicator.height,
+      bottom: SizedBox(
+        height: ZagLinearPercentIndicator.height,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: ZagLinearPercentIndicator(
+                percent: percentUsed / 100,
+                progressColor: percentUsed > 90
+                    ? ZagColours.red
+                    : percentUsed > 75
+                        ? ZagColours.orange
+                        : Colors.green,
+              ),
             ),
-          ),
-        ],
+            Center(
+              child: Text(
+                '${percentUsed.toStringAsFixed(0)}% used (${freeGB.toStringAsFixed(1)} GB free)',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
