@@ -354,9 +354,7 @@ class UnraidAPI {
       if (raw != null && raw.isNotEmpty) {
         final sanitized = raw.startsWith('/') ? raw.substring(1) : raw;
         if (sanitized.isEmpty) return _fallbackName(id);
-        final capitalised = sanitized[0].toUpperCase() +
-            (sanitized.length > 1 ? sanitized.substring(1) : '');
-        return capitalised;
+        return sanitized;
       }
     }
     return _fallbackName(id);

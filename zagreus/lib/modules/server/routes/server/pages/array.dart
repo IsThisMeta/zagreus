@@ -42,9 +42,18 @@ class _ServerArrayPageState extends State<ServerArrayPage>
         headers: serverState.headers,
       );
 
-      // Fetch data
+      // Fetch array data (required)
       final arrayInfo = await api.getArrayInfo();
-      final parityInfo = await api.getParityInfo();
+
+      // Try to fetch parity info (optional - may not exist)
+      UnraidParityInfo? parityInfo;
+      try {
+        parityInfo = await api.getParityInfo();
+      } catch (e, stackTrace) {
+        // Parity info may not exist if no parity checks have been run
+        ZagLogger().debug('Parity info not available: $e');
+        parityInfo = null;
+      }
 
       if (!mounted) return;
 

@@ -128,7 +128,8 @@ class _ServerDockerPageState extends State<ServerDockerPage>
 
   Widget _buildContainerCard(UnraidDockerContainer container, bool isExpanded) {
     return ZagBlock(
-      title: container.name.toUpperCase(),
+      title: container.name,
+      leading: _buildContainerIcon(container),
       body: _buildContainerBody(container, isExpanded),
       trailing: _buildContainerTrailing(container),
       onTap: () {
@@ -193,6 +194,38 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     }
 
     return spans;
+  }
+
+  Widget? _buildContainerIcon(UnraidDockerContainer container) {
+    if (container.icon == null || container.icon!.isEmpty) {
+      return null;
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        container.icon!,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Fallback to default icon on error
+          return Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: ZagColours.accent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.apps,
+              size: 24,
+              color: ZagColours.accent,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildContainerTrailing(UnraidDockerContainer container) {
