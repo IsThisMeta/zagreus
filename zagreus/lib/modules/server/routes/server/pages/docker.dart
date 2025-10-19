@@ -259,24 +259,14 @@ class _ServerDockerPageState extends State<ServerDockerPage>
         children: [
           // Auto start status
           if (container.autostart != null)
-            Row(
-              children: [
-                Icon(
-                  container.hasAutoStart ? Icons.check_circle : Icons.block,
-                  size: 16,
-                  color: Colors.grey.shade500,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  container.hasAutoStart
-                      ? 'Auto Start Enabled'
-                      : 'Auto Start Disabled',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-              ],
+            Text(
+              container.hasAutoStart
+                  ? 'Auto Start Enabled'
+                  : 'Auto Start Disabled',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade400,
+              ),
             ),
           // Version info
           if (container.version != null || container.updated != null) ...[
