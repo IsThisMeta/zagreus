@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/server/routes/server/widgets/navigation_bar.dart';
+import 'package:zagreus/modules/server/routes/server/pages/system.dart';
+import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
 
 class ServerRoute extends StatefulWidget {
   const ServerRoute({Key? key}) : super(key: key);
@@ -49,9 +51,9 @@ class _State extends State<ServerRoute> {
     return ZagPageView(
       controller: _pageController,
       children: [
-        _buildPlaceholder('System'),
+        const ServerSystemPage(),
         _buildPlaceholder('Array'),
-        _buildPlaceholder('Docker'),
+        const ServerDockerPage(),
         _buildPlaceholder('VMs'),
       ],
     );
