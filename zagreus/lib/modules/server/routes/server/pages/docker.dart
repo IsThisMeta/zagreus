@@ -209,7 +209,7 @@ class _ServerDockerPageState extends State<ServerDockerPage>
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: container.hasAutoStart ? ZagColours.accent : Colors.grey.shade700,
+          color: container.hasAutoStart ? Colors.green : Colors.grey.shade700,
         ),
       ));
       indicators.add(const SizedBox(width: 12));
@@ -218,7 +218,7 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     // Running status - checkmark or cancel
     indicators.add(Icon(
       container.isRunning ? Icons.check_circle : Icons.cancel,
-      color: container.isRunning ? Colors.green : Colors.grey,
+      color: container.isRunning ? ZagColours.accent : ZagColours.red,
       size: 20,
     ));
 
