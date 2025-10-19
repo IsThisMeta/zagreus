@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:zagreus/core.dart';
 import 'package:zagreus/api/unraid/models.dart';
+import 'package:zagreus/api/unraid/unraid.dart';
+import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/links.dart';
+import 'package:zagreus/modules/server/core/state.dart';
 
 class DockerContainerDetailPage extends StatefulWidget {
   final UnraidDockerContainer container;
@@ -16,8 +19,18 @@ class DockerContainerDetailPage extends StatefulWidget {
       _DockerContainerDetailPageState();
 }
 
-class _DockerContainerDetailPageState
-    extends State<DockerContainerDetailPage> {
+class _DockerContainerDetailPageState extends State<DockerContainerDetailPage> {
+  late final UnraidDockerContainer _container;
+  _DockerAction _pendingAction = _DockerAction.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _container = widget.container;
+  }
+
+  bool get _isProcessing => _pendingAction != _DockerAction.none;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,24 +43,26 @@ class _DockerContainerDetailPageState
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildHeader(),
               const SizedBox(height: 24),
-              if (widget.container.isRunning) _buildStopButton(),
-              if (!widget.container.isRunning) _buildStartButton(),
-              const SizedBox(height: 12),
-              if (widget.container.ports?.isNotEmpty == true)
+              if (_container.isRunning) _buildStopButton(),
+              if (!_container.isRunning) _buildStartButton(),
+              if (_container.hasWebUi) ...[
+                const SizedBox(height: 12),
                 _buildWebUIButton(),
+              ],
               const SizedBox(height: 24),
               _buildStatusCard(),
               const SizedBox(height: 24),
               _buildContainerInfoSection(),
-              const SizedBox(height: 24),
-              if (widget.container.ports?.isNotEmpty == true)
+              if (_container.ports?.isNotEmpty == true) ...[
+                const SizedBox(height: 24),
                 _buildWebInterfacesSection(),
+              ],
             ],
           ),
         ),
@@ -65,7 +80,7 @@ class _DockerContainerDetailPageState
       child: Column(
         children: [
           Text(
-            '/${widget.container.name}',
+            '/${_container.name}',
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -74,7 +89,7 @@ class _DockerContainerDetailPageState
           ),
           const SizedBox(height: 8),
           Text(
-            widget.container.image ?? '',
+            _container.image ?? '',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade400,
@@ -87,109 +102,39 @@ class _DockerContainerDetailPageState
   }
 
   Widget _buildStopButton() {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: ZagColours.red,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // TODO: Implement stop container
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.stop_circle, color: Colors.white),
-              SizedBox(width: 12),
-              Text(
-                'Stop',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final isProcessing = _pendingAction == _DockerAction.stop;
+    return _PrimaryActionButton(
+      color: ZagColours.red,
+      icon: Icons.stop_circle,
+      label: 'Stop',
+      busy: isProcessing,
+      onTap: () => _handleContainerAction(_DockerAction.stop),
     );
   }
 
   Widget _buildStartButton() {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // TODO: Implement start container
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.play_arrow, color: Colors.white),
-              SizedBox(width: 12),
-              Text(
-                'Start',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final isProcessing = _pendingAction == _DockerAction.start;
+    return _PrimaryActionButton(
+      color: Colors.green,
+      icon: Icons.play_arrow,
+      label: 'Start',
+      busy: isProcessing,
+      onTap: () => _handleContainerAction(_DockerAction.start),
     );
   }
 
   Widget _buildWebUIButton() {
-    final port = widget.container.ports?.firstWhere(
-      (p) => p.hostPort != null,
-      orElse: () => widget.container.ports!.first,
-    );
+    final webUi = _container.webUi;
+    if (webUi == null) {
+      return const SizedBox.shrink();
+    }
 
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            // TODO: Open web UI
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.language, color: Colors.white),
-              SizedBox(width: 12),
-              Text(
-                'Web UI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _PrimaryActionButton(
+      color: Colors.blue,
+      icon: Icons.language,
+      label: 'Web UI',
+      busy: false,
+      onTap: () => webUi.openLink(),
     );
   }
 
@@ -205,20 +150,18 @@ class _DockerContainerDetailPageState
         children: [
           _buildStatusItem(
             'State',
-            widget.container.state.toUpperCase(),
-            widget.container.isRunning ? Colors.green : Colors.grey,
+            _container.state.toUpperCase(),
+            _container.isRunning ? Colors.green : Colors.grey,
           ),
           _buildStatusItem(
             'Uptime',
-            widget.container.uptime ?? 'N/A',
+            _container.uptime ?? 'N/A',
             Colors.blue,
           ),
           _buildStatusItem(
             'Web UI',
-            widget.container.ports?.isNotEmpty == true ? 'Yes' : 'No',
-            widget.container.ports?.isNotEmpty == true
-                ? Colors.green
-                : Colors.grey,
+            _container.hasWebUi ? 'Yes' : 'No',
+            _container.hasWebUi ? Colors.green : Colors.grey,
           ),
         ],
       ),
@@ -272,24 +215,40 @@ class _DockerContainerDetailPageState
               _buildInfoRow(
                 Icons.inventory_2,
                 'Image',
-                widget.container.image ?? 'Unknown',
+                _container.image ?? 'Unknown',
                 canCopy: true,
               ),
               const Divider(height: 1, color: Colors.white10),
               _buildInfoRow(
                 Icons.info_outline,
                 'Status',
-                widget.container.displayStatus,
+                _container.displayStatus,
               ),
               const Divider(height: 1, color: Colors.white10),
               _buildInfoRow(
                 Icons.label_outline,
                 'Container ID',
-                widget.container.id.length > 12
-                    ? '${widget.container.id.substring(0, 12)}...'
-                    : widget.container.id,
+                _container.id.length > 12
+                    ? '${_container.id.substring(0, 12)}...'
+                    : _container.id,
                 canCopy: true,
               ),
+              if (_container.version?.isNotEmpty == true) ...[
+                const Divider(height: 1, color: Colors.white10),
+                _buildInfoRow(
+                  Icons.tag,
+                  'Version',
+                  _container.version!,
+                ),
+              ],
+              if (_container.updated?.isNotEmpty == true) ...[
+                const Divider(height: 1, color: Colors.white10),
+                _buildInfoRow(
+                  Icons.update,
+                  'Updated',
+                  _container.updated!,
+                ),
+              ],
             ],
           ),
         ),
@@ -298,6 +257,11 @@ class _DockerContainerDetailPageState
   }
 
   Widget _buildWebInterfacesSection() {
+    final ports = _container.ports;
+    if (ports == null || ports.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -317,21 +281,17 @@ class _DockerContainerDetailPageState
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
-            children: [
-              ...widget.container.ports!.asMap().entries.map((entry) {
-                final index = entry.key;
-                final port = entry.value;
-                final isLast = index == widget.container.ports!.length - 1;
-
-                return Column(
-                  children: [
-                    _buildPortRow(port),
-                    if (!isLast)
-                      const Divider(height: 1, color: Colors.white10),
-                  ],
-                );
-              }).toList(),
-            ],
+            children: ports.asMap().entries.map((entry) {
+              final index = entry.key;
+              final port = entry.value;
+              final isLast = index == ports.length - 1;
+              return Column(
+                children: [
+                  _buildPortRow(port),
+                  if (!isLast) const Divider(height: 1, color: Colors.white10),
+                ],
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -415,7 +375,7 @@ class _DockerContainerDetailPageState
               ],
             ),
           ),
-          Text(
+          const Text(
             'Available',
             style: TextStyle(
               fontSize: 14,
@@ -427,4 +387,134 @@ class _DockerContainerDetailPageState
       ),
     );
   }
+
+  Future<void> _handleContainerAction(_DockerAction action) async {
+    if (_isProcessing) return;
+
+    setState(() {
+      _pendingAction = action;
+    });
+
+    final serverState = context.read<ServerState>();
+    if (!serverState.isConfigured) {
+      if (mounted) {
+        setState(() {
+          _pendingAction = _DockerAction.none;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Configure your server connection first.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    final api = UnraidAPI(
+      host: serverState.host,
+      apiKey: serverState.apiKey,
+      headers: serverState.headers,
+    );
+
+    final actionLabel = action == _DockerAction.start ? 'start' : 'stop';
+
+    try {
+      if (action == _DockerAction.start) {
+        await api.startDockerContainer(_container.id);
+      } else {
+        await api.stopDockerContainer(_container.id);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sent $actionLabel command to ${_container.name}.'),
+        ),
+      );
+
+      Navigator.of(context).pop(true);
+    } catch (error, stackTrace) {
+      ZagLogger().error(
+        'Failed to $actionLabel Docker container',
+        error,
+        stackTrace,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to $actionLabel container. Please try again.'),
+        ),
+      );
+
+      setState(() {
+        _pendingAction = _DockerAction.none;
+      });
+    }
+  }
 }
+
+class _PrimaryActionButton extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String label;
+  final bool busy;
+  final VoidCallback onTap;
+
+  const _PrimaryActionButton({
+    Key? key,
+    required this.color,
+    required this.icon,
+    required this.label,
+    required this.busy,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: busy ? null : onTap,
+          child: Center(
+            child: busy
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _DockerAction { none, start, stop }

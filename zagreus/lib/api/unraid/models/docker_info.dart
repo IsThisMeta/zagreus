@@ -67,6 +67,9 @@ class UnraidDockerContainer {
   @JsonKey(name: 'volumes')
   final List<UnraidDockerVolume>? volumes;
 
+  @JsonKey(ignore: true)
+  final String? webUi; // Resolved Web UI URL if available
+
   UnraidDockerContainer({
     required this.id,
     required this.name,
@@ -81,6 +84,7 @@ class UnraidDockerContainer {
     this.ports,
     this.networks,
     this.volumes,
+    this.webUi,
   });
 
   factory UnraidDockerContainer.fromJson(Map<String, dynamic> json) =>
@@ -105,6 +109,9 @@ class UnraidDockerContainer {
 
   /// Check if health check is starting
   bool get isStarting => health == 'starting';
+
+  /// Whether the container exposes a Web UI URL
+  bool get hasWebUi => webUi?.isNotEmpty == true;
 
   /// Get display status (combines state and health)
   String get displayStatus {

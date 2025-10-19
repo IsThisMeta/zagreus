@@ -14,7 +14,8 @@ class UnraidAPI {
   /// Internal constructor
   UnraidAPI._internal({
     required this.httpClient,
-  });
+    required Uri? hostUri,
+  }) : _hostUri = hostUri;
 
   /// Create a new Unraid API connection manager.
   ///
@@ -41,6 +42,16 @@ class UnraidAPI {
       ...?headers,
     };
 
+    Uri? parsedHost;
+    try {
+      parsedHost = Uri.parse(host);
+      if (!parsedHost.hasScheme) {
+        parsedHost = Uri.parse('https://$host');
+      }
+    } catch (_) {
+      parsedHost = null;
+    }
+
     // Build the HTTP client for GraphQL endpoint
     Dio dio = Dio(
       BaseOptions(
@@ -57,11 +68,13 @@ class UnraidAPI {
 
     return UnraidAPI._internal(
       httpClient: dio,
+      hostUri: parsedHost,
     );
   }
 
   /// The [Dio] HTTP client built during initialization.
   final Dio httpClient;
+  final Uri? _hostUri;
 
   /// Execute a GraphQL query
   Future<Map<String, dynamic>> _query(String query,
@@ -316,6 +329,10 @@ class UnraidAPI {
     final updated = _formatReleaseDate(created);
 
     final ports = _parseDockerPorts(json['ports']);
+    final webUi = _resolveWebUi(
+      _stringOrNull(labels['net.unraid.docker.webui']),
+      ports,
+    );
 
     return UnraidDockerContainer(
       id: id,
@@ -331,6 +348,7 @@ class UnraidAPI {
       ports: ports,
       networks: null,
       volumes: null,
+      webUi: webUi,
     );
   }
 
@@ -354,7 +372,9 @@ class UnraidAPI {
       if (raw != null && raw.isNotEmpty) {
         final sanitized = raw.startsWith('/') ? raw.substring(1) : raw;
         if (sanitized.isEmpty) return _fallbackName(id);
-        return sanitized;
+        final first = sanitized[0].toUpperCase();
+        final rest = sanitized.length > 1 ? sanitized.substring(1) : '';
+        return '$first$rest';
       }
     }
     return _fallbackName(id);
@@ -441,5 +461,82 @@ class UnraidAPI {
     if (value == null) return null;
     final str = value.toString().trim();
     return str.isEmpty ? null : str;
+  }
+
+  String? _resolveWebUi(String? template, List<UnraidDockerPort>? ports) {
+    if (template == null || template.isEmpty) return null;
+    final hostUri = _hostUri;
+    if (hostUri == null || hostUri.host.isEmpty) return template;
+
+    var resolved = template.replaceAll('[IP]', hostUri.host);
+    final regex = RegExp(r'\[PORT:(\d+)]');
+    resolved = resolved.replaceAllMapped(regex, (match) {
+      final privatePort = int.tryParse(match.group(1)!);
+      final portValue = _resolveHostPort(ports, privatePort);
+      return portValue?.toString() ?? '';
+    });
+    return resolved;
+  }
+
+  int? _resolveHostPort(List<UnraidDockerPort>? ports, int? privatePort) {
+    if (ports == null || ports.isEmpty) return privatePort;
+    UnraidDockerPort? matched;
+    if (privatePort != null) {
+      try {
+        matched = ports.firstWhere(
+          (p) => p.containerPort == privatePort,
+        );
+      } catch (_) {
+        matched = null;
+      }
+    }
+
+    final preferred = matched ??
+        ports.firstWhere(
+          (p) => p.hostPort != null,
+          orElse: () => ports.first,
+        );
+
+    return preferred.hostPort ?? preferred.containerPort;
+  }
+
+  /// Start a Docker container by id.
+  Future<void> startDockerContainer(String id) async {
+    const mutation = '''
+      mutation StartDocker(\$startId: PrefixedID!) {
+        docker {
+          start(id: \$startId) {
+            id
+          }
+        }
+      }
+    ''';
+
+    await _query(
+      mutation,
+      variables: {
+        'startId': id,
+      },
+    );
+  }
+
+  /// Stop a Docker container by id.
+  Future<void> stopDockerContainer(String id) async {
+    const mutation = '''
+      mutation StopDocker(\$stopId: PrefixedID!) {
+        docker {
+          stop(id: \$stopId) {
+            id
+          }
+        }
+      }
+    ''';
+
+    await _query(
+      mutation,
+      variables: {
+        'stopId': id,
+      },
+    );
   }
 }

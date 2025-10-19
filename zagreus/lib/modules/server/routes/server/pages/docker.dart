@@ -132,13 +132,19 @@ class _ServerDockerPageState extends State<ServerDockerPage>
       body: _buildContainerBody(container),
       trailing: _buildContainerTrailing(container),
       onTap: () {
-        Navigator.of(context).push(
+        Navigator.of(context)
+            .push(
           MaterialPageRoute(
             builder: (context) => DockerContainerDetailPage(
               container: container,
             ),
           ),
-        );
+        )
+            .then((shouldRefresh) {
+          if (shouldRefresh == true && mounted) {
+            _loadData();
+          }
+        });
       },
     );
   }
