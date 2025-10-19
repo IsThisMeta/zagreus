@@ -17,6 +17,8 @@ class _ServerDockerPageState extends State<ServerDockerPage>
   UnraidDockerInfo? _dockerInfo;
   bool _loading = true;
   String? _error;
+  String? _expandedContainerId;
+  final Map<String, bool> _processingContainers = {};
 
   @override
   void initState() {
@@ -121,29 +123,25 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     }
 
     return containers.map((container) {
-      return _buildContainerCard(container);
+      final isExpanded = _expandedContainerId == container.id;
+      return Column(
+        children: [
+          _buildContainerCard(container, isExpanded),
+          if (isExpanded) _buildExpandedContent(container),
+        ],
+      );
     }).toList();
   }
 
-  Widget _buildContainerCard(UnraidDockerContainer container) {
+  Widget _buildContainerCard(UnraidDockerContainer container, bool isExpanded) {
     return ZagBlock(
       title: container.name,
       leading: _buildContainerIcon(container),
       body: _buildContainerBody(container),
       trailing: _buildContainerTrailing(container),
       onTap: () {
-        Navigator.of(context)
-            .push(
-          MaterialPageRoute(
-            builder: (context) => DockerContainerDetailPage(
-              container: container,
-            ),
-          ),
-        )
-            .then((shouldRefresh) {
-          if (shouldRefresh == true && mounted) {
-            _loadData();
-          }
+        setState(() {
+          _expandedContainerId = isExpanded ? null : container.id;
         });
       },
     );
@@ -240,5 +238,170 @@ class _ServerDockerPageState extends State<ServerDockerPage>
       return ZagColours.orange;
     }
     return Colors.white;
+  }
+
+  Widget _buildExpandedContent(UnraidDockerContainer container) {
+    final isProcessing = _processingContainers[container.id] ?? false;
+
+    return Container(
+      margin: const EdgeInsets.only(
+        left: ZagUI.DEFAULT_MARGIN_SIZE,
+        right: ZagUI.DEFAULT_MARGIN_SIZE,
+        bottom: ZagUI.DEFAULT_MARGIN_SIZE,
+      ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ZagColours.white10,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Auto start status
+          if (container.autostart != null)
+            Row(
+              children: [
+                Icon(
+                  container.hasAutoStart ? Icons.check_circle : Icons.block,
+                  size: 16,
+                  color: Colors.grey.shade500,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  container.hasAutoStart
+                      ? 'Auto Start Enabled'
+                      : 'Auto Start Disabled',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+          // Version info
+          if (container.version != null || container.updated != null) ...[
+            if (container.autostart != null) const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: Colors.grey.shade500),
+                const SizedBox(width: 8),
+                Text(
+                  [
+                    if (container.version != null) 'v${container.version}',
+                    if (container.updated != null) container.updated!,
+                  ].join(' • '),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
+          // Action button
+          Material(
+            color: container.isRunning ? ZagColours.red : Colors.green,
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: isProcessing ? null : () => _handleToggleContainer(container),
+              child: Container(
+                height: 48,
+                alignment: Alignment.center,
+                child: isProcessing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        container.isRunning ? 'Stop Container' : 'Start Container',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleToggleContainer(UnraidDockerContainer container) async {
+    setState(() {
+      _processingContainers[container.id] = true;
+    });
+
+    final serverState = context.read<ServerState>();
+    if (!serverState.isConfigured) {
+      if (mounted) {
+        setState(() {
+          _processingContainers[container.id] = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Configure your server connection first.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    final api = UnraidAPI(
+      host: serverState.host,
+      apiKey: serverState.apiKey,
+      headers: serverState.headers,
+    );
+
+    final actionLabel = container.isRunning ? 'stop' : 'start';
+
+    try {
+      if (container.isRunning) {
+        await api.stopDockerContainer(container.id);
+      } else {
+        await api.startDockerContainer(container.id);
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sent $actionLabel command to ${container.name}.'),
+        ),
+      );
+
+      // Reload data
+      await _loadData();
+
+      setState(() {
+        _processingContainers[container.id] = false;
+      });
+    } catch (error, stackTrace) {
+      ZagLogger().error(
+        'Failed to $actionLabel Docker container',
+        error,
+        stackTrace,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to $actionLabel container. Please try again.'),
+        ),
+      );
+
+      setState(() {
+        _processingContainers[container.id] = false;
+      });
+    }
   }
 }
