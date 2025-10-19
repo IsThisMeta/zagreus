@@ -202,24 +202,24 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(6),
       child: Image.network(
         container.icon!,
-        width: 40,
-        height: 40,
-        fit: BoxFit.cover,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           // Fallback to default icon on error
           return Container(
-            width: 40,
-            height: 40,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: ZagColours.accent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
               Icons.apps,
-              size: 24,
+              size: 18,
               color: ZagColours.accent,
             ),
           );
