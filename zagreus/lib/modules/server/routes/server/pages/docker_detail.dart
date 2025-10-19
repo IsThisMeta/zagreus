@@ -143,11 +143,11 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage> {
           ),
           const SizedBox(height: 18),
           Text(
-            _container.id,
+            _truncateId(_container.id),
             style: TextStyle(
               fontSize: 12,
               color: Colors.white.withValues(alpha: 0.45),
-              letterSpacing: 0.6,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -221,30 +221,50 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage> {
   Widget _buildActionRow(BuildContext context) {
     final webUi = _container.webUi;
 
-    return Row(
-      children: [
-        Expanded(
-          child: _ActionButton(
-            color: _container.isRunning ? ZagColours.red : Colors.green,
-            icon: _container.isRunning ? Icons.stop : Icons.play_arrow,
-            label: _container.isRunning ? 'Stop Container' : 'Start Container',
-            busy: _isProcessing,
-            onTap: () => _handleContainerAction(
-              _container.isRunning ? _DockerAction.stop : _DockerAction.start,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final stackVertical = width < 520 || webUi == null;
+
+        final primaryAction = _ActionButton(
+          color: _container.isRunning ? ZagColours.red : Colors.green,
+          icon: _container.isRunning ? Icons.stop : Icons.play_arrow,
+          label: _container.isRunning ? 'Stop Container' : 'Start Container',
+          busy: _isProcessing,
+          onTap: () => _handleContainerAction(
+            _container.isRunning ? _DockerAction.stop : _DockerAction.start,
           ),
-        ),
-        if (webUi != null) ...[
-          const SizedBox(width: 12),
-          Expanded(
-            child: _ActionButton.secondary(
-              icon: Icons.language,
-              label: 'Open Web UI',
-              onTap: () => webUi.openLink(),
-            ),
-          ),
-        ],
-      ],
+        );
+
+        final webAction = webUi != null
+            ? _ActionButton.secondary(
+                icon: Icons.language,
+                label: 'Open Web UI',
+                onTap: () => webUi.openLink(),
+              )
+            : null;
+
+        if (stackVertical) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              primaryAction,
+              if (webAction != null) ...[
+                const SizedBox(height: 12),
+                webAction,
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: primaryAction),
+            const SizedBox(width: 12),
+            Expanded(child: webAction!),
+          ],
+        );
+      },
     );
   }
 
@@ -272,35 +292,22 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        final useRowLayout = maxWidth >= 540;
+        final width = constraints.maxWidth;
+        final columns = width >= 680
+            ? 3
+            : width >= 460
+                ? 2
+                : 1;
+        final spacing = 12.0;
+        final tileWidth =
+            columns == 1 ? width : (width - spacing * (columns - 1)) / columns;
 
-        if (useRowLayout) {
-          return Row(
-            children: List.generate(
-              tiles.length,
-              (index) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: index == tiles.length - 1 ? 0 : 12,
-                  ),
-                  child: tiles[index],
-                ),
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          children: List.generate(
-            tiles.length,
-            (index) => Padding(
-              padding: EdgeInsets.only(
-                bottom: index == tiles.length - 1 ? 0 : 12,
-              ),
-              child: tiles[index],
-            ),
-          ),
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: tiles
+              .map((tile) => SizedBox(width: tileWidth, child: tile))
+              .toList(),
         );
       },
     );
@@ -483,6 +490,11 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage> {
     if (_container.isUnhealthy) return Colors.orangeAccent;
     if (_container.isStopped) return Colors.redAccent;
     return Colors.white.withValues(alpha: 0.75);
+  }
+
+  String _truncateId(String id) {
+    if (id.length <= 36) return id;
+    return '${id.substring(0, 36)}…';
   }
 
   Future<void> _handleContainerAction(_DockerAction action) async {
