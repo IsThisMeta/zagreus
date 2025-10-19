@@ -247,6 +247,17 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     );
   }
 
+  String _formatStorage(double? tb) {
+    if (tb == null) return '?';
+    if (tb >= 1.0) {
+      final display = tb >= 10 ? tb.toStringAsFixed(0) : tb.toStringAsFixed(1);
+      return '$display TB';
+    }
+    final gb = tb * 1024;
+    final display = gb >= 10 ? gb.toStringAsFixed(0) : gb.toStringAsFixed(1);
+    return '$display GB';
+  }
+
   Widget _buildArrayCard() {
     final array = _arrayInfo!;
 
@@ -258,8 +269,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           body: [
             TextSpan(
               text:
-                  '${array.capacity?.usedTB?.toStringAsFixed(1) ?? '?'} TB used of '
-                  '${array.capacity?.totalTB?.toStringAsFixed(1) ?? '?'} TB',
+                  '${_formatStorage(array.capacity?.usedTB)} used of ${_formatStorage(array.capacity?.totalTB)}',
             ),
           ],
         ),
@@ -301,8 +311,8 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           title: 'Cache',
           body: [
             TextSpan(
-              text: '${totalUsedTB.toStringAsFixed(1)} TB used of '
-                  '${totalSizeTB.toStringAsFixed(1)} TB',
+              text:
+                  '${_formatStorage(totalUsedTB)} used of ${_formatStorage(totalSizeTB)}',
             ),
           ],
         ),
