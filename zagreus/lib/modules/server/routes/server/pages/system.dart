@@ -108,32 +108,93 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   Widget _buildServerInfoCard() {
     final info = _systemInfo!;
 
-    return ZagBlock(
-      title: info.name.toUpperCase(),
-      leading: const Icon(
-        Icons.info_outline,
-        size: 32,
-        color: Colors.white70,
+    return Container(
+      margin: const EdgeInsets.only(
+        left: ZagUI.DEFAULT_MARGIN_SIZE,
+        right: ZagUI.DEFAULT_MARGIN_SIZE,
+        bottom: ZagUI.DEFAULT_MARGIN_SIZE,
       ),
-      body: [
-        TextSpan(text: 'Version: ${info.version}'),
-        const TextSpan(text: '\n'),
-        if (info.registrationType != null) ...[
-          const TextSpan(text: 'Registration: '),
-          TextSpan(text: info.formattedRegistrationType),
-          const TextSpan(text: '\n'),
-        ],
-        TextSpan(text: 'Uptime: ${info.os.formattedUptime}'),
-        const TextSpan(text: '\n'),
-        const TextSpan(text: 'Array: '),
-        TextSpan(
-          text: _arrayInfo?.state ?? "Unknown",
-          style: TextStyle(
-            color: _arrayInfo?.isStarted == true ? Colors.green : Colors.grey,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ZagColours.white10,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title with icon
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 32,
+                color: Colors.white70,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                info.name.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-      customBodyMaxLines: 5,
+          const SizedBox(height: 16),
+          // Version
+          Text(
+            'Version: ${info.version}',
+            style: const TextStyle(fontSize: 14, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          // Registration
+          if (info.registrationType != null) ...[
+            Row(
+              children: [
+                Icon(Icons.badge, size: 16, color: Colors.grey.shade500),
+                const SizedBox(width: 8),
+                Text(
+                  'Registration: ${info.formattedRegistrationType}',
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+          // Uptime
+          Row(
+            children: [
+              Icon(Icons.schedule, size: 16, color: Colors.grey.shade500),
+              const SizedBox(width: 8),
+              Text(
+                'Uptime: ${info.os.formattedUptime}',
+                style: const TextStyle(fontSize: 14, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Array status
+          Row(
+            children: [
+              Icon(Icons.dns, size: 16, color: Colors.grey.shade500),
+              const SizedBox(width: 8),
+              const Text(
+                'Array: ',
+                style: TextStyle(fontSize: 14, color: Colors.white),
+              ),
+              Text(
+                _arrayInfo?.state ?? "Unknown",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _arrayInfo?.isStarted == true ? Colors.green : Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -163,16 +224,10 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           text: '${formatStorage(capacity.totalTB)} Total',
         ),
       ],
-      bottomHeight: ZagLinearPercentIndicator.height + 28,
-      bottom: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      bottomHeight: ZagLinearPercentIndicator.height + 12,
+      bottom: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            '${percentUsed.toStringAsFixed(0)}% used '
-            '(${formatStorage(capacity.freeTB)} free)',
-            style: const TextStyle(fontSize: 14, color: Colors.white70),
-          ),
-          const SizedBox(height: 8),
           ZagLinearPercentIndicator(
             percent: percentUsed / 100,
             progressColor: percentUsed > 90
@@ -180,6 +235,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
                 : percentUsed > 75
                     ? ZagColours.orange
                     : ZagColours.orange,
+          ),
+          Text(
+            '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)',
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -209,16 +272,10 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           TextSpan(text: memoryTypeSpeed),
         ],
       ],
-      bottomHeight: ZagLinearPercentIndicator.height + 28,
-      bottom: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      bottomHeight: ZagLinearPercentIndicator.height + 12,
+      bottom: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            '${percentUsed.toStringAsFixed(0)}% used '
-            '(${freeGB.toStringAsFixed(1)} GB free)',
-            style: const TextStyle(fontSize: 14, color: Colors.white70),
-          ),
-          const SizedBox(height: 8),
           ZagLinearPercentIndicator(
             percent: percentUsed / 100,
             progressColor: percentUsed > 90
@@ -226,6 +283,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
                 : percentUsed > 75
                     ? ZagColours.orange
                     : Colors.green,
+          ),
+          Text(
+            '${percentUsed.toStringAsFixed(0)}% used (${freeGB.toStringAsFixed(1)} GB free)',
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
