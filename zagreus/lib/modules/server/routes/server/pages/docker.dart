@@ -169,38 +169,70 @@ class _ServerDockerPageState extends State<ServerDockerPage>
   }
 
   Widget? _buildContainerIcon(UnraidDockerContainer container) {
-    if (container.icon == null || container.icon!.isEmpty) {
-      return null;
+    // Build the play/pause indicator
+    Widget playIndicator = Icon(
+      container.isRunning ? Icons.play_arrow : Icons.stop,
+      size: 20,
+      color: container.isRunning ? Colors.green : Colors.grey,
+    );
+
+    // Build the container icon
+    Widget? containerIcon;
+    if (container.icon != null && container.icon!.isNotEmpty) {
+      containerIcon = ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.network(
+          container.icon!,
+          width: 32,
+          height: 32,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: ZagColours.accent.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
+                Icons.apps,
+                size: 18,
+                color: ZagColours.accent,
+              ),
+            );
+          },
+        ),
+      );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: Image.network(
-        container.icon!,
-        width: 32,
-        height: 32,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          // Fallback to default icon on error
-          return Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: ZagColours.accent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              Icons.apps,
-              size: 18,
-              color: ZagColours.accent,
-            ),
-          );
-        },
-      ),
-    );
+    // Combine play indicator and container icon
+    if (containerIcon != null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          playIndicator,
+          const SizedBox(width: 8),
+          containerIcon,
+        ],
+      );
+    }
+
+    return playIndicator;
   }
 
   Widget _buildContainerTrailing(UnraidDockerContainer container) {
+    List<Widget> indicators = [];
+
+    // Auto start indicator (only show if disabled)
+    if (container.autostart != null && !container.hasAutoStart) {
+      indicators.add(Icon(
+        Icons.block,
+        size: 18,
+        color: Colors.grey.shade600,
+      ));
+      indicators.add(const SizedBox(width: 8));
+    }
+
     // Health indicator icon
     IconData icon;
     Color color;
@@ -225,7 +257,12 @@ class _ServerDockerPageState extends State<ServerDockerPage>
       color = Colors.grey;
     }
 
-    return Icon(icon, color: color, size: 20);
+    indicators.add(Icon(icon, color: color, size: 20));
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: indicators,
+    );
   }
 
   Color _getContainerStateColor(UnraidDockerContainer container) {
