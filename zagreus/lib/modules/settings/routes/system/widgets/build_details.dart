@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/system/environment.dart';
 import 'package:zagreus/system/flavor.dart';
 import 'package:zagreus/system/platform.dart';
@@ -35,10 +36,6 @@ class _State extends State<BuildDetails> {
               body: package.data?.version ?? 'zagreus.Unknown'.tr(),
             ),
             ZagTableContent(
-              title: 'settings.Platform'.tr(),
-              body: ZagPlatform.current.name,
-            ),
-            ZagTableContent(
               title: 'settings.Channel'.tr(),
               body: ZagFlavor.current.name,
             ),
@@ -65,13 +62,7 @@ class _State extends State<BuildDetails> {
     return ZagButton.text(
       icon: ZagIcons.CHANGELOG,
       text: 'zagreus.Changelog'.tr(),
-      onTap: () {
-        // TODO: Implement changelog sheet
-        showZagInfoSnackBar(
-          title: 'Coming Soon',
-          message: 'Changelog feature coming soon',
-        );
-      },
+      onTap: () => 'https://zagreus.app/changelog'.openLink(),
     );
   }
 
