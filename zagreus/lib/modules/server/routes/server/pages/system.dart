@@ -263,6 +263,12 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     final freeGB = memory.freeGB ?? 0;
     final memoryTypeSpeed = memory.formattedTypeAndSpeed;
 
+    // Build the memory info string
+    String memoryInfo = 'Total Memory: ${totalGB.toStringAsFixed(1)} GB';
+    if (memoryTypeSpeed.isNotEmpty) {
+      memoryInfo += ' $memoryTypeSpeed';
+    }
+
     return ZagBlock(
       title: 'MEMORY',
       leading: const Icon(
@@ -271,13 +277,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         color: Colors.white70,
       ),
       body: [
-        TextSpan(
-          text: 'Total Memory: ${totalGB.toStringAsFixed(1)} GB',
-        ),
-        if (memoryTypeSpeed.isNotEmpty) ...[
-          const TextSpan(text: ' '),
-          TextSpan(text: memoryTypeSpeed),
-        ],
+        TextSpan(text: memoryInfo),
       ],
       bottomHeight: ZagLinearPercentIndicator.height,
       bottom: SizedBox(
