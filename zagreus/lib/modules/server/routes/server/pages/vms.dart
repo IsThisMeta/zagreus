@@ -152,14 +152,6 @@ class _ServerVmPageState extends State<ServerVmPage>
             color: _stateColor(vm),
           ),
         ),
-        if (vm.uuid?.isNotEmpty == true)
-          TextSpan(
-            text: 'UUID ${vm.shortId}',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade400,
-            ),
-          ),
       ],
       bottom: _buildActionRow(vm, pendingAction),
       bottomHeight: 60,
