@@ -4,6 +4,7 @@ import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/supabase/core.dart';
 
 String? _normalizeTmdbPosterPath(String? url) {
@@ -85,18 +86,21 @@ class LibrarySyncService {
     print('Sync Radarr: $syncRadarr');
     print('Sync Sonarr: $syncSonarr');
 
-    // Check for Mega subscription - library sync is Mega-only feature
+    // Check for qualifying subscription - library sync is gated to higher tiers
     final rcService = RevenueCatService();
-    final hasMega = rcService.isMegaActive || ZagreusMega.isEnabled;
-    if (!hasMega) {
-      print('❌ SYNC BLOCKED: Mega subscription required');
-      ZagLogger().debug('Library sync skipped - Mega subscription required');
+    final hasTier = rcService.isUltraActive ||
+        rcService.isMegaActive ||
+        ZagreusUltra.isEnabled ||
+        ZagreusMega.isEnabled;
+    if (!hasTier) {
+      print('❌ SYNC BLOCKED: Mega or Ultra subscription required');
+      ZagLogger().debug('Library sync skipped - Mega or Ultra subscription required');
       return LibrarySyncResult.failure(
         LibrarySyncError.noMega,
-        'Mega subscription required',
+        'Mega or Ultra subscription required',
       );
     }
-    print('✓ Mega subscription active');
+    print('✓ Eligible subscription active');
 
     // Check if library cache is enabled
     final cacheEnabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();

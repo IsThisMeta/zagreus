@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
@@ -43,9 +44,13 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   Widget _body() {
     final bool isPro = ZagreusPro.isEnabled;
     final bool isMega = ZagreusMega.isEnabled;
+    final bool isUltra = ZagreusUltra.isEnabled;
     final String proPlanType = ZagreusPro.subscriptionType;
     final String? proPlanLabel =
         isPro ? 'Active • ${_formatPlanName(proPlanType)} plan' : null;
+    final String ultraPlanType = ZagreusUltra.subscriptionType;
+    final String? ultraPlanLabel =
+        isUltra ? 'Active • ${_formatPlanName(ultraPlanType)} plan' : null;
 
     return ZagListView(
       controller: scrollController,
@@ -55,11 +60,13 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Pro',
           body: [
             TextSpan(
-              text: isMega
-                  ? 'Included with Mega'
-                  : isPro
-                      ? proPlanLabel!
-                      : 'Access Discover and limited Ask Z',
+              text: isUltra
+                  ? 'Included with Ultra'
+                  : isMega
+                      ? 'Included with Mega'
+                      : isPro
+                          ? proPlanLabel!
+                          : 'Access Discover and limited Ask Z',
             )
           ],
           trailing: GestureDetector(
@@ -70,7 +77,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             },
             onLongPressEnd: (_) => _cancelRevokeTimer(),
             child: ZagIconButton(
-              icon: isMega || isPro ? Icons.star_rounded : Icons.star_border_rounded,
+              icon: (isUltra || isMega || isPro)
+                  ? Icons.star_rounded
+                  : Icons.star_border_rounded,
               color: ZagColours.currentAccent,
             ),
           ),
@@ -82,16 +91,35 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Mega',
           body: [
             TextSpan(
-              text: isMega
-                  ? 'Active • Mega plan'
-                  : 'Higher Ask Z limits + all Pro features'
+              text: isUltra
+                  ? 'Included with Ultra'
+                  : isMega
+                      ? 'Active • Mega plan'
+                      : 'Higher Ask Z limits + all Pro features'
             )
           ],
           trailing: ZagIconButton(
-            icon: isMega ? Icons.star_rounded : Icons.star_border_rounded,
-            color: ZagColours.orange,
+            icon: (isUltra || isMega)
+                ? Icons.star_rounded
+                : Icons.star_border_rounded,
+            color: isUltra ? ZagColours.purple : ZagColours.orange,
           ),
           onTap: () => _showMegaDialog(context),
+        ),
+
+        // Zagreus Ultra Section (preview)
+        ZagBlock(
+          title: 'Zagreus Ultra',
+          body: [
+            TextSpan(
+              text: isUltra ? ultraPlanLabel! : 'More AI features and power',
+            ),
+          ],
+          trailing: ZagIconButton(
+            icon: isUltra ? Icons.star_rounded : Icons.star_border_rounded,
+            color: ZagColours.purple,
+          ),
+          onTap: () => _showUltraDialog(context),
         ),
       ],
     );
@@ -100,6 +128,29 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   void _showProDialog(BuildContext context) {
     final bool isPro = ZagreusPro.isEnabled;
     final bool isMega = ZagreusMega.isEnabled;
+    final bool isUltra = ZagreusUltra.isEnabled;
+
+    if (isUltra) {
+      ZagDialog.dialog(
+        context: context,
+        title: 'Zagreus Pro',
+        customContent: ZagDialog.content(
+          children: [
+            Padding(
+              padding: ZagDialog.textDialogContentPadding(),
+              child: Text(
+                'Ultra already includes every Pro feature.',
+                style: const TextStyle(
+                  fontSize: ZagUI.FONT_SIZE_H2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        contentPadding: ZagDialog.listDialogContentPadding(),
+      );
+      return;
+    }
 
     // If user has Mega, show that Pro is included
     if (isMega) {
@@ -280,6 +331,29 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   void _showMegaDialog(BuildContext context) {
     final bool isMega = ZagreusMega.isEnabled;
+    final bool isUltra = ZagreusUltra.isEnabled;
+
+    if (isUltra) {
+      ZagDialog.dialog(
+        context: context,
+        title: 'Zagreus Mega',
+        customContent: ZagDialog.content(
+          children: [
+            Padding(
+              padding: ZagDialog.textDialogContentPadding(),
+              child: Text(
+                'Ultra already includes every Mega feature.',
+                style: const TextStyle(
+                  fontSize: ZagUI.FONT_SIZE_H2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        contentPadding: ZagDialog.listDialogContentPadding(),
+      );
+      return;
+    }
 
     ZagDialog.dialog(
       context: context,
@@ -493,6 +567,57 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     }
   }
 
+  void _purchaseUltra() async {
+    final iapService = RevenueCatService();
+
+    if (!iapService.isAvailable) {
+      showZagInfoSnackBar(
+        title: 'Unavailable',
+        message: 'In-app purchases are not available',
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'Processing',
+      message: 'Connecting to App Store...',
+    );
+
+    final bool success = await iapService.purchaseUltra();
+
+    if (success) {
+      await _syncUltraToSupabase();
+      setState(() {});
+    }
+  }
+
+  Future<void> _syncUltraToSupabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user != null) {
+        final expiryString = ZagreusDatabase.ZAGREUS_ULTRA_EXPIRY.read();
+        if (expiryString.isNotEmpty) {
+          final expiry = DateTime.parse(expiryString);
+          final productType =
+              ZagreusDatabase.ZAGREUS_ULTRA_SUBSCRIPTION_TYPE.read();
+
+          await supabase.rpc('upsert_subscription', params: {
+            'p_user_id': user.id,
+            'p_product_id': 'zagreus_ultra_$productType',
+            'p_subscription_type': 'ultra',
+            'p_expires_at': expiry.toUtc().toIso8601String(),
+          });
+
+          print('✅ Synced Ultra subscription to Supabase');
+        }
+      }
+    } catch (e) {
+      print('⚠️ Failed to sync Ultra subscription: $e');
+    }
+  }
+
   void _cancelPro() async {
     // Restore user's previous boot module before revoking Pro
     final currentModule = BIOSDatabase.BOOT_MODULE.read();
@@ -541,6 +666,118 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
         message: 'Could not open link',
       );
     }
+  }
+
+  void _showUltraDialog(BuildContext context) {
+    final bool isUltra = ZagreusUltra.isEnabled;
+
+    ZagDialog.dialog(
+      context: context,
+      title: 'Zagreus Ultra',
+      customContent: ZagDialog.content(
+        children: [
+          Padding(
+            padding: ZagDialog.textDialogContentPadding(),
+            child: Text(
+              isUltra
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, premium recommendations, and every Mega feature."
+                  : 'Zagreus Ultra unlocks:\n'
+                      '• GPT-5 powered Ask Z responses\n'
+                      '• AI-guided recommendations.',
+              style: const TextStyle(
+                fontSize: ZagUI.FONT_SIZE_H2,
+              ),
+            ),
+          ),
+          if (!isUltra) ...[
+            ZagDialog.tile(
+              icon: Icons.auto_awesome_rounded,
+              iconColor: ZagColours.purple,
+              text: 'Monthly • \$3.79/month',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'Includes all Mega + Pro features',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseUltra();
+              },
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    'By subscribing, you agree to our',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () => _openUrl(
+                            'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
+                        child: Text(
+                          'Terms of Service',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ZagColours.currentAccentLight,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        ' and ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.color
+                              ?.withOpacity(0.7),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _openUrl('https://zagreus.app/privacy'),
+                        child: Text(
+                          'Privacy Policy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ZagColours.currentAccentLight,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
   }
 
   void _restorePurchases() async {

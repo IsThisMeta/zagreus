@@ -47,31 +47,60 @@ class ZAssistantService {
   /// Ensure device is registered with backend
   Future<void> _ensureDeviceRegistered() async {
     final hmacService = HmacEncryptionService();
+    final supabaseUserId = ZagSupabaseAuth().uid;
 
-    // Skip if already registered
-    if (hmacService.isRegistered) {
+    // Without an authenticated Supabase user we cannot link tiers, so skip and
+    // ensure the next attempt re-registers once a user signs in.
+    if (supabaseUserId == null || supabaseUserId.isEmpty) {
+      if (hmacService.isRegistered) {
+        ZagLogger().debug('Clearing Z Assistant registration (user signed out)');
+        hmacService.resetRegistration();
+      }
       return;
     }
 
+    final registeredUserId = hmacService.registeredUserId;
+    if (hmacService.isRegistered && registeredUserId == supabaseUserId) {
+      // Already registered for this user
+      return;
+    }
+
+    // Skip if already registered
+    if (hmacService.isRegistered && registeredUserId != supabaseUserId) {
+      ZagLogger().debug(
+        'Re-registering device for new Supabase user (old=${registeredUserId ?? "none"}, new=$supabaseUserId)',
+      );
+      hmacService.resetRegistration();
+    }
+
     try {
-      // Register device with backend - requires active Mega subscription!
+      // Register device with backend - requires active Pro, Mega, or Ultra subscription
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = hmacService.hmacKey;
 
       // Get RevenueCat customer ID for verification
       final rcService = RevenueCatService();
       final customerInfo = rcService.customerInfo;
+      final hasUltra = rcService.isUltraActive;
+      final hasMega = rcService.isMegaActive;
+      final hasPro = rcService.isProActive;
 
-      if (customerInfo == null || !rcService.isMegaActive) {
-        ZagLogger().warning('No Mega subscription for device registration');
+      if (customerInfo == null || (!hasUltra && !hasMega && !hasPro)) {
+        ZagLogger()
+            .warning('No Pro, Mega, or Ultra subscription available for registration');
+        hmacService.resetRegistration();
         return;
       }
 
       // Use the original app user ID as the receipt token
       final receiptToken = customerInfo.originalAppUserId;
+      final subscriptionTier = hasUltra
+          ? 'ultra'
+          : hasMega
+              ? 'mega'
+              : 'pro';
 
       // Get Supabase user ID for tier-based rate limiting
-      final supabaseUserId = ZagSupabaseAuth().uid;
 
       ZagLogger().debug('🔐 Registering device with Z Assistant...');
 
@@ -82,11 +111,12 @@ class ZAssistantService {
           'hmac_key': hmacKey,
           'receipt_token': receiptToken,
           if (supabaseUserId != null) 'user_id': supabaseUserId,
+          'subscription_tier': subscriptionTier,
         },
       );
 
       if (response.statusCode == 200) {
-        hmacService.setRegistered(true);
+        hmacService.setRegistered(true, userId: supabaseUserId);
         ZagLogger().debug('✅ Device registered successfully');
       }
     } catch (e) {

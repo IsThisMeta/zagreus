@@ -1,11 +1,16 @@
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class ZagreusMega {
 
   // RevenueCat is the ONLY source of truth
   static bool get isEnabled {
+    if (ZagreusUltra.isEnabled) {
+      return true;
+    }
+
     // Check if Mega is enabled locally
     if (!ZagreusDatabase.ZAGREUS_MEGA_ENABLED.read()) {
       return false;

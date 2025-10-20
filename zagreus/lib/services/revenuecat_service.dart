@@ -4,6 +4,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RevenueCatService {
@@ -15,6 +16,7 @@ class RevenueCatService {
   static const String _proEntitlementId = 'Pro';  // Monthly Pro
   static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
   static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
+  static const String _ultraEntitlementId = 'Ultra';  // Ultra entitlement for top-tier AI
 
   CustomerInfo? _customerInfo;
   bool _isUpdating = false; // Prevent duplicate updates
@@ -126,33 +128,67 @@ class RevenueCatService {
       ZagreusPro.disable();
     }
 
-    // Check Mega entitlement
-    final isMegaActive = _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
+    // Check Ultra entitlement (highest tier)
+    final ultraEntitlement = _customerInfo?.entitlements.all[_ultraEntitlementId];
+    final isUltraActive = ultraEntitlement?.isActive ?? false;
 
-    if (isMegaActive) {
-      final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];
-      final expirationDate = megaEntitlement?.expirationDate;
+    if (isUltraActive) {
+      final expirationDate = ultraEntitlement?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
-        final productId = megaEntitlement?.productIdentifier ?? 'revenuecat_mega';
-        print('🎯 RevenueCat: Mega active until $expiry (product: $productId)');
+        final productId = ultraEntitlement?.productIdentifier ?? 'com.zagreus.ultra.monthly';
+        print('🎯 RevenueCat: Ultra active until $expiry (product: $productId)');
 
-        // Update local storage from RevenueCat (source of truth)
-        ZagreusMega.applySubscription(
+        ZagreusUltra.applySubscription(
           expiresAt: expiry,
           productId: productId,
         );
 
-        // STILL sync to Supabase - backend needs this for Z Assistant verification
-        await _syncToSupabase('mega', expiry, productId);
-      } else {
-        // Active but no expiration date
-        print('⚠️ RevenueCat: Mega marked active but no expiration date');
+        // Ensure base Pro features remain marked as active
+        ZagreusPro.applySubscription(
+          expiresAt: expiry,
+          productId: productId,
+        );
+
+        // Ultra subsume Mega/Pro benefits
         ZagreusMega.disable();
+
+        await _syncToSupabase('ultra', expiry, productId);
+      } else {
+        print('⚠️ RevenueCat: Ultra marked active but no expiration date');
+        ZagreusUltra.disable();
       }
     } else {
-      print('📵 RevenueCat: Mega not active');
-      ZagreusMega.disable();
+      ZagreusUltra.disable();
+
+      // Check Mega entitlement
+      final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];
+      final isMegaActive = megaEntitlement?.isActive ?? false;
+
+      if (isMegaActive) {
+        final expirationDate = megaEntitlement?.expirationDate;
+        if (expirationDate != null) {
+          final expiry = DateTime.parse(expirationDate);
+          final productId = megaEntitlement?.productIdentifier ?? 'revenuecat_mega';
+          print('🎯 RevenueCat: Mega active until $expiry (product: $productId)');
+
+          // Update local storage from RevenueCat (source of truth)
+          ZagreusMega.applySubscription(
+            expiresAt: expiry,
+            productId: productId,
+          );
+
+          // STILL sync to Supabase - backend needs this for Z Assistant verification
+          await _syncToSupabase('mega', expiry, productId);
+        } else {
+          // Active but no expiration date
+          print('⚠️ RevenueCat: Mega marked active but no expiration date');
+          ZagreusMega.disable();
+        }
+      } else {
+        print('📵 RevenueCat: Mega not active');
+        ZagreusMega.disable();
+      }
     }
 
     _isUpdating = false; // Reset the flag
@@ -246,13 +282,16 @@ class RevenueCatService {
       ZagLogger().debug('🔍 Looking for Pro Monthly: "$_proEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Pro Yearly: "$_proYearlyEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proYearlyEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Mega: "$_megaEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_megaEntitlementId)}');
+      ZagLogger().debug('🔍 Looking for Ultra: "$_ultraEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_ultraEntitlementId)}');
 
       _updateProStatus();
 
       // Only show ONE toast with the final result
-      final hasProOrMega = (isProActive || isMegaActive);
-      if (hasProOrMega) {
-        final subscriptionType = isMegaActive ? 'Mega' : 'Pro';
+      final hasAny = isUltraActive || isMegaActive || isProActive;
+      if (hasAny) {
+        final subscriptionType = isUltraActive
+            ? 'Ultra'
+            : (isMegaActive ? 'Mega' : 'Pro');
         showZagInfoSnackBar(
           title: 'Restored Successfully',
           message: 'Your $subscriptionType subscription is active.',
@@ -272,12 +311,19 @@ class RevenueCatService {
     }
   }
 
-  bool get isProActive =>
-    (_customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false) ||
-    (_customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false);
+  bool get isUltraActive =>
+    (_customerInfo?.entitlements.all[_ultraEntitlementId]?.isActive ?? false) ||
+    ZagreusUltra.isEnabled;
 
   bool get isMegaActive =>
-    _customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false;
+    (_customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false) ||
+    ZagreusMega.isEnabled ||
+    isUltraActive;
+
+  bool get isProActive =>
+    (_customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false) ||
+    (_customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false) ||
+    isMegaActive;
 
   bool get isAvailable => true; // RevenueCat handles availability internally
 
@@ -328,6 +374,70 @@ class RevenueCatService {
         return false;
       }
       print('❌ Mega purchase failed: $e');
+      showZagInfoSnackBar(
+        title: 'Purchase Failed',
+        message: 'Unable to complete purchase',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> purchaseUltra() async {
+    try {
+      final offerings = await Purchases.getOfferings();
+
+      print('🔍 RevenueCat Offerings: ${offerings.all.keys}');
+
+      final ultraOffering = offerings.all['ultra'];
+      List<Package> packages = [];
+
+      if (ultraOffering != null) {
+        packages = ultraOffering.availablePackages;
+      }
+
+      if (packages.isEmpty) {
+        // Fallback: scan all offerings for the Ultra product
+        for (final entry in offerings.all.entries) {
+          final match = entry.value.availablePackages.firstWhereOrNull(
+            (pkg) => pkg.storeProduct.identifier == 'com.zagreus.ultra.monthly',
+          );
+          if (match != null) {
+            packages = [match];
+            break;
+          }
+        }
+      }
+
+      if (packages.isEmpty) {
+        print('❌ No Ultra packages found in offerings');
+        return false;
+      }
+
+      final desiredId = 'com.zagreus.ultra.monthly';
+      final monthlyPackage = packages.firstWhereOrNull(
+            (pkg) =>
+                pkg.storeProduct.identifier == desiredId ||
+                pkg.identifier == '\$rc_monthly' ||
+                pkg.packageType == PackageType.monthly,
+          ) ??
+          packages.first;
+
+      print('📦 Purchasing Ultra package: ${monthlyPackage.identifier}');
+
+      final result = await Purchases.purchasePackage(monthlyPackage);
+      _customerInfo = result.customerInfo;
+      _updateProStatus();
+
+      showZagInfoSnackBar(
+        title: 'Welcome to Zagreus Ultra!',
+        message: 'Ultra AI features are now unlocked.',
+      );
+      return true;
+    } catch (e) {
+      if (e is PurchasesErrorCode && e == PurchasesErrorCode.purchaseCancelledError) {
+        return false;
+      }
+      print('❌ Ultra purchase failed: $e');
       showZagInfoSnackBar(
         title: 'Purchase Failed',
         message: 'Unable to complete purchase',

@@ -13,7 +13,8 @@ class HmacEncryptionService {
 
   static const _uuid = Uuid();
   String? _cachedHmacKey;
-  bool _isRegistered = false;
+  bool? _cachedRegistered;
+  String? _cachedRegisteredUserId;
 
   /// Get or generate device's HMAC key
   String get hmacKey {
@@ -53,10 +54,37 @@ class HmacEncryptionService {
   }
 
   /// Check if device is registered with backend
-  bool get isRegistered => _isRegistered;
+  bool get isRegistered {
+    if (_cachedRegistered != null) {
+      return _cachedRegistered!;
+    }
+    final stored = ZagreusDatabase.DEVICE_REGISTERED.read();
+    _cachedRegistered = stored;
+    return stored;
+  }
+
+  /// Return the Supabase user ID the device is registered for, if any
+  String? get registeredUserId {
+    if (_cachedRegisteredUserId != null) {
+      return _cachedRegisteredUserId!.isEmpty ? null : _cachedRegisteredUserId;
+    }
+    final stored = ZagreusDatabase.DEVICE_REGISTERED_USER_ID.read();
+    _cachedRegisteredUserId = stored;
+    return stored.isEmpty ? null : stored;
+  }
 
   /// Set registration status
-  void setRegistered(bool registered) {
-    _isRegistered = registered;
+  void setRegistered(bool registered, {String? userId}) {
+    _cachedRegistered = registered;
+    ZagreusDatabase.DEVICE_REGISTERED.update(registered);
+
+    final normalizedUserId = registered ? (userId ?? '') : '';
+    _cachedRegisteredUserId = normalizedUserId;
+    ZagreusDatabase.DEVICE_REGISTERED_USER_ID.update(normalizedUserId);
+  }
+
+  /// Clear cached registration state so the device re-registers on next request
+  void resetRegistration() {
+    setRegistered(false);
   }
 }
