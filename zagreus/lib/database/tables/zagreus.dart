@@ -83,6 +83,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_TV_SECTION_ORDER<List>([]),
   // Z Assistant settings
   Z_ASSISTANT_LIBRARY_CACHE_ENABLED<bool>(false),
+  Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED<bool>(false),
   // Z Assistant multi-add settings
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID<int?>(null),
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME<String?>(null),

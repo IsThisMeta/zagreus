@@ -63,6 +63,38 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin {
             );
           },
         ),
+        ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.listenableBuilder(
+          builder: (context, _) {
+            final enabled = ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read();
+            return ZagBlock(
+              title: 'Watch History Cache',
+              body: [
+                TextSpan(
+                  text: enabled
+                      ? 'Tautulli watch history synced to Z'
+                      : 'Enable to sync your Tautulli watch history',
+                ),
+              ],
+              trailing: ZagSwitch(
+                value: enabled,
+                onChanged: (value) {
+                  ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.update(value);
+                  if (value) {
+                    showZagInfoSnackBar(
+                      title: 'Watch History Cache Enabled',
+                      message: 'Z Agent will now sync your Tautulli watch history',
+                    );
+                  } else {
+                    showZagInfoSnackBar(
+                      title: 'Watch History Cache Disabled',
+                      message: 'Z Agent will no longer sync watch history',
+                    );
+                  }
+                },
+              ),
+            );
+          },
+        ),
       ],
     );
   }

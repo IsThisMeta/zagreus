@@ -3,6 +3,7 @@ import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/server/core/state.dart';
 import 'package:zagreus/modules/server/routes/server/route.dart';
 import 'package:zagreus/router/routes.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/vendor.dart';
 
 enum ServerRoutes with ZagRoutesMixin {
@@ -18,7 +19,7 @@ enum ServerRoutes with ZagRoutesMixin {
 
   @override
   bool isModuleEnabled(BuildContext context) {
-    return context.read<ServerState>().enabled;
+    return ZagreusPro.isEnabled && context.read<ServerState>().enabled;
   }
 
   @override

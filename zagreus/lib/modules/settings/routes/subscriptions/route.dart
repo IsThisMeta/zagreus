@@ -66,7 +66,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                          : 'Access Discover and limited Ask Z',
+                          : 'Unlock Discover and Server modules',
             )
           ],
           trailing: GestureDetector(
@@ -95,7 +95,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   ? 'Included with Ultra'
                   : isMega
                       ? 'Active • Mega plan'
-                      : 'Higher Ask Z limits + all Pro features'
+                      : 'Higher usage limits with Z'
             )
           ],
           trailing: ZagIconButton(
@@ -184,10 +184,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover and Ask Z with limited usage."
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover and Server modules."
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
-                      '• Ask Z with limited usage\n\n'
+                      '• Server module\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
@@ -364,11 +364,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy Discover plus higher Ask Z limits."
+                  ? "You have an active Mega subscription.\n\nEnjoy higher usage limits with Z."
                   : 'Zagreus Mega includes:\n'
-                      '• Higher Ask Z usage limits\n'
+                      '• Higher usage limits with Z\n'
                       '• Every Zagreus Pro feature\n\n'
-                      'Enjoy more AI-powered recommendations with Ask Z.',
+                      'Unlock more powerful AI recommendations.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),

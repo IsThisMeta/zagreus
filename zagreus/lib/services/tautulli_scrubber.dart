@@ -143,6 +143,11 @@ class TautulliScrubber {
     return _deviceAliases[realDevice]!;
   }
 
+  /// Public method to get user ID alias (for watch history sync)
+  String getUserIdAlias(int userId) {
+    return _getUserIdAlias(userId);
+  }
+
   /// Get a summary of what was scrubbed (for debugging)
   Map<String, dynamic> getScrubSummary() {
     return {
