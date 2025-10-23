@@ -31,6 +31,7 @@ import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
@@ -1066,6 +1067,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'downloading_soon',
       'popular_movies',
       'popular_people',
+      'deep_cuts',
     ];
 
     // Get saved order or use default
@@ -1094,6 +1096,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           children: [_popularMoviesSection(), const SizedBox(height: 12)]),
       'popular_people': () => Column(
           children: [_popularPeopleSection(), const SizedBox(height: 12)]),
+      'deep_cuts': () => ZagreusUltra.isEnabled
+          ? Column(children: [_deepCutsSection(), const SizedBox(height: 12)])
+          : const SizedBox.shrink(),
     };
 
     // Build sections in saved order
@@ -4131,6 +4136,80 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ),
                 ),
               ),
+      ],
+    );
+  }
+
+  Widget _deepCutsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section title
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: ZagColours.purple,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Z',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: ZagColours.purple,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Deep Cuts',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Placeholder content
+        Container(
+          height: 280,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.movie_filter_rounded,
+                  size: 48,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(0.3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'AI-powered deep cuts coming soon',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
