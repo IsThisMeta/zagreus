@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/extensions/string/string.dart';
+import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 
 class ZAssistantResultsRoute extends StatefulWidget {
   final String stageId;
@@ -299,6 +300,11 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
   Widget _buildMediaItem(StagedMediaItem item, int index) {
     final isSelected = _selectedIndices.contains(index);
 
+    // Build person card differently
+    if (item.isPerson) {
+      return _buildPersonCard(item, index, isSelected);
+    }
+
     return GestureDetector(
       onTap: () {
         if (_isSelectionMode) {
@@ -415,6 +421,16 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       widget.onMovieTap!(item.tmdbId, item.title);
     } else if (item.isShow && widget.onShowTap != null) {
       widget.onShowTap!(item.tmdbId, item.title, item.tvdbId);
+    } else if (item.isPerson) {
+      // Navigate to person details
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PersonDetailsRoute(
+            personId: item.personId,
+            personName: item.title,
+          ),
+        ),
+      );
     }
   }
 
@@ -1322,5 +1338,141 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       );
       errors.forEach((error) => ZagLogger().warning(error));
     }
+  }
+
+  Widget _buildPersonCard(StagedMediaItem item, int index, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleItemSelection(index);
+        } else {
+          _onItemTapped(item);
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                // Circular profile image
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[900],
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      child: ClipOval(
+                        child: item.posterPath != null
+                            ? CachedNetworkImage(
+                                imageUrl: item.profileUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(Icons.person, size: 48),
+                                ),
+                              )
+                            : Container(
+                                color: Colors.grey[800],
+                                child: const Icon(Icons.person, size: 48),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Purple "PERSON" badge
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'PERSON',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                if (_isSelectionMode)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        isSelected ? Icons.check_circle : Icons.circle_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (item.knownForDepartment != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              item.knownForDepartment!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[400],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (item.reason != null) ...[
+            const SizedBox(height: 4),
+            GestureDetector(
+              onTap: () => _showReasonPreview(item),
+              child: Text(
+                item.reason!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ZagColours.currentAccent.withOpacity(0.8),
+                  fontStyle: FontStyle.italic,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

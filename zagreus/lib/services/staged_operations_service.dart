@@ -3,15 +3,17 @@ import 'package:zagreus/supabase/core.dart';
 
 /// Model for a staged media item from Z Assistant
 class StagedMediaItem {
-  final int tmdbId;
+  final int tmdbId; // For movies/shows, or person_id for people
   final int? tvdbId; // For TV shows (Sonarr uses TVDB)
-  final String title;
+  final String title; // For movies/shows, or name for people
   final int? year;
-  final String? posterPath;
+  final String? posterPath; // poster_path for movies/shows, profile_path for people
   final String? overview;
-  final String mediaType; // "movie" or "tv"
+  final String mediaType; // "movie", "tv", or "person"
   final bool verified;
   final String? reason; // Why this item is recommended (for explore operations)
+  final String? knownForDepartment; // For people only (e.g., "Acting", "Directing")
+  final double? popularity; // For people only
 
   StagedMediaItem({
     required this.tmdbId,
@@ -23,19 +25,28 @@ class StagedMediaItem {
     required this.mediaType,
     required this.verified,
     this.reason,
+    this.knownForDepartment,
+    this.popularity,
   });
 
   factory StagedMediaItem.fromJson(Map<String, dynamic> json) {
+    final mediaType = json['media_type'] as String;
+
+    // People use different field names
+    final isPerson = mediaType == 'person';
+
     return StagedMediaItem(
-      tmdbId: json['tmdb_id'] as int,
+      tmdbId: (json['person_id'] ?? json['tmdb_id']) as int,
       tvdbId: json['tvdb_id'] as int?,
-      title: json['title'] as String,
+      title: (json['name'] ?? json['title']) as String,
       year: json['year'] as int?,
-      posterPath: json['poster_path'] as String?,
+      posterPath: (json['profile_path'] ?? json['poster_path']) as String?,
       overview: json['overview'] as String?,
-      mediaType: json['media_type'] as String,
+      mediaType: mediaType,
       verified: json['verified'] as bool? ?? true,
       reason: json['reason'] as String?,
+      knownForDepartment: isPerson ? json['known_for_department'] as String? : null,
+      popularity: isPerson ? (json['popularity'] as num?)?.toDouble() : null,
     );
   }
 
@@ -44,8 +55,16 @@ class StagedMediaItem {
     return 'https://image.tmdb.org/t/p/w500$posterPath';
   }
 
+  String get profileUrl {
+    if (posterPath == null) return '';
+    return 'https://image.tmdb.org/t/p/w185$posterPath';
+  }
+
   bool get isMovie => mediaType == 'movie';
   bool get isShow => mediaType == 'tv';
+  bool get isPerson => mediaType == 'person';
+
+  int get personId => tmdbId; // Alias for clarity when dealing with people
 }
 
 /// Model for a staged operation from Z Assistant

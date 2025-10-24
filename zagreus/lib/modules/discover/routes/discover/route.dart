@@ -32,6 +32,7 @@ import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
@@ -105,6 +106,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadMostAnticipatedShows();
     _loadPopularPeople();
     _loadSonarrAiringNext();
+    _syncDeepCutsIfNeeded();
+  }
+
+  Future<void> _syncDeepCutsIfNeeded() async {
+    if (!ZagreusMega.isEnabled) return;
+
+    try {
+      final deepCutsService = DeepCutsService();
+      final needsRegen = await deepCutsService.needsRegeneration();
+
+      if (needsRegen) {
+        ZagLogger().debug('Deep Cuts need regeneration - triggering...');
+        // Fire and forget - don't await
+        deepCutsService.syncIfNeeded();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Deep Cuts sync check failed', e, stack);
+    }
   }
 
   @override
@@ -1096,7 +1115,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           children: [_popularMoviesSection(), const SizedBox(height: 12)]),
       'popular_people': () => Column(
           children: [_popularPeopleSection(), const SizedBox(height: 12)]),
-      'deep_cuts': () => ZagreusUltra.isEnabled
+      'deep_cuts': () => ZagreusMega.isEnabled
           ? Column(children: [_deepCutsSection(), const SizedBox(height: 12)])
           : const SizedBox.shrink(),
     };
@@ -4141,10 +4160,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _deepCutsSection() {
+    final deepCutsService = DeepCutsService();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section title
+        // Section title with sync button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
@@ -4176,41 +4197,201 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ),
                 ),
               ),
+              // Refresh button
+              IconButton(
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: ZagColours.purple,
+                  size: 20,
+                ),
+                onPressed: () async {
+                  await deepCutsService.generateRecommendations(force: true);
+                  if (mounted) setState(() {});
+                },
+              ),
             ],
           ),
         ),
-        // Placeholder content
-        Container(
-          height: 280,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.movie_filter_rounded,
-                  size: 48,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.3),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'AI-powered deep cuts coming soon',
-                  style: TextStyle(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        // Content
+        FutureBuilder<DeepCutsResult>(
+          future: deepCutsService.fetchRecommendations(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 280,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!snapshot.hasData ||
+                !snapshot.data!.success ||
+                snapshot.data!.recommendations == null ||
+                snapshot.data!.recommendations!.isEmpty) {
+              return _deepCutsEmptyState();
+            }
+
+            final recommendations = snapshot.data!.recommendations!;
+
+            return Container(
+              height: 300,
+              padding: const EdgeInsets.only(left: 16),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: recommendations.length,
+                itemBuilder: (context, index) {
+                  return _deepCutMovieCard(recommendations[index]);
+                },
+              ),
+            );
+          },
         ),
       ],
+    );
+  }
+
+  Widget _deepCutsEmptyState() {
+    return Container(
+      height: 280,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.movie_filter_rounded,
+              size: 48,
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No deep cuts yet',
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.7),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap refresh to generate AI-powered recommendations',
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.5),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _deepCutMovieCard(DeepCutMovie movie) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: GestureDetector(
+        onTap: () async {
+          // Search for the movie to get TMDB ID
+          final tmdbApi = TMDBApi();
+          final searchResults =
+              await tmdbApi.searchMulti('${movie.title} ${movie.year}');
+
+          // Filter for movies only
+          final movieResults = searchResults
+              .where((r) => r['media_type'] == 'movie')
+              .toList();
+
+          if (movieResults.isNotEmpty) {
+            final tmdbId = movieResults.first['id'] as int;
+            final title = movie.title;
+            await _openMovieInRadarr(tmdbId: tmdbId, title: title);
+          }
+        },
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Movie poster placeholder (we'll search for it)
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  border: Border.all(
+                    color: ZagColours.purple.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.movie_filter_rounded,
+                        size: 48,
+                        color: ZagColours.purple.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          movie.title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).brightness ==
+                                    Brightness.dark
+                                ? Colors.white
+                                : Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${movie.year}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: (Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black)
+                              .withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Reason
+              Text(
+                movie.reason,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ZagColours.purple.withOpacity(0.8),
+                  fontStyle: FontStyle.italic,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

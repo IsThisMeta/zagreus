@@ -19,6 +19,7 @@ class _State extends State<DiscoverSectionsRoute> {
     'downloading_soon',
     'popular_movies',
     'popular_people',
+    'deep_cuts',
   ];
 
   // Default section order for TV shows
@@ -38,6 +39,7 @@ class _State extends State<DiscoverSectionsRoute> {
     'downloading_soon': 'Downloading Soon',
     'popular_movies': 'Popular Movies',
     'popular_people': 'Popular People',
+    'deep_cuts': 'Deep Cuts',
     'recently_downloaded_shows': 'Recently Downloaded',
     'airing_next': 'Airing Next',
     'popular_tv_shows': 'Popular TV Shows',
@@ -226,6 +228,8 @@ class _State extends State<DiscoverSectionsRoute> {
         return Icons.star_rounded;
       case 'popular_people':
         return Icons.person_rounded;
+      case 'deep_cuts':
+        return Icons.auto_awesome_rounded;
       case 'airing_next':
         return Icons.live_tv_rounded;
       case 'trending_new_tv_shows':
