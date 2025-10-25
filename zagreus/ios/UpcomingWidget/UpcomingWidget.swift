@@ -158,15 +158,6 @@ struct SmallWidgetView: View {
                     Text(item.formattedDate)
                         .font(.caption)
                         .foregroundColor(.gray)
-
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .font(.caption2)
-                            .foregroundColor(.yellow)
-                        Text(String(format: "%.1f", item.rating))
-                            .font(.caption2)
-                            .foregroundColor(.gray)
-                    }
             }
             .padding()
         } else {
@@ -202,20 +193,9 @@ struct MediumWidgetView: View {
                                 .foregroundColor(.white)
                                 .lineLimit(1)
 
-                            HStack(spacing: 8) {
-                                Text(item.formattedDate)
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-
-                                HStack(spacing: 2) {
-                                    Image(systemName: "star.fill")
-                                        .font(.system(size: 8))
-                                        .foregroundColor(.yellow)
-                                    Text(String(format: "%.1f", item.rating))
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
-                            }
+                            Text(item.formattedDate)
+                                .font(.caption2)
+                                .foregroundColor(.gray)
                         }
 
                         Spacer()
@@ -271,21 +251,10 @@ struct LargeWidgetView: View {
                                     .foregroundColor(.gray)
                                     .lineLimit(1)
                             } else {
-                                // Movie: Show date and rating
-                                HStack(spacing: 10) {
-                                    Text(item.formattedDate)
-                                        .font(.caption)
-                                        .foregroundColor(.purple)
-
-                                    HStack(spacing: 3) {
-                                        Image(systemName: "star.fill")
-                                            .font(.caption2)
-                                            .foregroundColor(.yellow)
-                                        Text(String(format: "%.1f", item.rating))
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                }
+                                // Movie: Show date
+                                Text(item.formattedDate)
+                                    .font(.caption)
+                                    .foregroundColor(.purple)
                             }
                         }
 

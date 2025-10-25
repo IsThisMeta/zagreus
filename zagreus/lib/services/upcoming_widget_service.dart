@@ -30,16 +30,36 @@ class UpcomingWidgetService {
       final movies = await _getUpcomingMovies(radarrState);
       final shows = await _getUpcomingShows(sonarrState);
 
-      // Combine and sort by date
+      // Combine all content
       final allContent = [...movies, ...shows];
-      allContent.sort((a, b) {
+
+      // Filter to only show items airing this week
+      final now = DateTime.now();
+      final endOfWeek = now.add(const Duration(days: 7));
+
+      final thisWeekContent = allContent.where((item) {
+        final dateStr = item['releaseDate'] as String?;
+        if (dateStr == null) return false;
+
+        final date = DateTime.tryParse(dateStr);
+        if (date == null) return false;
+
+        // Include if it's between now and 7 days from now
+        return date.isAfter(now.subtract(const Duration(days: 1))) &&
+               date.isBefore(endOfWeek);
+      }).toList();
+
+      // Sort by date
+      thisWeekContent.sort((a, b) {
         final aDate = DateTime.tryParse(a['releaseDate'] ?? '') ?? DateTime.now();
         final bDate = DateTime.tryParse(b['releaseDate'] ?? '') ?? DateTime.now();
         return aDate.compareTo(bDate);
       });
 
+      print('📊 Filtered to ${thisWeekContent.length} items airing this week');
+
       // Return top 10 most relevant items
-      return allContent.take(10).toList();
+      return thisWeekContent.take(10).toList();
     } catch (e) {
       print('Error fetching upcoming content: $e');
       return [];
