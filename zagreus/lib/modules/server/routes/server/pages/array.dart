@@ -144,7 +144,6 @@ class _ServerArrayPageState extends State<ServerArrayPage>
         ),
         TextSpan(
           children: [
-            const TextSpan(text: 'Last ran on '),
             TextSpan(
               text: parity.formattedDate,
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -160,35 +159,19 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           ],
         ),
         TextSpan(
-          children: [
-            const TextSpan(text: 'It took '),
-            TextSpan(
-              text: duration,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ],
+          text: duration,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         TextSpan(
-          children: [
-            const TextSpan(text: 'Average speed was '),
-            TextSpan(
-              text: averageSpeed,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ],
+          text: averageSpeed,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         TextSpan(
-          children: [
-            const TextSpan(text: 'And found '),
-            TextSpan(
-              text: '$errorsCount ',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: errorsColor,
-              ),
-            ),
-            const TextSpan(text: 'errors'),
-          ],
+          text: '$errorsCount errors',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: errorsColor,
+          ),
         ),
       ],
       bottom:

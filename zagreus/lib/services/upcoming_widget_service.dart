@@ -54,15 +54,8 @@ class UpcomingWidgetService {
     DateTime endDate,
   ) async {
     try {
-      final startStr = startDate.toIso8601String().split('T')[0];
-      final endStr = endDate.toIso8601String().split('T')[0];
-
-      final url = '$_baseUrl/discover/movie?api_key=$_apiKey'
-          '&sort_by=popularity.desc'
-          '&release_date.gte=$startStr'
-          '&release_date.lte=$endStr'
-          '&with_release_type=2|3'  // Theatrical or limited release
-          '&region=US';
+      // Use TMDB's upcoming endpoint for theatrical releases
+      final url = '$_baseUrl/movie/upcoming?api_key=$_apiKey&region=US&page=1';
 
       final response = await http.get(Uri.parse(url));
 
@@ -70,19 +63,37 @@ class UpcomingWidgetService {
         final data = json.decode(response.body);
         final results = data['results'] as List;
 
-        return results.map((item) {
-          return {
-            'id': item['id'],
-            'title': item['title'] ?? 'Unknown',
-            'releaseDate': item['release_date'],
-            'poster': item['poster_path'] != null
-                ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
-                : null,
-            'mediaType': 'movie',
-            'rating': (item['vote_average'] ?? 0).toDouble(),
-            'overview': item['overview'] ?? '',
-          };
-        }).toList();
+        // Filter to only include movies in our date range
+        final now = DateTime.now();
+        final oneWeekFromNow = now.add(const Duration(days: 7));
+
+        return results
+            .where((item) {
+              if (item['release_date'] == null || item['release_date'] == '') {
+                return false;
+              }
+              try {
+                final releaseDate = DateTime.parse(item['release_date']);
+                return releaseDate.isAfter(now.subtract(const Duration(days: 1))) &&
+                       releaseDate.isBefore(oneWeekFromNow);
+              } catch (e) {
+                return false;
+              }
+            })
+            .map((item) {
+              return {
+                'id': item['id'],
+                'title': item['title'] ?? 'Unknown',
+                'releaseDate': item['release_date'],
+                'poster': item['poster_path'] != null
+                    ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
+                    : null,
+                'mediaType': 'movie',
+                'rating': (item['vote_average'] ?? 0).toDouble(),
+                'overview': item['overview'] ?? '',
+              };
+            })
+            .toList();
       }
 
       return [];
@@ -98,15 +109,8 @@ class UpcomingWidgetService {
     DateTime endDate,
   ) async {
     try {
-      final startStr = startDate.toIso8601String().split('T')[0];
-      final endStr = endDate.toIso8601String().split('T')[0];
-
-      final url = '$_baseUrl/discover/tv?api_key=$_apiKey'
-          '&sort_by=popularity.desc'
-          '&air_date.gte=$startStr'
-          '&air_date.lte=$endStr'
-          '&with_status=0'  // Returning series
-          '&region=US';
+      // Use TMDB's on_the_air endpoint for shows with episodes airing soon
+      final url = '$_baseUrl/tv/on_the_air?api_key=$_apiKey&region=US&page=1';
 
       final response = await http.get(Uri.parse(url));
 
@@ -114,19 +118,26 @@ class UpcomingWidgetService {
         final data = json.decode(response.body);
         final results = data['results'] as List;
 
-        return results.map((item) {
-          return {
-            'id': item['id'],
-            'title': item['name'] ?? 'Unknown',
-            'releaseDate': item['first_air_date'],
-            'poster': item['poster_path'] != null
-                ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
-                : null,
-            'mediaType': 'tv',
-            'rating': (item['vote_average'] ?? 0).toDouble(),
-            'overview': item['overview'] ?? '',
-          };
-        }).toList();
+        // Use today's date as a proxy for "new episode"
+        final today = DateTime.now().toIso8601String().split('T')[0];
+
+        return results
+            .where((item) => item['first_air_date'] != null && item['first_air_date'] != '')
+            .map((item) {
+              return {
+                'id': item['id'],
+                'title': item['name'] ?? 'Unknown',
+                // Use today as the air date for on_the_air shows
+                'releaseDate': today,
+                'poster': item['poster_path'] != null
+                    ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
+                    : null,
+                'mediaType': 'tv',
+                'rating': (item['vote_average'] ?? 0).toDouble(),
+                'overview': item['overview'] ?? '',
+              };
+            })
+            .toList();
       }
 
       return [];
