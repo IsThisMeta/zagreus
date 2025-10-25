@@ -19,6 +19,7 @@ import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/services/command_processor_service.dart';
+import 'package:zagreus/services/upcoming_widget_service.dart';
 
 /// Zagreus Entry Point: Bootstrap & Run Application
 ///
@@ -63,6 +64,8 @@ Future<void> bootstrap() async {
   // Bitcoin miner started
   // Initialize RevenueCat for in-app purchases
   if (ZagPlatform.isIOS) await RevenueCatService().initialize();
+  // Initialize home screen widget
+  if (ZagPlatform.isIOS) await UpcomingWidgetService.initialize();
 }
 
 class ZagBIOS extends StatefulWidget {

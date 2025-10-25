@@ -54,6 +54,8 @@ dependencies:
   # In-app purchases
   in_app_purchase: ^3.2.0
   purchases_flutter: ^9.6.2
+  # Home screen widgets
+  home_widget: ^0.6.0
 dev_dependencies:
   # Generators
   build_runner: ^2.4.13
