@@ -179,7 +179,7 @@ struct MediumWidgetView: View {
         ZStack {
             Color(red: 0.14, green: 0.14, blue: 0.17)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Upcoming This Week")
                         .font(.caption)
@@ -190,6 +190,7 @@ struct MediumWidgetView: View {
                         .font(.caption2)
                         .foregroundColor(.gray)
                 }
+                .padding(.bottom, 4)
 
                 ForEach(items.prefix(3)) { item in
                     HStack(spacing: 10) {
@@ -220,17 +221,16 @@ struct MediumWidgetView: View {
 
                         Spacer()
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 2)
 
                     if item.id != items.prefix(3).last?.id {
                         Divider()
                             .background(Color.gray.opacity(0.3))
+                            .padding(.vertical, 2)
                     }
                 }
-
-                Spacer()
             }
-            .padding()
+            .padding(12)
         }
     }
 
@@ -241,7 +241,7 @@ struct MediumWidgetView: View {
     }
 }
 
-// Large widget: Shows 5 upcoming items with more detail
+// Large widget: Shows 5 upcoming items
 struct LargeWidgetView: View {
     let items: [UpcomingItem]
 
@@ -249,65 +249,57 @@ struct LargeWidgetView: View {
         ZStack {
             Color(red: 0.14, green: 0.14, blue: 0.17)
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Upcoming This Week")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                     Spacer()
                     Image(systemName: "calendar")
+                        .font(.caption)
                         .foregroundColor(.purple)
                 }
+                .padding(.bottom, 4)
 
                 ForEach(items.prefix(5)) { item in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 10) {
-                            Text(item.mediaIcon)
-                                .font(.title2)
+                    HStack(spacing: 10) {
+                        Text(item.mediaIcon)
+                            .font(.title3)
 
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.title)
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.title)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
 
-                                HStack(spacing: 10) {
-                                    Text(item.formattedDate)
+                            HStack(spacing: 10) {
+                                Text(item.formattedDate)
+                                    .font(.caption)
+                                    .foregroundColor(.purple)
+
+                                HStack(spacing: 3) {
+                                    Image(systemName: "star.fill")
+                                        .font(.caption2)
+                                        .foregroundColor(.yellow)
+                                    Text(String(format: "%.1f", item.rating))
                                         .font(.caption)
-                                        .foregroundColor(.purple)
-
-                                    HStack(spacing: 3) {
-                                        Image(systemName: "star.fill")
-                                            .font(.caption2)
-                                            .foregroundColor(.yellow)
-                                        Text(String(format: "%.1f", item.rating))
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
+                                        .foregroundColor(.gray)
                                 }
                             }
-
-                            Spacer()
                         }
 
-                        Text(item.overview)
-                            .font(.caption2)
-                            .foregroundColor(.gray)
-                            .lineLimit(2)
-                            .padding(.leading, 40)
+                        Spacer()
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 3)
 
                     if item.id != items.prefix(5).last?.id {
                         Divider()
                             .background(Color.gray.opacity(0.3))
+                            .padding(.vertical, 2)
                     }
                 }
-
-                Spacer()
             }
-            .padding()
+            .padding(14)
         }
     }
 }
