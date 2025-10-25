@@ -32,21 +32,33 @@ struct Provider: TimelineProvider {
 
     // Load upcoming content from shared UserDefaults
     func loadUpcomingContent() -> [UpcomingItem] {
+        print("📱 Widget: Loading upcoming content...")
+
         guard let userDefaults = UserDefaults(suiteName: "group.app.zagreus") else {
+            print("❌ Widget: Failed to access app group")
             return sampleData
         }
 
+        print("✅ Widget: App group accessed")
+
         guard let jsonString = userDefaults.string(forKey: "upcoming_content"),
               let jsonData = jsonString.data(using: .utf8) else {
+            print("❌ Widget: No data found in UserDefaults")
+            // Print all keys to debug
+            print("Available keys: \(userDefaults.dictionaryRepresentation().keys)")
             return sampleData
         }
+
+        print("📦 Widget: Found data, decoding...")
+        print("JSON: \(jsonString)")
 
         do {
             let decoder = JSONDecoder()
             let items = try decoder.decode([UpcomingItem].self, from: jsonData)
+            print("✅ Widget: Decoded \(items.count) items")
             return items.isEmpty ? sampleData : items
         } catch {
-            print("Error decoding upcoming content: \(error)")
+            print("❌ Widget: Error decoding upcoming content: \(error)")
             return sampleData
         }
     }
@@ -246,7 +258,7 @@ struct LargeWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             Color(red: 0.14, green: 0.14, blue: 0.17)
 
             VStack(alignment: .leading, spacing: 6) {
@@ -298,6 +310,8 @@ struct LargeWidgetView: View {
                             .padding(.vertical, 2)
                     }
                 }
+
+                Spacer()
             }
             .padding(14)
         }
@@ -314,8 +328,6 @@ struct UpcomingWidget: Widget {
                     .containerBackground(.fill.tertiary, for: .widget)
             } else {
                 UpcomingWidgetEntryView(entry: entry)
-                    .padding()
-                    .background()
             }
         }
         .configurationDisplayName("Upcoming Movies & Shows")

@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:home_widget/home_widget.dart';
-import 'package:zagreus/modules/discover/core/api_keys.dart';
+import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
 
 /// Service for managing the upcoming movies/shows home screen widget
+/// Uses Radarr and Sonarr upcoming data instead of TMDB
 class UpcomingWidgetService {
-  static const String _baseUrl = 'https://api.themoviedb.org/3';
-  static String get _apiKey => ApiKeys.tmdbApiKey;
   static const String _appGroupId = 'group.app.zagreus';
 
   /// Initialize the widget service (call this in main.dart bootstrap)
@@ -16,27 +15,26 @@ class UpcomingWidgetService {
       await HomeWidget.setAppGroupId(_appGroupId);
       print('📱 Widget service initialized');
 
-      // Update widget on app launch
-      await updateWidget();
+      // Note: Widget update happens later when Radarr/Sonarr states are available
     } catch (e) {
       print('⚠️ Widget initialization error: $e');
     }
   }
 
-  /// Fetch upcoming movies and shows for the next 7 days
-  static Future<List<Map<String, dynamic>>> getUpcomingContent() async {
-    final now = DateTime.now();
-    final oneWeekFromNow = now.add(const Duration(days: 7));
-
+  /// Fetch upcoming movies and shows from Radarr and Sonarr
+  static Future<List<Map<String, dynamic>>> getUpcomingContent(
+    RadarrState radarrState,
+    SonarrState sonarrState,
+  ) async {
     try {
-      final movies = await _getUpcomingMovies(now, oneWeekFromNow);
-      final shows = await _getUpcomingTVShows(now, oneWeekFromNow);
+      final movies = await _getUpcomingMovies(radarrState);
+      final shows = await _getUpcomingShows(sonarrState);
 
       // Combine and sort by date
       final allContent = [...movies, ...shows];
       allContent.sort((a, b) {
-        final aDate = DateTime.tryParse(a['releaseDate'] ?? '') ?? now;
-        final bDate = DateTime.tryParse(b['releaseDate'] ?? '') ?? now;
+        final aDate = DateTime.tryParse(a['releaseDate'] ?? '') ?? DateTime.now();
+        final bDate = DateTime.tryParse(b['releaseDate'] ?? '') ?? DateTime.now();
         return aDate.compareTo(bDate);
       });
 
@@ -48,115 +46,92 @@ class UpcomingWidgetService {
     }
   }
 
-  /// Fetch upcoming movies releasing in the next week
+  /// Fetch upcoming movies from Radarr
   static Future<List<Map<String, dynamic>>> _getUpcomingMovies(
-    DateTime startDate,
-    DateTime endDate,
+    RadarrState radarrState,
   ) async {
     try {
-      // Use TMDB's upcoming endpoint for theatrical releases
-      final url = '$_baseUrl/movie/upcoming?api_key=$_apiKey&region=US&page=1';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List;
-
-        // Filter to only include movies in our date range
-        final now = DateTime.now();
-        final oneWeekFromNow = now.add(const Duration(days: 7));
-
-        return results
-            .where((item) {
-              if (item['release_date'] == null || item['release_date'] == '') {
-                return false;
-              }
-              try {
-                final releaseDate = DateTime.parse(item['release_date']);
-                return releaseDate.isAfter(now.subtract(const Duration(days: 1))) &&
-                       releaseDate.isBefore(oneWeekFromNow);
-              } catch (e) {
-                return false;
-              }
-            })
-            .map((item) {
-              return {
-                'id': item['id'],
-                'title': item['title'] ?? 'Unknown',
-                'releaseDate': item['release_date'],
-                'poster': item['poster_path'] != null
-                    ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
-                    : null,
-                'mediaType': 'movie',
-                'rating': (item['vote_average'] ?? 0).toDouble(),
-                'overview': item['overview'] ?? '',
-              };
-            })
-            .toList();
+      if (radarrState.upcoming == null) {
+        return [];
       }
 
-      return [];
+      final movies = await radarrState.upcoming!;
+
+      return movies.take(5).map((movie) {
+        // Determine the release date (prefer cinema date, fall back to physical/digital)
+        String? releaseDate;
+        if (movie.inCinemas != null) {
+          releaseDate = movie.inCinemas!.toIso8601String();
+        } else if (movie.physicalRelease != null) {
+          releaseDate = movie.physicalRelease!.toIso8601String();
+        } else if (movie.digitalRelease != null) {
+          releaseDate = movie.digitalRelease!.toIso8601String();
+        }
+
+        return {
+          'id': movie.id ?? 0,
+          'title': movie.title ?? 'Unknown',
+          'releaseDate': releaseDate ?? DateTime.now().toIso8601String(),
+          'poster': null, // Widget doesn't display posters yet
+          'mediaType': 'movie',
+          'rating': movie.ratings?.value?.toDouble() ?? 0.0,
+          'overview': movie.overview ?? '',
+        };
+      }).toList();
     } catch (e) {
-      print('Error fetching upcoming movies: $e');
+      print('Error fetching upcoming movies from Radarr: $e');
       return [];
     }
   }
 
-  /// Fetch TV shows with episodes airing in the next week
-  static Future<List<Map<String, dynamic>>> _getUpcomingTVShows(
-    DateTime startDate,
-    DateTime endDate,
+  /// Fetch upcoming shows from Sonarr
+  static Future<List<Map<String, dynamic>>> _getUpcomingShows(
+    SonarrState sonarrState,
   ) async {
     try {
-      // Use TMDB's on_the_air endpoint for shows with episodes airing soon
-      final url = '$_baseUrl/tv/on_the_air?api_key=$_apiKey&region=US&page=1';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List;
-
-        // Use today's date as a proxy for "new episode"
-        final today = DateTime.now().toIso8601String().split('T')[0];
-
-        return results
-            .where((item) => item['first_air_date'] != null && item['first_air_date'] != '')
-            .map((item) {
-              return {
-                'id': item['id'],
-                'title': item['name'] ?? 'Unknown',
-                // Use today as the air date for on_the_air shows
-                'releaseDate': today,
-                'poster': item['poster_path'] != null
-                    ? 'https://image.tmdb.org/t/p/w500${item['poster_path']}'
-                    : null,
-                'mediaType': 'tv',
-                'rating': (item['vote_average'] ?? 0).toDouble(),
-                'overview': item['overview'] ?? '',
-              };
-            })
-            .toList();
+      if (sonarrState.upcoming == null) {
+        return [];
       }
 
-      return [];
+      final episodes = await sonarrState.upcoming!;
+
+      return episodes.take(5).map((episode) {
+        return {
+          'id': episode.id ?? 0,
+          'title': '${episode.series?.title ?? "Unknown"} - ${episode.title ?? "Episode"}',
+          'releaseDate': episode.airDateUtc?.toIso8601String() ??
+                        DateTime.now().toIso8601String(),
+          'poster': null, // Widget doesn't display posters yet
+          'mediaType': 'tv',
+          'rating': 0.0, // Episodes don't have ratings in calendar
+          'overview': episode.overview ?? '',
+        };
+      }).toList();
     } catch (e) {
-      print('Error fetching upcoming TV shows: $e');
+      print('Error fetching upcoming shows from Sonarr: $e');
       return [];
     }
   }
 
   /// Update the home screen widget with upcoming content
-  static Future<bool> updateWidget() async {
+  static Future<bool> updateWidget({
+    RadarrState? radarrState,
+    SonarrState? sonarrState,
+  }) async {
     try {
       print('📱 Updating upcoming widget...');
 
-      final upcomingContent = await getUpcomingContent();
+      // If states aren't provided, we can't update
+      if (radarrState == null || sonarrState == null) {
+        print('⚠️ Radarr/Sonarr states not available');
+        return false;
+      }
+
+      final upcomingContent = await getUpcomingContent(radarrState, sonarrState);
 
       if (upcomingContent.isEmpty) {
         print('⚠️ No upcoming content found');
-        return false;
+        // Still update with empty data so widget shows "no content" message
       }
 
       // Save data to widget storage (max 5 items for widget display)
@@ -185,9 +160,15 @@ class UpcomingWidgetService {
   }
 
   /// Manually refresh the widget (can be called from UI)
-  static Future<bool> refreshWidget() async {
+  static Future<bool> refreshWidget({
+    RadarrState? radarrState,
+    SonarrState? sonarrState,
+  }) async {
     print('🔄 Manual widget refresh requested');
-    return await updateWidget();
+    return await updateWidget(
+      radarrState: radarrState,
+      sonarrState: sonarrState,
+    );
   }
 
   /// Schedule periodic widget updates
@@ -202,5 +183,7 @@ class UpcomingWidgetService {
 /// Background callback for widget updates (must be top-level function)
 @pragma('vm:entry-point')
 void backgroundCallback(Uri? uri) async {
-  await UpcomingWidgetService.updateWidget();
+  // Note: Background callbacks can't easily access Provider states
+  // Widget will show last cached data until app is opened again
+  print('🔄 Background widget refresh triggered');
 }

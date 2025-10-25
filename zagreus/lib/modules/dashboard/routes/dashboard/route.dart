@@ -8,6 +8,11 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
+import 'package:zagreus/services/upcoming_widget_service.dart';
+import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/core.dart';
 
 class DashboardRoute extends StatefulWidget {
   const DashboardRoute({
@@ -28,6 +33,27 @@ class _State extends State<DashboardRoute> {
 
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(initialPage: page);
+
+    // Update home screen widget with Radarr/Sonarr upcoming content
+    if (ZagPlatform.isIOS) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateWidget();
+      });
+    }
+  }
+
+  Future<void> _updateWidget() async {
+    try {
+      final radarrState = context.read<RadarrState>();
+      final sonarrState = context.read<SonarrState>();
+
+      await UpcomingWidgetService.updateWidget(
+        radarrState: radarrState,
+        sonarrState: sonarrState,
+      );
+    } catch (e) {
+      print('Widget update error: $e');
+    }
   }
 
   @override
