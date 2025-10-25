@@ -142,6 +142,31 @@
           "referenceName" : "Zagreus Mega Monthly",
           "subscriptionGroupID" : "21591251",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.79",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6752624668",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "GPT-5 powered Ask Z and premium AI features",
+              "displayName" : "Zagreus Ultra Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.zagreus.ultra.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Zagreus Ultra Monthly",
+          "subscriptionGroupID" : "21591251",
+          "type" : "RecurringSubscription"
         }
       ]
     }

@@ -75,6 +75,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Library sync state
   bool _isSyncing = false;
 
+  // Deep Cuts future (cached to avoid refetching on rebuild)
+  Future<DeepCutsResult>? _deepCutsFuture;
+
   @override
   void initState() {
     super.initState();
@@ -4162,6 +4165,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _deepCutsSection() {
     final deepCutsService = DeepCutsService();
 
+    // Initialize future once if not already set
+    _deepCutsFuture ??= deepCutsService.fetchRecommendations();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -4206,7 +4212,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
                 onPressed: () async {
                   await deepCutsService.generateRecommendations(force: true);
-                  if (mounted) setState(() {});
+                  if (mounted) {
+                    setState(() {
+                      _deepCutsFuture = deepCutsService.fetchRecommendations();
+                    });
+                  }
                 },
               ),
             ],
@@ -4214,7 +4224,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         // Content
         FutureBuilder<DeepCutsResult>(
-          future: deepCutsService.fetchRecommendations(),
+          future: _deepCutsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Container(
