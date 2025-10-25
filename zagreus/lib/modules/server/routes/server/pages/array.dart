@@ -364,7 +364,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
           Expanded(
             child: ZagLinearPercentIndicator(
               percent: percentUsed / 100,
-              progressColor: _getUsageColor(percentUsed),
+              progressColor: ZagColours.currentAccent,
             ),
           ),
 
@@ -396,13 +396,4 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     return Colors.green;
   }
 
-  Color _getUsageColor(double percentUsed) {
-    if (percentUsed > 90) {
-      return ZagColours.red;
-    } else if (percentUsed > 75) {
-      return ZagColours.orange;
-    } else {
-      return ZagColours.accent;
-    }
-  }
 }
