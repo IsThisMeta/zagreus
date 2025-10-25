@@ -34,7 +34,11 @@ class SABnzbdAppBarStats extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                       fontSize: ZagUI.FONT_SIZE_HEADER,
-                      color: data.item1 ? ZagColours.red : ZagColours.currentAccent,
+                      color: data.item1
+                          ? (Theme.of(context).brightness == Brightness.light
+                              ? Colors.black
+                              : ZagColours.white)
+                          : ZagColours.currentAccent,
                     ),
                   ),
                   TextSpan(text: '\n'),
