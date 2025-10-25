@@ -142,11 +142,7 @@ struct SmallWidgetView: View {
 
     var body: some View {
         if let item = items.first {
-            ZStack {
-                Color(red: 0.14, green: 0.14, blue: 0.17)
-                    .ignoresSafeArea()
-
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("Up Next")
                             .font(.caption)
@@ -176,9 +172,8 @@ struct SmallWidgetView: View {
                             .font(.caption2)
                             .foregroundColor(.gray)
                     }
-                }
-                .padding()
             }
+            .padding()
         } else {
             Text("No upcoming content")
                 .foregroundColor(.gray)
@@ -191,11 +186,7 @@ struct MediumWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        ZStack {
-            Color(red: 0.14, green: 0.14, blue: 0.17)
-                .ignoresSafeArea()
-
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Upcoming This Week")
                         .font(.caption)
@@ -245,9 +236,8 @@ struct MediumWidgetView: View {
                             .padding(.vertical, 2)
                     }
                 }
-            }
-            .padding(12)
         }
+        .padding(12)
     }
 
     func getCurrentDate() -> String {
@@ -262,10 +252,7 @@ struct LargeWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Color(red: 0.14, green: 0.14, blue: 0.17)
-
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Upcoming This Week")
                         .font(.system(size: 15, weight: .bold))
@@ -325,9 +312,8 @@ struct LargeWidgetView: View {
                 }
 
                 Spacer()
-            }
-            .padding(14)
         }
+        .padding(14)
     }
 }
 

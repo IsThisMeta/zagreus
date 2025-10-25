@@ -5,10 +5,12 @@ import 'package:zagreus/database/database.dart';
 import 'package:zagreus/database/models/external_module.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
+import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/backup_tile.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/build_details.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart';
+import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/demo_config.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
@@ -245,15 +247,31 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       serverHeaders: const <String, String>{},
     );
 
-    // Save the profile with Radarr and Sonarr initially disabled (workaround)
+    // Save the profile
+    await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
+
+    // Hack: Toggle Radarr and Sonarr states to ensure they reinitialize properly
+    if (!mounted) return;
+
+    final radarrState = context.read<RadarrState>();
+    final sonarrState = context.read<SonarrState>();
+
+    // First disable them
     profile.radarrEnabled = false;
     profile.sonarrEnabled = false;
     await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
+    radarrState.reset();
+    sonarrState.reset();
 
-    // Now re-enable Radarr and Sonarr to fix the bug
-    profile.radarrEnabled = true;
-    profile.sonarrEnabled = true;
+    // Small delay to ensure state update completes
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    // Now re-enable them
+    profile.radarrEnabled = demoConfig['radarr_enabled'] ?? false;
+    profile.sonarrEnabled = demoConfig['sonarr_enabled'] ?? false;
     await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
+    radarrState.reset();
+    sonarrState.reset();
 
     // Set the drawer order (excluding Dashboard since it's always added automatically)
     // First disable automatic manage
