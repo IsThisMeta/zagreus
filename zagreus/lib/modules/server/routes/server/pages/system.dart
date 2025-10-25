@@ -15,6 +15,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     with ZagScrollControllerMixin {
   UnraidSystemInfo? _systemInfo;
   UnraidArrayInfo? _arrayInfo;
+  UnraidMetricsInfo? _metricsInfo;
   UnraidUpsInfo? _upsInfo;
   bool _loading = true;
   String? _error;
@@ -31,6 +32,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     setState(() {
       _loading = true;
       _error = null;
+      _metricsInfo = null;
     });
 
     try {
@@ -47,6 +49,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       final systemInfo = await api.getSystemInfo();
       final arrayInfo = await api.getArrayInfo();
 
+      UnraidMetricsInfo? metricsInfo;
+      try {
+        metricsInfo = await api.getMetricsInfo();
+      } catch (e) {
+        ZagLogger().debug('Metrics info not available: $e');
+        metricsInfo = null;
+      }
+
       // Try to fetch UPS info (optional - may not exist)
       UnraidUpsInfo? upsInfo;
       try {
@@ -61,6 +71,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       setState(() {
         _systemInfo = systemInfo;
         _arrayInfo = arrayInfo;
+        _metricsInfo = metricsInfo;
         _upsInfo = upsInfo;
         _loading = false;
       });
@@ -98,7 +109,8 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         children: [
           if (_systemInfo != null) _buildServerInfoCard(),
           if (_arrayInfo?.capacity != null) _buildArrayCapacityCard(),
-          if (_systemInfo?.memory != null) _buildMemoryCard(),
+          if (_systemInfo?.memory != null || _metricsInfo != null)
+            _buildMemoryCard(),
           if (_upsInfo?.hasUps == true) _buildPowerCard(),
         ],
       ),
@@ -188,7 +200,9 @@ class _ServerSystemPageState extends State<ServerSystemPage>
                 _arrayInfo?.state ?? "Unknown",
                 style: TextStyle(
                   fontSize: 14,
-                  color: _arrayInfo?.isStarted == true ? Colors.green : Colors.grey,
+                  color: _arrayInfo?.isStarted == true
+                      ? Colors.green
+                      : Colors.grey,
                 ),
               ),
             ],
@@ -257,17 +271,41 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   }
 
   Widget _buildMemoryCard() {
-    final memory = _systemInfo!.memory!;
-    final percentUsed = memory.percentUsed ?? 0;
-    final totalGB = memory.totalGB ?? 0;
-    final freeGB = memory.freeGB ?? 0;
-    final memoryTypeSpeed = memory.formattedTypeAndSpeed;
+    final memory = _systemInfo?.memory;
+    final metricsMemory = _metricsInfo?.memory;
+
+    if (memory == null && metricsMemory == null) {
+      return const SizedBox.shrink();
+    }
+
+    double? percentUsed = metricsMemory?.percentUsed ?? memory?.percentUsed;
+    if (percentUsed != null) {
+      percentUsed = percentUsed.clamp(0, 100);
+    }
+
+    final totalGB = metricsMemory?.totalGB ?? memory?.totalGB;
+    final freeGB = metricsMemory?.availableGB ?? memory?.freeGB;
+    final memoryTypeSpeed = memory?.formattedTypeAndSpeed ?? '';
 
     // Build the memory info string
-    String memoryInfo = 'Total Memory: ${totalGB.toStringAsFixed(1)} GB';
+    String memoryInfo = 'Total Memory: ';
+    if (totalGB != null) {
+      memoryInfo += '${totalGB.toStringAsFixed(1)} GB';
+    } else {
+      memoryInfo += 'Unknown';
+    }
     if (memoryTypeSpeed.isNotEmpty) {
       memoryInfo += ' $memoryTypeSpeed';
     }
+
+    final progressPercent =
+        ((percentUsed ?? 0) / 100).clamp(0.0, 1.0).toDouble();
+    final percentLabel = percentUsed != null
+        ? '${percentUsed.toStringAsFixed(0)}% used'
+        : 'Usage unavailable';
+    final freeLabel = freeGB != null
+        ? '${freeGB.toStringAsFixed(1)} GB free'
+        : 'Free memory unknown';
 
     return ZagBlock(
       title: 'MEMORY',
@@ -287,17 +325,17 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           children: [
             Positioned.fill(
               child: ZagLinearPercentIndicator(
-                percent: percentUsed / 100,
-                progressColor: percentUsed > 90
+                percent: progressPercent,
+                progressColor: percentUsed != null && percentUsed > 90
                     ? ZagColours.red
-                    : percentUsed > 75
+                    : percentUsed != null && percentUsed > 75
                         ? ZagColours.orange
                         : Colors.green,
               ),
             ),
             Center(
               child: Text(
-                '${percentUsed.toStringAsFixed(0)}% used (${freeGB.toStringAsFixed(1)} GB free)',
+                '$percentLabel ($freeLabel)',
                 style: const TextStyle(
                   fontSize: 13,
                   color: Colors.white,

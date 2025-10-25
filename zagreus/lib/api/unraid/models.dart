@@ -5,3 +5,4 @@ export 'models/parity_info.dart';
 export 'models/docker_info.dart';
 export 'models/ups_info.dart';
 export 'models/vm_info.dart';
+export 'models/metrics_info.dart';

@@ -178,6 +178,31 @@ class UnraidAPI {
     return UnraidSystemInfo.fromJson(combinedData);
   }
 
+  /// Fetch live metrics (CPU, memory usage).
+  Future<UnraidMetricsInfo> getMetricsInfo() async {
+    const query = '''
+      query {
+        metrics {
+          memory {
+            total
+            available
+          }
+          cpu {
+            percentTotal
+          }
+        }
+      }
+    ''';
+
+    final data = await _query(query);
+    final metrics = data['metrics'];
+    if (metrics is! Map<String, dynamic>) {
+      throw Exception('Unexpected metrics response: $data');
+    }
+
+    return UnraidMetricsInfo.fromJson(metrics);
+  }
+
   /// Fetch array information including all disks
   Future<UnraidArrayInfo> getArrayInfo() async {
     const query = '''
