@@ -119,18 +119,20 @@ class UpcomingWidgetService {
     SonarrState? sonarrState,
   }) async {
     try {
-      print('📱 Updating upcoming widget...');
+      print('📱 Flutter: Updating upcoming widget...');
 
       // If states aren't provided, we can't update
       if (radarrState == null || sonarrState == null) {
-        print('⚠️ Radarr/Sonarr states not available');
+        print('⚠️ Flutter: Radarr/Sonarr states not available');
         return false;
       }
 
+      print('📦 Flutter: Fetching upcoming content...');
       final upcomingContent = await getUpcomingContent(radarrState, sonarrState);
 
+      print('📊 Flutter: Got ${upcomingContent.length} items');
       if (upcomingContent.isEmpty) {
-        print('⚠️ No upcoming content found');
+        print('⚠️ Flutter: No upcoming content found');
         // Still update with empty data so widget shows "no content" message
       }
 
@@ -139,22 +141,28 @@ class UpcomingWidgetService {
 
       // Convert to JSON for widget
       final jsonData = json.encode(widgetData);
+      print('💾 Flutter: Saving to UserDefaults with key "upcoming_content"');
+      print('💾 Flutter: JSON length: ${jsonData.length} chars');
+      print('💾 Flutter: First 200 chars: ${jsonData.substring(0, jsonData.length < 200 ? jsonData.length : 200)}');
+
       await HomeWidget.saveWidgetData<String>('upcoming_content', jsonData);
       await HomeWidget.saveWidgetData<String>(
         'last_updated',
         DateTime.now().toIso8601String(),
       );
 
+      print('🔄 Flutter: Calling widget update...');
       // Update the widget UI
       await HomeWidget.updateWidget(
         iOSName: 'UpcomingWidget',
         androidName: 'UpcomingWidgetProvider',
       );
 
-      print('✅ Widget updated with ${widgetData.length} items');
+      print('✅ Flutter: Widget updated with ${widgetData.length} items');
       return true;
     } catch (e) {
-      print('❌ Error updating widget: $e');
+      print('❌ Flutter: Error updating widget: $e');
+      print('Stack trace: ${StackTrace.current}');
       return false;
     }
   }

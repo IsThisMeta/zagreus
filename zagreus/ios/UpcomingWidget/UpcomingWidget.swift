@@ -142,6 +142,7 @@ struct SmallWidgetView: View {
         if let item = items.first {
             ZStack {
                 Color(red: 0.14, green: 0.14, blue: 0.17)
+                    .ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -190,6 +191,7 @@ struct MediumWidgetView: View {
     var body: some View {
         ZStack {
             Color(red: 0.14, green: 0.14, blue: 0.17)
+                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -260,6 +262,7 @@ struct LargeWidgetView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             Color(red: 0.14, green: 0.14, blue: 0.17)
+                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
