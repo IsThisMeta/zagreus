@@ -102,7 +102,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             icon: (isUltra || isMega)
                 ? Icons.star_rounded
                 : Icons.star_border_rounded,
-            color: isUltra ? ZagColours.purple : ZagColours.orange,
+            color: ZagColours.orange,
           ),
           onTap: () => _showMegaDialog(context),
         ),

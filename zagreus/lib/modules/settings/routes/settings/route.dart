@@ -5,6 +5,7 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
@@ -162,13 +163,18 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
   Widget _buildSubscriptionsButton() {
     final bool isPro = ZagreusPro.isEnabled;
     final bool isMega = ZagreusMega.isEnabled;
+    final bool isUltra = ZagreusUltra.isEnabled;
 
     // Determine display text and icon
     String displayText;
     IconData displayIcon;
     Color displayColor;
 
-    if (isMega) {
+    if (isUltra) {
+      displayText = 'Zagreus Ultra Active';
+      displayIcon = Icons.star_rounded;
+      displayColor = ZagColours.purple;
+    } else if (isMega) {
       displayText = 'Zagreus Mega Active';
       displayIcon = Icons.star_rounded;
       displayColor = ZagColours.orange;
