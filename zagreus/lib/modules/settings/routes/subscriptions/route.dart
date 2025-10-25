@@ -95,7 +95,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   ? 'Included with Ultra'
                   : isMega
                       ? 'Active • Mega plan'
-                      : 'Higher usage limits with Z'
+                      : 'New Discover features + higher Ask Z limits'
             )
           ],
           trailing: ZagIconButton(
@@ -112,7 +112,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Ultra',
           body: [
             TextSpan(
-              text: isUltra ? ultraPlanLabel! : 'More AI features and power',
+              text: isUltra ? ultraPlanLabel! : 'GPT-5 Discover & Ask Z',
             ),
           ],
           trailing: ZagIconButton(
@@ -364,9 +364,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy higher usage limits with Z."
+                  ? "You have an active Mega subscription.\n\nEnjoy new Discover features and higher Ask Z limits."
                   : 'Zagreus Mega includes:\n'
-                      '• Higher usage limits with Z\n'
+                      '• New Discover upgrades\n'
+                      '• Higher Ask Z usage limits\n'
                       '• Every Zagreus Pro feature\n\n'
                       'Unlock more powerful AI recommendations.',
               style: const TextStyle(
@@ -680,9 +681,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, premium recommendations, and every Mega feature."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, GPT-5 powered Discover features, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
                       '• GPT-5 powered Ask Z responses\n'
+                      '• GPT-5 enhanced Discover features\n'
                       '• AI-guided recommendations.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
