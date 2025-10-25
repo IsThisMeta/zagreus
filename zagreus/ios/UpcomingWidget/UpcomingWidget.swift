@@ -143,15 +143,10 @@ struct SmallWidgetView: View {
     var body: some View {
         if let item = items.first {
             VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Up Next")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.purple)
-                        Spacer()
-                        Text(item.mediaIcon)
-                            .font(.caption)
-                    }
+                    Text("Up Next")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.purple)
 
                     Spacer()
 
@@ -201,9 +196,6 @@ struct MediumWidgetView: View {
 
                 ForEach(items.prefix(3)) { item in
                     HStack(spacing: 10) {
-                        Text(item.mediaIcon)
-                            .font(.title3)
-
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.title)
                                 .font(.system(size: 13, weight: .semibold))
@@ -266,9 +258,6 @@ struct LargeWidgetView: View {
 
                 ForEach(items.prefix(5)) { item in
                     HStack(spacing: 10) {
-                        Text(item.mediaIcon)
-                            .font(.title3)
-
                         VStack(alignment: .leading, spacing: 3) {
                             Text(item.title)
                                 .font(.system(size: 14, weight: .semibold))
