@@ -72,7 +72,8 @@ struct Provider: TimelineProvider {
                 poster: nil,
                 mediaType: "movie",
                 rating: 0.0,
-                overview: ""
+                overview: "",
+                episodeTitle: nil
             )
         ]
     }
@@ -91,6 +92,7 @@ struct UpcomingItem: Codable, Identifiable {
     let mediaType: String
     let rating: Double
     let overview: String
+    let episodeTitle: String?
 
     var formattedDate: String {
         let formatter = ISO8601DateFormatter()
@@ -262,7 +264,6 @@ struct LargeWidgetView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             Color(red: 0.14, green: 0.14, blue: 0.17)
-                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
@@ -287,18 +288,27 @@ struct LargeWidgetView: View {
                                 .foregroundColor(.white)
                                 .lineLimit(1)
 
-                            HStack(spacing: 10) {
-                                Text(item.formattedDate)
+                            if let episodeTitle = item.episodeTitle {
+                                // TV Show: Show episode title
+                                Text(episodeTitle)
                                     .font(.caption)
-                                    .foregroundColor(.purple)
-
-                                HStack(spacing: 3) {
-                                    Image(systemName: "star.fill")
-                                        .font(.caption2)
-                                        .foregroundColor(.yellow)
-                                    Text(String(format: "%.1f", item.rating))
+                                    .foregroundColor(.gray)
+                                    .lineLimit(1)
+                            } else {
+                                // Movie: Show date and rating
+                                HStack(spacing: 10) {
+                                    Text(item.formattedDate)
                                         .font(.caption)
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(.purple)
+
+                                    HStack(spacing: 3) {
+                                        Image(systemName: "star.fill")
+                                            .font(.caption2)
+                                            .foregroundColor(.yellow)
+                                        Text(String(format: "%.1f", item.rating))
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
                                 }
                             }
                         }
@@ -328,7 +338,9 @@ struct UpcomingWidget: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             if #available(iOS 17.0, *) {
                 UpcomingWidgetEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
+                    .containerBackground(for: .widget) {
+                        Color(red: 0.14, green: 0.14, blue: 0.17)
+                    }
             } else {
                 UpcomingWidgetEntryView(entry: entry)
             }
@@ -350,7 +362,8 @@ struct UpcomingWidget: Widget {
             poster: nil,
             mediaType: "movie",
             rating: 8.5,
-            overview: "Paul Atreides unites with Chani and the Fremen while seeking revenge."
+            overview: "Paul Atreides unites with Chani and the Fremen while seeking revenge.",
+            episodeTitle: nil
         ),
         UpcomingItem(
             id: 2,
@@ -359,7 +372,8 @@ struct UpcomingWidget: Widget {
             poster: nil,
             mediaType: "tv",
             rating: 9.2,
-            overview: "Joel and Ellie journey through post-apocalyptic America."
+            overview: "Joel and Ellie journey through post-apocalyptic America.",
+            episodeTitle: "When You're Lost in the Darkness"
         )
     ]
     UpcomingEntry(date: .now, items: sampleItems)

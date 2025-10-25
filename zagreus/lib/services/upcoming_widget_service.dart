@@ -95,10 +95,18 @@ class UpcomingWidgetService {
 
       final episodes = await sonarrState.upcoming!;
 
+      print('📺 Got ${episodes.length} upcoming episodes from Sonarr');
+
       return episodes.take(5).map((episode) {
+        final seriesTitle = episode.series?.title ?? "Unknown";
+        final episodeTitle = episode.title ?? "Episode";
+        print('📺 Episode: seriesTitle=$seriesTitle, episodeTitle=$episodeTitle');
+        print('📺 Episode has series object: ${episode.series != null}');
+
         return {
           'id': episode.id ?? 0,
-          'title': '${episode.series?.title ?? "Unknown"} - ${episode.title ?? "Episode"}',
+          'title': seriesTitle,
+          'episodeTitle': episodeTitle,
           'releaseDate': episode.airDateUtc?.toIso8601String() ??
                         DateTime.now().toIso8601String(),
           'poster': null, // Widget doesn't display posters yet
