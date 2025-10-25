@@ -86,14 +86,29 @@ class UnraidOSInfo {
 
     final seconds = int.tryParse(raw);
     if (seconds == null) {
-      return raw;
+      final parsedDate = DateTime.tryParse(raw);
+      if (parsedDate == null) {
+        return raw;
+      }
+
+      final nowUtc = DateTime.now().toUtc();
+      final candidate = parsedDate.toUtc();
+      final delta = nowUtc.difference(candidate);
+      if (delta.isNegative) {
+        return 'Just now';
+      }
+      return _formatDuration(delta.inSeconds);
     }
 
     if (seconds <= 0) {
       return 'Less than a minute';
     }
 
-    final duration = Duration(seconds: seconds);
+    return _formatDuration(seconds);
+  }
+
+  String _formatDuration(int totalSeconds) {
+    final duration = Duration(seconds: totalSeconds);
     final days = duration.inDays;
     final hours = duration.inHours.remainder(24);
     final minutes = duration.inMinutes.remainder(60);
