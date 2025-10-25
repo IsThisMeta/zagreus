@@ -79,6 +79,40 @@ class UnraidParityInfo {
     return parts.join(', ');
   }
 
+  /// Format average speed as human-readable string
+  String get formattedSpeed {
+    final raw = speed?.trim();
+    if (raw == null || raw.isEmpty) return '';
+
+    // If the string already contains units, return as-is
+    if (RegExp(r'[A-Za-z]').hasMatch(raw)) {
+      return raw;
+    }
+
+    final value = double.tryParse(raw);
+    if (value == null) return raw;
+
+    const bytesPerKB = 1024;
+    const bytesPerMB = bytesPerKB * 1024;
+    const bytesPerGB = bytesPerMB * 1024;
+
+    String format(double number, String unit) {
+      final precision = number >= 100 ? 0 : number >= 10 ? 1 : 2;
+      return '${number.toStringAsFixed(precision)} $unit';
+    }
+
+    if (value >= bytesPerGB) {
+      return format(value / bytesPerGB, 'GB/s');
+    }
+    if (value >= bytesPerMB) {
+      return format(value / bytesPerMB, 'MB/s');
+    }
+    if (value >= bytesPerKB) {
+      return format(value / bytesPerKB, 'KB/s');
+    }
+    return '${value.toStringAsFixed(0)} B/s';
+  }
+
   /// Format date as human-readable string
   String get formattedDate {
     if (date == null || date!.isEmpty) return 'Unknown';

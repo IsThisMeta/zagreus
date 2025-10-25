@@ -116,8 +116,9 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     final duration = parity.formattedDuration.isNotEmpty
         ? parity.formattedDuration
         : 'Unknown duration';
-    final averageSpeed =
-        parity.speed?.isNotEmpty ?? false ? parity.speed! : 'Unknown speed';
+    final averageSpeed = parity.formattedSpeed.isNotEmpty
+        ? parity.formattedSpeed
+        : 'Unknown';
     final errorsCount = parity.errors ?? 0;
     final errorsColor = errorsCount == 0 ? Colors.green : ZagColours.red;
 
