@@ -7,6 +7,8 @@ import 'package:device_preview/device_preview.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/database.dart';
+import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/router.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
 import 'package:zagreus/system/cache/memory/memory_store.dart';
@@ -115,9 +117,10 @@ class _ZagBIOSState extends State<ZagBIOS> {
     final router = ZagRouter.router;
 
     return ZagState.providers(
-      child: DevicePreview(
-        enabled: kDebugMode && ZagPlatform.isDesktop,
-        builder: (context) => EasyLocalization(
+      child: _WidgetUpdateTrigger(
+        child: DevicePreview(
+          enabled: kDebugMode && ZagPlatform.isDesktop,
+          builder: (context) => EasyLocalization(
           supportedLocales: [Locale('en')],
           path: 'assets/localization',
           fallbackLocale: Locale('en'),
@@ -153,6 +156,55 @@ class _ZagBIOSState extends State<ZagBIOS> {
           ),
         ),
       ),
+    ),
     );
   }
+}
+
+/// Widget that triggers the home screen widget update after app launches
+class _WidgetUpdateTrigger extends StatefulWidget {
+  final Widget child;
+
+  const _WidgetUpdateTrigger({required this.child});
+
+  @override
+  State<_WidgetUpdateTrigger> createState() => _WidgetUpdateTriggerState();
+}
+
+class _WidgetUpdateTriggerState extends State<_WidgetUpdateTrigger> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Update widget after app initializes
+    if (ZagPlatform.isIOS) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateWidget();
+      });
+    }
+  }
+
+  Future<void> _updateWidget() async {
+    try {
+      print('🏠 WidgetUpdateTrigger: Starting widget update from main...');
+      // Wait for states to be available
+      await Future.delayed(const Duration(seconds: 5));
+
+      final radarrState = context.read<RadarrState>();
+      final sonarrState = context.read<SonarrState>();
+
+      print('🏠 WidgetUpdateTrigger: Radarr enabled=${radarrState.enabled}, Sonarr enabled=${sonarrState.enabled}');
+
+      await UpcomingWidgetService.updateWidget(
+        radarrState: radarrState,
+        sonarrState: sonarrState,
+      );
+    } catch (e, stack) {
+      print('❌ WidgetUpdateTrigger: Widget update error: $e');
+      print('Stack: $stack');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

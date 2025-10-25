@@ -31,12 +31,16 @@ class _State extends State<DashboardRoute> {
   void initState() {
     super.initState();
 
+    print('🏠 Dashboard initState called');
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(initialPage: page);
 
     // Update home screen widget with Radarr/Sonarr upcoming content
+    print('🏠 Dashboard: Platform is iOS? ${ZagPlatform.isIOS}');
     if (ZagPlatform.isIOS) {
+      print('🏠 Dashboard: Scheduling widget update...');
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        print('🏠 Dashboard: PostFrameCallback triggered!');
         _updateWidget();
       });
     }
@@ -44,15 +48,21 @@ class _State extends State<DashboardRoute> {
 
   Future<void> _updateWidget() async {
     try {
+      print('🔄 Dashboard: Starting widget update...');
       final radarrState = context.read<RadarrState>();
       final sonarrState = context.read<SonarrState>();
+
+      print('🔄 Dashboard: Radarr enabled=${radarrState.enabled}, Sonarr enabled=${sonarrState.enabled}');
+
+      // Wait a bit for states to initialize if needed
+      await Future.delayed(const Duration(milliseconds: 500));
 
       await UpcomingWidgetService.updateWidget(
         radarrState: radarrState,
         sonarrState: sonarrState,
       );
     } catch (e) {
-      print('Widget update error: $e');
+      print('❌ Dashboard: Widget update error: $e');
     }
   }
 

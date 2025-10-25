@@ -221,6 +221,7 @@ class SonarrState extends ZagModuleState {
         start: start,
         end: end,
         includeEpisodeFile: true,
+        includeSeries: true,
       );
     notifyListeners();
   }

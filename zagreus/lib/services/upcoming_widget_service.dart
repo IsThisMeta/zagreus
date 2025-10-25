@@ -100,8 +100,16 @@ class UpcomingWidgetService {
       return episodes.take(5).map((episode) {
         final seriesTitle = episode.series?.title ?? "Unknown";
         final episodeTitle = episode.title ?? "Episode";
-        print('📺 Episode: seriesTitle=$seriesTitle, episodeTitle=$episodeTitle');
-        print('📺 Episode has series object: ${episode.series != null}');
+        print('📺 Episode ID: ${episode.id}');
+        print('📺   - Episode title: $episodeTitle');
+        print('📺   - Series object exists: ${episode.series != null}');
+        if (episode.series != null) {
+          print('📺   - Series title: ${episode.series!.title}');
+          print('📺   - Series ID: ${episode.series!.id}');
+        } else {
+          print('📺   - Series is NULL - seriesId=${episode.seriesId}');
+        }
+        print('📺   - Final seriesTitle being used: $seriesTitle');
 
         return {
           'id': episode.id ?? 0,
