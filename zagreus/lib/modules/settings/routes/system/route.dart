@@ -236,6 +236,13 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       overseerrHost: '',
       overseerrKey: '',
       overseerrHeaders: {},
+      // Server
+      serverEnabled: demoConfig['server_enabled'] ?? true,
+      serverHost:
+          demoConfig['server_host'] ?? 'http://192.168.0.48:7878',
+      serverKey: demoConfig['server_key'] ??
+          '4f881bebb9da6a41431cfa5b194b36fa12094a87b5164886542ddfa2e235066c',
+      serverHeaders: const <String, String>{},
     );
 
     // Save the profile with Radarr and Sonarr initially disabled (workaround)
@@ -255,6 +262,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     // Set manual order without Dashboard
     final orderedModules = [
       ZagModule.DISCOVER,
+      ZagModule.SERVER,
       ZagModule.RADARR,
       ZagModule.SONARR,
       ZagModule.LIDARR,

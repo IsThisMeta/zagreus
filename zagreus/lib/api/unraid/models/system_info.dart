@@ -58,8 +58,8 @@ class UnraidOSInfo {
   @JsonKey(name: 'release')
   final String? release;
 
-  @JsonKey(name: 'uptime', fromJson: parseNullableInt)
-  final int? uptime; // in seconds
+  @JsonKey(name: 'uptime')
+  final String? uptime;
 
   UnraidOSInfo({
     this.platform,
@@ -73,7 +73,7 @@ class UnraidOSInfo {
       platform: json['platform'] as String?,
       distro: json['distro'] as String?,
       release: json['release'] as String?,
-      uptime: parseNullableInt(json['uptime']),
+      uptime: json['uptime']?.toString(),
     );
   }
 
@@ -81,18 +81,41 @@ class UnraidOSInfo {
 
   /// Format uptime as human-readable string like "3 days, 1 hour, 43 minutes"
   String get formattedUptime {
-    if (uptime == null) return '';
-    int seconds = uptime!;
-    int days = seconds ~/ 86400;
-    seconds %= 86400;
-    int hours = seconds ~/ 3600;
-    seconds %= 3600;
-    int minutes = seconds ~/ 60;
+    final raw = uptime?.trim() ?? '';
+    if (raw.isEmpty) return 'Unknown';
 
-    List<String> parts = [];
-    if (days > 0) parts.add('$days day${days != 1 ? 's' : ''}');
-    if (hours > 0) parts.add('$hours hour${hours != 1 ? 's' : ''}');
-    if (minutes > 0) parts.add('$minutes minute${minutes != 1 ? 's' : ''}');
+    final seconds = int.tryParse(raw);
+    if (seconds == null) {
+      return raw;
+    }
+
+    if (seconds <= 0) {
+      return 'Less than a minute';
+    }
+
+    final duration = Duration(seconds: seconds);
+    final days = duration.inDays;
+    final hours = duration.inHours.remainder(24);
+    final minutes = duration.inMinutes.remainder(60);
+    final secs = duration.inSeconds.remainder(60);
+
+    final parts = <String>[];
+    if (days > 0) {
+      parts.add('$days day${days == 1 ? '' : 's'}');
+    }
+    if (hours > 0) {
+      parts.add('$hours hour${hours == 1 ? '' : 's'}');
+    }
+    if (minutes > 0) {
+      parts.add('$minutes minute${minutes == 1 ? '' : 's'}');
+    }
+    if (parts.isEmpty) {
+      if (secs > 0) {
+        parts.add('$secs second${secs == 1 ? '' : 's'}');
+      } else {
+        parts.add('Less than a minute');
+      }
+    }
 
     return parts.join(', ');
   }
