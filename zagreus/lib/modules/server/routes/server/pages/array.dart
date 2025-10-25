@@ -388,12 +388,12 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     if (disk.temp == null) return Colors.grey;
 
     if (disk.critical != null && disk.temp! >= disk.critical!) {
-      return ZagColours.red;
+      return Colors.redAccent;
     }
     if (disk.warning != null && disk.temp! >= disk.warning!) {
-      return ZagColours.orange;
+      return Colors.orangeAccent;
     }
-    return Colors.green;
+    return ZagColours.currentAccent;
   }
 
 }
