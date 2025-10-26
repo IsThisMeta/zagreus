@@ -146,16 +146,20 @@ class _State extends State<ConfigurationRadarrRoute>
   void _syncWebhook() async {
     try {
       // Only sync if user is authenticated
-      if (ZagSupabase.isSupported && ZagSupabase.client.auth.currentUser != null) {
+      if (ZagSupabase.isSupported &&
+          ZagSupabase.client.auth.currentUser != null) {
         final profile = ZagProfile.current;
-        
-        if (profile.radarrEnabled && profile.radarrHost.isNotEmpty && profile.radarrKey.isNotEmpty) {
+
+        final effectiveHost = profile.effectiveRadarrHost();
+        if (profile.radarrEnabled &&
+            effectiveHost.isNotEmpty &&
+            profile.radarrKey.isNotEmpty) {
           final api = RadarrAPI(
-            host: profile.radarrHost,
+            host: effectiveHost,
             apiKey: profile.radarrKey,
             headers: Map<String, dynamic>.from(profile.radarrHeaders),
           );
-          
+
           await RadarrWebhookManager.syncWebhook(api);
         }
       }

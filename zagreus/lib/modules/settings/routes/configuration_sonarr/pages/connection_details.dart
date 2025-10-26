@@ -6,6 +6,8 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationSonarrConnectionDetailsRoute extends StatefulWidget {
   const ConfigurationSonarrConnectionDetailsRoute({
@@ -47,18 +49,41 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
 
   Widget _body() {
     return ZagBox.profiles.listenableBuilder(
-      builder: (context, _) => ZagListView(
-        controller: scrollController,
-        children: [
-          _host(),
-          _apiKey(),
-          _customHeaders(),
+      builder: (context, _) => ZagBox.zagreus.listenableBuilder(
+        selectItems: const [
+          ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED,
         ],
+        builder: (context, __) {
+          final advanced =
+              ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+          return ZagListView(
+            controller: scrollController,
+            children: [
+              if (advanced) ZagHeader(text: 'settings.RemoteConnection'.tr()),
+              ..._remoteBlocks(),
+              if (advanced) ...[
+                ZagHeader(text: 'settings.LocalConnection'.tr()),
+                ..._localBlocks(),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _host() {
+  List<Widget> _remoteBlocks() => [
+        _remoteHost(),
+        _apiKey(),
+        _customHeaders(),
+      ];
+
+  List<Widget> _localBlocks() => [
+        _localHost(),
+        _localSsids(),
+      ];
+
+  Widget _remoteHost() {
     String host = ZagProfile.current.sonarrHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
@@ -75,6 +100,58 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
           context.read<SonarrState>().reset();
           // Sync webhook if user is authenticated
           _syncWebhook();
+        }
+      },
+    );
+  }
+
+  Widget _localHost() {
+    final profile = ZagProfile.current;
+    final host = profile.sonarrLocalHost;
+    return ZagBlock(
+      title: 'settings.LocalHost'.tr(),
+      body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await SettingsDialogs().editHost(
+          context,
+          prefill: host,
+        );
+        if (result.item1) {
+          profile.sonarrLocalHost = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid();
+          context.read<SonarrState>().reset();
+        }
+      },
+    );
+  }
+
+  Widget _localSsids() {
+    final profile = ZagProfile.current;
+    final ssids = profile.sonarrLocalSsids;
+    return ZagBlock(
+      title: 'settings.TrustedSsids'.tr(),
+      body: [
+        TextSpan(
+          text: ssids.isEmpty ? 'settings.TrustedSsidsDescription'.tr() : ssids,
+        ),
+      ],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'settings.TrustedSsids'.tr(),
+          prefill: ssids,
+          extraText: [
+            TextSpan(text: 'settings.TrustedSsidsHint'.tr()),
+          ],
+        );
+        if (result.item1) {
+          profile.sonarrLocalSsids = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid();
+          context.read<SonarrState>().reset();
         }
       },
     );
@@ -115,7 +192,8 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         ZagProfile _profile = ZagProfile.current;
-        if (_profile.sonarrHost.isEmpty) {
+        final effectiveHost = _profile.effectiveSonarrHost();
+        if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'
@@ -132,7 +210,7 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
           return;
         }
         SonarrAPI(
-          host: _profile.sonarrHost,
+          host: effectiveHost,
           apiKey: _profile.sonarrKey,
           headers: Map<String, dynamic>.from(
             _profile.sonarrHeaders,
@@ -172,12 +250,17 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
   void _syncWebhook() async {
     try {
       // Only sync if user is authenticated
-      if (ZagSupabase.isSupported && ZagSupabase.client.auth.currentUser != null) {
+      if (ZagSupabase.isSupported &&
+          ZagSupabase.client.auth.currentUser != null) {
         final profile = ZagProfile.current;
-        if (profile.sonarrEnabled && profile.sonarrHost.isNotEmpty && profile.sonarrKey.isNotEmpty) {
-          ZagLogger().debug('Syncing Sonarr webhook after configuration change');
+        final effectiveHost = profile.effectiveSonarrHost();
+        if (profile.sonarrEnabled &&
+            effectiveHost.isNotEmpty &&
+            profile.sonarrKey.isNotEmpty) {
+          ZagLogger()
+              .debug('Syncing Sonarr webhook after configuration change');
           final api = SonarrAPI(
-            host: profile.sonarrHost,
+            host: effectiveHost,
             apiKey: profile.sonarrKey,
             headers: Map<String, dynamic>.from(profile.sonarrHeaders),
           );

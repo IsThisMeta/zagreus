@@ -16,6 +16,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DRAWER_MANUAL_ORDER<List>([]),
   ENABLED_PROFILE<String>(ZagProfile.DEFAULT_PROFILE),
   NETWORKING_TLS_VALIDATION<bool>(false),
+  NETWORKING_LOCAL_SWITCHING_ENABLED<bool>(false),
   THEME_AMOLED<bool>(false),
   THEME_AMOLED_BORDER<bool>(false),
   THEME_LIGHT_BORDER<bool>(false),

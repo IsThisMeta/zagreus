@@ -6,6 +6,8 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationRadarrConnectionDetailsRoute extends StatefulWidget {
   const ConfigurationRadarrConnectionDetailsRoute({
@@ -47,18 +49,41 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
 
   Widget _body() {
     return ZagBox.profiles.listenableBuilder(
-      builder: (context, _) => ZagListView(
-        controller: scrollController,
-        children: [
-          _host(),
-          _apiKey(),
-          _customHeaders(),
+      builder: (context, _) => ZagBox.zagreus.listenableBuilder(
+        selectItems: const [
+          ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED,
         ],
+        builder: (context, __) {
+          final advanced =
+              ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+          return ZagListView(
+            controller: scrollController,
+            children: [
+              if (advanced) ZagHeader(text: 'settings.RemoteConnection'.tr()),
+              ..._remoteBlocks(),
+              if (advanced) ...[
+                ZagHeader(text: 'settings.LocalConnection'.tr()),
+                ..._localBlocks(),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _host() {
+  List<Widget> _remoteBlocks() => [
+        _remoteHost(),
+        _apiKey(),
+        _customHeaders(),
+      ];
+
+  List<Widget> _localBlocks() => [
+        _localHost(),
+        _localSsids(),
+      ];
+
+  Widget _remoteHost() {
     String host = ZagProfile.current.radarrHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
@@ -75,6 +100,58 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
           context.read<RadarrState>().reset();
           // Sync webhook if user is authenticated
           _syncWebhook();
+        }
+      },
+    );
+  }
+
+  Widget _localHost() {
+    final profile = ZagProfile.current;
+    final host = profile.radarrLocalHost;
+    return ZagBlock(
+      title: 'settings.LocalHost'.tr(),
+      body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await SettingsDialogs().editHost(
+          context,
+          prefill: host,
+        );
+        if (result.item1) {
+          profile.radarrLocalHost = result.item2;
+          profile.save();
+          ZagLocalConnectionService().refreshSsid();
+          context.read<RadarrState>().resetProfile();
+        }
+      },
+    );
+  }
+
+  Widget _localSsids() {
+    final profile = ZagProfile.current;
+    final ssids = profile.radarrLocalSsids;
+    return ZagBlock(
+      title: 'settings.TrustedSsids'.tr(),
+      body: [
+        TextSpan(
+          text: ssids.isEmpty ? 'settings.TrustedSsidsDescription'.tr() : ssids,
+        ),
+      ],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'settings.TrustedSsids'.tr(),
+          prefill: ssids,
+          extraText: [
+            TextSpan(text: 'settings.TrustedSsidsHint'.tr()),
+          ],
+        );
+        if (result.item1) {
+          profile.radarrLocalSsids = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid();
+          context.read<RadarrState>().resetProfile();
         }
       },
     );
@@ -115,7 +192,8 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         ZagProfile _profile = ZagProfile.current;
-        if (_profile.radarrHost.isEmpty) {
+        final effectiveHost = _profile.effectiveRadarrHost();
+        if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'
@@ -132,24 +210,20 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
           return;
         }
         RadarrAPI(
-          host: _profile.radarrHost,
+          host: effectiveHost,
           apiKey: _profile.radarrKey,
           headers: Map<String, dynamic>.from(_profile.radarrHeaders),
-        )
-            .system
-            .status()
-            .then(
-              (_) {
-                showZagSuccessSnackBar(
-                  title: 'settings.ConnectedSuccessfully'.tr(),
-                  message: 'settings.ConnectedSuccessfullyMessage'
-                      .tr(args: [ZagModule.RADARR.title]),
-                );
-                // Sync webhook after successful connection
-                _syncWebhook();
-              },
-            )
-            .catchError(
+        ).system.status().then(
+          (_) {
+            showZagSuccessSnackBar(
+              title: 'settings.ConnectedSuccessfully'.tr(),
+              message: 'settings.ConnectedSuccessfullyMessage'
+                  .tr(args: [ZagModule.RADARR.title]),
+            );
+            // Sync webhook after successful connection
+            _syncWebhook();
+          },
+        ).catchError(
           (error, trace) {
             ZagLogger().error(
               'Connection Test Failed',
@@ -178,12 +252,17 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
   void _syncWebhook() async {
     try {
       // Only sync if user is authenticated
-      if (ZagSupabase.isSupported && ZagSupabase.client.auth.currentUser != null) {
+      if (ZagSupabase.isSupported &&
+          ZagSupabase.client.auth.currentUser != null) {
         final profile = ZagProfile.current;
-        if (profile.radarrEnabled && profile.radarrHost.isNotEmpty && profile.radarrKey.isNotEmpty) {
-          ZagLogger().debug('Syncing Radarr webhook after configuration change');
+        final effectiveHost = profile.effectiveRadarrHost();
+        if (profile.radarrEnabled &&
+            effectiveHost.isNotEmpty &&
+            profile.radarrKey.isNotEmpty) {
+          ZagLogger()
+              .debug('Syncing Radarr webhook after configuration change');
           final api = RadarrAPI(
-            host: profile.radarrHost,
+            host: effectiveHost,
             apiKey: profile.radarrKey,
             headers: Map<String, dynamic>.from(profile.radarrHeaders),
           );

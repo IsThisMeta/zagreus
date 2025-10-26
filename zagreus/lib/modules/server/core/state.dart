@@ -42,8 +42,8 @@ class ServerState extends ZagModuleState {
     ZagProfile profile = ZagProfile.current;
     // Copy profile into state
     _enabled = profile.serverEnabled;
-    _host = profile.serverHost;
+    _host = profile.effectiveServerHost();
     _apiKey = profile.serverKey;
-    _headers = profile.serverHeaders;
+    _headers = Map.unmodifiable(profile.serverHeaders);
   }
 }

@@ -6,11 +6,10 @@ class SABnzbdAPI {
 
   SABnzbdAPI._internal(this._dio);
   factory SABnzbdAPI.from(ZagProfile profile) {
+    final host = profile.effectiveSabnzbdHost();
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: profile.sabnzbdHost.endsWith('/')
-            ? '${profile.sabnzbdHost}api'
-            : '${profile.sabnzbdHost}/api',
+        baseUrl: host.endsWith('/') ? '${host}api' : '$host/api',
         queryParameters: {
           if (profile.sabnzbdKey != '') 'apikey': profile.sabnzbdKey,
           'output': 'json',

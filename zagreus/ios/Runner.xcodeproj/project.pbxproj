@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,7 @@
 		838FD35A2EAC9C32008D550F /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838FD3592EAC9C32008D550F /* WidgetKit.framework */; };
 		838FD35C2EAC9C32008D550F /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838FD35B2EAC9C32008D550F /* SwiftUI.framework */; };
 		838FD36B2EAC9C33008D550F /* UpcomingWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 838FD3582EAC9C32008D550F /* UpcomingWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		838FD53F2EAEB023008D550F /* LocalNetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838FD53E2EAEB023008D550F /* LocalNetworkMonitor.swift */; };
 		8395246F2E75483800E8FC1F /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 8395246E2E75483800E8FC1F /* Products.storekit */; };
 		83E2E72A2E8F84E700366ABF /* NotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 83E2E7232E8F84E700366ABF /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
@@ -89,6 +90,7 @@
 		838FD3592EAC9C32008D550F /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		838FD35B2EAC9C32008D550F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		838FD3722EAC9C86008D550F /* UpcomingWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UpcomingWidgetExtension.entitlements; sourceTree = "<group>"; };
+		838FD53E2EAEB023008D550F /* LocalNetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalNetworkMonitor.swift; path = Runner/LocalNetworkMonitor.swift; sourceTree = "<group>"; };
 		8395246E2E75483800E8FC1F /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		83D8DB5D2E7126AE004A5A84 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		83E2E7232E8F84E700366ABF /* NotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -108,14 +110,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		838FD36F2EAC9C33008D550F /* Exceptions for "UpcomingWidget" folder in "UpcomingWidgetExtension" target */ = {
+		838FD36F2EAC9C33008D550F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 838FD3572EAC9C32008D550F /* UpcomingWidgetExtension */;
 		};
-		83E2E72F2E8F84E700366ABF /* Exceptions for "NotificationServiceExtension" folder in "NotificationServiceExtension" target */ = {
+		83E2E72F2E8F84E700366ABF /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -125,30 +127,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		838FD35D2EAC9C32008D550F /* UpcomingWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				838FD36F2EAC9C33008D550F /* Exceptions for "UpcomingWidget" folder in "UpcomingWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = UpcomingWidget;
-			sourceTree = "<group>";
-		};
-		83E2E7242E8F84E700366ABF /* NotificationServiceExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				83E2E72F2E8F84E700366ABF /* Exceptions for "NotificationServiceExtension" folder in "NotificationServiceExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = NotificationServiceExtension;
-			sourceTree = "<group>";
-		};
+		838FD35D2EAC9C32008D550F /* UpcomingWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (838FD36F2EAC9C33008D550F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = UpcomingWidget; sourceTree = "<group>"; };
+		83E2E7242E8F84E700366ABF /* NotificationServiceExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (83E2E72F2E8F84E700366ABF /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = NotificationServiceExtension; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +183,7 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				838FD53E2EAEB023008D550F /* LocalNetworkMonitor.swift */,
 				838FD3722EAC9C86008D550F /* UpcomingWidgetExtension.entitlements */,
 				8395246E2E75483800E8FC1F /* Products.storekit */,
 				9740EEB11CF90186004384FC /* Flutter */,
@@ -522,9 +503,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -561,6 +546,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				838FD53F2EAEB023008D550F /* LocalNetworkMonitor.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

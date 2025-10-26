@@ -2,6 +2,7 @@ import 'package:zagreus/database/box.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/vendor.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 part 'profile.g.dart';
 
@@ -38,6 +39,14 @@ class ZagProfile extends HiveObject {
   Map<String, String> lidarrHeaders;
 
   @JsonKey()
+  @HiveField(48, defaultValue: '')
+  String lidarrLocalHost;
+
+  @JsonKey()
+  @HiveField(49, defaultValue: '')
+  String lidarrLocalSsids;
+
+  @JsonKey()
   @HiveField(3, defaultValue: false)
   bool radarrEnabled;
 
@@ -52,6 +61,14 @@ class ZagProfile extends HiveObject {
   @JsonKey()
   @HiveField(27, defaultValue: <String, String>{})
   Map<String, String> radarrHeaders;
+
+  @JsonKey()
+  @HiveField(50, defaultValue: '')
+  String radarrLocalHost;
+
+  @JsonKey()
+  @HiveField(51, defaultValue: '')
+  String radarrLocalSsids;
 
   @JsonKey()
   @HiveField(6, defaultValue: false)
@@ -70,6 +87,14 @@ class ZagProfile extends HiveObject {
   Map<String, String> sonarrHeaders;
 
   @JsonKey()
+  @HiveField(52, defaultValue: '')
+  String sonarrLocalHost;
+
+  @JsonKey()
+  @HiveField(53, defaultValue: '')
+  String sonarrLocalSsids;
+
+  @JsonKey()
   @HiveField(9, defaultValue: false)
   bool sabnzbdEnabled;
 
@@ -84,6 +109,14 @@ class ZagProfile extends HiveObject {
   @JsonKey()
   @HiveField(29, defaultValue: <String, String>{})
   Map<String, String> sabnzbdHeaders;
+
+  @JsonKey()
+  @HiveField(54, defaultValue: '')
+  String sabnzbdLocalHost;
+
+  @JsonKey()
+  @HiveField(55, defaultValue: '')
+  String sabnzbdLocalSsids;
 
   @JsonKey()
   @HiveField(12, defaultValue: false)
@@ -104,6 +137,14 @@ class ZagProfile extends HiveObject {
   @JsonKey()
   @HiveField(30, defaultValue: <String, String>{})
   Map<String, String> nzbgetHeaders;
+
+  @JsonKey()
+  @HiveField(56, defaultValue: '')
+  String nzbgetLocalHost;
+
+  @JsonKey()
+  @HiveField(57, defaultValue: '')
+  String nzbgetLocalSsids;
 
   @JsonKey()
   @HiveField(23, defaultValue: false)
@@ -132,6 +173,14 @@ class ZagProfile extends HiveObject {
   @JsonKey()
   @HiveField(35, defaultValue: <String, String>{})
   Map<String, String> tautulliHeaders;
+
+  @JsonKey()
+  @HiveField(58, defaultValue: '')
+  String tautulliLocalHost;
+
+  @JsonKey()
+  @HiveField(59, defaultValue: '')
+  String tautulliLocalSsids;
 
   @JsonKey()
   @HiveField(40, defaultValue: false)
@@ -165,33 +214,51 @@ class ZagProfile extends HiveObject {
   @HiveField(47, defaultValue: <String, String>{})
   Map<String, String> serverHeaders;
 
+  @JsonKey()
+  @HiveField(60, defaultValue: '')
+  String serverLocalHost;
+
+  @JsonKey()
+  @HiveField(61, defaultValue: '')
+  String serverLocalSsids;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
     required this.lidarrHost,
     required this.lidarrKey,
     required this.lidarrHeaders,
+    required this.lidarrLocalHost,
+    required this.lidarrLocalSsids,
     //Radarr
     required this.radarrEnabled,
     required this.radarrHost,
     required this.radarrKey,
     required this.radarrHeaders,
+    required this.radarrLocalHost,
+    required this.radarrLocalSsids,
     //Sonarr
     required this.sonarrEnabled,
     required this.sonarrHost,
     required this.sonarrKey,
     required this.sonarrHeaders,
+    required this.sonarrLocalHost,
+    required this.sonarrLocalSsids,
     //SABnzbd
     required this.sabnzbdEnabled,
     required this.sabnzbdHost,
     required this.sabnzbdKey,
     required this.sabnzbdHeaders,
+    required this.sabnzbdLocalHost,
+    required this.sabnzbdLocalSsids,
     //NZBGet
     required this.nzbgetEnabled,
     required this.nzbgetHost,
     required this.nzbgetUser,
     required this.nzbgetPass,
     required this.nzbgetHeaders,
+    required this.nzbgetLocalHost,
+    required this.nzbgetLocalSsids,
     //Wake On LAN
     required this.wakeOnLANEnabled,
     required this.wakeOnLANBroadcastAddress,
@@ -201,6 +268,8 @@ class ZagProfile extends HiveObject {
     required this.tautulliHost,
     required this.tautulliKey,
     required this.tautulliHeaders,
+    required this.tautulliLocalHost,
+    required this.tautulliLocalSsids,
     //Overseerr
     required this.overseerrEnabled,
     required this.overseerrHost,
@@ -211,6 +280,8 @@ class ZagProfile extends HiveObject {
     required this.serverHost,
     required this.serverKey,
     required this.serverHeaders,
+    required this.serverLocalHost,
+    required this.serverLocalSsids,
   });
 
   factory ZagProfile({
@@ -219,27 +290,37 @@ class ZagProfile extends HiveObject {
     String? lidarrHost,
     String? lidarrKey,
     Map<String, String>? lidarrHeaders,
+    String? lidarrLocalHost,
+    String? lidarrLocalSsids,
     //Radarr
     bool? radarrEnabled,
     String? radarrHost,
     String? radarrKey,
     Map<String, String>? radarrHeaders,
+    String? radarrLocalHost,
+    String? radarrLocalSsids,
     //Sonarr
     bool? sonarrEnabled,
     String? sonarrHost,
     String? sonarrKey,
     Map<String, String>? sonarrHeaders,
+    String? sonarrLocalHost,
+    String? sonarrLocalSsids,
     //SABnzbd
     bool? sabnzbdEnabled,
     String? sabnzbdHost,
     String? sabnzbdKey,
     Map<String, String>? sabnzbdHeaders,
+    String? sabnzbdLocalHost,
+    String? sabnzbdLocalSsids,
     //NZBGet
     bool? nzbgetEnabled,
     String? nzbgetHost,
     String? nzbgetUser,
     String? nzbgetPass,
     Map<String, String>? nzbgetHeaders,
+    String? nzbgetLocalHost,
+    String? nzbgetLocalSsids,
     //Wake On LAN
     bool? wakeOnLANEnabled,
     String? wakeOnLANBroadcastAddress,
@@ -249,6 +330,8 @@ class ZagProfile extends HiveObject {
     String? tautulliHost,
     String? tautulliKey,
     Map<String, String>? tautulliHeaders,
+    String? tautulliLocalHost,
+    String? tautulliLocalSsids,
     //Overseerr
     bool? overseerrEnabled,
     String? overseerrHost,
@@ -259,6 +342,8 @@ class ZagProfile extends HiveObject {
     String? serverHost,
     String? serverKey,
     Map<String, String>? serverHeaders,
+    String? serverLocalHost,
+    String? serverLocalSsids,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -266,27 +351,37 @@ class ZagProfile extends HiveObject {
       lidarrHost: lidarrHost ?? '',
       lidarrKey: lidarrKey ?? '',
       lidarrHeaders: lidarrHeaders ?? {},
+      lidarrLocalHost: lidarrLocalHost ?? '',
+      lidarrLocalSsids: lidarrLocalSsids ?? '',
       // Radarr
       radarrEnabled: radarrEnabled ?? false,
       radarrHost: radarrHost ?? '',
       radarrKey: radarrKey ?? '',
       radarrHeaders: radarrHeaders ?? {},
+      radarrLocalHost: radarrLocalHost ?? '',
+      radarrLocalSsids: radarrLocalSsids ?? '',
       // Sonarr
       sonarrEnabled: sonarrEnabled ?? false,
       sonarrHost: sonarrHost ?? '',
       sonarrKey: sonarrKey ?? '',
       sonarrHeaders: sonarrHeaders ?? {},
+      sonarrLocalHost: sonarrLocalHost ?? '',
+      sonarrLocalSsids: sonarrLocalSsids ?? '',
       // SABnzbd
       sabnzbdEnabled: sabnzbdEnabled ?? false,
       sabnzbdHost: sabnzbdHost ?? '',
       sabnzbdKey: sabnzbdKey ?? '',
       sabnzbdHeaders: sabnzbdHeaders ?? {},
+      sabnzbdLocalHost: sabnzbdLocalHost ?? '',
+      sabnzbdLocalSsids: sabnzbdLocalSsids ?? '',
       // NZBGet
       nzbgetEnabled: nzbgetEnabled ?? false,
       nzbgetHost: nzbgetHost ?? '',
       nzbgetUser: nzbgetUser ?? '',
       nzbgetPass: nzbgetPass ?? '',
       nzbgetHeaders: nzbgetHeaders ?? {},
+      nzbgetLocalHost: nzbgetLocalHost ?? '',
+      nzbgetLocalSsids: nzbgetLocalSsids ?? '',
       // Wake On LAN
       wakeOnLANEnabled: wakeOnLANEnabled ?? false,
       wakeOnLANBroadcastAddress: wakeOnLANBroadcastAddress ?? '',
@@ -296,6 +391,8 @@ class ZagProfile extends HiveObject {
       tautulliHost: tautulliHost ?? '',
       tautulliKey: tautulliKey ?? '',
       tautulliHeaders: tautulliHeaders ?? {},
+      tautulliLocalHost: tautulliLocalHost ?? '',
+      tautulliLocalSsids: tautulliLocalSsids ?? '',
       // Overseerr
       overseerrEnabled: overseerrEnabled ?? false,
       overseerrHost: overseerrHost ?? '',
@@ -306,6 +403,8 @@ class ZagProfile extends HiveObject {
       serverHost: serverHost ?? '',
       serverKey: serverKey ?? '',
       serverHeaders: serverHeaders ?? {},
+      serverLocalHost: serverLocalHost ?? '',
+      serverLocalSsids: serverLocalSsids ?? '',
     );
   }
 
@@ -336,4 +435,46 @@ class ZagProfile extends HiveObject {
     }
     return false;
   }
+
+  String effectiveLidarrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: lidarrHost,
+        localHost: lidarrLocalHost,
+        ssidList: lidarrLocalSsids,
+      );
+
+  String effectiveRadarrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: radarrHost,
+        localHost: radarrLocalHost,
+        ssidList: radarrLocalSsids,
+      );
+
+  String effectiveSonarrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: sonarrHost,
+        localHost: sonarrLocalHost,
+        ssidList: sonarrLocalSsids,
+      );
+
+  String effectiveSabnzbdHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: sabnzbdHost,
+        localHost: sabnzbdLocalHost,
+        ssidList: sabnzbdLocalSsids,
+      );
+
+  String effectiveNzbgetHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: nzbgetHost,
+        localHost: nzbgetLocalHost,
+        ssidList: nzbgetLocalSsids,
+      );
+
+  String effectiveTautulliHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: tautulliHost,
+        localHost: tautulliLocalHost,
+        ssidList: tautulliLocalSsids,
+      );
+
+  String effectiveServerHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: serverHost,
+        localHost: serverLocalHost,
+        ssidList: serverLocalSsids,
+      );
 }

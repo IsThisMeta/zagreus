@@ -4,6 +4,8 @@ import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationServerConnectionDetailsRoute extends StatefulWidget {
   const ConfigurationServerConnectionDetailsRoute({
@@ -45,18 +47,41 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
 
   Widget _body() {
     return ZagBox.profiles.listenableBuilder(
-      builder: (context, _) => ZagListView(
-        controller: scrollController,
-        children: [
-          _host(),
-          _apiKey(),
-          _customHeaders(),
+      builder: (context, _) => ZagBox.zagreus.listenableBuilder(
+        selectItems: const [
+          ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED,
         ],
+        builder: (context, __) {
+          final advanced =
+              ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+          return ZagListView(
+            controller: scrollController,
+            children: [
+              if (advanced) ZagHeader(text: 'settings.RemoteConnection'.tr()),
+              ..._remoteBlocks(),
+              if (advanced) ...[
+                ZagHeader(text: 'settings.LocalConnection'.tr()),
+                ..._localBlocks(),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _host() {
+  List<Widget> _remoteBlocks() => [
+        _remoteHost(),
+        _apiKey(),
+        _customHeaders(),
+      ];
+
+  List<Widget> _localBlocks() => [
+        _localHost(),
+        _localSsids(),
+      ];
+
+  Widget _remoteHost() {
     String host = ZagProfile.current.serverHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
@@ -70,6 +95,56 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
         if (_values.item1) {
           ZagProfile.current.serverHost = _values.item2;
           ZagProfile.current.save();
+          context.read<ServerState>().reset();
+        }
+      },
+    );
+  }
+
+  Widget _localHost() {
+    final profile = ZagProfile.current;
+    final host = profile.serverLocalHost;
+    return ZagBlock(
+      title: 'settings.LocalHost'.tr(),
+      body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await SettingsDialogs().editHost(
+          context,
+          prefill: host,
+        );
+        if (result.item1) {
+          profile.serverLocalHost = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid();
+          context.read<ServerState>().reset();
+        }
+      },
+    );
+  }
+
+  Widget _localSsids() {
+    final profile = ZagProfile.current;
+    final ssids = profile.serverLocalSsids;
+    return ZagBlock(
+      title: 'settings.TrustedSsids'.tr(),
+      body: [
+        TextSpan(
+          text: ssids.isEmpty ? 'settings.TrustedSsidsDescription'.tr() : ssids,
+        ),
+      ],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'settings.TrustedSsids'.tr(),
+          prefill: ssids,
+          extraText: [TextSpan(text: 'settings.TrustedSsidsHint'.tr())],
+        );
+        if (result.item1) {
+          profile.serverLocalSsids = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid();
           context.read<ServerState>().reset();
         }
       },
@@ -118,7 +193,8 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         ZagProfile _profile = ZagProfile.current;
-        if (_profile.serverHost.isEmpty) {
+        final effectiveHost = _profile.effectiveServerHost();
+        if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'
@@ -135,21 +211,18 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
           return;
         }
         UnraidAPI(
-          host: _profile.serverHost,
+          host: effectiveHost,
           apiKey: _profile.serverKey,
           headers: Map<String, dynamic>.from(_profile.serverHeaders),
-        )
-            .getSystemInfo()
-            .then(
-              (info) {
-                showZagSuccessSnackBar(
-                  title: 'settings.ConnectedSuccessfully'.tr(),
-                  message: 'settings.ConnectedSuccessfullyMessage'
-                      .tr(args: [ZagModule.SERVER.title]),
-                );
-              },
-            )
-            .catchError(
+        ).getSystemInfo().then(
+          (info) {
+            showZagSuccessSnackBar(
+              title: 'settings.ConnectedSuccessfully'.tr(),
+              message: 'settings.ConnectedSuccessfullyMessage'
+                  .tr(args: [ZagModule.SERVER.title]),
+            );
+          },
+        ).catchError(
           (error, trace) {
             ZagLogger().error(
               'Connection Test Failed',

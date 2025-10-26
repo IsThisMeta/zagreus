@@ -77,7 +77,7 @@ class RadarrState extends ZagModuleState {
     ZagProfile _profile = ZagProfile.current;
     // Copy profile into state
     _enabled = _profile.radarrEnabled;
-    _host = _profile.radarrHost;
+    _host = _profile.effectiveRadarrHost();
     _apiKey = _profile.radarrKey;
     _headers = Map.unmodifiable(_profile.radarrHeaders);
 

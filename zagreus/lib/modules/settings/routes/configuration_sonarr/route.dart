@@ -133,16 +133,20 @@ class _State extends State<ConfigurationSonarrRoute>
   void _syncWebhook() async {
     try {
       // Only sync if user is authenticated
-      if (ZagSupabase.isSupported && ZagSupabase.client.auth.currentUser != null) {
+      if (ZagSupabase.isSupported &&
+          ZagSupabase.client.auth.currentUser != null) {
         final profile = ZagProfile.current;
-        
-        if (profile.sonarrEnabled && profile.sonarrHost.isNotEmpty && profile.sonarrKey.isNotEmpty) {
+
+        final effectiveHost = profile.effectiveSonarrHost();
+        if (profile.sonarrEnabled &&
+            effectiveHost.isNotEmpty &&
+            profile.sonarrKey.isNotEmpty) {
           final api = SonarrAPI(
-            host: profile.sonarrHost,
+            host: effectiveHost,
             apiKey: profile.sonarrKey,
             headers: Map<String, dynamic>.from(profile.sonarrHeaders),
           );
-          
+
           await SonarrWebhookManager.syncWebhook(api);
         }
       }

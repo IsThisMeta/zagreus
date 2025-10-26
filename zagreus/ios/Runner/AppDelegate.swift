@@ -20,10 +20,12 @@ import UserNotifications
     
     // Set up method channel for notification permissions
     if let controller = window?.rootViewController as? FlutterViewController {
-      let channel = FlutterMethodChannel(name: "app.zagreus/notifications",
-                                        binaryMessenger: controller.binaryMessenger)
-      
-      channel.setMethodCallHandler { (call, result) in
+      let notificationChannel = FlutterMethodChannel(
+        name: "app.zagreus/notifications",
+        binaryMessenger: controller.binaryMessenger
+      )
+
+      notificationChannel.setMethodCallHandler { (call, result) in
         switch call.method {
         case "requestPermission":
           print("Zagreus: Method channel received requestPermission")
@@ -39,6 +41,12 @@ import UserNotifications
           result(FlutterMethodNotImplemented)
         }
       }
+
+      let localNetworkChannel = FlutterMethodChannel(
+        name: "app.zagreus/local_network",
+        binaryMessenger: controller.binaryMessenger
+      )
+      LocalNetworkMonitor.shared.startMonitoring(with: localNetworkChannel)
     }
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

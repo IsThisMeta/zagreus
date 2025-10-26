@@ -86,7 +86,7 @@ class TautulliState extends ZagModuleState {
     ZagProfile _profile = ZagProfile.current;
     // Copy profile into state
     _enabled = _profile.tautulliEnabled;
-    _host = _profile.tautulliHost;
+    _host = _profile.effectiveTautulliHost();
     _apiKey = _profile.tautulliKey;
     _headers = _profile.tautulliHeaders;
     // Create the API instance if Tautulli is enabled

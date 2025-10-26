@@ -6,7 +6,7 @@ class NZBGetAPI {
 
   NZBGetAPI._internal(this._dio);
   factory NZBGetAPI.from(ZagProfile profile) {
-    String _baseURL = Uri.encodeFull(profile.nzbgetHost);
+    String _baseURL = Uri.encodeFull(profile.effectiveNzbgetHost());
     _baseURL += profile.nzbgetUser.isNotEmpty && profile.nzbgetPass.isNotEmpty
         ? '/${profile.nzbgetUser}:${profile.nzbgetPass}/jsonrpc'
         : '/jsonrpc';

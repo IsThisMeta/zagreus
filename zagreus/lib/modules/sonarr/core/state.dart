@@ -66,9 +66,9 @@ class SonarrState extends ZagModuleState {
     // Copy profile into state
     _api = null;
     _enabled = _profile.sonarrEnabled;
-    _host = _profile.sonarrHost;
+    _host = _profile.effectiveSonarrHost();
     _apiKey = _profile.sonarrKey;
-    _headers = _profile.sonarrHeaders;
+    _headers = Map.unmodifiable(_profile.sonarrHeaders);
     // Create the API instance if Sonarr is enabled and configured
     if (_enabled && _host.isNotEmpty && _apiKey.isNotEmpty) {
       try {
@@ -80,12 +80,13 @@ class SonarrState extends ZagModuleState {
         // Sync webhook if enabled
         _syncWebhook();
       } catch (e, stackTrace) {
-        ZagLogger().error('Failed to create Sonarr API instance', e, stackTrace);
+        ZagLogger()
+            .error('Failed to create Sonarr API instance', e, stackTrace);
         _api = null;
       }
     }
   }
-  
+
   /// Sync webhook configuration
   Future<void> _syncWebhook() async {
     try {
@@ -105,8 +106,7 @@ class SonarrState extends ZagModuleState {
   /// CATALOGUE ///
   /////////////////
 
-  ZagListViewOption _seriesViewType =
-      SonarrDatabase.DEFAULT_VIEW_SERIES.read();
+  ZagListViewOption _seriesViewType = SonarrDatabase.DEFAULT_VIEW_SERIES.read();
   ZagListViewOption get seriesViewType => _seriesViewType;
   set seriesViewType(ZagListViewOption seriesViewType) {
     _seriesViewType = seriesViewType;

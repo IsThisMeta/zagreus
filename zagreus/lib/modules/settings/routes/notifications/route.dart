@@ -78,8 +78,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ZagLogger().debug('=== WEBHOOK SYNC TRIGGERED (Notifications Page) ===');
 
       // Sync Radarr if configured
+      final radarrHost = profile.effectiveRadarrHost();
       if (profile.radarrEnabled &&
-          profile.radarrHost.isNotEmpty &&
+          radarrHost.isNotEmpty &&
           profile.radarrKey.isNotEmpty) {
         setState(() {
           _radarrStatus = 'Syncing...';
@@ -87,7 +88,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
         try {
           final api = RadarrAPI(
-            host: profile.radarrHost,
+            host: radarrHost,
             apiKey: profile.radarrKey,
             headers: Map<String, dynamic>.from(profile.radarrHeaders),
           );
@@ -112,8 +113,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       }
 
       // Sync Sonarr if configured
+      final sonarrHost = profile.effectiveSonarrHost();
       if (profile.sonarrEnabled &&
-          profile.sonarrHost.isNotEmpty &&
+          sonarrHost.isNotEmpty &&
           profile.sonarrKey.isNotEmpty) {
         setState(() {
           _sonarrStatus = 'Syncing...';
@@ -121,7 +123,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
         try {
           final api = SonarrAPI(
-            host: profile.sonarrHost,
+            host: sonarrHost,
             apiKey: profile.sonarrKey,
             headers: Map<String, dynamic>.from(profile.sonarrHeaders),
           );
@@ -227,10 +229,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         // For synced mode, check if user is authenticated
         final user = ZagSupabase.client.auth.currentUser;
         if (user == null) {
-          ZagLogger().warning('No authenticated user, cannot register device token');
+          ZagLogger()
+              .warning('No authenticated user, cannot register device token');
           return false;
         }
-        ZagLogger().debug('User authenticated, registering device token for user: ${user.id}');
+        ZagLogger().debug(
+            'User authenticated, registering device token for user: ${user.id}');
       } else {
         ZagLogger().debug('Registering anonymous device token');
       }
@@ -390,61 +394,60 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         builder: (context, _) => ZagSwitch(
           value: db.read(),
           onChanged: (value) async {
-                  ZagLogger().debug('Notification toggle changed to: $value');
+            ZagLogger().debug('Notification toggle changed to: $value');
 
-                  if (value) {
-                    // Request notification permissions when enabling
-                    ZagLogger().debug('Requesting notification permissions...');
-                    bool granted = await ZagSupabaseMessaging.instance
-                        .requestNotificationPermissions();
-                    ZagLogger().debug('Permissions granted: $granted');
+            if (value) {
+              // Request notification permissions when enabling
+              ZagLogger().debug('Requesting notification permissions...');
+              bool granted = await ZagSupabaseMessaging.instance
+                  .requestNotificationPermissions();
+              ZagLogger().debug('Permissions granted: $granted');
 
-                    if (!granted) {
-                      // If permissions denied, don't enable the toggle
-                      showZagErrorSnackBar(
-                        title: 'Permission Denied',
-                        message: 'Please enable notifications in Settings',
-                      );
-                      return;
-                    }
+              if (!granted) {
+                // If permissions denied, don't enable the toggle
+                showZagErrorSnackBar(
+                  title: 'Permission Denied',
+                  message: 'Please enable notifications in Settings',
+                );
+                return;
+              }
 
-                    // Update authorization status
-                    setState(() {
-                      _notificationsAuthorized = true;
-                    });
-                  }
+              // Update authorization status
+              setState(() {
+                _notificationsAuthorized = true;
+              });
+            }
 
-                  // Update the toggle immediately
-                  db.update(value);
+            // Update the toggle immediately
+            db.update(value);
 
-                  // Do the heavy work in the background AFTER updating UI
-                  if (value) {
-                    // Clear any cached token first
-                    ZagSupabaseMessaging.instance.clearCachedToken();
+            // Do the heavy work in the background AFTER updating UI
+            if (value) {
+              // Clear any cached token first
+              ZagSupabaseMessaging.instance.clearCachedToken();
 
-                    // Register device token in background
-                    Future.delayed(Duration.zero, () async {
-                      try {
-                        ZagLogger().debug('Attempting to register device token...');
-                        final registered = await _registerDeviceTokenIfNeeded();
-                        ZagLogger().debug('Device registration complete');
+              // Register device token in background
+              Future.delayed(Duration.zero, () async {
+                try {
+                  ZagLogger().debug('Attempting to register device token...');
+                  final registered = await _registerDeviceTokenIfNeeded();
+                  ZagLogger().debug('Device registration complete');
 
-                        // Trigger webhook sync after registration
-                        _syncWebhooksInBackground();
-                      } catch (e) {
-                        ZagLogger().error('Failed to register device', e, null);
-                      }
-                    });
-                  } else {
-                    // When disabling notifications, remove webhooks
-                    _removeWebhooksInBackground();
-                  }
-                },
+                  // Trigger webhook sync after registration
+                  _syncWebhooksInBackground();
+                } catch (e) {
+                  ZagLogger().error('Failed to register device', e, null);
+                }
+              });
+            } else {
+              // When disabling notifications, remove webhooks
+              _removeWebhooksInBackground();
+            }
+          },
         ),
       ),
     );
   }
-
 
   Widget _multiDeviceSyncToggle() {
     const db = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE;
@@ -462,7 +465,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ],
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
-          value: !db.read(), // Inverted - when anonymous mode is OFF, multi-device is ON
+          value: !db
+              .read(), // Inverted - when anonymous mode is OFF, multi-device is ON
           onChanged: !isSignedIn
               ? null // Disabled when not signed in
               : (value) async {
@@ -491,7 +495,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                           onPressed: () => Navigator.of(context).pop(true),
                           child: Text(
                             'Continue',
-                            style: TextStyle(color: ZagColours.currentAccentLight),
+                            style:
+                                TextStyle(color: ZagColours.currentAccentLight),
                           ),
                         ),
                       ],
@@ -740,7 +745,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       body: [],
       trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
         builder: (context, _) {
-          final notificationsEnabled = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+          final notificationsEnabled =
+              ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
           return db.listenableBuilder(
             builder: (context, _) => ZagSwitch(
               value: db.read() as bool,

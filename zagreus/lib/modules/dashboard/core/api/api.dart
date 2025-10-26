@@ -42,7 +42,7 @@ class API {
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.lidarrHost}/api/v1/',
+        baseUrl: '${profile.effectiveLidarrHost()}/api/v1/',
         queryParameters: {
           if (profile.lidarrKey != '') 'apikey': profile.lidarrKey,
           'start': _startDate(today),
@@ -87,7 +87,7 @@ class API {
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.radarrHost}/api/v3/',
+        baseUrl: '${profile.effectiveRadarrHost()}/api/v3/',
         queryParameters: {
           if (profile.radarrKey != '') 'apikey': profile.radarrKey,
           'start': _startDate(today),
@@ -143,7 +143,7 @@ class API {
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.sonarrHost}/api/v3/',
+        baseUrl: '${profile.effectiveSonarrHost()}/api/v3/',
         queryParameters: {
           if (profile.sonarrKey != '') 'apikey': profile.sonarrKey,
           'start': _startDate(today),

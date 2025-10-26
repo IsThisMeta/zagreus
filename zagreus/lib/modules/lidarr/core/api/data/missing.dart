@@ -42,7 +42,7 @@ class LidarrMissingData {
   }
 
   String albumCoverURI() {
-    final host = ZagProfile.current.lidarrHost;
+    final host = ZagProfile.current.effectiveLidarrHost();
     final key = ZagProfile.current.lidarrKey;
     if (ZagProfile.current.lidarrEnabled) {
       String _base = host.endsWith('/')
@@ -54,7 +54,7 @@ class LidarrMissingData {
   }
 
   String posterURI() {
-    final host = ZagProfile.current.lidarrHost;
+    final host = ZagProfile.current.effectiveLidarrHost();
     final key = ZagProfile.current.lidarrKey;
     if (ZagProfile.current.lidarrEnabled) {
       String _base = host.endsWith('/')
@@ -66,7 +66,7 @@ class LidarrMissingData {
   }
 
   String fanartURI({bool highRes = false}) {
-    final host = ZagProfile.current.lidarrHost;
+    final host = ZagProfile.current.effectiveLidarrHost();
     final key = ZagProfile.current.lidarrKey;
     if (ZagProfile.current.lidarrEnabled) {
       String _base = host.endsWith('/')

@@ -5,6 +5,7 @@ import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/system/network/network.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -78,6 +79,7 @@ class _State extends State<ConfigurationGeneralRoute>
     return [
       ZagHeader(text: 'settings.Network'.tr()),
       _useTLSValidation(),
+      _advancedLocalSwitching(),
     ];
   }
 
@@ -167,9 +169,8 @@ class _State extends State<ConfigurationGeneralRoute>
           ],
           trailing: ZagSwitch(
             value: ZagreusDatabase.THEME_LIGHT_BORDER.read(),
-            onChanged: isLightMode
-                ? ZagreusDatabase.THEME_LIGHT_BORDER.update
-                : null,
+            onChanged:
+                isLightMode ? ZagreusDatabase.THEME_LIGHT_BORDER.update : null,
           ),
         );
       },
@@ -209,6 +210,27 @@ class _State extends State<ConfigurationGeneralRoute>
           onChanged: (data) {
             _db.update(data);
             if (ZagNetwork.isSupported) ZagNetwork().initialize();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _advancedLocalSwitching() {
+    const db = ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'settings.AdvancedLocalSwitching'.tr(),
+        body: [
+          TextSpan(
+            text: 'settings.AdvancedLocalSwitchingDescription'.tr(),
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: (value) async {
+            db.update(value);
+            await ZagLocalConnectionService().handleAdvancedToggle(value);
           },
         ),
       ),
@@ -260,7 +282,8 @@ class _State extends State<ConfigurationGeneralRoute>
             _db.update(value);
             // Update background opacity based on theme
             // LunaSea: 20%, Zagreus: 25%
-            ZagreusDatabase.THEME_IMAGE_BACKGROUND_OPACITY.update(value ? 20 : 25);
+            ZagreusDatabase.THEME_IMAGE_BACKGROUND_OPACITY
+                .update(value ? 20 : 25);
             ZagTheme().initialize();
             ZagState.reset(context);
             showZagSnackBar(
@@ -289,7 +312,10 @@ class _State extends State<ConfigurationGeneralRoute>
             ZagBlock(
               title: 'Follow System Theme',
               body: [
-                TextSpan(text: isFollowingSystem ? 'Following system preference' : 'Manual theme control'),
+                TextSpan(
+                    text: isFollowingSystem
+                        ? 'Following system preference'
+                        : 'Manual theme control'),
               ],
               trailing: ZagSwitch(
                 value: isFollowingSystem,
@@ -300,20 +326,24 @@ class _State extends State<ConfigurationGeneralRoute>
                 },
               ),
             ),
-            if (!isFollowingSystem) ZagBlock(
-              title: 'Theme Mode',
-              body: [
-                TextSpan(text: currentMode == 'light' ? 'Light theme enabled' : 'Dark theme enabled'),
-              ],
-              trailing: ZagSwitch(
-                value: currentMode == 'light',
-                onChanged: (value) {
-                  ZagreusDatabase.THEME_MODE.update(value ? 'light' : 'dark');
-                  ZagTheme().initialize();
-                  ZagState.reset(context);
-                },
+            if (!isFollowingSystem)
+              ZagBlock(
+                title: 'Theme Mode',
+                body: [
+                  TextSpan(
+                      text: currentMode == 'light'
+                          ? 'Light theme enabled'
+                          : 'Dark theme enabled'),
+                ],
+                trailing: ZagSwitch(
+                  value: currentMode == 'light',
+                  onChanged: (value) {
+                    ZagreusDatabase.THEME_MODE.update(value ? 'light' : 'dark');
+                    ZagTheme().initialize();
+                    ZagState.reset(context);
+                  },
+                ),
               ),
-            ),
           ],
         );
       },
