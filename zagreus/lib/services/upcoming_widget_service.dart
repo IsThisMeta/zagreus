@@ -90,17 +90,28 @@ class UpcomingWidgetService {
           releaseDate = movie.inCinemas!.toIso8601String();
         }
 
+        // Get poster URL
+        String? posterUrl;
+        if (movie.images != null && movie.images!.isNotEmpty) {
+          final poster = movie.images!.firstWhere(
+            (img) => img.coverType == 'poster',
+            orElse: () => movie.images!.first,
+          );
+          posterUrl = poster.remoteUrl;
+        }
+
         print('🎬 Movie: ${movie.title}');
         print('🎬   - Digital: ${movie.digitalRelease}');
         print('🎬   - Physical: ${movie.physicalRelease}');
         print('🎬   - Cinema: ${movie.inCinemas}');
         print('🎬   - Using date: $releaseDate');
+        print('🎬   - Poster: $posterUrl');
 
         return {
           'id': movie.id ?? 0,
           'title': movie.title ?? 'Unknown',
           'releaseDate': releaseDate,
-          'poster': null, // Widget doesn't display posters yet
+          'poster': posterUrl,
           'mediaType': 'movie',
           'rating': movie.ratings?.value?.toDouble() ?? 0.0,
           'overview': movie.overview ?? '',
@@ -128,6 +139,17 @@ class UpcomingWidgetService {
       return episodes.take(5).map((episode) {
         final seriesTitle = episode.series?.title ?? "Unknown";
         final episodeTitle = episode.title ?? "Episode";
+
+        // Get poster URL from series
+        String? posterUrl;
+        if (episode.series?.images != null && episode.series!.images!.isNotEmpty) {
+          final poster = episode.series!.images!.firstWhere(
+            (img) => img.coverType == 'poster',
+            orElse: () => episode.series!.images!.first,
+          );
+          posterUrl = poster.remoteUrl;
+        }
+
         print('📺 Episode ID: ${episode.id}');
         print('📺   - Episode title: $episodeTitle');
         print('📺   - Series object exists: ${episode.series != null}');
@@ -138,6 +160,7 @@ class UpcomingWidgetService {
           print('📺   - Series is NULL - seriesId=${episode.seriesId}');
         }
         print('📺   - Final seriesTitle being used: $seriesTitle');
+        print('📺   - Poster: $posterUrl');
 
         return {
           'id': episode.id ?? 0,
@@ -145,7 +168,7 @@ class UpcomingWidgetService {
           'episodeTitle': episodeTitle,
           'releaseDate': episode.airDateUtc?.toIso8601String() ??
                         DateTime.now().toIso8601String(),
-          'poster': null, // Widget doesn't display posters yet
+          'poster': posterUrl,
           'mediaType': 'tv',
           'rating': 0.0, // Episodes don't have ratings in calendar
           'overview': episode.overview ?? '',

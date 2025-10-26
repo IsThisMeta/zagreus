@@ -155,21 +155,32 @@ struct SmallWidgetView: View {
     var body: some View {
         if let item = items.first {
             VStack(alignment: .leading, spacing: 8) {
-                    Text("Up Next")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.purple)
+                Text("Up Next")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.purple)
 
-                    Spacer()
+                Spacer()
 
-                    Text(item.title)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
-                        .lineLimit(2)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        // Colored dot indicator
+                        Circle()
+                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
+                            .frame(width: 10, height: 10)
+
+                        Text(item.title)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                    }
 
                     Text(item.formattedDate)
                         .font(.caption)
                         .foregroundColor(.gray)
+                }
+
+                Spacer()
             }
             .padding()
         } else {
@@ -199,6 +210,11 @@ struct MediumWidgetView: View {
 
                 ForEach(items.prefix(3)) { item in
                     HStack(spacing: 10) {
+                        // Colored dot indicator
+                        Circle()
+                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
+                            .frame(width: 10, height: 10)
+
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.title)
                                 .font(.system(size: 13, weight: .semibold))
@@ -250,6 +266,11 @@ struct LargeWidgetView: View {
 
                 ForEach(items.prefix(5)) { item in
                     HStack(spacing: 10) {
+                        // Colored dot indicator
+                        Circle()
+                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
+                            .frame(width: 10, height: 10)
+
                         VStack(alignment: .leading, spacing: 3) {
                             Text(item.title)
                                 .font(.system(size: 14, weight: .semibold))
@@ -303,7 +324,7 @@ struct UpcomingWidget: Widget {
         }
         .configurationDisplayName("Upcoming Movies & Shows")
         .description("See what's coming out this week")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemMedium, .systemLarge]) // Removed .systemSmall
     }
 }
 
