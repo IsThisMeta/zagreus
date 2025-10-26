@@ -77,21 +77,29 @@ class UpcomingWidgetService {
 
       final movies = await radarrState.upcoming!;
 
-      return movies.take(5).map((movie) {
-        // Determine the release date (prefer cinema date, fall back to physical/digital)
+      print('🎬 Got ${movies.length} upcoming movies from Radarr');
+
+      return movies.take(10).map((movie) {
+        // Use digital release date (prefer digital, fall back to physical/cinema)
         String? releaseDate;
-        if (movie.inCinemas != null) {
-          releaseDate = movie.inCinemas!.toIso8601String();
+        if (movie.digitalRelease != null) {
+          releaseDate = movie.digitalRelease!.toIso8601String();
         } else if (movie.physicalRelease != null) {
           releaseDate = movie.physicalRelease!.toIso8601String();
-        } else if (movie.digitalRelease != null) {
-          releaseDate = movie.digitalRelease!.toIso8601String();
+        } else if (movie.inCinemas != null) {
+          releaseDate = movie.inCinemas!.toIso8601String();
         }
+
+        print('🎬 Movie: ${movie.title}');
+        print('🎬   - Digital: ${movie.digitalRelease}');
+        print('🎬   - Physical: ${movie.physicalRelease}');
+        print('🎬   - Cinema: ${movie.inCinemas}');
+        print('🎬   - Using date: $releaseDate');
 
         return {
           'id': movie.id ?? 0,
           'title': movie.title ?? 'Unknown',
-          'releaseDate': releaseDate ?? DateTime.now().toIso8601String(),
+          'releaseDate': releaseDate,
           'poster': null, // Widget doesn't display posters yet
           'mediaType': 'movie',
           'rating': movie.ratings?.value?.toDouble() ?? 0.0,

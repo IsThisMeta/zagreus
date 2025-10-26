@@ -96,9 +96,14 @@ struct UpcomingItem: Codable, Identifiable {
 
     var formattedDate: String {
         let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        print("📅 Swift: Parsing date string: \(releaseDate)")
         guard let date = formatter.date(from: releaseDate) else {
+            print("❌ Swift: Failed to parse date: \(releaseDate)")
             return "TBA"
         }
+        print("✅ Swift: Parsed date successfully: \(date)")
 
         let displayFormatter = DateFormatter()
         let calendar = Calendar.current
