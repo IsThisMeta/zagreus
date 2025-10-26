@@ -98,24 +98,31 @@ struct UpcomingItem: Codable, Identifiable {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        print("📅 Swift: Parsing date string: \(releaseDate)")
         guard let date = formatter.date(from: releaseDate) else {
-            print("❌ Swift: Failed to parse date: \(releaseDate)")
             return "TBA"
         }
-        print("✅ Swift: Parsed date successfully: \(date)")
 
-        let displayFormatter = DateFormatter()
         let calendar = Calendar.current
+        let now = Date()
 
-        if calendar.isDateInToday(date) {
-            return "Today"
-        } else if calendar.isDateInTomorrow(date) {
-            return "Tomorrow"
-        } else {
-            displayFormatter.dateFormat = "MMM d"
-            return displayFormatter.string(from: date)
+        // Get days until release
+        let components = calendar.dateComponents([.day], from: now, to: date)
+
+        if let days = components.day {
+            if days == 0 {
+                return "Today"
+            } else if days == 1 {
+                return "Tomorrow"
+            } else if days > 1 && days <= 7 {
+                return "In \(days) Days"
+            } else {
+                let displayFormatter = DateFormatter()
+                displayFormatter.dateFormat = "MMM d"
+                return displayFormatter.string(from: date)
+            }
         }
+
+        return "TBA"
     }
 
     var mediaIcon: String {
