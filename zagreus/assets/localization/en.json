@@ -640,7 +640,7 @@
     "settings.TLSCertificateValidation": "TLS Certificate Validation",
     "settings.TLSCertificateValidationDescription": "Validate Certificates in TLS Connections",
     "settings.AdvancedLocalSwitching": "Enable Local Switching",
-    "settings.AdvancedLocalSwitchingDescription": "Use local addresses when connected to trusted Wi-Fi networks.",
+    "settings.AdvancedLocalSwitchingDescription": "Use local addresses on trusted Wi-Fi",
     "network.SwitchDetected": "Network switched",
     "network.SwitchLocal": "{} now using local connection ({})",
     "network.SwitchRemote": "{} now using remote connection",
