@@ -153,40 +153,46 @@ struct SmallWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        if let item = items.first {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Up Next")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.purple)
+        ZStack {
+            Color.black
 
-                Spacer()
+            if let item = items.first {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Up Next")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.purple)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        // Colored dot indicator
-                        Circle()
-                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
-                            .frame(width: 10, height: 10)
+                    Spacer()
 
-                        Text(item.title)
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                            .lineLimit(2)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            // Colored dot indicator
+                            Circle()
+                                .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
+                                .frame(width: 10, height: 10)
+
+                            Text(item.title)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white)
+                                .lineLimit(2)
+                        }
+
+                        Text(item.formattedDate)
+                            .font(.caption)
+                            .foregroundColor(.gray)
                     }
 
-                    Text(item.formattedDate)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    Spacer()
                 }
-
-                Spacer()
+                .padding()
+            } else {
+                Text("No upcoming content")
+                    .foregroundColor(.gray)
+                    .padding()
             }
-            .padding()
-        } else {
-            Text("No upcoming content")
-                .foregroundColor(.gray)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -195,7 +201,10 @@ struct MediumWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        ZStack {
+            Color.black
+
+            VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Upcoming This Week")
                         .font(.caption)
@@ -236,8 +245,10 @@ struct MediumWidgetView: View {
                             .padding(.vertical, 2)
                     }
                 }
+            }
+            .padding(12)
         }
-        .padding(12)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 
     func getCurrentDate() -> String {
@@ -252,7 +263,10 @@ struct LargeWidgetView: View {
     let items: [UpcomingItem]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        ZStack {
+            Color.black
+
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Upcoming This Week")
                         .font(.system(size: 15, weight: .bold))
@@ -303,8 +317,10 @@ struct LargeWidgetView: View {
                 }
 
                 Spacer()
+            }
+            .padding(14)
         }
-        .padding(14)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 }
 
@@ -312,19 +328,26 @@ struct UpcomingWidget: Widget {
     let kind: String = "UpcomingWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            if #available(iOS 17.0, *) {
+        if #available(iOS 17.0, *) {
+            return StaticConfiguration(kind: kind, provider: Provider()) { entry in
                 UpcomingWidgetEntryView(entry: entry)
                     .containerBackground(for: .widget) {
-                        Color(red: 0.14, green: 0.14, blue: 0.17)
+                        Color.black
                     }
-            } else {
-                UpcomingWidgetEntryView(entry: entry)
             }
+            .contentMarginsDisabled()
+            .configurationDisplayName("Upcoming Movies & Shows")
+            .description("See what's coming out this week")
+            .supportedFamilies([.systemMedium, .systemLarge])
+        } else {
+            return StaticConfiguration(kind: kind, provider: Provider()) { entry in
+                UpcomingWidgetEntryView(entry: entry)
+                    .background(Color.black)
+            }
+            .configurationDisplayName("Upcoming Movies & Shows")
+            .description("See what's coming out this week")
+            .supportedFamilies([.systemMedium, .systemLarge])
         }
-        .configurationDisplayName("Upcoming Movies & Shows")
-        .description("See what's coming out this week")
-        .supportedFamilies([.systemMedium, .systemLarge]) // Removed .systemSmall
     }
 }
 
