@@ -50,6 +50,8 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
   - purchases_flutter (9.6.2):
     - Flutter
     - PurchasesHybridCommon (= 17.7.0)
@@ -83,6 +85,7 @@ DEPENDENCIES:
   - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - purchases_flutter (from `.symlinks/plugins/purchases_flutter/ios`)
   - quick_actions_ios (from `.symlinks/plugins/quick_actions_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -118,6 +121,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
   purchases_flutter:
     :path: ".symlinks/plugins/purchases_flutter/ios"
   quick_actions_ios:
@@ -143,6 +148,7 @@ SPEC CHECKSUMS:
   network_info_plus: 16d8832ab43b7bc22b168d76fffcad9da35486d2
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   purchases_flutter: 6b62051d2bc7e2a977c7cd52c18a6281c4641361
   PurchasesHybridCommon: 6bc96162fb0c061e1980f474be618c088cfd1428
   quick_actions_ios: 4b07fb49d8d8f3518d7565fbb7a91014067a7d82
@@ -154,6 +160,6 @@ SPEC CHECKSUMS:
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
 
-PODFILE CHECKSUM: 4bbab7ed02c4e21b30535231a49938dd539ff3f6
+PODFILE CHECKSUM: 95ff2cec6be3efe73b581fd4cbd0b859b12de99b
 
 COCOAPODS: 1.16.2

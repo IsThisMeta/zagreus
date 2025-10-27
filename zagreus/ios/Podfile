@@ -1,3 +1,21 @@
+require 'xcodeproj'
+
+begin
+  compat_versions =
+    Xcodeproj::Constants.const_get(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+
+  if compat_versions[70].nil?
+    Xcodeproj::Constants.send(:remove_const, :COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+    Xcodeproj::Constants.const_set(
+      :COMPATIBILITY_VERSION_BY_OBJECT_VERSION,
+      compat_versions.merge({ 70 => 'Xcode 15.4' }).freeze,
+    )
+  end
+rescue NameError
+  # Older xcodeproj releases may not expose compatibility constants;
+  # in that case we just proceed without patching.
+end
+
 platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
@@ -57,6 +75,7 @@ post_install do |installer|
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'PERMISSION_NOTIFICATIONS=1',
+        'PERMISSION_LOCATION=1',
         'PERMISSION_SPEECH_RECOGNIZER=0',
         'PERMISSION_SENSORS=0',
         'PERMISSION_MEDIA_LIBRARY=0',

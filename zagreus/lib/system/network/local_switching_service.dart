@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
@@ -18,9 +19,22 @@ class ZagLocalConnectionService {
   final NetworkInfo _networkInfo = NetworkInfo();
   final ValueNotifier<String?> currentSsid = ValueNotifier<String?>(null);
   final Map<ZagModule, bool> _moduleLocalState = {};
+  bool _permissionWarningShown = false;
 
   Future<void> refreshSsid({bool forceEvaluate = false}) async {
     try {
+      final hasPermission = await _ensureWifiPermission();
+      if (!hasPermission) {
+        if (forceEvaluate) {
+          _applySsidUpdate(
+            null,
+            source: 'permission-denied',
+            forceEvaluate: true,
+          );
+        }
+        return;
+      }
+
       final ssid = await _networkInfo.getWifiName();
       _applySsidUpdate(
         ssid,
@@ -38,6 +52,50 @@ class ZagLocalConnectionService {
         );
       }
     }
+  }
+
+  Future<bool> _ensureWifiPermission() async {
+    if (_shouldRequestLocationPermission) {
+      try {
+        final status = await Permission.locationWhenInUse.status;
+        if (_isLocationAllowed(status)) {
+          return true;
+        }
+
+        final result = await Permission.locationWhenInUse.request();
+        if (_isLocationAllowed(result)) {
+          return true;
+        }
+
+        _showPermissionWarning();
+        return false;
+      } catch (e, stackTrace) {
+        ZagLogger().warning('Failed to request location permission: $e');
+        ZagLogger().debug(stackTrace.toString());
+        _showPermissionWarning();
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool _isLocationAllowed(PermissionStatus status) {
+    return status == PermissionStatus.granted ||
+        status == PermissionStatus.limited;
+  }
+
+  bool get _shouldRequestLocationPermission =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  void _showPermissionWarning() {
+    if (_permissionWarningShown) return;
+    _permissionWarningShown = true;
+
+    showZagInfoSnackBar(
+      title: 'network.LocationPermissionRequiredTitle'.tr(),
+      message: 'network.LocationPermissionRequiredMessage'.tr(),
+    );
   }
 
   void updateSsidFromNative(String? ssid) {
@@ -199,8 +257,8 @@ class ZagLocalConnectionService {
     final moduleName = module.title;
     final title = 'network.SwitchDetected'.tr();
     final message = usingLocal
-        ? 'network.SwitchLocal'
-            .tr(args: [moduleName, currentSsid.value ?? 'network.UnknownSsid'.tr()])
+        ? 'network.SwitchLocal'.tr(
+            args: [moduleName, currentSsid.value ?? 'network.UnknownSsid'.tr()])
         : 'network.SwitchRemote'.tr(args: [moduleName]);
 
     showZagInfoSnackBar(
