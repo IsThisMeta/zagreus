@@ -203,58 +203,9 @@ struct MediumWidgetView: View {
     var body: some View {
         ZStack {
             Color.black
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("Upcoming This Week")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.purple)
-                    Spacer()
-                    Text(getCurrentDate())
-                        .font(.caption2)
-                        .foregroundColor(.gray)
-                }
-                .padding(.bottom, 4)
-
-                ForEach(items.prefix(3)) { item in
-                    HStack(spacing: 10) {
-                        // Colored dot indicator
-                        Circle()
-                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
-                            .frame(width: 10, height: 10)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.title)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-
-                            Text(item.formattedDate)
-                                .font(.caption2)
-                                .foregroundColor(.gray)
-                        }
-
-                        Spacer()
-                    }
-                    .padding(.vertical, 2)
-
-                    if item.id != items.prefix(3).last?.id {
-                        Divider()
-                            .background(Color.gray.opacity(0.3))
-                            .padding(.vertical, 2)
-                    }
-                }
-            }
-            .padding(12)
+            UpcomingListLayout(items: items, maxItems: 4, includeFooterSpacer: false)
         }
         .clipShape(RoundedRectangle(cornerRadius: 24))
-    }
-
-    func getCurrentDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return formatter.string(from: Date())
     }
 }
 
@@ -265,62 +216,76 @@ struct LargeWidgetView: View {
     var body: some View {
         ZStack {
             Color.black
-
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Upcoming This Week")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(.white)
-                    Spacer()
-                    Image(systemName: "calendar")
-                        .font(.caption)
-                        .foregroundColor(.purple)
-                }
-                .padding(.bottom, 4)
-
-                ForEach(items.prefix(5)) { item in
-                    HStack(spacing: 10) {
-                        // Colored dot indicator
-                        Circle()
-                            .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
-                            .frame(width: 10, height: 10)
-
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(item.title)
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-
-                            if let episodeTitle = item.episodeTitle {
-                                // TV Show: Show episode title
-                                Text(episodeTitle)
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                    .lineLimit(1)
-                            } else {
-                                // Movie: Show date
-                                Text(item.formattedDate)
-                                    .font(.caption)
-                                    .foregroundColor(.purple)
-                            }
-                        }
-
-                        Spacer()
-                    }
-                    .padding(.vertical, 3)
-
-                    if item.id != items.prefix(5).last?.id {
-                        Divider()
-                            .background(Color.gray.opacity(0.3))
-                            .padding(.vertical, 2)
-                    }
-                }
-
-                Spacer()
-            }
-            .padding(14)
+            UpcomingListLayout(items: items, maxItems: 5, includeFooterSpacer: true)
         }
         .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+}
+
+// Shared layout for medium & large widgets
+struct UpcomingListLayout: View {
+    let items: [UpcomingItem]
+    let maxItems: Int
+    let includeFooterSpacer: Bool
+
+    var body: some View {
+        let limitedItems = Array(items.prefix(maxItems))
+
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Upcoming This Week")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                Spacer()
+                Image(systemName: "calendar")
+                    .font(.caption)
+                    .foregroundColor(.purple)
+            }
+            .padding(.bottom, 4)
+
+            ForEach(limitedItems) { item in
+                HStack(spacing: 10) {
+                    // Colored dot indicator
+                    Circle()
+                        .fill(item.mediaType == "movie" ? Color.orange : Color.blue)
+                        .frame(width: 10, height: 10)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(item.title)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+
+                        if let episodeTitle = item.episodeTitle {
+                            // TV Show: Show episode title
+                            Text(episodeTitle)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .lineLimit(1)
+                        } else {
+                            // Movie: Show date
+                            Text(item.formattedDate)
+                                .font(.caption)
+                                .foregroundColor(.purple)
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 3)
+
+                if item.id != limitedItems.last?.id {
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                        .padding(.vertical, 2)
+                }
+            }
+
+            if includeFooterSpacer {
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(14)
     }
 }
 

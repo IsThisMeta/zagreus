@@ -6,6 +6,7 @@ import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/system/network/network.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -76,11 +77,17 @@ class _State extends State<ConfigurationGeneralRoute>
   }
 
   List<Widget> _network() {
-    return [
+    final isPro = ZagreusPro.isEnabled;
+    final widgets = <Widget>[
       ZagHeader(text: 'settings.Network'.tr()),
       _useTLSValidation(),
-      _advancedLocalSwitching(),
     ];
+
+    if (isPro) {
+      widgets.add(_advancedLocalSwitching());
+    }
+
+    return widgets;
   }
 
   List<Widget> _platform() {
