@@ -23,6 +23,14 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
+  void initState() {
+    super.initState();
+    if (ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read()) {
+      ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
@@ -81,6 +89,7 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
   List<Widget> _localBlocks() => [
         _localHost(),
         _localSsids(),
+        _connectionStatus(),
       ];
 
   Widget _remoteHost() {
@@ -153,6 +162,54 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
           await ZagLocalConnectionService().refreshSsid();
           context.read<SonarrState>().reset();
         }
+      },
+    );
+  }
+
+  Widget _connectionStatus() {
+    final localService = ZagLocalConnectionService();
+
+    return ValueListenableBuilder<String?>(
+      valueListenable: localService.currentSsid,
+      builder: (context, ssid, _) {
+        final profile = ZagProfile.current;
+        final advancedEnabled =
+            ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+        final hasLocalHost = profile.sonarrLocalHost.isNotEmpty;
+        final hasSsids = profile.sonarrLocalSsids.trim().isNotEmpty;
+        final localConfigured = advancedEnabled && hasLocalHost && hasSsids;
+
+        final title = 'settings.ConnectionStatus'.tr();
+
+        if (!localConfigured) {
+          return ZagBlock(
+            title: title,
+            body: [
+              TextSpan(
+                text: 'settings.ConnectionStatusRemoteOnly'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          );
+        }
+
+        final effectiveHost = profile.effectiveSonarrHost();
+        final networkLabel = ssid ?? 'network.UnknownSsid'.tr();
+        final usingLocal = effectiveHost == profile.sonarrLocalHost;
+
+        final statusText = usingLocal
+            ? 'settings.ConnectionStatusLocal'.tr(args: [networkLabel])
+            : 'settings.ConnectionStatusRemote'.tr(args: [networkLabel]);
+
+        return ZagBlock(
+          title: title,
+          body: [
+            TextSpan(
+              text: statusText,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        );
       },
     );
   }
