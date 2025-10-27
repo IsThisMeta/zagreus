@@ -11,6 +11,7 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class SubscriptionsRoute extends StatefulWidget {
   const SubscriptionsRoute({
@@ -636,6 +637,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     // Debug only - reset Pro status locally
     ZagreusPro.disable();
+    await ZagLocalConnectionService().disableAdvancedSwitching();
 
     // Also clear from Supabase if signed in
     try {

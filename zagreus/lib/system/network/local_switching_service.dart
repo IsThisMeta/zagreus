@@ -266,6 +266,16 @@ class ZagLocalConnectionService {
       message: message,
     );
   }
+
+  Future<void> disableAdvancedSwitching() async {
+    if (!ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read()) {
+      return;
+    }
+
+    ZagLogger().debug('Disabling local switching - subscription inactive');
+    ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.update(false);
+    await handleAdvancedToggle(false);
+  }
 }
 
 class _LocalSwitchConfig {

@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
-import 'package:collection/collection.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
@@ -189,6 +189,10 @@ class RevenueCatService {
         print('📵 RevenueCat: Mega not active');
         ZagreusMega.disable();
       }
+    }
+
+    if (!ZagreusPro.isEnabled) {
+      await ZagLocalConnectionService().disableAdvancedSwitching();
     }
 
     _isUpdating = false; // Reset the flag
