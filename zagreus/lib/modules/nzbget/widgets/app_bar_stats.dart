@@ -35,7 +35,11 @@ class NZBGetAppBarStats extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                       fontSize: ZagUI.FONT_SIZE_HEADER,
-                      color: ZagColours.currentAccent,
+                      color: data.item1
+                          ? (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black)
+                          : ZagColours.currentAccent,
                     ),
                   ),
                   TextSpan(text: '\n'),
