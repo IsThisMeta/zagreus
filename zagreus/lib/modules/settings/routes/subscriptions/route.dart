@@ -113,7 +113,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Ultra',
           body: [
             TextSpan(
-              text: isUltra ? ultraPlanLabel! : 'Use the most powerful AI models',
+              text: isUltra ? ultraPlanLabel! : 'Use more powerful models for Z and Discover',
             ),
           ],
           trailing: ZagIconButton(
@@ -365,9 +365,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy new Discover features and higher Ask Z limits."
+                  ? "You have an active Mega subscription.\n\nEnjoy GPT-5 mini powered features and higher Ask Z limits."
                   : 'Zagreus Mega includes:\n'
-                      '• New Discover upgrades\n'
+                      '• GPT-5 mini powered Ask Z responses\n'
+                      '• GPT-5 mini enhanced Discover features\n'
                       '• Higher Ask Z usage limits\n'
                       '• Every Zagreus Pro feature\n\n'
                       'Unlock more powerful AI recommendations.',
