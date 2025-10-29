@@ -45,6 +45,8 @@ class DeepCutMovie {
   final List<String> genres;
   final String reason;
   final int obscurityScore;
+  final int? tmdbId;
+  final String? posterPath;
 
   DeepCutMovie({
     required this.title,
@@ -53,7 +55,14 @@ class DeepCutMovie {
     required this.genres,
     required this.reason,
     required this.obscurityScore,
+    this.tmdbId,
+    this.posterPath,
   });
+
+  String? get posterUrl {
+    if (posterPath == null || posterPath!.isEmpty) return null;
+    return 'https://image.tmdb.org/t/p/w500$posterPath';
+  }
 
   factory DeepCutMovie.fromJson(Map<String, dynamic> json) {
     return DeepCutMovie(
@@ -63,6 +72,8 @@ class DeepCutMovie {
       genres: (json['genres'] as List<dynamic>).cast<String>(),
       reason: json['reason'] as String,
       obscurityScore: json['obscurity_score'] as int,
+      tmdbId: json['tmdb_id'] as int?,
+      posterPath: json['poster_path'] as String?,
     );
   }
 }
