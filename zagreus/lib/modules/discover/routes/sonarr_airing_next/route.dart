@@ -286,7 +286,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Material(

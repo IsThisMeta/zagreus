@@ -23,13 +23,19 @@ class SABnzbdQueueTile extends StatefulWidget {
 class _State extends State<SABnzbdQueueTile> {
   @override
   Widget build(BuildContext context) {
+    Color progressColor = widget.data.isPaused
+        ? (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black)
+        : ZagColours.currentAccent;
+
     return ZagBlock(
       title: widget.data.name,
       body: [TextSpan(text: widget.data.subtitle)],
       bottomHeight: ZagLinearPercentIndicator.height,
       bottom: ZagLinearPercentIndicator(
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
-        progressColor: ZagColours.currentAccent,
+        progressColor: progressColor,
       ),
       trailing: ZagReorderableListViewDragger(index: widget.index),
       onTap: _handlePopup,

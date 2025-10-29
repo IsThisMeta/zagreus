@@ -5144,7 +5144,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Material(
@@ -5258,7 +5258,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Material(

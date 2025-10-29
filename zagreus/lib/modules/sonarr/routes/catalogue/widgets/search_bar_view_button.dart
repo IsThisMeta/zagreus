@@ -49,7 +49,7 @@ class _State extends State<SonarrSeriesSearchBarViewButton> {
         ),
       ),
       margin: const EdgeInsets.only(left: ZagUI.DEFAULT_MARGIN_SIZE),
-      color: Theme.of(context).cardColor,
+      color: Theme.of(context).canvasColor,
       height: ZagTextInputBar.defaultHeight,
       width: ZagTextInputBar.defaultHeight,
     );

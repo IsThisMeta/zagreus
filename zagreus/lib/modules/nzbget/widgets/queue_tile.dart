@@ -23,11 +23,18 @@ class NZBGetQueueTile extends StatefulWidget {
 class _State extends State<NZBGetQueueTile> {
   @override
   Widget build(BuildContext context) {
+    Color progressColor = widget.data.paused
+        ? (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black)
+        : ZagColours.currentAccent;
+
     return ZagBlock(
       title: widget.data.name,
       body: [TextSpan(text: widget.data.subtitle)],
       bottom: ZagLinearPercentIndicator(
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
+        progressColor: progressColor,
       ),
       trailing: ZagReorderableListViewDragger(index: widget.index),
       onTap: _handlePopup,
