@@ -4392,10 +4392,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 movie.reason,
                 style: TextStyle(
                   fontSize: 12,
-                  color: ZagColours.purple.withOpacity(0.8),
-                  fontStyle: FontStyle.italic,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(0.7),
                 ),
-                maxLines: 2,
+                maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
