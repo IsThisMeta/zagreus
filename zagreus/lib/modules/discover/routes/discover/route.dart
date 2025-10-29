@@ -3646,6 +3646,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Future<String?> _fetchMoviePoster(String title, int year) async {
+    try {
+      final tmdbApi = TMDBApi();
+      final searchResults = await tmdbApi.searchMulti('$title $year');
+
+      // Filter for movies only
+      final movieResults = searchResults
+          .where((r) => r['media_type'] == 'movie')
+          .toList();
+
+      if (movieResults.isEmpty) return null;
+
+      final posterPath = movieResults.first['poster_path'] as String?;
+      if (posterPath == null || posterPath.isEmpty) return null;
+
+      return 'https://image.tmdb.org/t/p/w500$posterPath';
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> _openMovieInRadarr({
     required int tmdbId,
     String? title,
@@ -4332,59 +4353,96 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Movie poster placeholder (we'll search for it)
-              Container(
-                height: 240,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: ZagColours.purple.withOpacity(0.2),
-                  border: Border.all(
-                    color: ZagColours.purple.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.movie_filter_rounded,
-                        size: 48,
-                        color: ZagColours.purple.withOpacity(0.5),
+              // Movie poster
+              FutureBuilder<String?>(
+                future: _fetchMoviePoster(movie.title, movie.year),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                      height: 240,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: ZagColours.purple.withOpacity(0.2),
                       ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          movie.title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).brightness ==
-                                    Brightness.dark
-                                ? Colors.white
-                                : Colors.black87,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            ZagColours.purple.withOpacity(0.5),
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${movie.year}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: (Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black)
-                              .withOpacity(0.6),
+                    );
+                  }
+
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return Container(
+                      height: 240,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: NetworkImage(snapshot.data!),
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    );
+                  }
+
+                  // Fallback to placeholder
+                  return Container(
+                    height: 240,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: ZagColours.purple.withOpacity(0.2),
+                      border: Border.all(
+                        color: ZagColours.purple.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.movie_filter_rounded,
+                            size: 48,
+                            color: ZagColours.purple.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              movie.title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${movie.year}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 8),
               // Reason
