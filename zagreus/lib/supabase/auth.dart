@@ -33,14 +33,7 @@ class ZagSupabaseAuth {
   /// If the user is not signed in, this is a non-op.
   Future<void> signOut() async {
     await instance.signOut();
-
-    // Log out from RevenueCat to create a new anonymous user
-    try {
-      await Purchases.logOut();
-      ZagLogger().debug('✅ Logged out from RevenueCat');
-    } catch (e) {
-      ZagLogger().warning('Failed to log out from RevenueCat: $e');
-    }
+    // No need to manage RevenueCat identity - backend uses RC customer ID directly
   }
 
   /// Register a new user using Supabase Authentication.
@@ -55,16 +48,7 @@ class ZagSupabaseAuth {
       );
       if (authResponse.user != null) {
         ZagSupabaseDatabase().addDeviceToken();
-
-        // Link RevenueCat purchases to this Supabase user
-        try {
-          await Purchases.logIn(authResponse.user!.id);
-          ZagLogger().debug('✅ Linked RevenueCat to Supabase user ${authResponse.user!.id}');
-        } catch (e) {
-          ZagLogger().warning('Failed to link RevenueCat: $e');
-          // Don't fail registration if RevenueCat linking fails
-        }
-
+        // No need to link RevenueCat - backend uses RC customer ID directly
         return ZagSupabaseResponse(state: true, authResponse: authResponse);
       } else {
         return ZagSupabaseResponse(state: false);
@@ -88,16 +72,7 @@ class ZagSupabaseAuth {
       );
       if (authResponse.user != null) {
         ZagSupabaseDatabase().addDeviceToken();
-
-        // Link RevenueCat purchases to this Supabase user
-        try {
-          await Purchases.logIn(authResponse.user!.id);
-          ZagLogger().debug('✅ Linked RevenueCat to Supabase user ${authResponse.user!.id}');
-        } catch (e) {
-          ZagLogger().warning('Failed to link RevenueCat: $e');
-          // Don't fail sign-in if RevenueCat linking fails
-        }
-
+        // No need to link RevenueCat - backend uses RC customer ID directly
         return ZagSupabaseResponse(state: true, authResponse: authResponse);
       } else {
         return ZagSupabaseResponse(state: false);

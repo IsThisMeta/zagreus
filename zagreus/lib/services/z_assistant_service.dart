@@ -57,27 +57,17 @@ class ZAssistantService {
     final hmacService = HmacEncryptionService();
     final supabaseUserId = ZagSupabaseAuth().uid;
 
-    // Without an authenticated Supabase user we cannot link tiers, so skip and
-    // ensure the next attempt re-registers once a user signs in.
-    if (supabaseUserId == null || supabaseUserId.isEmpty) {
-      if (hmacService.isRegistered) {
-        ZagLogger().debug('Clearing Z Assistant registration (user signed out)');
-        hmacService.resetRegistration();
-      }
-      return false;
-    }
+    // Supabase user ID is now optional - backend works purely on RC customer ID
+    // But we still track it if available for user linkage
 
-    final registeredUserId = hmacService.registeredUserId;
-    if (!force && hmacService.isRegistered && registeredUserId == supabaseUserId) {
-      // Already registered for this user (skip unless forced)
+    if (!force && hmacService.isRegistered) {
+      // Already registered (skip unless forced)
       return true;
     }
 
-    // Re-register if user changed or force is true
-    if (force || (hmacService.isRegistered && registeredUserId != supabaseUserId)) {
-      ZagLogger().debug(
-        'Re-registering device for new Supabase user (old=${registeredUserId ?? "none"}, new=$supabaseUserId)',
-      );
+    // Re-register if forced
+    if (force && hmacService.isRegistered) {
+      ZagLogger().debug('Force re-registering device...');
       hmacService.resetRegistration();
     }
 

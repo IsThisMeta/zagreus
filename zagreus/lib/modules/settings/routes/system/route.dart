@@ -131,37 +131,13 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
         );
 
         try {
-          // First, link RevenueCat to current Supabase user
-          final supabaseUserId = ZagSupabaseAuth().uid;
-          if (supabaseUserId != null) {
-            try {
-              // Log out first to clear any cached state
-              print('🚪 Logging out from RevenueCat to clear cache...');
-              await Purchases.logOut();
-              print('✅ Logged out from RevenueCat');
+          // Restore purchases and force device re-registration
+          print('🔄 Restoring purchases...');
+          await Purchases.restorePurchases();
+          await RevenueCatService().updateCustomerInfo();
+          print('✅ Purchases restored');
 
-              // Now log in with Supabase user ID
-              print('🔗 Linking RevenueCat to Supabase user $supabaseUserId...');
-              final loginResult = await Purchases.logIn(supabaseUserId);
-              print('✅ Linked RevenueCat - originalAppUserId: ${loginResult.customerInfo.originalAppUserId}');
-              print('   Created: ${loginResult.created}');
-
-              // Restore purchases to ensure everything is synced
-              print('🔄 Restoring purchases to ensure sync...');
-              final restoreResult = await Purchases.restorePurchases();
-              print('✅ Restored - originalAppUserId: ${restoreResult.originalAppUserId}');
-              print('   Active entitlements: ${restoreResult.entitlements.active.keys.toList()}');
-
-              // Force RevenueCat service to refresh its customer info
-              await RevenueCatService().updateCustomerInfo();
-              print('🔄 Refreshed RevenueCat customer info in service');
-            } catch (e) {
-              print('❌ Failed to link/restore RevenueCat: $e');
-              // Continue anyway - maybe already linked
-            }
-          }
-
-          // Then force device registration
+          // Force device registration with latest RC customer ID
           final service = ZAssistantService();
           final success = await service.forceDeviceRegistration();
 

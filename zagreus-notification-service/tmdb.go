@@ -236,5 +236,5 @@ func cachePoster(mediaType string, tmdbID int, url string) {
 		return
 	}
 	key := fmt.Sprintf("tmdb:poster:%s:%d", mediaType, tmdbID)
-	_ = rdb.Set(ctx, key, url, 12*time.Hour).Err()
+	_ = rdb.Set(ctx, key, url, 720*time.Hour).Err() // 30 days
 }
