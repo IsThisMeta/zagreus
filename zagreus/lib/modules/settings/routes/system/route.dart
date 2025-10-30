@@ -149,7 +149,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           } else {
             showZagErrorSnackBar(
               title: 'Sync Failed',
-              message: 'Not signed in or no active subscription found',
+              message: 'No active subscription found',
             );
           }
         } catch (e) {
