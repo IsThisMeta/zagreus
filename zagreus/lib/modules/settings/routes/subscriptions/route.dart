@@ -538,35 +538,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool success = await iapService.purchaseMega(isMonthly);
 
     if (success) {
-      // Sync to Supabase
-      await _syncMegaToSupabase();
       setState(() {});
-    }
-  }
-
-  Future<void> _syncMegaToSupabase() async {
-    try {
-      final supabase = Supabase.instance.client;
-      final user = supabase.auth.currentUser;
-
-      if (user != null) {
-        final expiryString = ZagreusDatabase.ZAGREUS_MEGA_EXPIRY.read();
-        if (expiryString.isNotEmpty) {
-          final expiry = DateTime.parse(expiryString);
-          final productId = ZagreusDatabase.ZAGREUS_MEGA_SUBSCRIPTION_TYPE.read();
-
-          await supabase.rpc('upsert_subscription', params: {
-            'p_user_id': user.id,
-            'p_product_id': 'zagreus_mega_$productId',
-            'p_subscription_type': 'mega',
-            'p_expires_at': expiry.toUtc().toIso8601String(),
-          });
-
-          print('✅ Synced Mega subscription to Supabase');
-        }
-      }
-    } catch (e) {
-      print('⚠️ Failed to sync Mega subscription: $e');
     }
   }
 
@@ -589,35 +561,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool success = await iapService.purchaseUltra();
 
     if (success) {
-      await _syncUltraToSupabase();
       setState(() {});
-    }
-  }
-
-  Future<void> _syncUltraToSupabase() async {
-    try {
-      final supabase = Supabase.instance.client;
-      final user = supabase.auth.currentUser;
-
-      if (user != null) {
-        final expiryString = ZagreusDatabase.ZAGREUS_ULTRA_EXPIRY.read();
-        if (expiryString.isNotEmpty) {
-          final expiry = DateTime.parse(expiryString);
-          final productType =
-              ZagreusDatabase.ZAGREUS_ULTRA_SUBSCRIPTION_TYPE.read();
-
-          await supabase.rpc('upsert_subscription', params: {
-            'p_user_id': user.id,
-            'p_product_id': 'zagreus_ultra_$productType',
-            'p_subscription_type': 'ultra',
-            'p_expires_at': expiry.toUtc().toIso8601String(),
-          });
-
-          print('✅ Synced Ultra subscription to Supabase');
-        }
-      }
-    } catch (e) {
-      print('⚠️ Failed to sync Ultra subscription: $e');
     }
   }
 

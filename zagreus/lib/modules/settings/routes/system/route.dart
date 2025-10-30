@@ -119,7 +119,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
   Widget _syncSubscription() {
     return ZagBlock(
       title: 'Sync Subscription',
-      body: [TextSpan(text: 'Re-register device and sync subscription tier')],
+      body: [TextSpan(text: 'Re-register with Z Assistant')],
       trailing: const ZagIconButton(icon: Icons.sync_rounded),
       onTap: () async {
         showZagInfoSnackBar(

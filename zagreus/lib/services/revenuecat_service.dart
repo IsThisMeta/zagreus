@@ -4,7 +4,6 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 
 class RevenueCatService {
@@ -116,8 +115,7 @@ class RevenueCatService {
           productId: productId,
         );
 
-        // STILL sync to Supabase - backend needs this for verification
-        await _syncToSupabase('pro', expiry, productId);
+        // Note: Backend syncs subscription during device registration
       } else {
         // Active but no expiration date - this shouldn't happen for subscriptions
         print('⚠️ RevenueCat: Pro marked active but no expiration date');
@@ -153,7 +151,7 @@ class RevenueCatService {
         // Ultra subsume Mega/Pro benefits
         ZagreusMega.disable();
 
-        await _syncToSupabase('ultra', expiry, productId);
+        // Note: Backend syncs subscription during device registration
       } else {
         print('⚠️ RevenueCat: Ultra marked active but no expiration date');
         ZagreusUltra.disable();
@@ -178,8 +176,7 @@ class RevenueCatService {
             productId: productId,
           );
 
-          // STILL sync to Supabase - backend needs this for Z Assistant verification
-          await _syncToSupabase('mega', expiry, productId);
+          // Note: Backend syncs subscription during device registration
         } else {
           // Active but no expiration date
           print('⚠️ RevenueCat: Mega marked active but no expiration date');
@@ -198,27 +195,8 @@ class RevenueCatService {
     _isUpdating = false; // Reset the flag
   }
 
-  Future<void> _syncToSupabase(String subscriptionType, DateTime expiresAt, String productId) async {
-    try {
-      final supabase = Supabase.instance.client;
-      final user = supabase.auth.currentUser;
-
-      if (user != null) {
-        await supabase.rpc('upsert_subscription', params: {
-          'p_user_id': user.id,
-          'p_product_id': productId,
-          'p_subscription_type': subscriptionType,
-          'p_expires_at': expiresAt.toUtc().toIso8601String(),
-        });
-        print('✅ Synced $subscriptionType subscription to Supabase');
-      } else {
-        print('⚠️ No authenticated user - skipping Supabase sync');
-      }
-    } catch (e) {
-      print('⚠️ Failed to sync subscription to Supabase: $e');
-      // Don't throw - local storage still works
-    }
-  }
+  // Note: Subscription syncing to Supabase is now handled by the backend
+  // during device registration, not directly from the app
 
   Future<bool> purchaseMonthly() async {
     try {

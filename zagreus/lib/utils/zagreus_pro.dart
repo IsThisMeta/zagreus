@@ -84,17 +84,17 @@ class ZagreusPro {
     _disablePro();
   }
 
-  /// Set up boot module for first Pro/Mega activation
-  /// Public so it can be called from both Pro and Mega classes
+  /// Set up boot module for first premium activation (Pro/Mega/Ultra)
+  /// Public so it can be called from Pro, Mega, or Ultra helpers
   static void setProBootModule() {
     try {
       // Check if we've already done the first-time setup
       if (ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.read()) {
-        print('Pro/Mega already activated before - respecting user boot module preference');
+        print('Premium tier already activated before - respecting boot module preference');
         return;
       }
 
-      // First time Pro/Mega is being activated - set up boot module
+      // First time a premium tier is being activated - set up boot module
       final currentModule = BIOSDatabase.BOOT_MODULE.read();
 
       // Save current module as user preference (for when they toggle off)
@@ -108,9 +108,9 @@ class ZagreusPro {
       // Mark first activation as complete so we don't do this again
       ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.update(true);
 
-      print('Pro/Mega first activation: Setting boot module to Discover');
+      print('Premium tier first activation: Setting boot module to Discover');
     } catch (e) {
-      print('Error setting Pro/Mega boot module: $e');
+      print('Error setting premium boot module: $e');
     }
   }
 
