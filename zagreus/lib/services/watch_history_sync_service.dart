@@ -2,6 +2,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/services/tautulli_scrubber.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/supabase/core.dart';
@@ -32,7 +33,7 @@ class WatchHistorySyncResult {
 
 /// Service for syncing Tautulli watch history to Supabase
 /// Ensures privacy - all sensitive data scrubbed before upload
-/// Only syncs for Mega/Ultra subscribers, max once per 24 hours
+/// Available for Pro, Mega, and Ultra subscribers, max once per 24 hours
 class WatchHistorySyncService {
   static final WatchHistorySyncService _instance =
       WatchHistorySyncService._internal();
@@ -51,7 +52,7 @@ class WatchHistorySyncService {
 
   /// Sync watch history to Supabase cache
   /// Returns WatchHistorySyncResult with success status and error details
-  /// Only syncs for Mega/Ultra subscribers
+  /// Available for Pro, Mega, and Ultra subscribers
   Future<WatchHistorySyncResult> syncWatchHistory({
     bool force = false,
     int historyLimit = 500, // Last 500 watch records
@@ -62,18 +63,20 @@ class WatchHistorySyncService {
     print('Force: $force');
     print('History Limit: $historyLimit');
 
-    // Check for qualifying subscription
+    // Check for qualifying subscription - available for Pro, Mega, and Ultra
     final rcService = RevenueCatService();
     final hasTier = rcService.isUltraActive ||
         rcService.isMegaActive ||
+        rcService.isProActive ||
         ZagreusUltra.isEnabled ||
-        ZagreusMega.isEnabled;
+        ZagreusMega.isEnabled ||
+        ZagreusPro.isEnabled;
     if (!hasTier) {
-      print('❌ SYNC BLOCKED: Mega or Ultra subscription required');
-      ZagLogger().debug('Watch history sync skipped - Mega or Ultra subscription required');
+      print('❌ SYNC BLOCKED: Pro, Mega, or Ultra subscription required');
+      ZagLogger().debug('Watch history sync skipped - Pro, Mega, or Ultra subscription required');
       return WatchHistorySyncResult.failure(
         WatchHistorySyncError.noMega,
-        'Mega or Ultra subscription required',
+        'Pro, Mega, or Ultra subscription required',
       );
     }
     print('✓ Eligible subscription active');

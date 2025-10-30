@@ -1774,7 +1774,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           switch (result.error) {
             case LibrarySyncError.noMega:
               title = 'Sync Not Available';
-              message = 'Library sync is only available for Mega subscribers';
+              message = 'Library sync is available for Pro, Mega, and Ultra subscribers';
               type = ZagSnackbarType.INFO;
               break;
             case LibrarySyncError.cacheDisabled:

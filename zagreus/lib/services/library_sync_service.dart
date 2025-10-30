@@ -3,6 +3,7 @@ import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/supabase/core.dart';
@@ -55,7 +56,7 @@ class LibrarySyncResult {
 
 /// Service for syncing library cache to Supabase
 /// Ensures zero-knowledge architecture - backend never calls user servers
-/// Only syncs for Mega subscribers, max once per 24 hours
+/// Available for Pro, Mega, and Ultra subscribers, max once per 24 hours
 class LibrarySyncService {
   static final LibrarySyncService _instance = LibrarySyncService._internal();
   factory LibrarySyncService() => _instance;
@@ -73,7 +74,7 @@ class LibrarySyncService {
 
   /// Sync library to Supabase cache
   /// Returns LibrarySyncResult with success status and error details
-  /// Only syncs for Mega subscribers
+  /// Available for Pro, Mega, and Ultra subscribers
   Future<LibrarySyncResult> syncLibrary({
     bool force = false,
     bool syncRadarr = true,
@@ -86,18 +87,20 @@ class LibrarySyncService {
     print('Sync Radarr: $syncRadarr');
     print('Sync Sonarr: $syncSonarr');
 
-    // Check for qualifying subscription - library sync is gated to higher tiers
+    // Check for qualifying subscription - library sync is available for Pro, Mega, and Ultra
     final rcService = RevenueCatService();
     final hasTier = rcService.isUltraActive ||
         rcService.isMegaActive ||
+        rcService.isProActive ||
         ZagreusUltra.isEnabled ||
-        ZagreusMega.isEnabled;
+        ZagreusMega.isEnabled ||
+        ZagreusPro.isEnabled;
     if (!hasTier) {
-      print('❌ SYNC BLOCKED: Mega or Ultra subscription required');
-      ZagLogger().debug('Library sync skipped - Mega or Ultra subscription required');
+      print('❌ SYNC BLOCKED: Pro, Mega, or Ultra subscription required');
+      ZagLogger().debug('Library sync skipped - Pro, Mega, or Ultra subscription required');
       return LibrarySyncResult.failure(
         LibrarySyncError.noMega,
-        'Mega or Ultra subscription required',
+        'Pro, Mega, or Ultra subscription required',
       );
     }
     print('✓ Eligible subscription active');
