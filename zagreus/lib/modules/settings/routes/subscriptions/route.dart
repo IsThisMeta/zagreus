@@ -96,7 +96,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   ? 'Included with Ultra'
                   : isMega
                       ? 'Active • Mega plan'
-                      : 'Z Assistant and AI Discover Features'
+                      : 'AI Discover features and higher Z usage'
             )
           ],
           trailing: ZagIconButton(
@@ -113,7 +113,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Ultra',
           body: [
             TextSpan(
-              text: isUltra ? ultraPlanLabel! : 'Use more powerful models for Z and Discover',
+              text: isUltra ? ultraPlanLabel! : 'GPT-5 models for Discover & Z',
             ),
           ],
           trailing: ZagIconButton(
@@ -185,10 +185,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover and Server modules."
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, and Z Assistant access with GPT-5 mini (3 messages every 12 hours)."
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
-                      '• Server module\n\n'
+                      '• Server module\n'
+                      '• Z Assistant access with GPT-5 mini\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
@@ -365,13 +366,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy GPT-5 mini powered features and higher Ask Z limits."
-                  : 'Zagreus Mega includes:\n'
-                      '• GPT-5 mini powered Ask Z responses\n'
-                      '• GPT-5 mini enhanced Discover features\n'
-                      '• Higher Ask Z usage limits\n'
-                      '• Every Zagreus Pro feature\n\n'
-                      'Unlock more powerful AI recommendations.',
+                  ? "You have an active Mega subscription.\n\nEnjoy GPT-5 mini upgrades and 15 Z Assistant messages every 12 hours."
+                  : 'Zagreus Mega unlocks:\n'
+                      '• GPT-5 mini recommendations in Discover\n'
+                      '• More Z Assistant usage with GPT-5 mini\n'
+                      '• All Pro features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -628,11 +627,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, GPT-5 powered Discover features, and every Mega perk."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 powered Discover features, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
-                      '• GPT-5 powered Ask Z responses\n'
-                      '• GPT-5 enhanced Discover features\n'
-                      '• AI-guided recommendations.',
+                      '• GPT-5 for Z Assistant and Discover\n'
+                      '• All Pro and Mega features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -720,6 +718,24 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                     ],
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Restore Purchases button
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _restorePurchases();
+                },
+                child: Text(
+                  'Restore Purchases',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: ZagColours.currentAccentLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ),
           ],

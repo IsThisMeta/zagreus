@@ -157,6 +157,7 @@ class RevenueCatService {
         ZagreusUltra.disable();
       }
     } else {
+      print('📵 RevenueCat: Ultra not active');
       ZagreusUltra.disable();
 
       // Check Mega entitlement
