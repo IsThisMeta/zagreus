@@ -306,3 +306,31 @@ func getDeviceTokensForWebhook(webhookID string) ([]string, error) {
 	return []string(tokens), nil
 }
 
+// Remove a device token from webhook mappings (e.g., when APNs returns 410 Unregistered)
+func removeDeviceToken(deviceToken string) error {
+	if db == nil {
+		return nil
+	}
+
+	// Remove token from all webhook_mappings
+	_, err := db.Exec(`
+		UPDATE webhook_mappings
+		SET device_tokens = array_remove(device_tokens, $1),
+		    updated_at = CURRENT_TIMESTAMP
+		WHERE $1 = ANY(device_tokens)
+	`, deviceToken)
+
+	if err != nil {
+		return err
+	}
+
+	// Also mark device as inactive in notification_devices
+	_, err = db.Exec(`
+		UPDATE notification_devices
+		SET is_active = false
+		WHERE device_token = $1
+	`, deviceToken)
+
+	return err
+}
+

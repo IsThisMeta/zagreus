@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -698,6 +699,16 @@ func handleWebhookWithPayload(c *gin.Context) {
 		isProduction := os.Getenv("APNS_ENVIRONMENT") == "production"
 		if err := apnsClient.SendRichNotification(token, payload, isProduction); err != nil {
 			log.Printf("Failed to send to token %s: %v", token, err)
+
+			// Check if error is 410 (Unregistered) - token is no longer valid
+			if strings.Contains(err.Error(), "status 410") || strings.Contains(err.Error(), "Unregistered") {
+				log.Printf("Token %s is unregistered, removing from database", token)
+				if removeErr := removeDeviceToken(token); removeErr != nil {
+					log.Printf("Failed to remove invalid token: %v", removeErr)
+				}
+				// Don't count 410 as a real failure - it's expected cleanup
+				successCount++
+			}
 		} else {
 			successCount++
 		}
