@@ -12,6 +12,7 @@ import 'package:zagreus/modules/settings/routes/system/widgets/build_details.dar
 import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/supabase/demo_config.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
 
@@ -56,6 +57,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
         _clearImageCache(),
         _clearConfiguration(),
         ZagDivider(),
+        _syncSubscription(),
         _buildDemoButton(),
       ],
     );
@@ -108,6 +110,42 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           showZagSuccessSnackBar(
             title: 'settings.ConfigurationCleared'.tr(),
             message: 'settings.ConfigurationClearedDescription'.tr(),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _syncSubscription() {
+    return ZagBlock(
+      title: 'Sync Subscription',
+      body: [TextSpan(text: 'Re-register device and sync subscription tier')],
+      trailing: const ZagIconButton(icon: Icons.sync_rounded),
+      onTap: () async {
+        showZagInfoSnackBar(
+          title: 'Syncing Subscription',
+          message: 'Re-registering device with backend...',
+        );
+
+        try {
+          final service = ZAssistantService();
+          final success = await service.forceDeviceRegistration();
+
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Subscription Synced',
+              message: 'Device has been re-registered successfully',
+            );
+          } else {
+            showZagErrorSnackBar(
+              title: 'Sync Failed',
+              message: 'Not signed in or no active subscription found',
+            );
+          }
+        } catch (e) {
+          showZagErrorSnackBar(
+            title: 'Sync Failed',
+            message: 'Failed to sync subscription: ${e.toString()}',
           );
         }
       },

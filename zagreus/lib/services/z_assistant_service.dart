@@ -45,7 +45,14 @@ class ZAssistantService {
   }
 
   /// Ensure device is registered with backend
-  Future<void> _ensureDeviceRegistered() async {
+  /// Public method to force device re-registration
+  /// Useful for syncing subscription changes or fixing registration issues
+  /// Returns true if registration succeeded, false otherwise
+  Future<bool> forceDeviceRegistration() async {
+    return await _ensureDeviceRegistered(force: true);
+  }
+
+  Future<bool> _ensureDeviceRegistered({bool force = false}) async {
     final hmacService = HmacEncryptionService();
     final supabaseUserId = ZagSupabaseAuth().uid;
 
@@ -56,17 +63,17 @@ class ZAssistantService {
         ZagLogger().debug('Clearing Z Assistant registration (user signed out)');
         hmacService.resetRegistration();
       }
-      return;
+      return false;
     }
 
     final registeredUserId = hmacService.registeredUserId;
-    if (hmacService.isRegistered && registeredUserId == supabaseUserId) {
-      // Already registered for this user
-      return;
+    if (!force && hmacService.isRegistered && registeredUserId == supabaseUserId) {
+      // Already registered for this user (skip unless forced)
+      return true;
     }
 
-    // Skip if already registered
-    if (hmacService.isRegistered && registeredUserId != supabaseUserId) {
+    // Re-register if user changed or force is true
+    if (force || (hmacService.isRegistered && registeredUserId != supabaseUserId)) {
       ZagLogger().debug(
         'Re-registering device for new Supabase user (old=${registeredUserId ?? "none"}, new=$supabaseUserId)',
       );
@@ -89,7 +96,7 @@ class ZAssistantService {
         ZagLogger()
             .warning('No Pro, Mega, or Ultra subscription available for registration');
         hmacService.resetRegistration();
-        return;
+        return false;
       }
 
       // Use the original app user ID as the receipt token
@@ -118,10 +125,13 @@ class ZAssistantService {
       if (response.statusCode == 200) {
         hmacService.setRegistered(true, userId: supabaseUserId);
         ZagLogger().debug('✅ Device registered successfully');
+        return true;
       }
+      return false;
     } catch (e) {
       // Registration failed but we'll try again next time
       ZagLogger().warning('Device registration failed: $e');
+      return false;
     }
   }
 
