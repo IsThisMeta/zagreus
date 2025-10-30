@@ -83,7 +83,7 @@ class _ZChatPageState extends State<ZChatPage> {
   }
 
   Future<void> _sendMessage() async {
-    if (!_isSignedIn || _controller.text.trim().isEmpty || _isThinking) return;
+    if (_controller.text.trim().isEmpty || _isThinking) return;
 
     final userMessage = _controller.text.trim();
     _controller.clear();
@@ -845,52 +845,6 @@ class _ZChatPageState extends State<ZChatPage> {
               ),
 
               // Input bar at bottom
-              if (!_isSignedIn)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Theme.of(context).dividerColor.withOpacity(0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.lock_outline_rounded,
-                          size: 18,
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Please create an account or sign in to use Z.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color
-                                      ?.withOpacity(0.7),
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: TextField(
@@ -908,17 +862,14 @@ class _ZChatPageState extends State<ZChatPage> {
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
-                    hintText: _isSignedIn
-                        ? ''
-                        : 'Please sign in to use Z Assistant',
+                    hintText: 'Ask me anything...',
                     hintStyle: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white.withOpacity(0.3)
                           : Colors.black.withOpacity(0.3),
                     ),
                     suffixIcon: _controller.text.isNotEmpty &&
-                            !_isThinking &&
-                            _isSignedIn
+                            !_isThinking
                         ? IconButton(
                             icon: Icon(
                               Icons.arrow_upward_rounded,
@@ -943,8 +894,8 @@ class _ZChatPageState extends State<ZChatPage> {
                       ),
                     ),
                   ),
-                  enabled: _isSignedIn && !_isThinking,
-                  readOnly: !_isSignedIn,
+                  enabled: !_isThinking,
+                  readOnly: false,
                 ),
               ),
             ],
