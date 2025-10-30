@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
@@ -86,8 +87,9 @@ class ZAssistantService {
       final hmacKey = hmacService.hmacKey;
 
       // Get RevenueCat customer ID for verification
+      // IMPORTANT: Fetch fresh customer info to ensure we have the latest data after logIn()
+      final customerInfo = await Purchases.getCustomerInfo();
       final rcService = RevenueCatService();
-      final customerInfo = rcService.customerInfo;
       final hasUltra = rcService.isUltraActive;
       final hasMega = rcService.isMegaActive;
       final hasPro = rcService.isProActive;
@@ -100,6 +102,7 @@ class ZAssistantService {
       }
 
       // Use the original app user ID as the receipt token
+      // After Purchases.logIn(), this should be the Supabase user ID instead of anonymous ID
       final receiptToken = customerInfo.originalAppUserId;
       final subscriptionTier = hasUltra
           ? 'ultra'
@@ -109,7 +112,10 @@ class ZAssistantService {
 
       // Get Supabase user ID for tier-based rate limiting
 
-      ZagLogger().debug('🔐 Registering device with Z Assistant...');
+      print('🔐 Registering device with Z Assistant...');
+      print('   Receipt token (app user ID): $receiptToken');
+      print('   Supabase user ID: $supabaseUserId');
+      print('   Subscription tier: $subscriptionTier');
 
       final response = await _dio.post(
         '/device/register',

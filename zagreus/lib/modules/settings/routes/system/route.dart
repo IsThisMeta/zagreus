@@ -135,15 +135,28 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           final supabaseUserId = ZagSupabaseAuth().uid;
           if (supabaseUserId != null) {
             try {
-              ZagLogger().debug('🔗 Linking RevenueCat to Supabase user $supabaseUserId...');
-              final result = await Purchases.logIn(supabaseUserId);
-              ZagLogger().debug('✅ Linked RevenueCat: ${result.customerInfo.originalAppUserId}');
+              // Log out first to clear any cached state
+              print('🚪 Logging out from RevenueCat to clear cache...');
+              await Purchases.logOut();
+              print('✅ Logged out from RevenueCat');
+
+              // Now log in with Supabase user ID
+              print('🔗 Linking RevenueCat to Supabase user $supabaseUserId...');
+              final loginResult = await Purchases.logIn(supabaseUserId);
+              print('✅ Linked RevenueCat - originalAppUserId: ${loginResult.customerInfo.originalAppUserId}');
+              print('   Created: ${loginResult.created}');
+
+              // Restore purchases to ensure everything is synced
+              print('🔄 Restoring purchases to ensure sync...');
+              final restoreResult = await Purchases.restorePurchases();
+              print('✅ Restored - originalAppUserId: ${restoreResult.originalAppUserId}');
+              print('   Active entitlements: ${restoreResult.entitlements.active.keys.toList()}');
 
               // Force RevenueCat service to refresh its customer info
               await RevenueCatService().updateCustomerInfo();
-              ZagLogger().debug('🔄 Refreshed RevenueCat customer info');
+              print('🔄 Refreshed RevenueCat customer info in service');
             } catch (e) {
-              ZagLogger().warning('Failed to link RevenueCat: $e');
+              print('❌ Failed to link/restore RevenueCat: $e');
               // Continue anyway - maybe already linked
             }
           }
