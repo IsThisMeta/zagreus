@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/supabase/database.dart';
 import 'package:zagreus/supabase/types.dart';
@@ -30,7 +31,17 @@ class ZagSupabaseAuth {
   /// Sign out a logged in user.
   ///
   /// If the user is not signed in, this is a non-op.
-  Future<void> signOut() async => instance.signOut();
+  Future<void> signOut() async {
+    await instance.signOut();
+
+    // Log out from RevenueCat to create a new anonymous user
+    try {
+      await Purchases.logOut();
+      ZagLogger().debug('✅ Logged out from RevenueCat');
+    } catch (e) {
+      ZagLogger().warning('Failed to log out from RevenueCat: $e');
+    }
+  }
 
   /// Register a new user using Supabase Authentication.
   ///
@@ -44,6 +55,16 @@ class ZagSupabaseAuth {
       );
       if (authResponse.user != null) {
         ZagSupabaseDatabase().addDeviceToken();
+
+        // Link RevenueCat purchases to this Supabase user
+        try {
+          await Purchases.logIn(authResponse.user!.id);
+          ZagLogger().debug('✅ Linked RevenueCat to Supabase user ${authResponse.user!.id}');
+        } catch (e) {
+          ZagLogger().warning('Failed to link RevenueCat: $e');
+          // Don't fail registration if RevenueCat linking fails
+        }
+
         return ZagSupabaseResponse(state: true, authResponse: authResponse);
       } else {
         return ZagSupabaseResponse(state: false);
@@ -67,6 +88,16 @@ class ZagSupabaseAuth {
       );
       if (authResponse.user != null) {
         ZagSupabaseDatabase().addDeviceToken();
+
+        // Link RevenueCat purchases to this Supabase user
+        try {
+          await Purchases.logIn(authResponse.user!.id);
+          ZagLogger().debug('✅ Linked RevenueCat to Supabase user ${authResponse.user!.id}');
+        } catch (e) {
+          ZagLogger().warning('Failed to link RevenueCat: $e');
+          // Don't fail sign-in if RevenueCat linking fails
+        }
+
         return ZagSupabaseResponse(state: true, authResponse: authResponse);
       } else {
         return ZagSupabaseResponse(state: false);

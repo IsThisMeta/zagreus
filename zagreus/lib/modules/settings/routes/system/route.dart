@@ -12,9 +12,12 @@ import 'package:zagreus/modules/settings/routes/system/widgets/build_details.dar
 import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/demo_config.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class SystemRoute extends StatefulWidget {
   const SystemRoute({
@@ -124,10 +127,28 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       onTap: () async {
         showZagInfoSnackBar(
           title: 'Syncing Subscription',
-          message: 'Re-registering device with backend...',
+          message: 'Linking RevenueCat and re-registering...',
         );
 
         try {
+          // First, link RevenueCat to current Supabase user
+          final supabaseUserId = ZagSupabaseAuth().uid;
+          if (supabaseUserId != null) {
+            try {
+              ZagLogger().debug('🔗 Linking RevenueCat to Supabase user $supabaseUserId...');
+              final result = await Purchases.logIn(supabaseUserId);
+              ZagLogger().debug('✅ Linked RevenueCat: ${result.customerInfo.originalAppUserId}');
+
+              // Force RevenueCat service to refresh its customer info
+              await RevenueCatService().updateCustomerInfo();
+              ZagLogger().debug('🔄 Refreshed RevenueCat customer info');
+            } catch (e) {
+              ZagLogger().warning('Failed to link RevenueCat: $e');
+              // Continue anyway - maybe already linked
+            }
+          }
+
+          // Then force device registration
           final service = ZAssistantService();
           final success = await service.forceDeviceRegistration();
 
