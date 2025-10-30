@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                          : 'Unlock Discover and Server modules',
+                          : 'Unlock Discover, Server, and more power',
             )
           ],
           trailing: GestureDetector(
@@ -96,7 +96,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   ? 'Included with Ultra'
                   : isMega
                       ? 'Active • Mega plan'
-                      : 'AI Discover features and higher Z usage'
+                      : 'AI-powered Discover with Assistant'
             )
           ],
           trailing: ZagIconButton(
@@ -113,7 +113,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Ultra',
           body: [
             TextSpan(
-              text: isUltra ? ultraPlanLabel! : 'GPT-5 models for Discover & Z',
+              text: isUltra ? ultraPlanLabel! : 'Discover is powered by the latest models',
             ),
           ],
           trailing: ZagIconButton(
@@ -185,11 +185,12 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, and Z Assistant access with GPT-5 mini (3 messages every 12 hours)."
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, SSID Auto Switching, and Z Assistant access with GPT-5 mini (3 messages every 12 hours)."
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
                       '• Server module\n'
-                      '• Z Assistant access with GPT-5 mini\n\n'
+                      '• SSID Auto Switching\n'
+                      '• Limited Z Assistant access with GPT-5 mini\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
