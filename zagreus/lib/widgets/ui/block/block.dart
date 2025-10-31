@@ -298,6 +298,7 @@ class ZagBlock extends StatelessWidget {
       child: ZagListTile(
         context: context,
         title: _scrollableText(
+          scrollDirection: titleMaxLines > 1 ? Axis.vertical : Axis.horizontal,
           child: ZagText.title(
             text: title ?? ZagUI.TEXT_EMDASH,
             color: titleColor == const Color(0x00000000)
@@ -307,6 +308,7 @@ class ZagBlock extends StatelessWidget {
                 : titleColor,
             overflow: TextOverflow.visible,
             maxLines: this.titleMaxLines,
+            softWrap: titleMaxLines > 1,
           ),
         ),
         subtitle: _subtitle(),
