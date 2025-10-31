@@ -126,7 +126,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         right: ZagUI.DEFAULT_MARGIN_SIZE,
         bottom: ZagUI.DEFAULT_MARGIN_SIZE,
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
         color: ZagColours.white10,
         borderRadius: BorderRadius.circular(8),
@@ -134,27 +134,16 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title with icon
-          Row(
-            children: [
-              Icon(
-                Icons.info_outline,
-                size: 32,
-                color: Colors.white70,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                info.name.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+          Text(
+            info.name.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.0,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           // Version
           Text(
             'Version: ${info.version}',
@@ -226,8 +215,11 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       return '${tb.toStringAsFixed(1)} TB';
     }
 
+    final usageLabel =
+        '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)';
+
     return ZagBlock(
-      title: 'ARRAY CAPACITY',
+      title: 'Array capacity',
       leading: const Icon(
         Icons.storage,
         size: 32,
@@ -237,35 +229,21 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         TextSpan(
           text: '${formatStorage(capacity.totalTB)} Total',
         ),
+        TextSpan(
+          text: usageLabel,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
       bottomHeight: ZagLinearPercentIndicator.height,
-      bottom: SizedBox(
-        height: ZagLinearPercentIndicator.height,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned.fill(
-              child: ZagLinearPercentIndicator(
-                percent: percentUsed / 100,
-                progressColor: percentUsed > 90
-                    ? ZagColours.red
-                    : percentUsed > 75
-                        ? ZagColours.orange
-                        : ZagColours.orange,
-              ),
-            ),
-            Center(
-              child: Text(
-                '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+      bottom: ZagLinearPercentIndicator(
+        percent: percentUsed / 100,
+        progressColor: percentUsed > 90
+            ? ZagColours.red
+            : percentUsed > 75
+                ? ZagColours.orange
+                : ZagColours.orange,
       ),
     );
   }
@@ -307,8 +285,10 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         ? '${freeGB.toStringAsFixed(1)} GB free'
         : 'Free memory unknown';
 
+    final usageText = '$percentLabel ($freeLabel)';
+
     return ZagBlock(
-      title: 'MEMORY',
+      title: 'Memory',
       leading: const Icon(
         Icons.memory,
         size: 32,
@@ -316,35 +296,21 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       ),
       body: [
         TextSpan(text: memoryInfo),
+        TextSpan(
+          text: usageText,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
       bottomHeight: ZagLinearPercentIndicator.height,
-      bottom: SizedBox(
-        height: ZagLinearPercentIndicator.height,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned.fill(
-              child: ZagLinearPercentIndicator(
-                percent: progressPercent,
-                progressColor: percentUsed != null && percentUsed > 90
-                    ? ZagColours.red
-                    : percentUsed != null && percentUsed > 75
-                        ? ZagColours.orange
-                        : Colors.green,
-              ),
-            ),
-            Center(
-              child: Text(
-                '$percentLabel ($freeLabel)',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+      bottom: ZagLinearPercentIndicator(
+        percent: progressPercent,
+        progressColor: percentUsed != null && percentUsed > 90
+            ? ZagColours.red
+            : percentUsed != null && percentUsed > 75
+                ? ZagColours.orange
+                : Colors.green,
       ),
     );
   }
