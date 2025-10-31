@@ -92,12 +92,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Mega',
           body: [
             TextSpan(
-              text: isUltra
-                  ? 'Included with Ultra'
-                  : isMega
-                      ? 'Active • Mega plan'
-                      : 'AI-powered Discover with Assistant'
-            )
+                text: isUltra
+                    ? 'Included with Ultra'
+                    : isMega
+                        ? 'Active • Mega plan'
+                        : 'AI recommendations and higher chat limits')
           ],
           trailing: ZagIconButton(
             icon: (isUltra || isMega)
@@ -113,7 +112,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           title: 'Zagreus Ultra',
           body: [
             TextSpan(
-              text: isUltra ? ultraPlanLabel! : 'Discover is powered by the latest models',
+              text: isUltra
+                  ? ultraPlanLabel!
+                  : 'Discover uses the most powerful models',
             ),
           ],
           trailing: ZagIconButton(
@@ -206,7 +207,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                 text: TextSpan(
                   text: '7-day free trial',
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
                     fontSize: 14,
                   ),
                 ),
@@ -224,7 +229,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                 text: TextSpan(
                   text: '1 month free trial',
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
                     fontSize: 14,
                   ),
                 ),
@@ -378,104 +387,108 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ),
           ),
           if (!isMega) ...[
-          ZagDialog.tile(
-            icon: Icons.rocket_launch_rounded,
-            iconColor: ZagColours.orange,
-            text: 'Monthly • \$1.79/month',
-            subtitle: RichText(
-              text: TextSpan(
-                text: '7-day free trial',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            onTap: () {
-              Navigator.of(context).pop();
-              _purchaseMega(true);
-            },
-          ),
-          const SizedBox(height: 16),
-          // Legal links required by Apple
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                const Divider(),
-                const SizedBox(height: 8),
-                Text(
-                  'By subscribing, you agree to our',
+            ZagDialog.tile(
+              icon: Icons.rocket_launch_rounded,
+              iconColor: ZagColours.orange,
+              text: 'Monthly • \$1.79/month',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '7-day free trial',
                   style: TextStyle(
-                    fontSize: 12,
                     color: Theme.of(context)
                         .textTheme
                         .bodySmall
                         ?.color
                         ?.withOpacity(0.7),
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      onTap: () => _openUrl(
-                          'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
-                      child: Text(
-                        'Terms of Service',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ZagColours.currentAccentLight,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      ' and ',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => _openUrl('https://zagreus.app/privacy'),
-                      child: Text(
-                        'Privacy Policy',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ZagColours.currentAccentLight,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Restore Purchases button
-          Center(
-            child: TextButton(
-              onPressed: () {
+              ),
+              onTap: () {
                 Navigator.of(context).pop();
-                _restorePurchases();
+                _purchaseMega(true);
               },
-              child: Text(
-                'Restore Purchases',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: ZagColours.currentAccentLight,
-                  fontWeight: FontWeight.w500,
+            ),
+            const SizedBox(height: 16),
+            // Legal links required by Apple
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    'By subscribing, you agree to our',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () => _openUrl(
+                            'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
+                        child: Text(
+                          'Terms of Service',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ZagColours.currentAccentLight,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        ' and ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.color
+                              ?.withOpacity(0.7),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _openUrl('https://zagreus.app/privacy'),
+                        child: Text(
+                          'Privacy Policy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ZagColours.currentAccentLight,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Restore Purchases button
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _restorePurchases();
+                },
+                child: Text(
+                  'Restore Purchases',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: ZagColours.currentAccentLight,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
           ],
         ],
       ),
