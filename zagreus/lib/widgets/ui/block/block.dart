@@ -14,6 +14,7 @@ class ZagBlock extends StatelessWidget {
   final String? title;
   final Color titleColor;
   final Color? backgroundColor;
+  final int titleMaxLines;
 
   /// If defined, only takes the first body subtitle from the [body] array
   /// And allows that single [TextSpan] to overflow to this many lines
@@ -48,8 +49,10 @@ class ZagBlock extends StatelessWidget {
     this.skeletonSubtitles = 2,
     this.disabled = false,
     this.title,
-    this.titleColor = const Color(0x00000000), // Sentinel value - will be set in build
+    this.titleColor =
+        const Color(0x00000000), // Sentinel value - will be set in build
     this.backgroundColor,
+    this.titleMaxLines = 1,
     this.body,
     this.bodyLeadingIcons,
     this.bodyLeadingIconsColor,
@@ -178,9 +181,8 @@ class ZagBlock extends StatelessWidget {
         onLongPress: onLongPress as void Function()?,
       ),
       height: _height,
-      color: backgroundColor ?? (backgroundUrl?.isNotEmpty ?? false 
-          ? Colors.transparent 
-          : null),
+      color: backgroundColor ??
+          (backgroundUrl?.isNotEmpty ?? false ? Colors.transparent : null),
     );
   }
 
@@ -298,11 +300,13 @@ class ZagBlock extends StatelessWidget {
         title: _scrollableText(
           child: ZagText.title(
             text: title ?? ZagUI.TEXT_EMDASH,
-            color: titleColor == const Color(0x00000000) 
-                ? (Theme.of(context).brightness == Brightness.light ? Colors.black87 : Colors.white)
+            color: titleColor == const Color(0x00000000)
+                ? (Theme.of(context).brightness == Brightness.light
+                    ? Colors.black87
+                    : Colors.white)
                 : titleColor,
             overflow: TextOverflow.visible,
-            maxLines: 1,
+            maxLines: this.titleMaxLines,
           ),
         ),
         subtitle: _subtitle(),
@@ -318,7 +322,6 @@ class ZagBlock extends StatelessWidget {
 
   Widget? _subtitle() {
     int maxLines = customBodyMaxLines ?? 1;
-    double height = SUBTITLE_HEIGHT * maxLines;
 
     if (bodyLeadingIcons != null) {
       assert(
@@ -328,64 +331,55 @@ class ZagBlock extends StatelessWidget {
     }
 
     Widget _wrapper(List<Widget> children) {
-      return Expanded(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
       );
     }
 
     Widget _entry(TextSpan textSpan, IconData? icon) {
-      return SizedBox(
-        height: height,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (icon != null)
-              Padding(
-                child: Container(
-                  child: Icon(
-                    icon,
-                    color: bodyLeadingIconsColor,
-                    size: ZagUI.FONT_SIZE_H2,
-                  ),
-                  height: SUBTITLE_HEIGHT * maxLines,
-                  width: SUBTITLE_HEIGHT,
-                  alignment: Alignment.centerLeft,
-                ),
-                padding: const EdgeInsets.only(
-                  right: ZagUI.DEFAULT_MARGIN_SIZE / 4,
-                ),
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (icon != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                right: ZagUI.DEFAULT_MARGIN_SIZE / 4,
               ),
-            Expanded(
-              child: _scrollableText(
-                scrollDirection: maxLines > 1 ? Axis.vertical : Axis.horizontal,
-                child: Container(
-                  child: Builder(
-                    builder: (context) => RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: ZagUI.FONT_SIZE_H3,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? ZagColours.grey
-                              : Colors.grey.shade900,
-                        ),
-                        children: [textSpan],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: maxLines == 1 ? false : true,
-                      maxLines: maxLines,
-                    ),
-                  ),
-                  alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: ZagUI.FONT_SIZE_H2 + ZagUI.DEFAULT_MARGIN_SIZE / 2,
+                child: Icon(
+                  icon,
+                  color: bodyLeadingIconsColor,
+                  size: ZagUI.FONT_SIZE_H2,
                 ),
               ),
             ),
-          ],
-        ),
+          Expanded(
+            child: _scrollableText(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Builder(
+                  builder: (context) => RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: ZagUI.FONT_SIZE_H3,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? ZagColours.grey
+                            : Colors.grey.shade900,
+                      ),
+                      children: [textSpan],
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: maxLines == 1 ? false : true,
+                    maxLines: maxLines,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -397,15 +391,23 @@ class ZagBlock extends StatelessWidget {
       } else {
         for (int i = 0; i < body!.length; i++) {
           _children.add(_entry(body![i], bodyLeadingIcons?.elementAtOrNull(i)));
+          if (i != body!.length - 1) {
+            _children.add(const SizedBox(height: ZagUI.MARGIN_SIZE_HALF));
+          }
         }
       }
     }
 
     if (bottom != null) {
-      _children.add(SizedBox(
-        height: bottomHeight,
-        child: bottom,
-      ));
+      if (_children.isNotEmpty) {
+        _children.add(const SizedBox(height: ZagUI.MARGIN_SIZE_HALF));
+      }
+      _children.add(
+        SizedBox(
+          height: bottomHeight,
+          child: bottom,
+        ),
+      );
     }
 
     return _children.isEmpty ? null : _wrapper(_children);

@@ -31,7 +31,9 @@ class _State extends State<SABnzbdQueueTile> {
 
     return ZagBlock(
       title: widget.data.name,
+      titleMaxLines: 2,
       body: [TextSpan(text: widget.data.subtitle)],
+      customBodyMaxLines: 2,
       bottomHeight: ZagLinearPercentIndicator.height,
       bottom: ZagLinearPercentIndicator(
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
@@ -181,9 +183,7 @@ class _Helper {
   Future<void> _delete() async {
     List values = await SABnzbdDialogs.deleteJob(context);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current)
-          .deleteJob(data.nzoId)
-          .then((_) {
+      await SABnzbdAPI.from(ZagProfile.current).deleteJob(data.nzoId).then((_) {
         showZagSuccessSnackBar(
           title: 'Job Deleted',
           message: data.name,

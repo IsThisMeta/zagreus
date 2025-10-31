@@ -16,13 +16,15 @@ class ZagCard extends Card {
           child: Container(
             child: child,
             decoration: decoration,
-            height: height,
+            constraints:
+                height != null ? BoxConstraints(minHeight: height) : null,
             width: width,
           ),
           margin: margin,
-          color: color ?? (Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).primaryColor
-              : Theme.of(context).cardColor),
+          color: color ??
+              (Theme.of(context).brightness == Brightness.dark
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).cardColor),
           shape: ZagUI.shapeBorder,
           elevation: 0.0,
           clipBehavior: Clip.antiAlias,

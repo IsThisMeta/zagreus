@@ -7,7 +7,7 @@ class ZagListTile extends Card {
     Key? key,
     required BuildContext context,
     required Widget title,
-    required double height,
+    double? height,
     Widget? subtitle,
     Widget? trailing,
     Widget? leading,
@@ -20,7 +20,8 @@ class ZagListTile extends Card {
   }) : super(
           key: key,
           child: Container(
-            height: height,
+            constraints:
+                height != null ? BoxConstraints(minHeight: height) : null,
             child: InkWell(
               child: Row(
                 children: [
@@ -32,23 +33,22 @@ class ZagListTile extends Card {
                     ),
                   Expanded(
                     child: Padding(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            child: title,
-                            height: ZagBlock.TITLE_HEIGHT,
-                          ),
-                          if (subtitle != null) subtitle,
-                        ],
-                      ),
                       padding: EdgeInsets.only(
                         top: ZagUI.DEFAULT_MARGIN_SIZE,
                         bottom: ZagUI.DEFAULT_MARGIN_SIZE,
                         left: leading != null ? 0 : ZagUI.DEFAULT_MARGIN_SIZE,
-                        right:
-                            trailing != null ? 0 : ZagUI.DEFAULT_MARGIN_SIZE,
+                        right: trailing != null ? 0 : ZagUI.DEFAULT_MARGIN_SIZE,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: title,
+                          ),
+                          if (subtitle != null) subtitle,
+                        ],
                       ),
                     ),
                   ),
