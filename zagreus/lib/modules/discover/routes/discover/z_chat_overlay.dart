@@ -23,6 +23,7 @@ class ZChatPage extends StatefulWidget {
 }
 
 class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin {
+  static const int _maxHistoryEntries = 12;
   final List<_ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -98,6 +99,8 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
 
     _scrollToBottom();
 
+    final historyPayload = _buildHistoryPayload(pendingUserMessage: userMessage);
+
     try {
       final zAssistant = ZAssistantService();
 
@@ -105,6 +108,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
       // Backend uses library_cache from Supabase instead
       final response = await zAssistant.sendMessage(
         message: userMessage,
+        history: historyPayload.isEmpty ? null : historyPayload,
       );
 
       setState(() {
@@ -198,6 +202,39 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
 
       _scrollToBottom();
     }
+  }
+
+  List<Map<String, String>> _buildHistoryPayload({required String pendingUserMessage}) {
+    if (_messages.isEmpty) {
+      return [];
+    }
+
+    final history = <Map<String, String>>[];
+    for (var index = 0; index < _messages.length; index++) {
+      final message = _messages[index];
+      final content = message.content?.trim();
+      if (content == null || content.isEmpty) {
+        continue;
+      }
+
+      final isPendingUserMessage =
+          index == _messages.length - 1 && message.isUser && content == pendingUserMessage;
+      if (isPendingUserMessage) {
+        // Current user message is sent separately as `message`
+        continue;
+      }
+
+      history.add({
+        'role': message.isUser ? 'user' : 'assistant',
+        'content': content,
+      });
+    }
+
+    if (history.length <= _maxHistoryEntries) {
+      return history;
+    }
+
+    return history.sublist(history.length - _maxHistoryEntries);
   }
 
   Future<void> _executeCommands(List<ZAssistantCommand> commands) async {
