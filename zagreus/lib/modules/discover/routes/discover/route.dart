@@ -34,6 +34,8 @@ import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/widgets/ui/block/block.dart';
+import 'package:zagreus/widgets/ui/switch.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -965,6 +967,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             useDrawer: true,
             actions: _currentPageIndex == 2
                 ? [
+                    IconButton(
+                      icon: const Icon(Icons.info_outline),
+                      onPressed: _showZAgentQuickSetup,
+                      tooltip: 'Z Agent setup',
+                    ),
                     // Settings button for Z Assistant
                     IconButton(
                       icon: const Icon(Icons.tune),
@@ -1856,6 +1863,115 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
     _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+  }
+
+  void _showZAgentQuickSetup() {
+    showModalBottomSheet(
+      context: context,
+      builder: (modalContext) {
+        final theme = Theme.of(modalContext);
+        final descriptionStyle = theme.textTheme.bodyMedium?.copyWith(
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+        );
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: theme.colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Z Agent setup',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Turn on these caches so the agent has library and watch history context. Data syncs anonymously.',
+                  style: descriptionStyle,
+                ),
+                const SizedBox(height: 16),
+                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+                  builder: (context, _) {
+                    final enabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: ZagBlock(
+                        title: 'Library Cache',
+                        body: [
+                          TextSpan(
+                            text: enabled
+                                ? 'Library is synced to Z Agent'
+                                : 'Let Z Agent analyze your library',
+                          ),
+                        ],
+                        trailing: ZagSwitch(
+                          value: enabled,
+                          onChanged: (value) {
+                            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(value);
+                            if (value) {
+                              showZagInfoSnackBar(
+                                title: 'Library Cache Enabled',
+                                message: 'Z Agent will now sync your library periodically',
+                              );
+                            } else {
+                              showZagInfoSnackBar(
+                                title: 'Library Cache Disabled',
+                                message: 'Z Agent will no longer sync your library',
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.listenableBuilder(
+                  builder: (context, _) {
+                    final enabled = ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read();
+                    return ZagBlock(
+                      title: 'Watch History Cache',
+                      body: [
+                          TextSpan(
+                            text: enabled
+                              ? 'Tautulli watch history synced to Z Agent'
+                              : 'Sync your Tautulli watch history',
+                        ),
+                      ],
+                      trailing: ZagSwitch(
+                        value: enabled,
+                        onChanged: (value) {
+                          ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.update(value);
+                          if (value) {
+                            showZagInfoSnackBar(
+                              title: 'Watch History Cache Enabled',
+                              message: 'Z Agent will now sync your Tautulli watch history',
+                            );
+                          } else {
+                            showZagInfoSnackBar(
+                              title: 'Watch History Cache Disabled',
+                              message: 'Z Agent will no longer sync watch history',
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showZAssistantSettings() {
@@ -4511,99 +4627,143 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Initialize future once if not already set
     _deepCutsFuture ??= deepCutsService.fetchRecommendations();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title with sync button
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: ZagColours.purple,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Z',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: ZagColours.purple,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Deep Cuts',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+    return FutureBuilder<DeepCutsResult>(
+      future: _deepCutsFuture,
+      builder: (context, futureSnapshot) {
+        // Check if refresh is available (nextGenerationAt has passed)
+        final canRefresh = !futureSnapshot.hasData ||
+            !futureSnapshot.data!.success ||
+            futureSnapshot.data!.nextGenerationAt == null ||
+            DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section title with sync button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: ZagColours.purple,
+                    size: 20,
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Z',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: ZagColours.purple,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Deep Cuts',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  // Refresh button (hidden if cooldown active)
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: ZagColours.purple,
+                        size: 20,
+                      ),
+                      onPressed: () async {
+                        await deepCutsService.generateRecommendations(
+                            force: true);
+                        if (mounted) {
+                          setState(() {
+                            _deepCutsFuture =
+                                deepCutsService.fetchRecommendations();
+                          });
+                        }
+                      },
+                    ),
+                ],
               ),
-              // Refresh button
-              IconButton(
-                icon: Icon(
-                  Icons.refresh_rounded,
-                  color: ZagColours.purple,
-                  size: 20,
-                ),
-                onPressed: () async {
-                  await deepCutsService.generateRecommendations(force: true);
-                  if (mounted) {
-                    setState(() {
-                      _deepCutsFuture = deepCutsService.fetchRecommendations();
-                    });
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-        // Content
-        FutureBuilder<DeepCutsResult>(
-          future: _deepCutsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
-                height: 280,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const Center(child: CircularProgressIndicator()),
-              );
-            }
+            ),
+            // Content
+            Builder(
+              builder: (context) {
+                if (futureSnapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    height: 280,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
 
-            if (!snapshot.hasData ||
-                !snapshot.data!.success ||
-                snapshot.data!.recommendations == null ||
-                snapshot.data!.recommendations!.isEmpty) {
-              return _deepCutsEmptyState();
-            }
+                if (!futureSnapshot.hasData ||
+                    !futureSnapshot.data!.success ||
+                    futureSnapshot.data!.recommendations == null ||
+                    futureSnapshot.data!.recommendations!.isEmpty) {
+                  return _deepCutsEmptyState(futureSnapshot.data);
+                }
 
-            final recommendations = snapshot.data!.recommendations!;
+                final recommendations = futureSnapshot.data!.recommendations!;
 
-            return Container(
-              height: 300,
-              padding: const EdgeInsets.only(left: 16),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: recommendations.length,
-                itemBuilder: (context, index) {
-                  return _deepCutMovieCard(recommendations[index]);
-                },
-              ),
-            );
-          },
-        ),
-      ],
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) {
+                      return _deepCutMovieCard(recommendations[index]);
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _deepCutsEmptyState() {
+  Widget _deepCutsEmptyState(DeepCutsResult? result) {
+    // Determine message based on error type
+    String title = 'No deep cuts yet';
+    String message = 'Tap refresh to generate AI-powered recommendations';
+    IconData icon = Icons.movie_filter_rounded;
+
+    if (result != null && !result.success && result.error != null) {
+      switch (result.error!) {
+        case DeepCutsError.notSynced:
+          title = 'Library not synced';
+          message = result.errorMessage ?? 'Please sync your library first';
+          icon = Icons.sync_problem_rounded;
+          break;
+        case DeepCutsError.noMegaOrUltra:
+          title = 'Mega subscription required';
+          message = result.errorMessage ?? 'Deep Cuts requires Mega or Ultra';
+          icon = Icons.lock_rounded;
+          break;
+        case DeepCutsError.alreadyGenerating:
+          title = 'Generation in progress';
+          message = result.errorMessage ?? 'Please wait while recommendations are being generated';
+          icon = Icons.hourglass_empty_rounded;
+          break;
+        case DeepCutsError.fetchFailed:
+        case DeepCutsError.unknown:
+          title = 'Something went wrong';
+          message = result.errorMessage ?? 'Please try again later';
+          icon = Icons.error_outline_rounded;
+          break;
+      }
+    }
+
     return Container(
       height: 280,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -4612,7 +4772,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.movie_filter_rounded,
+              icon,
               size: 48,
               color: (Theme.of(context).brightness == Brightness.dark
                       ? Colors.white
@@ -4621,7 +4781,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 16),
             Text(
-              'No deep cuts yet',
+              title,
               style: TextStyle(
                 color: (Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
@@ -4632,16 +4792,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Tap refresh to generate AI-powered recommendations',
-              style: TextStyle(
-                color: (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black)
-                    .withOpacity(0.5),
-                fontSize: 14,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(0.5),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

@@ -36,13 +36,13 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin {
             final enabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
             return ZagBlock(
               title: 'Library Cache',
-              body: [
-                TextSpan(
-                  text: enabled
-                      ? 'Your library is anonymously synced to Z'
-                      : 'Enable library cache to allow Z Agent to analyze your library',
-                ),
-              ],
+          body: [
+            TextSpan(
+              text: enabled
+                  ? 'Library is synced to Z Agent'
+                  : 'Let Z Agent analyze your library',
+            ),
+          ],
               trailing: ZagSwitch(
                 value: enabled,
                 onChanged: (value) {
@@ -68,13 +68,13 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin {
             final enabled = ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read();
             return ZagBlock(
               title: 'Watch History Cache',
-              body: [
-                TextSpan(
-                  text: enabled
-                      ? 'Tautulli watch history synced to Z'
-                      : 'Enable to sync your Tautulli watch history',
-                ),
-              ],
+          body: [
+            TextSpan(
+              text: enabled
+                  ? 'Tautulli watch history synced to Z Agent'
+                  : 'Sync your Tautulli watch history',
+            ),
+          ],
               trailing: ZagSwitch(
                 value: enabled,
                 onChanged: (value) {
