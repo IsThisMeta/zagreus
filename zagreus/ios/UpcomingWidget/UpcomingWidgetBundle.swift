@@ -12,7 +12,6 @@ import SwiftUI
 struct UpcomingWidgetBundle: WidgetBundle {
     var body: some Widget {
         UpcomingWidget()
-        UpcomingWidgetControl()
         UpcomingWidgetLiveActivity()
     }
 }

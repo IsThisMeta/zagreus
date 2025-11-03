@@ -75,12 +75,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Library sync state
   bool _isSyncing = false;
 
+  // Z Assistant Radarr/Sonarr settings
+  int? _radarrQualityProfileId;
+  String? _radarrQualityProfileName;
+  String? _radarrRootFolder;
+  bool _radarrSearchForMissing = true;
+  int? _sonarrQualityProfileId;
+  String? _sonarrQualityProfileName;
+  String? _sonarrRootFolder;
+  String? _sonarrMonitorType;
+  String? _sonarrSeriesType;
+  bool _sonarrSearchForMissing = true;
+  bool _sonarrSearchForCutoffUnmet = false;
+
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
 
   @override
   void initState() {
     super.initState();
+    _loadSavedSettings();
     _pageController = ZagPageController(initialPage: 0);
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
@@ -951,6 +965,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             useDrawer: true,
             actions: _currentPageIndex == 2
                 ? [
+                    // Settings button for Z Assistant
+                    IconButton(
+                      icon: const Icon(Icons.tune),
+                      onPressed: _showZAssistantSettings,
+                      tooltip: 'Z Assistant Settings',
+                    ),
                     // Sync button on Agent tab (only if library cache is enabled)
                     if (libraryCacheEnabled)
                       IconButton(
@@ -1821,6 +1841,329 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         setState(() => _isSyncing = false);
       }
     }
+  }
+
+  void _loadSavedSettings() {
+    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+
+    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
+    _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
+    _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
+    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
+    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+  }
+
+  void _showZAssistantSettings() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => DefaultTabController(
+        length: 2,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                ),
+                child: TabBar(
+                  labelColor: ZagColours.currentAccent,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: ZagColours.currentAccent,
+                  tabs: const [
+                    Tab(text: 'Movies'),
+                    Tab(text: 'TV Shows'),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _buildRadarrSettings(),
+                    _buildSonarrSettings(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadarrSettings() {
+    return StatefulBuilder(
+      builder: (context, setModalState) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality),
+            title: const Text('Quality Profile'),
+            subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final radarrState = context.read<RadarrState>();
+              final profiles = await radarrState.api!.qualityProfile.getAll();
+
+              if (!mounted) return;
+
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: profiles.length,
+                  itemBuilder: (context, index) {
+                    final profile = profiles[index];
+                    return ListTile(
+                      title: Text(profile.name ?? 'Unknown'),
+                      onTap: () {
+                        setState(() {
+                          _radarrQualityProfileId = profile.id;
+                          _radarrQualityProfileName = profile.name;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Root Folder'),
+            subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final radarrState = context.read<RadarrState>();
+              final folders = await radarrState.rootFolders;
+
+              if (!mounted || folders == null) return;
+
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: folders.length,
+                  itemBuilder: (context, index) {
+                    final folder = folders[index];
+                    return ListTile(
+                      title: Text(folder.path ?? 'Unknown'),
+                      onTap: () {
+                        setState(() {
+                          _radarrRootFolder = folder.path;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.search),
+            title: const Text('Start search for missing'),
+            value: _radarrSearchForMissing,
+            onChanged: (value) {
+              setState(() {
+                _radarrSearchForMissing = value;
+              });
+              setModalState(() {});
+              ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSonarrSettings() {
+    // Helper to get monitor type enum from string
+    final currentMonitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+        ? SonarrSeriesMonitorType.values.firstWhere(
+            (type) => type.value == _sonarrMonitorType,
+            orElse: () => SonarrSeriesMonitorType.ALL,
+          )
+        : SonarrSeriesMonitorType.ALL;
+
+    // Helper to get series type enum from string
+    final currentSeriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+        ? SonarrSeriesType.values.firstWhere(
+            (type) => type.value == _sonarrSeriesType,
+            orElse: () => SonarrSeriesType.STANDARD,
+          )
+        : SonarrSeriesType.STANDARD;
+
+    return StatefulBuilder(
+      builder: (context, setModalState) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality),
+            title: const Text('Quality Profile'),
+            subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final sonarrState = context.read<SonarrState>();
+              final profiles = await sonarrState.qualityProfiles;
+
+              if (!mounted || profiles == null) return;
+
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: profiles.length,
+                  itemBuilder: (context, index) {
+                    final profile = profiles[index];
+                    return ListTile(
+                      title: Text(profile.name ?? 'Unknown'),
+                      onTap: () {
+                        setState(() {
+                          _sonarrQualityProfileId = profile.id;
+                          _sonarrQualityProfileName = profile.name;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Root Folder'),
+            subtitle: Text(_sonarrRootFolder ?? 'Not selected'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final sonarrState = context.read<SonarrState>();
+              final folders = await sonarrState.rootFolders;
+
+              if (!mounted || folders == null) return;
+
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: folders.length,
+                  itemBuilder: (context, index) {
+                    final folder = folders[index];
+                    return ListTile(
+                      title: Text(folder.path ?? 'Unknown'),
+                      onTap: () {
+                        setState(() {
+                          _sonarrRootFolder = folder.path;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.tv),
+            title: const Text('Monitor Type'),
+            subtitle: Text(currentMonitorType.zagName),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: SonarrSeriesMonitorType.values.length,
+                  itemBuilder: (context, index) {
+                    final type = SonarrSeriesMonitorType.values[index];
+                    return ListTile(
+                      title: Text(type.zagName),
+                      onTap: () {
+                        setState(() {
+                          _sonarrMonitorType = type.value;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(type.value);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.category),
+            title: const Text('Series Type'),
+            subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => ListView.builder(
+                  itemCount: SonarrSeriesType.values.length,
+                  itemBuilder: (context, index) {
+                    final type = SonarrSeriesType.values[index];
+                    return ListTile(
+                      title: Text(type.value?.toUpperCase() ?? 'Unknown'),
+                      onTap: () {
+                        setState(() {
+                          _sonarrSeriesType = type.value;
+                        });
+                        setModalState(() {});
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type.value);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.search),
+            title: const Text('Start search for missing'),
+            value: _sonarrSearchForMissing,
+            onChanged: (value) {
+              setState(() {
+                _sonarrSearchForMissing = value;
+              });
+              setModalState(() {});
+              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+            },
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.upgrade),
+            title: const Text('Search for cutoff unmet'),
+            value: _sonarrSearchForCutoffUnmet,
+            onChanged: (value) {
+              setState(() {
+                _sonarrSearchForCutoffUnmet = value;
+              });
+              setModalState(() {});
+              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _spamTenCalls() async {

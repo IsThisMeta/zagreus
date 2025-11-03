@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 
@@ -9,6 +10,7 @@ class DeviceIdService {
   DeviceIdService._internal();
 
   static const _uuid = Uuid();
+  static const _appGroupsChannel = MethodChannel('app.zagreus/app_groups');
   String? _cachedDeviceId;
 
   /// Get or create a persistent device ID
@@ -22,6 +24,7 @@ class DeviceIdService {
     final stored = ZagreusDatabase.DEVICE_ID.read();
     if (stored.isNotEmpty) {
       _cachedDeviceId = stored;
+      _writeToAppGroups(stored);
       return stored;
     }
 
@@ -29,9 +32,22 @@ class DeviceIdService {
     final newId = _uuid.v4();
     ZagreusDatabase.DEVICE_ID.update(newId);
     _cachedDeviceId = newId;
+    _writeToAppGroups(newId);
 
     print('🆔 Generated new device ID: ${newId.substring(0, 8)}...');
     return newId;
+  }
+  
+  /// Write device ID to App Groups for Siri access
+  void _writeToAppGroups(String deviceId) {
+    try {
+      _appGroupsChannel.invokeMethod('writeString', {
+        'key': 'device_id',
+        'value': deviceId,
+      });
+    } catch (e) {
+      print('⚠️ Failed to write device ID to App Groups: $e');
+    }
   }
 
   /// Reset device ID (like "sign out of all devices")
@@ -39,6 +55,7 @@ class DeviceIdService {
     final newId = _uuid.v4();
     ZagreusDatabase.DEVICE_ID.update(newId);
     _cachedDeviceId = newId;
+    _writeToAppGroups(newId);
     print('🔄 Reset device ID to: ${newId.substring(0, 8)}...');
   }
 

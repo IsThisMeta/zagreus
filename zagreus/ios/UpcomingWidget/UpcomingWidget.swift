@@ -20,9 +20,7 @@ struct Provider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
         let currentDate = Date()
-        let items = loadUpcomingContent()
-        let entry = UpcomingEntry(date: currentDate, items: items)
-
+        let entry = UpcomingEntry(date: currentDate, items: loadUpcomingContent())
         // Update every 4 hours
         let nextUpdate = Calendar.current.date(byAdding: .hour, value: 4, to: currentDate)!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))

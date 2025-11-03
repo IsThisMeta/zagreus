@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:uuid/uuid.dart';
 
@@ -12,6 +13,7 @@ class HmacEncryptionService {
   HmacEncryptionService._internal();
 
   static const _uuid = Uuid();
+  static const _appGroupsChannel = MethodChannel('app.zagreus/app_groups');
   String? _cachedHmacKey;
   bool? _cachedRegistered;
   String? _cachedRegisteredUserId;
@@ -27,6 +29,7 @@ class HmacEncryptionService {
     final stored = ZagreusDatabase.DEVICE_HMAC_KEY.read();
     if (stored.isNotEmpty) {
       _cachedHmacKey = stored;
+      _writeToAppGroups(stored);
       return stored;
     }
 
@@ -34,6 +37,7 @@ class HmacEncryptionService {
     final newKey = _generateHmacKey();
     ZagreusDatabase.DEVICE_HMAC_KEY.update(newKey);
     _cachedHmacKey = newKey;
+    _writeToAppGroups(newKey);
 
     print('🔐 Generated new HMAC key for device');
     return newKey;
@@ -51,6 +55,18 @@ class HmacEncryptionService {
     final digest = sha256.convert(bytes);
 
     return digest.toString();
+  }
+
+  /// Write HMAC key to App Groups for Siri access
+  void _writeToAppGroups(String hmacKey) {
+    try {
+      _appGroupsChannel.invokeMethod('writeString', {
+        'key': 'hmac_key',
+        'value': hmacKey,
+      });
+    } catch (e) {
+      print('⚠️ Failed to write HMAC key to App Groups: $e');
+    }
   }
 
   /// Check if device is registered with backend

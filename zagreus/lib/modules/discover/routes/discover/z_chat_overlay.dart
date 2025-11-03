@@ -22,7 +22,7 @@ class ZChatPage extends StatefulWidget {
   State<ZChatPage> createState() => _ZChatPageState();
 }
 
-class _ZChatPageState extends State<ZChatPage> {
+class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin {
   final List<_ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -32,6 +32,9 @@ class _ZChatPageState extends State<ZChatPage> {
   final Set<String> _autoOpenedExploreStages = {};
   bool _isSignedIn = false;
   StreamSubscription<User?>? _authSubscription;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -132,9 +135,9 @@ class _ZChatPageState extends State<ZChatPage> {
           return;
         }
 
-        // Check operation type: queue = auto-execute, explore = poster UI, others = modal
-        if (stagedOp.operation == 'queue') {
-          // Auto-execute queue operations (1-3 items)
+        // Check operation type: instant = auto-execute, explore = poster UI, others = modal
+        if (stagedOp.operation == 'instant' || stagedOp.operation == 'queue') {
+          // Auto-execute instant operations (1-3 items)
           ZagLogger().debug(
               'Auto-executing queue operation with ${stagedOp.items.length} items');
 
@@ -215,6 +218,8 @@ class _ZChatPageState extends State<ZChatPage> {
 
   Future<void> _executeQueueOperation(StagedOperation operation) async {
     switch (operation.operation) {
+      case 'instant':
+      case 'queue': // Legacy support
       case 'add':
         await _executeAddOperation(operation);
         break;
@@ -779,6 +784,7 @@ class _ZChatPageState extends State<ZChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,

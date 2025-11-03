@@ -72,7 +72,7 @@ class RadarrAPI {
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
         connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 20),
       ),
     );

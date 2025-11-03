@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                          : 'Unlock Discover, Server, and more power',
+                  : 'Unlock Discover module and more powerful tools',
             )
           ],
           trailing: GestureDetector(
@@ -114,7 +114,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             TextSpan(
               text: isUltra
                   ? ultraPlanLabel!
-                  : 'Discover uses the most powerful models',
+                  : 'Upgrade to the most powerful models',
             ),
           ],
           trailing: ZagIconButton(
@@ -376,10 +376,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy GPT-5 mini upgrades and 15 Z Assistant messages every 12 hours."
+                  ? "You have an active Mega subscription.\n\nEnjoy AI Discover recommendations and higher GPT-5 mini Ask Z limits (15 messages every 12 hours)."
                   : 'Zagreus Mega unlocks:\n'
-                      '• GPT-5 mini recommendations in Discover\n'
-                      '• More Z Assistant usage with GPT-5 mini\n'
+                      '• AI Discover recommendations powered by GPT-5 mini\n'
+                      '• Higher GPT-5 mini Ask Z limits\n'
                       '• All Pro features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
@@ -641,9 +641,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 powered Discover features, and every Mega perk."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 Discover results, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
-                      '• GPT-5 for Z Assistant and Discover\n'
+                      '• GPT-5 responses for Ask Z and Discover\n'
+                      '• Highest Ask Z usage limits\n'
                       '• All Pro and Mega features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,

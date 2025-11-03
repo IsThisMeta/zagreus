@@ -43,7 +43,7 @@ class SonarrAPI {
         followRedirects: followRedirects,
         maxRedirects: maxRedirects,
         connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 20),
       ),
     );

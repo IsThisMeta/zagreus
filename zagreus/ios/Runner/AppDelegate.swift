@@ -47,9 +47,58 @@ import UserNotifications
         binaryMessenger: controller.binaryMessenger
       )
       LocalNetworkMonitor.shared.startMonitoring(with: localNetworkChannel)
+      
+      // Set up method channel for App Groups (for Siri integration)
+      let appGroupsChannel = FlutterMethodChannel(
+        name: "app.zagreus/app_groups",
+        binaryMessenger: controller.binaryMessenger
+      )
+      
+      appGroupsChannel.setMethodCallHandler { (call, result) in
+        switch call.method {
+        case "writeString":
+          guard let args = call.arguments as? [String: Any],
+                let key = args["key"] as? String,
+                let value = args["value"] as? String else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Missing key or value", details: nil))
+            return
+          }
+          self.writeToAppGroups(key: key, value: value)
+          result(true)
+        case "readString":
+          guard let args = call.arguments as? [String: Any],
+                let key = args["key"] as? String else {
+            result(FlutterError(code: "INVALID_ARGS", message: "Missing key", details: nil))
+            return
+          }
+          let value = self.readFromAppGroups(key: key)
+          result(value)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
     }
-    
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+  
+  // MARK: - App Groups Helper
+  
+  private func writeToAppGroups(key: String, value: String) {
+    if let userDefaults = UserDefaults(suiteName: "group.app.zagreus") {
+      userDefaults.set(value, forKey: key)
+      userDefaults.synchronize()
+      print("Zagreus: Wrote \(key) to App Groups")
+    } else {
+      print("Zagreus: Failed to access App Groups")
+    }
+  }
+  
+  private func readFromAppGroups(key: String) -> String? {
+    if let userDefaults = UserDefaults(suiteName: "group.app.zagreus") {
+      return userDefaults.string(forKey: key)
+    }
+    return nil
   }
   
   private func requestNotificationPermission(completion: @escaping (Bool) -> Void) {
@@ -122,7 +171,7 @@ import UserNotifications
   ) {
     print("Failed to register for remote notifications: \(error)")
   }
-  
+
   // Clear badge when app becomes active
   override func applicationDidBecomeActive(_ application: UIApplication) {
     UIApplication.shared.applicationIconBadgeNumber = 0
