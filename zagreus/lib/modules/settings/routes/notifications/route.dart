@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/supabase/core.dart';
@@ -12,6 +13,7 @@ import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
+import 'package:zagreus/system/webhooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsRoute extends StatefulWidget {
@@ -314,6 +316,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           _radarrToastEventsSection(),
           _sonarrToastEventsSection(),
         ],
+        ZagDivider(),
+        _overseerrWebhookSection(),
       ],
     );
   }
@@ -759,6 +763,54 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
         },
       ),
+    );
+  }
+
+  Widget _overseerrWebhookSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Overseerr Webhook URL',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        ZagBlock(
+          title: 'Copy Webhook URL',
+          body: [
+            TextSpan(
+              text: 'Paste this URL into Overseerr\'s webhook settings',
+            ),
+          ],
+          trailing: Icon(
+            Icons.copy_rounded,
+            color: ZagColours.currentAccentLight,
+          ),
+          onTap: () async {
+            final deviceId = await ZagSupabaseMessaging.instance.getToken();
+            if (deviceId == null) {
+              showZagErrorSnackBar(
+                title: 'Error',
+                message: 'Device token not available',
+              );
+              return;
+            }
+
+            final webhookUrl =
+                ZagWebhooks.buildDeviceTokenURL(deviceId, ZagModule.OVERSEERR);
+            await Clipboard.setData(ClipboardData(text: webhookUrl));
+            showZagInfoSnackBar(
+              title: 'Copied',
+              message: 'Webhook URL copied to clipboard',
+            );
+          },
+        ),
+      ],
     );
   }
 }

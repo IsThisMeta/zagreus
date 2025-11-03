@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                  : 'Unlock Discover module and more powerful tools',
+                  : 'Unlock Discover module and more',
             )
           ],
           trailing: GestureDetector(
