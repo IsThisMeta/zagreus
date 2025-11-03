@@ -954,79 +954,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
-      builder: (context, _) {
-        final libraryCacheEnabled =
-            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
-        return ZagScaffold(
-          scaffoldKey: _scaffoldKey,
-          module: ZagModule.DISCOVER,
-          drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
-          appBar: ZagAppBar(
-            title: 'Discover',
-            useDrawer: true,
-            actions: _currentPageIndex == 2
+    return ZagScaffold(
+      scaffoldKey: _scaffoldKey,
+      module: ZagModule.DISCOVER,
+      drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
+      appBar: ZagAppBar(
+        title: 'Discover',
+        useDrawer: true,
+        actions: _currentPageIndex == 2
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: _showZAgentQuickSetup,
+                  tooltip: 'Z Agent setup',
+                ),
+                // Settings button for Z Assistant
+                IconButton(
+                  icon: const Icon(Icons.tune),
+                  onPressed: _showZAssistantSettings,
+                  tooltip: 'Z Assistant Settings',
+                ),
+                if (_lastZAssistantStageId != null)
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: _navigateToLastZAssistantResults,
+                    tooltip: 'Return to Z Assistant Results',
+                  ),
+              ]
+            : (_currentPageIndex != 3
                 ? [
-                    IconButton(
-                      icon: const Icon(Icons.info_outline),
-                      onPressed: _showZAgentQuickSetup,
-                      tooltip: 'Z Agent setup',
-                    ),
-                    // Settings button for Z Assistant
-                    IconButton(
-                      icon: const Icon(Icons.tune),
-                      onPressed: _showZAssistantSettings,
-                      tooltip: 'Z Assistant Settings',
-                    ),
-                    // Sync button on Agent tab (only if library cache is enabled)
-                    if (libraryCacheEnabled)
-                      IconButton(
-                        icon: _isSyncing
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              )
-                            : const Icon(Icons.sync),
-                        onPressed: _isSyncing ? null : _forceLibrarySync,
-                        tooltip: 'Sync Library',
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        children: [
+                          _appBarToggleButton('Today', 'day'),
+                          const SizedBox(width: 8),
+                          _appBarToggleButton('This Week', 'week'),
+                        ],
                       ),
-                    if (_lastZAssistantStageId != null)
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        onPressed: _navigateToLastZAssistantResults,
-                        tooltip: 'Return to Z Assistant Results',
-                      ),
+                    ),
                   ]
-                : (_currentPageIndex != 3
-                    ? [
-                        Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          child: Row(
-                            children: [
-                              _appBarToggleButton('Today', 'day'),
-                              const SizedBox(width: 8),
-                              _appBarToggleButton('This Week', 'week'),
-                            ],
-                          ),
-                        ),
-                      ]
-                    : null),
-          ),
-          body: _body(),
-          bottomNavigationBar: _DiscoverNavigationBar(
-            pageController: _pageController,
-          ),
-        );
-      },
+                : null),
+      ),
+      body: _body(),
+      bottomNavigationBar: _DiscoverNavigationBar(
+        pageController: _pageController,
+      ),
     );
   }
 
@@ -1940,8 +1913,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     return ZagBlock(
                       title: 'Watch History Cache',
                       body: [
-                          TextSpan(
-                            text: enabled
+                        TextSpan(
+                          text: enabled
                               ? 'Tautulli watch history synced to Z Agent'
                               : 'Sync your Tautulli watch history',
                         ),
@@ -1966,6 +1939,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     );
                   },
                 ),
+                const SizedBox(height: 24),
+                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+                  builder: (context, _) {
+                    final enabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                    if (!enabled) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Enable the library cache to trigger a manual sync.',
+                          style: descriptionStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
+                    if (_isSyncing) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                ZagColours.currentAccent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Center(
+                      child: TextButton(
+                        onPressed: _forceLibrarySync,
+                        style: TextButton.styleFrom(
+                          foregroundColor: ZagColours.currentAccent,
+                        ),
+                        child: const Text('Sync library now'),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
               ],
             ),
           ),
