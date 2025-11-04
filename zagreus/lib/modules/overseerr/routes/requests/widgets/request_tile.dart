@@ -216,12 +216,51 @@ class _State extends State<OverseerrRequestTile> {
   }
 
   Future<void> _onTap() async {
-    // TODO: Navigate to request detail view
-    ZagLogger().debug('Request tapped: ${widget.request.id}');
+    await _showRequestActions();
   }
 
   Future<void> _onLongPress() async {
-    // TODO: Show request action menu (approve, decline, delete)
-    ZagLogger().debug('Request long-pressed: ${widget.request.id}');
+    await _showRequestActions();
+  }
+
+  Future<void> _showRequestActions() async {
+    final result = await OverseerrDialogs().requestActions(context, widget.request);
+
+    if (result.item1 && result.item2 != null) {
+      final action = result.item2!;
+      final state = context.read<OverseerrState>();
+
+      switch (action) {
+        case OverseerrRequestActionType.APPROVE:
+          final success = await state.approveRequest(widget.request.id);
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Request Approved',
+              message: 'Request for ${widget.request.media.getTitle()} has been approved',
+            );
+          }
+          break;
+
+        case OverseerrRequestActionType.DECLINE:
+          final success = await state.declineRequest(widget.request.id);
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Request Declined',
+              message: 'Request for ${widget.request.media.getTitle()} has been declined',
+            );
+          }
+          break;
+
+        case OverseerrRequestActionType.DELETE:
+          final success = await state.deleteRequest(widget.request.id);
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Request Deleted',
+              message: 'Request for ${widget.request.media.getTitle()} has been deleted',
+            );
+          }
+          break;
+      }
+    }
   }
 }
