@@ -59,7 +59,19 @@ func main() {
 			webhook.POST("/tautulli", handleTautulliWebhook)
 			webhook.POST("/custom", handleCustomWebhook)
 		}
-		
+
+		// Overseerr webhook route (uses webhook ID without signature)
+		overseerr := v1.Group("/overseerr/webhook")
+		{
+			overseerr.POST("/:id", handleOverseerrWebhookWithID)
+		}
+
+		// Preferences routes
+		preferences := v1.Group("/preferences")
+		{
+			preferences.POST("/overseerr", handleSetOverseerrPreference)
+		}
+
 		// Notifications webhook (for Flutter app compatibility)
 		notifications := v1.Group("/notifications/webhook")
 		{

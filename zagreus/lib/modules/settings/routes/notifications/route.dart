@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:zagreus/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/supabase/core.dart';
@@ -554,14 +556,22 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
     return ZagBlock(
       title: 'Enable In-App Toasts',
-      body: [TextSpan(text: 'Show toast notifications when actions complete')],
-      trailing: db.listenableBuilder(
-        builder: (context, _) => ZagSwitch(
-          value: db.read(),
-          onChanged: (value) {
-            db.update(value);
-          },
-        ),
+      body: [TextSpan(text: 'Show toast notifications in-app')],
+      trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+        builder: (context, _) {
+          final notificationsEnabled =
+              ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+          return db.listenableBuilder(
+            builder: (context, _) => ZagSwitch(
+              value: db.read(),
+              onChanged: notificationsEnabled
+                  ? (value) {
+                      db.update(value);
+                    }
+                  : null,
+            ),
+          );
+        },
       ),
     );
   }
@@ -781,10 +791,57 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
+          title: 'Enable Overseerr Notifications',
+          body: [],
+          trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+            builder: (context, _) {
+              final notificationsEnabled =
+                  ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+              return ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.listenableBuilder(
+                builder: (context, _) => ZagSwitch(
+                  value: ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.read(),
+                  onChanged: notificationsEnabled
+                      ? (value) async {
+                          // Update local preference first
+                          ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.update(value);
+
+                          // Update backend preference
+                          try {
+                            final webhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
+                            if (webhookID.isEmpty) {
+                              ZagLogger().warning('No webhook ID found, skipping backend update');
+                              return;
+                            }
+
+                            final response = await http.post(
+                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/overseerr'),
+                              headers: {'Content-Type': 'application/json'},
+                              body: json.encode({
+                                'webhook_id': webhookID,
+                                'enabled': value,
+                              }),
+                            );
+
+                            if (response.statusCode == 200) {
+                              ZagLogger().debug('Overseerr preference updated: enabled=$value');
+                            } else {
+                              ZagLogger().warning('Failed to update Overseerr preference: ${response.statusCode}');
+                            }
+                          } catch (e, stackTrace) {
+                            ZagLogger().error('Failed to update Overseerr preference', e, stackTrace);
+                          }
+                        }
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+        ZagBlock(
           title: 'Copy Webhook URL',
           body: [
             TextSpan(
-              text: 'Paste this URL into Overseerr\'s webhook settings',
+              text: 'Paste into Overseerr webhook settings',
             ),
           ],
           trailing: Icon(
@@ -792,22 +849,58 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             color: ZagColours.currentAccentLight,
           ),
           onTap: () async {
-            final deviceId = await ZagSupabaseMessaging.instance.getToken();
-            if (deviceId == null) {
+            try {
+              // Get or create webhook ID (same system as Radarr/Sonarr)
+              final deviceToken = await ZagSupabaseMessaging.instance.getToken();
+              if (deviceToken == null) {
+                showZagErrorSnackBar(
+                  title: 'Error',
+                  message: 'Device token not available',
+                );
+                return;
+              }
+
+              // Check if we're in anonymous mode
+              final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+              final user = ZagSupabase.client.auth.currentUser;
+              final userID = (!isAnonymous && user != null) ? user.id : null;
+
+              // Call backend to get/create webhook ID
+              final response = await http.post(
+                Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
+                headers: {'Content-Type': 'application/json'},
+                body: json.encode({
+                  'user_id': userID,
+                  'device_token': deviceToken,
+                  'device_type': 'ios',
+                  'anonymous': isAnonymous,
+                }),
+              );
+
+              if (response.statusCode == 200) {
+                final data = json.decode(response.body);
+                final webhookID = data['webhook_id'] as String?;
+
+                if (webhookID == null) {
+                  throw Exception('No webhook ID returned');
+                }
+
+                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/overseerr/webhook/$webhookID';
+                await Clipboard.setData(ClipboardData(text: webhookUrl));
+                showZagInfoSnackBar(
+                  title: 'Copied',
+                  message: 'Webhook URL copied to clipboard',
+                );
+              } else {
+                throw Exception('Failed to get webhook ID: ${response.statusCode}');
+              }
+            } catch (e, stackTrace) {
+              ZagLogger().error('Failed to copy Overseerr webhook URL', e, stackTrace);
               showZagErrorSnackBar(
                 title: 'Error',
-                message: 'Device token not available',
+                message: 'Failed to generate webhook URL',
               );
-              return;
             }
-
-            final webhookUrl =
-                ZagWebhooks.buildDeviceTokenURL(deviceId, ZagModule.OVERSEERR);
-            await Clipboard.setData(ClipboardData(text: webhookUrl));
-            showZagInfoSnackBar(
-              title: 'Copied',
-              message: 'Webhook URL copied to clipboard',
-            );
           },
         ),
       ],

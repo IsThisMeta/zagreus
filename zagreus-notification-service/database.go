@@ -334,3 +334,70 @@ func removeDeviceToken(deviceToken string) error {
 	return err
 }
 
+// Set Overseerr notification preference for a webhook ID
+func setOverseerrEnabled(webhookID string, enabled bool) error {
+	if db == nil {
+		return nil
+	}
+
+	_, err := db.Exec(`
+		UPDATE webhook_mappings
+		SET overseerr_enabled = $1,
+		    updated_at = CURRENT_TIMESTAMP
+		WHERE webhook_id = $2
+	`, enabled, webhookID)
+
+	return err
+}
+
+// Check if Overseerr notifications are enabled for a webhook ID
+func isOverseerrEnabled(webhookID string) bool {
+	if db == nil {
+		return true // Default to enabled if no database
+	}
+
+	var enabled bool
+	err := db.QueryRow(`
+		SELECT COALESCE(overseerr_enabled, true) FROM webhook_mappings
+		WHERE webhook_id = $1
+	`, webhookID).Scan(&enabled)
+
+	if err != nil {
+		log.Printf("Failed to check Overseerr enabled status: %v", err)
+		return true // Default to enabled on error
+	}
+
+	return enabled
+}
+
+// Handle setting Overseerr notification preference
+func handleSetOverseerrPreference(c *gin.Context) {
+	var req struct {
+		WebhookID string `json:"webhook_id"`
+		Enabled   bool   `json:"enabled"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	if req.WebhookID == "" {
+		c.JSON(400, gin.H{"error": "Webhook ID required"})
+		return
+	}
+
+	if err := setOverseerrEnabled(req.WebhookID, req.Enabled); err != nil {
+		log.Printf("Failed to update Overseerr preference: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to update preference"})
+		return
+	}
+
+	log.Printf("Updated Overseerr preference for webhook %s: enabled=%v", req.WebhookID, req.Enabled)
+	c.JSON(200, gin.H{
+		"success": true,
+		"webhook_id": req.WebhookID,
+		"overseerr_enabled": req.Enabled,
+	})
+}
+

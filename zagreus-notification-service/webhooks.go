@@ -58,6 +58,55 @@ type RadarrMovie struct {
 	Overview   string                   `json:"overview,omitempty"`
 }
 
+// Overseerr webhook structures
+type OverseerrWebhook struct {
+	NotificationType string                   `json:"notification_type"` // Kept for compatibility
+	Type             string                   `json:"type"`              // Actual field Overseerr sends
+	Event            string                   `json:"event"`
+	Subject          string                   `json:"subject"`
+	Message          string                   `json:"message"`
+	Image            string                   `json:"image"`
+	Media            *OverseerrMedia          `json:"media"`
+	Request          *OverseerrRequest        `json:"request"`
+	Issue            *OverseerrIssue          `json:"issue"`
+	Comment          *OverseerrComment        `json:"comment"`
+	Extra            []interface{}            `json:"extra"` // Array, not map
+}
+
+type OverseerrMedia struct {
+	MediaType string `json:"media_type"`
+	TmdbID    string `json:"tmdbId"`
+	ImdbID    string `json:"imdbId"`
+	TvdbID    string `json:"tvdbId"`
+	Status    string `json:"status"`
+	Status4k  string `json:"status4k"`
+}
+
+type OverseerrRequest struct {
+	RequestID                       string `json:"request_id"`
+	RequestedByUsername             string `json:"requestedBy_username"`
+	RequestedByEmail                string `json:"requestedBy_email"`
+	RequestedByAvatar               string `json:"requestedBy_avatar"`
+	RequestedBySettingsDiscordID    string `json:"requestedBy_settings_discordId"`
+	RequestedBySettingsTelegramChatID string `json:"requestedBy_settings_telegramChatId"`
+}
+
+type OverseerrIssue struct {
+	IssueID           int    `json:"issue_id"`
+	IssueType         string `json:"issue_type"`
+	IssueStatus       string `json:"issue_status"`
+	CreatedByEmail    string `json:"createdBy_email"`
+	CreatedByUsername string `json:"createdBy_username"`
+	CreatedByAvatar   string `json:"createdBy_avatar"`
+}
+
+type OverseerrComment struct {
+	CommentMessage       string `json:"comment_message"`
+	CommentedByEmail     string `json:"commentedBy_email"`
+	CommentedByUsername  string `json:"commentedBy_username"`
+	CommentedByAvatar    string `json:"commentedBy_avatar"`
+}
+
 // Generic webhook response
 type WebhookResponse struct {
 	Success bool   `json:"success"`
@@ -417,8 +466,474 @@ func handleLidarrWebhook(c *gin.Context) {
 }
 
 func handleOverseerrWebhook(c *gin.Context) {
-	// Similar structure
-	c.JSON(200, gin.H{"message": "Overseerr webhook received"})
+	var webhook OverseerrWebhook
+	if err := c.ShouldBindJSON(&webhook); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid webhook data"})
+		return
+	}
+
+	userID := c.GetHeader("X-User-Id")
+	if userID == "" {
+		c.JSON(401, gin.H{"error": "Missing user ID"})
+		return
+	}
+
+	// Use Type field if set, otherwise fall back to NotificationType
+	notificationType := webhook.Type
+	if notificationType == "" {
+		notificationType = webhook.NotificationType
+	}
+
+	log.Printf("Received Overseerr webhook: %s for user %s", notificationType, userID)
+
+	var title, body string
+	var posterURL string
+
+	// Get poster from TMDB based on media type
+	if webhook.Media != nil {
+		if webhook.Media.MediaType == "movie" {
+			tmdbID := 0
+			if webhook.Media.TmdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TmdbID); err == nil {
+					tmdbID = id
+				}
+			}
+			if url, _, err := getMoviePosterURL(tmdbID, webhook.Media.ImdbID); err == nil {
+				posterURL = url
+			}
+		} else if webhook.Media.MediaType == "tv" {
+			tmdbID := 0
+			tvdbID := 0
+			if webhook.Media.TmdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TmdbID); err == nil {
+					tmdbID = id
+				}
+			}
+			if webhook.Media.TvdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TvdbID); err == nil {
+					tvdbID = id
+				}
+			}
+			if url, _, err := getTVPosterURL(tmdbID, tvdbID, webhook.Media.ImdbID); err == nil {
+				posterURL = url
+			}
+		}
+	}
+
+	// Build notification based on event type
+	requester := ""
+	if webhook.Request != nil && webhook.Request.RequestedByUsername != "" {
+		requester = webhook.Request.RequestedByUsername
+	}
+
+	switch notificationType {
+	case "TEST_NOTIFICATION":
+		title = "Overseerr Test"
+		body = "Zagreus is ready for Overseerr notifications!"
+
+	case "MEDIA_PENDING":
+		title = webhook.Event
+		if title == "" {
+			title = "New Request"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_APPROVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Approved"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_AUTO_APPROVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Auto-Approved"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_AVAILABLE":
+		title = webhook.Event
+		if title == "" {
+			title = "Media Available"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_DECLINED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Declined"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_FAILED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Failed"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "ISSUE_CREATED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Reported"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_RESOLVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Resolved"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_REOPENED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Reopened"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_COMMENT":
+		title = webhook.Event
+		if title == "" {
+			title = "New Comment"
+		}
+		body = webhook.Subject
+		if webhook.Comment != nil && webhook.Comment.CommentMessage != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Comment.CommentMessage)
+		}
+
+	default:
+		log.Printf("Unknown Overseerr notification type: %s", notificationType)
+		c.JSON(200, WebhookResponse{Success: true, Message: "Event ignored"})
+		return
+	}
+
+	if title != "" && body != "" {
+		metadata := map[string]string{
+			"event_type": notificationType,
+			"source":     "overseerr",
+		}
+		if webhook.Media != nil {
+			metadata["content_type"] = webhook.Media.MediaType
+			if webhook.Media.TmdbID != "" {
+				metadata["tmdb_id"] = webhook.Media.TmdbID
+			}
+			if webhook.Media.ImdbID != "" {
+				metadata["imdb_id"] = webhook.Media.ImdbID
+			}
+			if webhook.Media.TvdbID != "" {
+				metadata["tvdb_id"] = webhook.Media.TvdbID
+			}
+		}
+
+		var params *NotificationParams
+		if posterURL != "" || len(metadata) > 0 {
+			params = &NotificationParams{
+				ImageURL: posterURL,
+				Metadata: metadata,
+			}
+		}
+
+		if err := sendNotificationToUser(userID, title, body, params); err != nil {
+			log.Printf("Failed to send notification: %v", err)
+			c.JSON(500, gin.H{"error": "Failed to send notification"})
+			return
+		}
+	}
+
+	c.JSON(200, WebhookResponse{
+		Success: true,
+		Message: "Webhook processed successfully",
+	})
+}
+
+func handleOverseerrWebhookWithID(c *gin.Context) {
+	webhookID := c.Param("id")
+	if webhookID == "" {
+		c.JSON(400, gin.H{"error": "Missing webhook ID"})
+		return
+	}
+
+	// Check if Overseerr notifications are enabled for this webhook
+	if !isOverseerrEnabled(webhookID) {
+		log.Printf("Overseerr notifications disabled for webhook %s, skipping", webhookID)
+		c.JSON(200, gin.H{
+			"success": true,
+			"message": "Overseerr notifications disabled for this webhook",
+		})
+		return
+	}
+
+	// Get device tokens for this webhook ID from database
+	deviceTokens, err := getDeviceTokensForWebhook(webhookID)
+	if err != nil {
+		log.Printf("Failed to get device tokens for webhook %s: %v", webhookID, err)
+		c.JSON(400, gin.H{"error": "Invalid webhook ID"})
+		return
+	}
+
+	if len(deviceTokens) == 0 {
+		log.Printf("No device tokens found for webhook %s", webhookID)
+		c.JSON(404, gin.H{"error": "No devices registered for this webhook"})
+		return
+	}
+
+	var webhook OverseerrWebhook
+	if err := c.ShouldBindJSON(&webhook); err != nil {
+		log.Printf("Failed to parse Overseerr webhook: %v", err)
+		c.JSON(400, gin.H{"error": "Invalid webhook data"})
+		return
+	}
+
+	// Use Type field if set, otherwise fall back to NotificationType
+	notificationType := webhook.Type
+	if notificationType == "" {
+		notificationType = webhook.NotificationType
+	}
+
+	log.Printf("Received Overseerr webhook: %s for webhook %s (%d devices)", notificationType, webhookID, len(deviceTokens))
+
+	var title, body string
+	var posterURL string
+
+	// Get poster from TMDB based on media type
+	if webhook.Media != nil {
+		if webhook.Media.MediaType == "movie" {
+			tmdbID := 0
+			if webhook.Media.TmdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TmdbID); err == nil {
+					tmdbID = id
+				}
+			}
+			if url, _, err := getMoviePosterURL(tmdbID, webhook.Media.ImdbID); err == nil {
+				posterURL = url
+			}
+		} else if webhook.Media.MediaType == "tv" {
+			tmdbID := 0
+			tvdbID := 0
+			if webhook.Media.TmdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TmdbID); err == nil {
+					tmdbID = id
+				}
+			}
+			if webhook.Media.TvdbID != "" {
+				if id, err := strconv.Atoi(webhook.Media.TvdbID); err == nil {
+					tvdbID = id
+				}
+			}
+			if url, _, err := getTVPosterURL(tmdbID, tvdbID, webhook.Media.ImdbID); err == nil {
+				posterURL = url
+			}
+		}
+	}
+
+	// Build notification based on event type
+	requester := ""
+	if webhook.Request != nil && webhook.Request.RequestedByUsername != "" {
+		requester = webhook.Request.RequestedByUsername
+	}
+
+	switch notificationType {
+	case "TEST_NOTIFICATION":
+		title = "Overseerr Test"
+		body = "Zagreus is ready for Overseerr notifications!"
+
+	case "MEDIA_PENDING":
+		title = webhook.Event
+		if title == "" {
+			title = "New Request"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_APPROVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Approved"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_AUTO_APPROVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Auto-Approved"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_AVAILABLE":
+		title = webhook.Event
+		if title == "" {
+			title = "Media Available"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_DECLINED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Declined"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "MEDIA_FAILED":
+		title = webhook.Event
+		if title == "" {
+			title = "Request Failed"
+		}
+		body = webhook.Subject
+		if requester != "" {
+			body = fmt.Sprintf("%s\nRequested by %s", body, requester)
+		}
+
+	case "ISSUE_CREATED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Reported"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_RESOLVED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Resolved"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_REOPENED":
+		title = webhook.Event
+		if title == "" {
+			title = "Issue Reopened"
+		}
+		body = webhook.Subject
+		if webhook.Message != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Message)
+		}
+
+	case "ISSUE_COMMENT":
+		title = webhook.Event
+		if title == "" {
+			title = "New Comment"
+		}
+		body = webhook.Subject
+		if webhook.Comment != nil && webhook.Comment.CommentMessage != "" {
+			body = fmt.Sprintf("%s\n%s", body, webhook.Comment.CommentMessage)
+		}
+
+	default:
+		log.Printf("Unknown Overseerr notification type: %s", notificationType)
+		c.JSON(200, WebhookResponse{Success: true, Message: "Event ignored"})
+		return
+	}
+
+	if title != "" && body != "" {
+		metadata := map[string]string{
+			"event_type": notificationType,
+			"source":     "overseerr",
+		}
+		if webhook.Media != nil {
+			metadata["content_type"] = webhook.Media.MediaType
+			if webhook.Media.TmdbID != "" {
+				metadata["tmdb_id"] = webhook.Media.TmdbID
+			}
+			if webhook.Media.ImdbID != "" {
+				metadata["imdb_id"] = webhook.Media.ImdbID
+			}
+			if webhook.Media.TvdbID != "" {
+				metadata["tvdb_id"] = webhook.Media.TvdbID
+			}
+		}
+
+		var params *NotificationParams
+		if posterURL != "" || len(metadata) > 0 {
+			params = &NotificationParams{
+				ImageURL: posterURL,
+				Metadata: metadata,
+			}
+		}
+
+		// Send notification to all device tokens
+		successCount := 0
+		payload := buildAPNsPayload(title, body, params)
+		isProduction := os.Getenv("APNS_ENVIRONMENT") == "production"
+
+		for _, token := range deviceTokens {
+			if err := apnsClient.SendRichNotification(token, payload, isProduction); err != nil {
+				log.Printf("Failed to send to token %s: %v", token, err)
+
+				// Check if error is 410 (Unregistered) - token is no longer valid
+				if strings.Contains(err.Error(), "status 410") || strings.Contains(err.Error(), "Unregistered") {
+					log.Printf("Token %s is unregistered, removing from database", token)
+					if removeErr := removeDeviceToken(token); removeErr != nil {
+						log.Printf("Failed to remove invalid token: %v", removeErr)
+					}
+					// Don't count 410 as a real failure - it's expected cleanup
+					successCount++
+				}
+			} else {
+				successCount++
+			}
+		}
+
+		if successCount == 0 && len(deviceTokens) > 0 {
+			c.JSON(500, gin.H{"error": "Failed to send any notifications"})
+			return
+		}
+
+		log.Printf("Successfully sent Overseerr notification to %d/%d devices", successCount, len(deviceTokens))
+	}
+
+	c.JSON(200, WebhookResponse{
+		Success: true,
+		Message: fmt.Sprintf("Notification sent to %d device(s)", len(deviceTokens)),
+	})
 }
 
 func handleTautulliWebhook(c *gin.Context) {

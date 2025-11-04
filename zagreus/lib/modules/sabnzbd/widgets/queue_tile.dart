@@ -31,7 +31,7 @@ class _State extends State<SABnzbdQueueTile> {
 
     return ZagBlock(
       title: widget.data.name,
-      titleMaxLines: 2,
+      titleMaxLines: 1,
       body: [TextSpan(text: widget.data.subtitle)],
       customBodyMaxLines: 2,
       bottomHeight: ZagLinearPercentIndicator.height,
