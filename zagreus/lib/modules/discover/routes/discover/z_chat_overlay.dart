@@ -1929,17 +1929,17 @@ class _StagingModalState extends State<_StagingModal> {
                 // Icon buttons on right
                 Row(
                   children: [
+                    IconButton(
+                      icon: Icon(_isMultiSelectMode ? Icons.done_all : Icons.checklist),
+                      onPressed: _toggleMultiSelectMode,
+                      tooltip: 'Select Items',
+                    ),
                     if (operationType != 'remove')
                       IconButton(
                         icon: const Icon(Icons.tune),
                         onPressed: _showCombinedSettings,
                         tooltip: 'Settings',
                       ),
-                    IconButton(
-                      icon: Icon(_isMultiSelectMode ? Icons.done_all : Icons.checklist),
-                      onPressed: _toggleMultiSelectMode,
-                      tooltip: 'Select Items',
-                    ),
                   ],
                 ),
               ],

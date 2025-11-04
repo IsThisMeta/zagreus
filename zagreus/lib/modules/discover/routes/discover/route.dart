@@ -963,16 +963,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         useDrawer: true,
         actions: _currentPageIndex == 2
             ? [
-                IconButton(
-                  icon: const Icon(Icons.info_outline),
-                  onPressed: _showZAgentQuickSetup,
-                  tooltip: 'Z Agent setup',
-                ),
                 // Settings button for Z Assistant
                 IconButton(
                   icon: const Icon(Icons.tune),
                   onPressed: _showZAssistantSettings,
                   tooltip: 'Z Assistant Settings',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: _showZAgentQuickSetup,
+                  tooltip: 'Z Agent setup',
                 ),
                 if (_lastZAssistantStageId != null)
                   IconButton(
