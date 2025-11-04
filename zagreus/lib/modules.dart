@@ -9,6 +9,7 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/lidarr.dart';
+import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
@@ -116,7 +117,7 @@ extension ZagModuleEnablementExtension on ZagModule {
   bool get featureFlag {
     switch (this) {
       case ZagModule.OVERSEERR:
-        return false;
+        return true;
       case ZagModule.WAKE_ON_LAN:
         return ZagWakeOnLAN.isSupported;
       case ZagModule.DISCOVER:
@@ -417,7 +418,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.TAUTULLI:
         return ZagRoutes.tautulli.root.path;
       case ZagModule.OVERSEERR:
-        return null;
+        return ZagRoutes.overseerr.root.path;
       case ZagModule.WAKE_ON_LAN:
         return null;
       case ZagModule.EXTERNAL_MODULES:
@@ -438,7 +439,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.NZBGET:
         return SettingsRoutes.CONFIGURATION_NZBGET;
       case ZagModule.OVERSEERR:
-        return null;
+        return SettingsRoutes.CONFIGURATION_OVERSEERR;
       case ZagModule.RADARR:
         return SettingsRoutes.CONFIGURATION_RADARR;
       case ZagModule.SABNZBD:
@@ -549,7 +550,7 @@ extension ZagModuleExtension on ZagModule {
       case ZagModule.SABNZBD:
         return context.read<SABnzbdState>();
       case ZagModule.OVERSEERR:
-        return null;
+        return context.read<OverseerrState>();
       case ZagModule.TAUTULLI:
         return context.read<TautulliState>();
       case ZagModule.EXTERNAL_MODULES:

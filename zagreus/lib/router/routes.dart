@@ -7,6 +7,7 @@ import 'package:zagreus/router/routes/dashboard.dart';
 import 'package:zagreus/router/routes/external_modules.dart';
 import 'package:zagreus/router/routes/lidarr.dart';
 import 'package:zagreus/router/routes/nzbget.dart';
+import 'package:zagreus/router/routes/overseerr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/router/routes/sabnzbd.dart';
 import 'package:zagreus/router/routes/search.dart';
@@ -24,6 +25,7 @@ enum ZagRoutes {
   externalModules('external_modules', root: ExternalModulesRoutes.HOME),
   lidarr('lidarr', root: LidarrRoutes.HOME),
   nzbget('nzbget', root: NZBGetRoutes.HOME),
+  overseerr('overseerr', root: OverseerrRoutes.HOME),
   radarr('radarr', root: RadarrRoutes.HOME),
   sabnzbd('sabnzbd', root: SABnzbdRoutes.HOME),
   search('search', root: SearchRoutes.HOME),

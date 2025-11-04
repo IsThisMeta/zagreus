@@ -193,7 +193,7 @@ class _State extends State<DiscoverRecommendedRoute>
     }
 
     return ZagAppBar(
-      title: 'Recommended Movies',
+      title: 'Recommended',
       actions: [
         IconButton(
           icon: const Icon(Icons.tune),

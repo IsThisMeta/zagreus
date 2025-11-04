@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/modules/lidarr/core/state.dart';
+import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/radarr/core/state.dart';
 import 'package:zagreus/modules/search/core/state.dart';
 import 'package:zagreus/modules/settings/core/state.dart';
@@ -32,6 +33,7 @@ class ZagState {
         ChangeNotifierProvider(create: (_) => SettingsState()),
         ChangeNotifierProvider(create: (_) => SearchState()),
         ChangeNotifierProvider(create: (_) => LidarrState()),
+        ChangeNotifierProvider(create: (_) => OverseerrState()),
         ChangeNotifierProvider(create: (_) => RadarrState()),
         ChangeNotifierProvider(create: (_) => SonarrState()),
         ChangeNotifierProvider(create: (_) => NZBGetState()),

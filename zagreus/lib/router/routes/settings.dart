@@ -23,6 +23,8 @@ import 'package:zagreus/modules/settings/routes/configuration_nzbget/pages/conne
 import 'package:zagreus/modules/settings/routes/configuration_nzbget/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_nzbget/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_nzbget/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_overseerr/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_overseerr/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_quick_actions/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/default_options.dart';
@@ -87,6 +89,8 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_NZBGET_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_NZBGET_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_NZBGET_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_OVERSEERR('overseerr'),
+  CONFIGURATION_OVERSEERR_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_QUICK_ACTIONS('quick_actions'),
   CONFIGURATION_RADARR('radarr'),
   CONFIGURATION_RADARR_CONNECTION_DETAILS('connection_details'),
@@ -189,6 +193,10 @@ enum SettingsRoutes with ZagRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_NZBGET_DEFAULT_PAGES:
         return route(widget: const ConfigurationNZBGetDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_OVERSEERR:
+        return route(widget: const ConfigurationOverseerrRoute());
+      case SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS:
+        return route(widget: const ConfigurationOverseerrConnectionDetailsRoute());
       case SettingsRoutes.CONFIGURATION_QUICK_ACTIONS:
         return route(widget: const ConfigurationQuickActionsRoute());
       case SettingsRoutes.CONFIGURATION_RADARR:
@@ -315,6 +323,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,
           SettingsRoutes.CONFIGURATION_NZBGET.routes,
+          SettingsRoutes.CONFIGURATION_OVERSEERR.routes,
           SettingsRoutes.CONFIGURATION_QUICK_ACTIONS.routes,
           SettingsRoutes.CONFIGURATION_RADARR.routes,
           SettingsRoutes.CONFIGURATION_SABNZBD.routes,
@@ -347,6 +356,10 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION_NZBGET_CONNECTION_DETAILS:
         return [
           SettingsRoutes.CONFIGURATION_NZBGET_CONNECTION_DETAILS_HEADERS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_OVERSEERR:
+        return [
+          SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_RADARR:
         return [
