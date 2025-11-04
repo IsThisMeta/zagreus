@@ -141,8 +141,161 @@ class OverseerrState extends ZagModuleState {
         filter: _requestsFilter,
         sort: 'added',
       );
-      _requests = response.results;
+
+      // Enrich requests with media details if missing
+      final enrichedRequests = <OverseerrRequest>[];
+      for (final request in response.results) {
+        try {
+          // Check if media details are missing
+          if ((request.media.mediaType == 'movie' && request.media.movie == null) ||
+              (request.media.mediaType == 'tv' && request.media.series == null)) {
+            ZagLogger().debug('Media details missing for request ${request.id}, fetching from TMDB ID ${request.media.tmdbId}');
+
+            // Fetch media details
+            if (request.media.mediaType == 'movie') {
+              try {
+                final movie = await GetOverseerrMovie(_api!, Dio())(movieId: request.media.tmdbId);
+                // Create a new media object with the movie details
+                final enrichedMedia = OverseerrMedia(
+                  downloadStatus: request.media.downloadStatus,
+                  downloadStatus4k: request.media.downloadStatus4k,
+                  id: request.media.id,
+                  mediaType: request.media.mediaType,
+                  tmdbId: request.media.tmdbId,
+                  tvdbId: request.media.tvdbId,
+                  imdbId: request.media.imdbId,
+                  status: request.media.status,
+                  status4k: request.media.status4k,
+                  createdAt: request.media.createdAt,
+                  updatedAt: request.media.updatedAt,
+                  lastSeasonChange: request.media.lastSeasonChange,
+                  mediaAddedAt: request.media.mediaAddedAt,
+                  serviceId: request.media.serviceId,
+                  serviceId4k: request.media.serviceId4k,
+                  externalServiceId: request.media.externalServiceId,
+                  externalServiceId4k: request.media.externalServiceId4k,
+                  externalServiceSlug: request.media.externalServiceSlug,
+                  externalServiceSlug4k: request.media.externalServiceSlug4k,
+                  ratingKey: request.media.ratingKey,
+                  ratingKey4k: request.media.ratingKey4k,
+                  jellyfinMediaId: request.media.jellyfinMediaId,
+                  jellyfinMediaId4k: request.media.jellyfinMediaId4k,
+                  serviceUrl: request.media.serviceUrl,
+                  movie: movie,
+                  series: request.media.series,
+                );
+                // Create enriched request
+                final enrichedRequest = OverseerrRequest(
+                  id: request.id,
+                  status: request.status,
+                  createdAt: request.createdAt,
+                  updatedAt: request.updatedAt,
+                  type: request.type,
+                  is4k: request.is4k,
+                  serverId: request.serverId,
+                  profileId: request.profileId,
+                  rootFolder: request.rootFolder,
+                  languageProfileId: request.languageProfileId,
+                  tags: request.tags,
+                  isAutoRequest: request.isAutoRequest,
+                  media: enrichedMedia,
+                  seasons: request.seasons,
+                  modifiedBy: request.modifiedBy,
+                  requestedBy: request.requestedBy,
+                  seasonCount: request.seasonCount,
+                );
+                enrichedRequests.add(enrichedRequest);
+                continue;
+              } catch (e) {
+                ZagLogger().error('Failed to fetch movie details for TMDB ID ${request.media.tmdbId}', e, StackTrace.current);
+              }
+            } else if (request.media.mediaType == 'tv') {
+              try {
+                final series = await GetOverseerrSeries(_api!, Dio())(seriesId: request.media.tmdbId);
+                // Create a new media object with the series details
+                final enrichedMedia = OverseerrMedia(
+                  downloadStatus: request.media.downloadStatus,
+                  downloadStatus4k: request.media.downloadStatus4k,
+                  id: request.media.id,
+                  mediaType: request.media.mediaType,
+                  tmdbId: request.media.tmdbId,
+                  tvdbId: request.media.tvdbId,
+                  imdbId: request.media.imdbId,
+                  status: request.media.status,
+                  status4k: request.media.status4k,
+                  createdAt: request.media.createdAt,
+                  updatedAt: request.media.updatedAt,
+                  lastSeasonChange: request.media.lastSeasonChange,
+                  mediaAddedAt: request.media.mediaAddedAt,
+                  serviceId: request.media.serviceId,
+                  serviceId4k: request.media.serviceId4k,
+                  externalServiceId: request.media.externalServiceId,
+                  externalServiceId4k: request.media.externalServiceId4k,
+                  externalServiceSlug: request.media.externalServiceSlug,
+                  externalServiceSlug4k: request.media.externalServiceSlug4k,
+                  ratingKey: request.media.ratingKey,
+                  ratingKey4k: request.media.ratingKey4k,
+                  jellyfinMediaId: request.media.jellyfinMediaId,
+                  jellyfinMediaId4k: request.media.jellyfinMediaId4k,
+                  serviceUrl: request.media.serviceUrl,
+                  movie: request.media.movie,
+                  series: series,
+                );
+                // Create enriched request
+                final enrichedRequest = OverseerrRequest(
+                  id: request.id,
+                  status: request.status,
+                  createdAt: request.createdAt,
+                  updatedAt: request.updatedAt,
+                  type: request.type,
+                  is4k: request.is4k,
+                  serverId: request.serverId,
+                  profileId: request.profileId,
+                  rootFolder: request.rootFolder,
+                  languageProfileId: request.languageProfileId,
+                  tags: request.tags,
+                  isAutoRequest: request.isAutoRequest,
+                  media: enrichedMedia,
+                  seasons: request.seasons,
+                  modifiedBy: request.modifiedBy,
+                  requestedBy: request.requestedBy,
+                  seasonCount: request.seasonCount,
+                );
+                enrichedRequests.add(enrichedRequest);
+                continue;
+              } catch (e) {
+                ZagLogger().error('Failed to fetch series details for TMDB ID ${request.media.tmdbId}', e, StackTrace.current);
+              }
+            }
+          }
+        } catch (e) {
+          ZagLogger().error('Error enriching request ${request.id}', e, StackTrace.current);
+        }
+        // Add original request if enrichment failed or wasn't needed
+        enrichedRequests.add(request);
+      }
+
+      _requests = enrichedRequests;
       _requestsError = null;
+
+      // Debug logging
+      if (_requests != null && _requests!.isNotEmpty) {
+        final firstRequest = _requests!.first;
+        ZagLogger().debug('Overseerr Request Debug:');
+        ZagLogger().debug('  Request ID: ${firstRequest.id}');
+        ZagLogger().debug('  Media Type: ${firstRequest.media.mediaType}');
+        ZagLogger().debug('  TMDB ID: ${firstRequest.media.tmdbId}');
+        ZagLogger().debug('  Movie object: ${firstRequest.media.movie != null ? "present" : "NULL"}');
+        ZagLogger().debug('  Series object: ${firstRequest.media.series != null ? "present" : "NULL"}');
+        if (firstRequest.media.movie != null) {
+          ZagLogger().debug('  Movie title: ${firstRequest.media.movie!.title}');
+          ZagLogger().debug('  Movie poster: ${firstRequest.media.movie!.posterPath}');
+        }
+        if (firstRequest.media.series != null) {
+          ZagLogger().debug('  Series name: ${firstRequest.media.series!.name}');
+          ZagLogger().debug('  Series poster: ${firstRequest.media.series!.posterPath}');
+        }
+      }
     } catch (e, stackTrace) {
       ZagLogger().error('Failed to fetch Overseerr requests', e, stackTrace);
       _requestsError = e.toString();
@@ -192,7 +345,127 @@ class OverseerrState extends ZagModuleState {
         filter: _issuesFilter,
         sort: 'added',
       );
-      _issues = response.results;
+
+      // Enrich issues with media details if missing
+      final enrichedIssues = <OverseerrIssue>[];
+      for (final issue in response.results) {
+        try {
+          // Check if media details are missing
+          if ((issue.media.mediaType == 'movie' && issue.media.movie == null) ||
+              (issue.media.mediaType == 'tv' && issue.media.series == null)) {
+            ZagLogger().debug('Media details missing for issue ${issue.id}, fetching from TMDB ID ${issue.media.tmdbId}');
+
+            // Fetch media details
+            if (issue.media.mediaType == 'movie') {
+              try {
+                final movie = await GetOverseerrMovie(_api!, Dio())(movieId: issue.media.tmdbId);
+                // Create a new media object with the movie details
+                final enrichedMedia = OverseerrMedia(
+                  downloadStatus: issue.media.downloadStatus,
+                  downloadStatus4k: issue.media.downloadStatus4k,
+                  id: issue.media.id,
+                  mediaType: issue.media.mediaType,
+                  tmdbId: issue.media.tmdbId,
+                  tvdbId: issue.media.tvdbId,
+                  imdbId: issue.media.imdbId,
+                  status: issue.media.status,
+                  status4k: issue.media.status4k,
+                  createdAt: issue.media.createdAt,
+                  updatedAt: issue.media.updatedAt,
+                  lastSeasonChange: issue.media.lastSeasonChange,
+                  mediaAddedAt: issue.media.mediaAddedAt,
+                  serviceId: issue.media.serviceId,
+                  serviceId4k: issue.media.serviceId4k,
+                  externalServiceId: issue.media.externalServiceId,
+                  externalServiceId4k: issue.media.externalServiceId4k,
+                  externalServiceSlug: issue.media.externalServiceSlug,
+                  externalServiceSlug4k: issue.media.externalServiceSlug4k,
+                  ratingKey: issue.media.ratingKey,
+                  ratingKey4k: issue.media.ratingKey4k,
+                  jellyfinMediaId: issue.media.jellyfinMediaId,
+                  jellyfinMediaId4k: issue.media.jellyfinMediaId4k,
+                  serviceUrl: issue.media.serviceUrl,
+                  movie: movie,
+                  series: issue.media.series,
+                );
+                // Create enriched issue
+                final enrichedIssue = OverseerrIssue(
+                  id: issue.id,
+                  issueType: issue.issueType,
+                  status: issue.status,
+                  problemSeason: issue.problemSeason,
+                  problemEpisode: issue.problemEpisode,
+                  createdAt: issue.createdAt,
+                  updatedAt: issue.updatedAt,
+                  createdBy: issue.createdBy,
+                  media: enrichedMedia,
+                  comments: issue.comments,
+                );
+                enrichedIssues.add(enrichedIssue);
+                continue;
+              } catch (e) {
+                ZagLogger().error('Failed to fetch movie details for TMDB ID ${issue.media.tmdbId}', e, StackTrace.current);
+              }
+            } else if (issue.media.mediaType == 'tv') {
+              try {
+                final series = await GetOverseerrSeries(_api!, Dio())(seriesId: issue.media.tmdbId);
+                // Create a new media object with the series details
+                final enrichedMedia = OverseerrMedia(
+                  downloadStatus: issue.media.downloadStatus,
+                  downloadStatus4k: issue.media.downloadStatus4k,
+                  id: issue.media.id,
+                  mediaType: issue.media.mediaType,
+                  tmdbId: issue.media.tmdbId,
+                  tvdbId: issue.media.tvdbId,
+                  imdbId: issue.media.imdbId,
+                  status: issue.media.status,
+                  status4k: issue.media.status4k,
+                  createdAt: issue.media.createdAt,
+                  updatedAt: issue.media.updatedAt,
+                  lastSeasonChange: issue.media.lastSeasonChange,
+                  mediaAddedAt: issue.media.mediaAddedAt,
+                  serviceId: issue.media.serviceId,
+                  serviceId4k: issue.media.serviceId4k,
+                  externalServiceId: issue.media.externalServiceId,
+                  externalServiceId4k: issue.media.externalServiceId4k,
+                  externalServiceSlug: issue.media.externalServiceSlug,
+                  externalServiceSlug4k: issue.media.externalServiceSlug4k,
+                  ratingKey: issue.media.ratingKey,
+                  ratingKey4k: issue.media.ratingKey4k,
+                  jellyfinMediaId: issue.media.jellyfinMediaId,
+                  jellyfinMediaId4k: issue.media.jellyfinMediaId4k,
+                  serviceUrl: issue.media.serviceUrl,
+                  movie: issue.media.movie,
+                  series: series,
+                );
+                // Create enriched issue
+                final enrichedIssue = OverseerrIssue(
+                  id: issue.id,
+                  issueType: issue.issueType,
+                  status: issue.status,
+                  problemSeason: issue.problemSeason,
+                  problemEpisode: issue.problemEpisode,
+                  createdAt: issue.createdAt,
+                  updatedAt: issue.updatedAt,
+                  createdBy: issue.createdBy,
+                  media: enrichedMedia,
+                  comments: issue.comments,
+                );
+                enrichedIssues.add(enrichedIssue);
+                continue;
+              } catch (e) {
+                ZagLogger().error('Failed to fetch series details for TMDB ID ${issue.media.tmdbId}', e, StackTrace.current);
+              }
+            }
+          }
+        } catch (e) {
+          ZagLogger().error('Error enriching issue ${issue.id}', e, StackTrace.current);
+        }
+        // Add original issue if enrichment failed or wasn't needed
+        enrichedIssues.add(issue);
+      }
+
+      _issues = enrichedIssues;
       _issuesError = null;
     } catch (e, stackTrace) {
       ZagLogger().error('Failed to fetch Overseerr issues', e, stackTrace);

@@ -114,19 +114,23 @@ extension OverseerrMediaExtension on OverseerrMedia {
   /// Get title from media (movie or series)
   String getTitle() {
     if (mediaType == 'movie') {
-      return movie?.title ?? 'Loading...';
+      return movie?.title ?? 'TMDB ID: $tmdbId';
     } else if (mediaType == 'tv') {
-      return series?.name ?? 'Loading...';
+      return series?.name ?? 'TMDB ID: $tmdbId';
     }
-    return '';
+    return 'TMDB ID: $tmdbId';
   }
 
   /// Get year from media (movie or series)
   String getYear() {
     if (mediaType == 'movie') {
-      return movie?.releaseDate?.substring(0, 4) ?? '';
+      if (movie?.releaseDate != null && movie!.releaseDate!.length >= 4) {
+        return movie!.releaseDate!.substring(0, 4);
+      }
     } else if (mediaType == 'tv') {
-      return series?.firstAirDate?.substring(0, 4) ?? '';
+      if (series?.firstAirDate != null && series!.firstAirDate!.length >= 4) {
+        return series!.firstAirDate!.substring(0, 4);
+      }
     }
     return '';
   }

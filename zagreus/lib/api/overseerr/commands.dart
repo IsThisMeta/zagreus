@@ -131,6 +131,30 @@ class PostOverseerrComment extends OverseerrCommand {
   }
 }
 
+/// Get movie details from Overseerr
+class GetOverseerrMovie extends OverseerrCommand {
+  GetOverseerrMovie(OverseerrAPI api, Dio client)
+      : super(api: api, client: client);
+
+  Future<OverseerrMovie> call({
+    required int movieId,
+  }) async {
+    return await api.getMovie(movieId);
+  }
+}
+
+/// Get series details from Overseerr
+class GetOverseerrSeries extends OverseerrCommand {
+  GetOverseerrSeries(OverseerrAPI api, Dio client)
+      : super(api: api, client: client);
+
+  Future<OverseerrSeries> call({
+    required int seriesId,
+  }) async {
+    return await api.getSeries(seriesId);
+  }
+}
+
 /// Get Radarr server configuration
 class GetRadarrServerConfig extends OverseerrCommand {
   GetRadarrServerConfig(OverseerrAPI api, Dio client)
