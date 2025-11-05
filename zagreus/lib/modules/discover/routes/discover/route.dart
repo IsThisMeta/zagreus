@@ -699,6 +699,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
             'episodeId': episode.id,
+            'hasFile': episode.hasFile ?? false,
           });
         }
       }
@@ -5789,16 +5790,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          _formatAiringTime(
-                              episode['airDateUtc'], episode['network']),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: ZagColours.currentAccent,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _formatAiringTime(
+                                    episode['airDateUtc'], episode['network']),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: ZagColours.currentAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (episode['hasFile'] == true) ...[
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.check_circle,
+                                size: 14,
+                                color: const Color(0xFF35C5F4),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

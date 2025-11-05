@@ -114,6 +114,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
             'seriesId': series.id,
             'episodeId': episode.id,
             'overview': episode.overview,
+            'hasFile': episode.hasFile ?? false,
           });
         }
       }
@@ -361,12 +362,6 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 10,
-                              color: ZagColours.currentAccent,
-                            ),
-                            const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 _formatAiringTime(episode['airDateUtc'], episode['network']),
@@ -379,6 +374,14 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (episode['hasFile'] == true) ...[
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.check_circle,
+                                size: 14,
+                                color: const Color(0xFF35C5F4),
+                              ),
+                            ],
                           ],
                         ),
                       ],
