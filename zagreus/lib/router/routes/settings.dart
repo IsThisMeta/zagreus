@@ -5,8 +5,9 @@ import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/settings/routes/account/route.dart';
 import 'package:zagreus/modules/settings/routes/account/pages/password_reset.dart';
 import 'package:zagreus/modules/settings/routes/account/pages/settings.dart';
-import 'package:zagreus/modules/settings/routes/configuration/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_general/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_appearance/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/pages/calendar_settings.dart';
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/route.dart';
@@ -73,6 +74,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   ACCOUNT_SETTINGS('settings'),
   CONFIGURATION('configuration'),
   CONFIGURATION_GENERAL('general'),
+  CONFIGURATION_APPEARANCE('appearance'),
   CONFIGURATION_DASHBOARD('dashboard'),
   CONFIGURATION_DISCOVER_SECTIONS('discover_sections'),
   CONFIGURATION_DASHBOARD_CALENDAR('calendar'),
@@ -154,6 +156,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationRoute());
       case SettingsRoutes.CONFIGURATION_GENERAL:
         return route(widget: const ConfigurationGeneralRoute());
+      case SettingsRoutes.CONFIGURATION_APPEARANCE:
+        return route(widget: const ConfigurationAppearanceRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
         return route(widget: const ConfigurationDashboardRoute());
       case SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS:
@@ -317,6 +321,7 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION:
         return [
           SettingsRoutes.CONFIGURATION_GENERAL.routes,
+          SettingsRoutes.CONFIGURATION_APPEARANCE.routes,
           SettingsRoutes.CONFIGURATION_DASHBOARD.routes,
           SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS.routes,
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
