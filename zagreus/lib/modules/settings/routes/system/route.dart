@@ -13,12 +13,9 @@ import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart
 import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
-import 'package:zagreus/services/revenuecat_service.dart';
-import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/demo_config.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 
 class SystemRoute extends StatefulWidget {
   const SystemRoute({
@@ -61,7 +58,6 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
         _clearImageCache(),
         _clearConfiguration(),
         ZagDivider(),
-        _syncSubscription(),
         _buildDemoButton(),
       ],
     );
@@ -114,49 +110,6 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           showZagSuccessSnackBar(
             title: 'settings.ConfigurationCleared'.tr(),
             message: 'settings.ConfigurationClearedDescription'.tr(),
-          );
-        }
-      },
-    );
-  }
-
-  Widget _syncSubscription() {
-    return ZagBlock(
-      title: 'Sync Subscription',
-      body: [TextSpan(text: 'Re-register with Z Assistant')],
-      trailing: const ZagIconButton(icon: Icons.sync_rounded),
-      onTap: () async {
-        showZagInfoSnackBar(
-          title: 'Syncing Subscription',
-          message: 'Linking RevenueCat and re-registering...',
-        );
-
-        try {
-          // Restore purchases and force device re-registration
-          print('🔄 Restoring purchases...');
-          await Purchases.restorePurchases();
-          await RevenueCatService().updateCustomerInfo();
-          print('✅ Purchases restored');
-
-          // Force device registration with latest RC customer ID
-          final service = ZAssistantService();
-          final success = await service.forceDeviceRegistration();
-
-          if (success) {
-            showZagSuccessSnackBar(
-              title: 'Subscription Synced',
-              message: 'Device has been re-registered successfully',
-            );
-          } else {
-            showZagErrorSnackBar(
-              title: 'Sync Failed',
-              message: 'No active subscription found',
-            );
-          }
-        } catch (e) {
-          showZagErrorSnackBar(
-            title: 'Sync Failed',
-            message: 'Failed to sync subscription: ${e.toString()}',
           );
         }
       },

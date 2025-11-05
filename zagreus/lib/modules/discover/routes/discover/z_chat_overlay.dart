@@ -53,6 +53,13 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
       }
     });
 
+    Future.microtask(() async {
+      final assistantService = ZAssistantService();
+      final synced = await assistantService.syncSubscriptionIfNeeded();
+      ZagLogger()
+          .debug('Z Chat opened - subscription sync result: ${synced ? 'success' : 'skipped'}');
+    });
+
     // Trigger library sync after 5 seconds to avoid UI lag
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {

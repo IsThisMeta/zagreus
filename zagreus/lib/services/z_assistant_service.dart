@@ -10,6 +10,8 @@ import 'package:zagreus/supabase/auth.dart';
 /// Service for interacting with the Z Assistant AI backend
 class ZAssistantService {
   static const String _baseUrl = 'https://z-assistant.fly.dev';
+  static bool _subscriptionSynced = false;
+  static bool _subscriptionSyncInProgress = false;
 
   final dio.Dio _dio;
 
@@ -51,6 +53,40 @@ class ZAssistantService {
   /// Returns true if registration succeeded, false otherwise
   Future<bool> forceDeviceRegistration() async {
     return await _ensureDeviceRegistered(force: true);
+  }
+
+  /// Restore purchases, refresh RevenueCat info, and ensure the device
+  /// registration reflects the latest subscription status.
+  /// Subsequent calls are ignored once a successful sync has occurred,
+  /// unless [force] is true.
+  Future<bool> syncSubscriptionIfNeeded({bool force = false}) async {
+    if (_subscriptionSynced && !force) {
+      return true;
+    }
+    if (_subscriptionSyncInProgress) {
+      return true;
+    }
+
+    _subscriptionSyncInProgress = true;
+    try {
+      ZagLogger().debug('🔄 Syncing subscription with RevenueCat and Z Assistant');
+      await Purchases.restorePurchases();
+      await RevenueCatService().updateCustomerInfo();
+
+      final success = await forceDeviceRegistration();
+      if (success) {
+        _subscriptionSynced = true;
+        ZagLogger().debug('✅ Subscription sync complete');
+      } else {
+        ZagLogger().warning('Subscription sync failed - no active plan detected');
+      }
+      return success;
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync subscription', e, stack);
+      return false;
+    } finally {
+      _subscriptionSyncInProgress = false;
+    }
   }
 
   Future<bool> _ensureDeviceRegistered({bool force = false}) async {
