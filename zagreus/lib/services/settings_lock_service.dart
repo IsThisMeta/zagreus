@@ -7,6 +7,7 @@ import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_error.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_info.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_success.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SettingsLockService {
   SettingsLockService._();
@@ -18,6 +19,12 @@ class SettingsLockService {
 
   Future<bool> ensureUnlocked(BuildContext context) async {
     if (!ZagreusDatabase.SETTINGS_LOCK_ENABLED.read()) {
+      return true;
+    }
+
+    if (!ZagreusPro.isEnabled) {
+      ZagreusDatabase.SETTINGS_LOCK_ENABLED.update(false);
+      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
       return true;
     }
 

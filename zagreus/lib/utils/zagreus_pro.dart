@@ -58,6 +58,10 @@ class ZagreusPro {
     ZagreusDatabase.ZAGREUS_PRO_ENABLED.update(false);
     ZagreusDatabase.ZAGREUS_PRO_EXPIRY.update('');
     ZagreusDatabase.ZAGREUS_PRO_SUBSCRIPTION_TYPE.update('');
+    if (ZagreusDatabase.SETTINGS_LOCK_ENABLED.read()) {
+      ZagreusDatabase.SETTINGS_LOCK_ENABLED.update(false);
+      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
+    }
   }
 
   /// Apply subscription data sourced from RevenueCat ONLY.

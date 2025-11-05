@@ -11,6 +11,7 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/services/biometric_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/widgets/ui/snackbar/snackbar_info.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -107,17 +108,32 @@ class _State extends State<ConfigurationGeneralRoute>
       ],
       builder: (context, _) {
         final enabled = db.read();
-        final canToggle = supabaseAvailable && isSignedIn;
+        final isPro = ZagreusPro.isEnabled;
+        final canToggle = supabaseAvailable && isSignedIn && isPro;
+
+        VoidCallback? onTap;
+        if (!isPro) {
+          onTap = () => _showProUpgradeToast('Lock Settings');
+        } else if (!supabaseAvailable) {
+          onTap = () => showZagInfoSnackBar(
+                title: 'Unavailable',
+                message: 'Settings lock is not supported on this platform.',
+              );
+        } else if (!isSignedIn) {
+          onTap = () {
+            showZagInfoSnackBar(
+              title: 'Sign in required',
+              message: 'Sign in to your Zagreus account to enable Lock Settings.',
+            );
+            SettingsRoutes.ACCOUNT.go();
+          };
+        }
 
         return ZagBlock(
-          title: 'Lock Settings Gear',
-          body: [
+          title: 'Lock Settings',
+          body: const [
             TextSpan(
-              text: canToggle
-                  ? 'Require your Zagreus account password before opening Settings.'
-                  : supabaseAvailable
-                      ? 'Sign in with your Zagreus account to lock the Settings gear.'
-                      : 'Settings lock is unavailable on this platform.',
+              text: 'Protect Settings with your Zagreus password or Face ID.',
             ),
           ],
           trailing: ZagSwitch(
@@ -126,14 +142,13 @@ class _State extends State<ConfigurationGeneralRoute>
                 ? (value) {
                     db.update(value);
                     if (!value) {
-                      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
+                      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC
+                          .update(false);
                     }
                   }
                 : null,
           ),
-          onTap: (!canToggle && supabaseAvailable)
-              ? SettingsRoutes.ACCOUNT.go
-              : null,
+          onTap: onTap,
         );
       },
     );
@@ -147,23 +162,44 @@ class _State extends State<ConfigurationGeneralRoute>
         ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC,
       ],
       builder: (context, _) {
-        final lockEnabled = ZagreusDatabase.SETTINGS_LOCK_ENABLED.read();
+        final isPro = ZagreusPro.isEnabled;
+        final lockEnabled =
+            isPro && ZagreusDatabase.SETTINGS_LOCK_ENABLED.read();
         final biometricEnabled = db.read();
         final canToggle = lockEnabled && isSignedIn;
 
+        VoidCallback? onTap;
+        if (!isPro) {
+          onTap = () => _showProUpgradeToast('Face ID unlock');
+        } else if (!lockEnabled) {
+          onTap = () => showZagInfoSnackBar(
+                title: 'Enable Lock Settings',
+                message:
+                    'Turn on Lock Settings before enabling Face ID unlock.',
+              );
+        } else if (!isSignedIn) {
+          onTap = () {
+            showZagInfoSnackBar(
+              title: 'Sign in required',
+              message:
+                  'Sign in to your Zagreus account to enable Face ID unlock.',
+            );
+            SettingsRoutes.ACCOUNT.go();
+          };
+        }
+
         return ZagBlock(
           title: 'Use Face ID',
-          body: [
+          body: const [
             TextSpan(
-              text: canToggle
-                  ? 'Unlock Settings with Face ID or device biometrics.'
-                  : 'Enable the settings lock and stay signed in to use Face ID.',
+              text: 'Unlock Settings with Face ID or device biometrics.',
             ),
           ],
           trailing: ZagSwitch(
             value: biometricEnabled && lockEnabled,
             onChanged: canToggle ? db.update : null,
           ),
+          onTap: onTap,
         );
       },
     );
@@ -174,29 +210,31 @@ class _State extends State<ConfigurationGeneralRoute>
     final auth = ZagSupabaseAuth();
     final isSignedIn = supabaseAvailable && auth.isSignedIn;
 
-    return [
+    final widgets = <Widget>[
       ZagHeader(text: 'Security'),
       _settingsLockToggle(
         supabaseAvailable: supabaseAvailable,
         isSignedIn: isSignedIn,
       ),
-      if (_biometricSupported)
+    ];
+
+    if (_biometricSupported) {
+      widgets.add(
         _settingsLockBiometricToggle(
           isSignedIn: isSignedIn,
         ),
-    ];
+      );
+    }
+
+    return widgets;
   }
 
   List<Widget> _network() {
-    final isPro = ZagreusPro.isEnabled;
     final widgets = <Widget>[
       ZagHeader(text: 'settings.Network'.tr()),
       _useTLSValidation(),
+      _advancedLocalSwitching(),
     ];
-
-    if (isPro) {
-      widgets.add(_advancedLocalSwitching());
-    }
 
     return widgets;
   }
@@ -337,21 +375,29 @@ class _State extends State<ConfigurationGeneralRoute>
   Widget _advancedLocalSwitching() {
     const db = ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED;
     return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'settings.AdvancedLocalSwitching'.tr(),
-        body: [
-          TextSpan(
-            text: 'settings.AdvancedLocalSwitchingDescription'.tr(),
+      builder: (context, _) {
+        final isPro = ZagreusPro.isEnabled;
+        return ZagBlock(
+          title: 'settings.AdvancedLocalSwitching'.tr(),
+          body: [
+            TextSpan(
+              text: 'settings.AdvancedLocalSwitchingDescription'.tr(),
+            ),
+          ],
+          trailing: ZagSwitch(
+            value: db.read(),
+            onChanged: isPro
+                ? (value) async {
+                    db.update(value);
+                    await ZagLocalConnectionService()
+                        .handleAdvancedToggle(value);
+                  }
+                : null,
           ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: (value) async {
-            db.update(value);
-            await ZagLocalConnectionService().handleAdvancedToggle(value);
-          },
-        ),
-      ),
+          onTap:
+              isPro ? null : () => _showProUpgradeToast('Local Switching'),
+        );
+      },
     );
   }
 
@@ -383,6 +429,13 @@ class _State extends State<ConfigurationGeneralRoute>
           }
         },
       ),
+    );
+  }
+
+  void _showProUpgradeToast(String featureName) {
+    showZagInfoSnackBar(
+      title: 'Zagreus Pro required',
+      message: 'Upgrade to Zagreus Pro to use $featureName.',
     );
   }
 
