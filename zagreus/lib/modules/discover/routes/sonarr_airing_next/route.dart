@@ -372,7 +372,7 @@ class _State extends State<SonarrAiringNextRoute>
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
                             Expanded(
@@ -388,19 +388,19 @@ class _State extends State<SonarrAiringNextRoute>
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (episode['hasFile'] == true) ...[
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Downloaded',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF35C5F4),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
+                        if (episode['hasFile'] == true) ...[
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Downloaded',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF35C5F4),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
