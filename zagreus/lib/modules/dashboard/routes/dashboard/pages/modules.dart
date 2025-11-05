@@ -8,6 +8,7 @@ import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/services/settings_lock_service.dart';
 
 class ModulesPage extends StatefulWidget {
   const ModulesPage({
@@ -53,9 +54,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
             b.title.toLowerCase(),
           ))
       ..forEach((module) {
-        // Skip Discover/Overseerr if not Pro
-        if ((module == ZagModule.DISCOVER || module == ZagModule.OVERSEERR) &&
-            !ZagreusPro.isEnabled) {
+        // Skip premium modules if not Pro
+        if (_requiresPro(module) && !ZagreusPro.isEnabled) {
           return;
         }
         
@@ -63,12 +63,12 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
           if (module == ZagModule.WAKE_ON_LAN) {
             modules.add(_buildWakeOnLAN(context, index));
           } else {
-            modules.add(_buildFromZagModule(module, index));
+            modules.add(_buildFromZagModule(context, module, index));
           }
           index++;
         }
       });
-    modules.add(_buildFromZagModule(ZagModule.SETTINGS, index));
+    modules.add(_buildFromZagModule(context, ZagModule.SETTINGS, index));
     return modules;
   }
 
@@ -76,9 +76,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
     List<Widget> modules = [];
     int index = 0;
     ZagDrawer.moduleOrderedList().forEach((module) {
-      // Skip Discover/Overseerr if not Pro
-      if ((module == ZagModule.DISCOVER || module == ZagModule.OVERSEERR) &&
-          !ZagreusPro.isEnabled) {
+      // Skip premium modules if not Pro
+      if (_requiresPro(module) && !ZagreusPro.isEnabled) {
         return;
       }
       
@@ -86,21 +85,34 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
         if (module == ZagModule.WAKE_ON_LAN) {
           modules.add(_buildWakeOnLAN(context, index));
         } else {
-          modules.add(_buildFromZagModule(module, index));
+          modules.add(_buildFromZagModule(context, module, index));
         }
         index++;
       }
     });
-    modules.add(_buildFromZagModule(ZagModule.SETTINGS, index));
+    modules.add(_buildFromZagModule(context, ZagModule.SETTINGS, index));
     return modules;
   }
 
-  Widget _buildFromZagModule(ZagModule module, int listIndex) {
+  Widget _buildFromZagModule(BuildContext context, ZagModule module, int listIndex) {
+    VoidCallback? onTap;
+    if (module == ZagModule.SETTINGS) {
+      onTap = () {
+        SettingsLockService.instance.ensureUnlocked(context).then((unlocked) {
+          if (unlocked) module.launch();
+        });
+      };
+    } else {
+      onTap = () {
+        module.launch();
+      };
+    }
+
     return ZagBlock(
       title: module.title,
       body: [TextSpan(text: module.description)],
       trailing: ZagIconButton(icon: module.icon, color: module.color),
-      onTap: module.launch,
+      onTap: onTap,
     );
   }
 
@@ -115,4 +127,9 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       onTap: () async => ZagWakeOnLAN().wake(),
     );
   }
+
+  bool _requiresPro(ZagModule module) =>
+      module == ZagModule.DISCOVER ||
+      module == ZagModule.OVERSEERR ||
+      module == ZagModule.SERVER;
 }
