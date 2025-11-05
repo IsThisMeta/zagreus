@@ -41,7 +41,7 @@ class SonarrSeriesDetailsSeasonAllTile extends StatelessWidget {
     return TextSpan(
       style: TextStyle(
         color: series!.zagPercentageComplete == 100
-            ? ZagColours.accent
+            ? ZagColours.currentAccent
             : ZagColours.red,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       ),

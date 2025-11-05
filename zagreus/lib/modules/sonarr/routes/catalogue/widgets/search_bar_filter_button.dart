@@ -39,7 +39,7 @@ class _State extends State<SonarrSeriesSearchBarFilterButton> {
                     fontSize: ZagUI.FONT_SIZE_H3,
                     color: state.seriesFilterType ==
                             SonarrSeriesFilter.values[index]
-                        ? ZagColours.accent
+                        ? ZagColours.currentAccent
                         : Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),

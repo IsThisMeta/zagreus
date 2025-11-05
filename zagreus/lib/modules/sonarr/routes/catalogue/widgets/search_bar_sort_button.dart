@@ -47,7 +47,7 @@ class _State extends State<SonarrSeriesSearchBarSortButton> {
                         fontSize: ZagUI.FONT_SIZE_H3,
                         color: state.seriesSortType ==
                                 SonarrSeriesSorting.values[index]
-                            ? ZagColours.accent
+                            ? ZagColours.currentAccent
                             : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),

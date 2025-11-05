@@ -63,7 +63,7 @@ class _State extends State<SonarrMoreRoute> with AutomaticKeepAliveClientMixin {
           body: [TextSpan(text: 'sonarr.QueueDescription'.tr())],
           trailing: ZagIconButton(
             icon: Icons.queue_play_next_rounded,
-            color: ZagColours().byListIndex(1),
+            color: ZagColours.currentAccent,
           ),
           onTap: SonarrRoutes.QUEUE.go,
         ),

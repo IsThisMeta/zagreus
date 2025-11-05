@@ -88,7 +88,7 @@ class _State extends State<SonarrSeriesDetailsSeasonTile> {
     return TextSpan(
       style: TextStyle(
         color: widget.season.zagPercentageComplete == 100
-            ? ZagColours.accent
+            ? ZagColours.currentAccent
             : ZagColours.red,
         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
       ),

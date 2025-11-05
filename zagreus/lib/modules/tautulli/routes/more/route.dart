@@ -101,7 +101,7 @@ class _State extends State<TautulliMoreRoute>
           body: const [TextSpan(text: 'Synced Content on Devices')],
           trailing: ZagIconButton(
             icon: Icons.sync_rounded,
-            color: ZagColours().byListIndex(7),
+            color: ZagColours.currentAccent,
           ),
           onTap: TautulliRoutes.SYNCED_ITEMS.go,
         ),
