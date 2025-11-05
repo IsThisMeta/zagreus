@@ -1868,7 +1868,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Turn on these caches so the agent has library and watch history context. Data syncs anonymously.',
+                  'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
                   style: descriptionStyle,
                 ),
                 const SizedBox(height: 16),

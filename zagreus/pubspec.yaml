@@ -32,6 +32,7 @@ dependencies:
   modal_bottom_sheet: ^3.0.0-pre
   network_info_plus: ^5.0.3
   permission_handler: ^11.3.0
+  local_auth: ^2.1.7
   package_info_plus: ^8.3.0
   path_provider: ^2.1.0
   percent_indicator: ^4.2.3

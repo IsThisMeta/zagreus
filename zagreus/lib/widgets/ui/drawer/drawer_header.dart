@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/services/settings_lock_service.dart';
 
 class ZagDrawerHeader extends StatelessWidget {
   final String page;
@@ -24,9 +25,18 @@ class ZagDrawerHeader extends StatelessWidget {
           actions: [
             ZagIconButton(
               icon: ZagIcons.SETTINGS,
-              onPressed: page == ZagModule.SETTINGS.key
-                  ? Navigator.of(context).pop
-                  : ZagModule.SETTINGS.launch,
+              onPressed: () async {
+                if (page == ZagModule.SETTINGS.key) {
+                  Navigator.of(context).pop();
+                  return;
+                }
+
+                final unlocked = await SettingsLockService.instance
+                    .ensureUnlocked(context);
+                if (unlocked) {
+                  ZagModule.SETTINGS.launch();
+                }
+              },
               onLongPress: () {
                 // Toggle between light and dark mode
                 final currentMode = ZagreusDatabase.THEME_MODE.read();

@@ -7,6 +7,10 @@ import 'package:zagreus/system/network/network.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/services/biometric_service.dart';
+import 'package:zagreus/supabase/auth.dart';
+import 'package:zagreus/supabase/core.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -20,6 +24,21 @@ class ConfigurationGeneralRoute extends StatefulWidget {
 class _State extends State<ConfigurationGeneralRoute>
     with ZagScrollControllerMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _biometricSupported = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricSupport();
+  }
+
+  Future<void> _loadBiometricSupport() async {
+    final supported = await BiometricService.instance.isSupported();
+    if (!mounted) return;
+    setState(() {
+      _biometricSupported = supported;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +63,7 @@ class _State extends State<ConfigurationGeneralRoute>
         ..._appearance(),
         ..._localization(),
         ..._modules(),
+        ..._security(),
         if (ZagNetwork.isSupported) ..._network(),
         ..._platform(),
       ],
@@ -73,6 +93,97 @@ class _State extends State<ConfigurationGeneralRoute>
     return [
       ZagHeader(text: 'dashboard.Modules'.tr()),
       _bootModule(),
+    ];
+  }
+
+  Widget _settingsLockToggle({
+    required bool supabaseAvailable,
+    required bool isSignedIn,
+  }) {
+    const db = ZagreusDatabase.SETTINGS_LOCK_ENABLED;
+    return ZagBox.zagreus.listenableBuilder(
+      selectItems: [
+        ZagreusDatabase.SETTINGS_LOCK_ENABLED,
+      ],
+      builder: (context, _) {
+        final enabled = db.read();
+        final canToggle = supabaseAvailable && isSignedIn;
+
+        return ZagBlock(
+          title: 'Lock Settings Gear',
+          body: [
+            TextSpan(
+              text: canToggle
+                  ? 'Require your Zagreus account password before opening Settings.'
+                  : supabaseAvailable
+                      ? 'Sign in with your Zagreus account to lock the Settings gear.'
+                      : 'Settings lock is unavailable on this platform.',
+            ),
+          ],
+          trailing: ZagSwitch(
+            value: enabled,
+            onChanged: canToggle
+                ? (value) {
+                    db.update(value);
+                    if (!value) {
+                      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
+                    }
+                  }
+                : null,
+          ),
+          onTap: (!canToggle && supabaseAvailable)
+              ? SettingsRoutes.ACCOUNT.go
+              : null,
+        );
+      },
+    );
+  }
+
+  Widget _settingsLockBiometricToggle({required bool isSignedIn}) {
+    const db = ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC;
+    return ZagBox.zagreus.listenableBuilder(
+      selectItems: [
+        ZagreusDatabase.SETTINGS_LOCK_ENABLED,
+        ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC,
+      ],
+      builder: (context, _) {
+        final lockEnabled = ZagreusDatabase.SETTINGS_LOCK_ENABLED.read();
+        final biometricEnabled = db.read();
+        final canToggle = lockEnabled && isSignedIn;
+
+        return ZagBlock(
+          title: 'Use Face ID',
+          body: [
+            TextSpan(
+              text: canToggle
+                  ? 'Unlock Settings with Face ID or device biometrics.'
+                  : 'Enable the settings lock and stay signed in to use Face ID.',
+            ),
+          ],
+          trailing: ZagSwitch(
+            value: biometricEnabled && lockEnabled,
+            onChanged: canToggle ? db.update : null,
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _security() {
+    final supabaseAvailable = ZagSupabase.isSupported;
+    final auth = ZagSupabaseAuth();
+    final isSignedIn = supabaseAvailable && auth.isSignedIn;
+
+    return [
+      ZagHeader(text: 'Security'),
+      _settingsLockToggle(
+        supabaseAvailable: supabaseAvailable,
+        isSignedIn: isSignedIn,
+      ),
+      if (_biometricSupported)
+        _settingsLockBiometricToggle(
+          isSignedIn: isSignedIn,
+        ),
     ];
   }
 

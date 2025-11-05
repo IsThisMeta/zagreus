@@ -112,9 +112,12 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
         .where((module) => module.settingsRoute != null)
         .toList();
 
-    // Remove DISCOVER if user doesn't have Pro
+    // Remove Pro-locked modules if user doesn't have Pro
     if (!isPro) {
-      modules.removeWhere((module) => module == ZagModule.DISCOVER);
+      modules.removeWhere(
+        (module) =>
+            module == ZagModule.DISCOVER || module == ZagModule.OVERSEERR,
+      );
     } else {
       // Move DISCOVER to right after DASHBOARD if user has Pro
       final discoverIndex = modules.indexOf(ZagModule.DISCOVER);

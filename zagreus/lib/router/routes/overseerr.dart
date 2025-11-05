@@ -5,6 +5,7 @@ import 'package:zagreus/modules/overseerr/routes/overseerr.dart';
 import 'package:zagreus/modules/overseerr/routes/requests.dart';
 import 'package:zagreus/modules/overseerr/routes/issues.dart';
 import 'package:zagreus/router/routes.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/vendor.dart';
 
 enum OverseerrRoutes with ZagRoutesMixin {
@@ -22,7 +23,7 @@ enum OverseerrRoutes with ZagRoutesMixin {
 
   @override
   bool isModuleEnabled(BuildContext context) {
-    return context.read<OverseerrState>().enabled;
+    return ZagreusPro.isEnabled && context.read<OverseerrState>().enabled;
   }
 
   @override

@@ -35,6 +35,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   USE_24_HOUR_TIME<bool>(false),
   ENABLE_IN_APP_NOTIFICATIONS<bool>(false),
   ENABLE_IN_APP_TOASTS<bool>(true),
+  SETTINGS_LOCK_ENABLED<bool>(false),
+  SETTINGS_LOCK_USE_BIOMETRIC<bool>(false),
   CHANGELOG_LAST_BUILD_VERSION<int>(0),
   ZAGREUS_PRO_ENABLED<bool>(false),
   ZAGREUS_PRO_EXPIRY<String>(''),

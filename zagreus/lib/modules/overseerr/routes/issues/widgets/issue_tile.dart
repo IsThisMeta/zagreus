@@ -233,12 +233,57 @@ class _State extends State<OverseerrIssueTile> {
   }
 
   Future<void> _onTap() async {
-    // TODO: Navigate to issue detail view
-    ZagLogger().debug('Issue tapped: ${widget.issue.id}');
+    await _showIssueActions();
   }
 
   Future<void> _onLongPress() async {
-    // TODO: Show issue action menu (close, reopen, add comment)
-    ZagLogger().debug('Issue long-pressed: ${widget.issue.id}');
+    await _showIssueActions();
+  }
+
+  Future<void> _showIssueActions() async {
+    final result = await OverseerrDialogs().issueActions(context, widget.issue);
+
+    if (result.item1 && result.item2 != null) {
+      final action = result.item2!;
+      final state = context.read<OverseerrState>();
+
+      switch (action) {
+        case OverseerrIssueActionType.CLOSE:
+          final success = await state.resolveIssue(widget.issue.id);
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Issue Closed',
+              message: 'Issue for ${widget.issue.media.getTitle()} has been closed',
+            );
+          }
+          break;
+
+        case OverseerrIssueActionType.REOPEN:
+          final success = await state.reopenIssue(widget.issue.id);
+          if (success) {
+            showZagSuccessSnackBar(
+              title: 'Issue Reopened',
+              message: 'Issue for ${widget.issue.media.getTitle()} has been reopened',
+            );
+          }
+          break;
+
+        case OverseerrIssueActionType.ADD_COMMENT:
+          final commentResult = await OverseerrDialogs().addComment(context);
+          if (commentResult.item1 && commentResult.item2.isNotEmpty) {
+            final success = await state.addComment(
+              widget.issue.id,
+              commentResult.item2,
+            );
+            if (success) {
+              showZagSuccessSnackBar(
+                title: 'Comment Added',
+                message: 'Your comment has been added to the issue',
+              );
+            }
+          }
+          break;
+      }
+    }
   }
 }
