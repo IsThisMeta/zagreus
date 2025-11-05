@@ -5846,15 +5846,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Downloaded',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: ZagColours.currentAccent,
-                            fontWeight: FontWeight.w600,
+                        if (episode['hasFile'] == true) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Downloaded',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: ZagColours.currentAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
