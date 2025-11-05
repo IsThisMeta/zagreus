@@ -1343,8 +1343,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             child: _isSearching
                 ? Center(
                     child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          ZagColours.currentAccent),
                     ),
                   )
                 : _searchResults.isEmpty
@@ -1728,8 +1728,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             stageId: stageId,
             onMovieTap: (tmdbId, title) =>
                 _openMovieInRadarr(tmdbId: tmdbId, title: title),
-            onShowTap: (tmdbId, title, tvdbId) =>
-                _openSeriesInSonarr(tmdbId: tmdbId, tvdbId: tvdbId, title: title),
+            onShowTap: (tmdbId, title, tvdbId) => _openSeriesInSonarr(
+                tmdbId: tmdbId, tvdbId: tvdbId, title: title),
           ),
         ),
       );
@@ -1795,7 +1795,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           switch (result.error) {
             case LibrarySyncError.noMega:
               title = 'Sync Not Available';
-              message = 'Library sync is available for Pro, Mega, and Ultra subscribers';
+              message =
+                  'Library sync is available for Pro, Mega, and Ultra subscribers';
               type = ZagSnackbarType.INFO;
               break;
             case LibrarySyncError.cacheDisabled:
@@ -1845,18 +1846,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   void _loadSavedSettings() {
-    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
-    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
     _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
-    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+    _radarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
 
-    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
-    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
     _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
     _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
     _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
-    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
-    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+    _sonarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
+    _sonarrSearchForCutoffUnmet =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
   void _showZAgentQuickSetup() {
@@ -1893,9 +1901,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   style: descriptionStyle,
                 ),
                 const SizedBox(height: 16),
-                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                    .listenableBuilder(
                   builder: (context, _) {
-                    final enabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                    final enabled = ZagreusDatabase
+                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                        .read();
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: ZagBlock(
@@ -1910,16 +1921,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         trailing: ZagSwitch(
                           value: enabled,
                           onChanged: (value) {
-                            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(value);
+                            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                                .update(value);
                             if (value) {
                               showZagInfoSnackBar(
                                 title: 'Library Cache Enabled',
-                                message: 'Z Agent will now sync your library periodically',
+                                message:
+                                    'Z Agent will now sync your library periodically',
                               );
                             } else {
                               showZagInfoSnackBar(
                                 title: 'Library Cache Disabled',
-                                message: 'Z Agent will no longer sync your library',
+                                message:
+                                    'Z Agent will no longer sync your library',
                               );
                             }
                           },
@@ -1928,9 +1942,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     );
                   },
                 ),
-                ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.listenableBuilder(
+                ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                    .listenableBuilder(
                   builder: (context, _) {
-                    final enabled = ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read();
+                    final enabled = ZagreusDatabase
+                        .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                        .read();
                     return ZagBlock(
                       title: 'Watch History Cache',
                       body: [
@@ -1943,16 +1960,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       trailing: ZagSwitch(
                         value: enabled,
                         onChanged: (value) {
-                          ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.update(value);
+                          ZagreusDatabase
+                              .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                              .update(value);
                           if (value) {
                             showZagInfoSnackBar(
                               title: 'Watch History Cache Enabled',
-                              message: 'Z Agent will now sync your Tautulli watch history',
+                              message:
+                                  'Z Agent will now sync your Tautulli watch history',
                             );
                           } else {
                             showZagInfoSnackBar(
                               title: 'Watch History Cache Disabled',
-                              message: 'Z Agent will no longer sync watch history',
+                              message:
+                                  'Z Agent will no longer sync watch history',
                             );
                           }
                         },
@@ -1961,9 +1982,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   },
                 ),
                 const SizedBox(height: 24),
-                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                    .listenableBuilder(
                   builder: (context, _) {
-                    final enabled = ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                    final enabled = ZagreusDatabase
+                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                        .read();
                     if (!enabled) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2038,7 +2062,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   indicatorColor: ZagColours.currentAccent,
                   tabs: const [
                     Tab(text: 'Movies'),
-                    Tab(text: 'TV Shows'),
+                    Tab(text: 'Shows'),
                   ],
                 ),
               ),
@@ -2087,8 +2111,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _radarrQualityProfileName = profile.name;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
-                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                            .update(profile.id);
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                            .update(profile.name);
                         Navigator.pop(context);
                       },
                     );
@@ -2121,7 +2147,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _radarrRootFolder = folder.path;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                        ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                            .update(folder.path);
                         Navigator.pop(context);
                       },
                     );
@@ -2139,7 +2166,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _radarrSearchForMissing = value;
               });
               setModalState(() {});
-              ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+              ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                  .update(value);
             },
           ),
         ],
@@ -2149,20 +2177,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _buildSonarrSettings() {
     // Helper to get monitor type enum from string
-    final currentMonitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
-        ? SonarrSeriesMonitorType.values.firstWhere(
-            (type) => type.value == _sonarrMonitorType,
-            orElse: () => SonarrSeriesMonitorType.ALL,
-          )
-        : SonarrSeriesMonitorType.ALL;
+    final currentMonitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
 
     // Helper to get series type enum from string
-    final currentSeriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
-        ? SonarrSeriesType.values.firstWhere(
-            (type) => type.value == _sonarrSeriesType,
-            orElse: () => SonarrSeriesType.STANDARD,
-          )
-        : SonarrSeriesType.STANDARD;
+    final currentSeriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
 
     return StatefulBuilder(
       builder: (context, setModalState) => ListView(
@@ -2193,8 +2223,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _sonarrQualityProfileName = profile.name;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                            .update(profile.id);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                            .update(profile.name);
                         Navigator.pop(context);
                       },
                     );
@@ -2227,7 +2259,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _sonarrRootFolder = folder.path;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+                            .update(folder.path);
                         Navigator.pop(context);
                       },
                     );
@@ -2255,7 +2288,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _sonarrMonitorType = type.value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(type.value);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE
+                            .update(type.value);
                         Navigator.pop(context);
                       },
                     );
@@ -2267,7 +2301,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ListTile(
             leading: const Icon(Icons.category),
             title: const Text('Series Type'),
-            subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+            subtitle:
+                Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               showModalBottomSheet(
@@ -2283,7 +2318,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           _sonarrSeriesType = type.value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type.value);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE
+                            .update(type.value);
                         Navigator.pop(context);
                       },
                     );
@@ -2301,7 +2337,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _sonarrSearchForMissing = value;
               });
               setModalState(() {});
-              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING
+                  .update(value);
             },
           ),
           SwitchListTile(
@@ -2313,7 +2350,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _sonarrSearchForCutoffUnmet = value;
               });
               setModalState(() {});
-              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+              ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET
+                  .update(value);
             },
           ),
         ],
@@ -4791,7 +4829,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           break;
         case DeepCutsError.alreadyGenerating:
           title = 'Generation in progress';
-          message = result.errorMessage ?? 'Please wait while recommendations are being generated';
+          message = result.errorMessage ??
+              'Please wait while recommendations are being generated';
           icon = Icons.hourglass_empty_rounded;
           break;
         case DeepCutsError.fetchFailed:
@@ -4866,9 +4905,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 await tmdbApi.searchMulti('${movie.title} ${movie.year}');
 
             // Filter for movies only
-            final movieResults = searchResults
-                .where((r) => r['media_type'] == 'movie')
-                .toList();
+            final movieResults =
+                searchResults.where((r) => r['media_type'] == 'movie').toList();
 
             if (movieResults.isNotEmpty) {
               final tmdbId = movieResults.first['id'] as int;
@@ -4912,7 +4950,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                             const SizedBox(height: 12),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               child: Text(
                                 movie.title,
                                 style: TextStyle(
@@ -5796,9 +5835,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               child: Text(
                                 _formatAiringTime(
                                     episode['airDateUtc'], episode['network']),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
-                                  color: ZagColours.currentAccent,
+                                  color: Color(0xFF35C5F4),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -5965,7 +6004,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
 
   static const List<String> titles = [
     'Movies',
-    'TV Shows',
+    'Shows',
     'Agent',
     'Search',
   ];

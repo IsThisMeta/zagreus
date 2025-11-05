@@ -6,7 +6,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 
 class SonarrAiringNextRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
-  
+
   const SonarrAiringNextRoute({
     Key? key,
     this.initialData,
@@ -16,14 +16,15 @@ class SonarrAiringNextRoute extends StatefulWidget {
   State<SonarrAiringNextRoute> createState() => _State();
 }
 
-class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin {
+class _State extends State<SonarrAiringNextRoute>
+    with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   List<Map<String, dynamic>> _airingNextShows = [];
   bool _isLoading = true;
   String? _error;
   int _daysAhead = 14; // Default to 14 days (2 weeks)
-  
+
   @override
   void initState() {
     super.initState();
@@ -36,13 +37,13 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       _loadAiringNextShows();
     }
   }
-  
+
   Future<void> _loadAiringNextShows() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    
+
     try {
       final sonarrState = context.read<SonarrState>();
       if (!sonarrState.enabled || sonarrState.api == null) {
@@ -52,13 +53,13 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
         });
         return;
       }
-      
+
       final api = sonarrState.api!;
-      
+
       // Get episodes airing in the next N days
       final now = DateTime.now();
       final endDate = now.add(Duration(days: _daysAhead));
-      
+
       final calendar = await api.calendar.get(
         start: now,
         end: endDate,
@@ -66,24 +67,23 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
         includeSeries: true,
         includeEpisodeFile: true,
       );
-      
+
       // Filter to only monitored episodes that haven't aired yet and don't have files
       final upcomingEpisodes = calendar.where((episode) {
-        return episode.monitored == true && 
-               episode.hasFile != true &&
-               episode.airDateUtc != null &&
-               episode.airDateUtc!.isAfter(now);
+        return episode.monitored == true &&
+            episode.hasFile != true &&
+            episode.airDateUtc != null &&
+            episode.airDateUtc!.isAfter(now);
       }).toList();
-      
+
       // Sort by air date
-      upcomingEpisodes.sort((a, b) => 
-        a.airDateUtc!.compareTo(b.airDateUtc!));
-      
+      upcomingEpisodes.sort((a, b) => a.airDateUtc!.compareTo(b.airDateUtc!));
+
       // Map to UI format
       final shows = <Map<String, dynamic>>[];
       for (final episode in upcomingEpisodes) {
         final series = episode.series;
-        
+
         if (series != null) {
           // Get fanart or poster image
           String? imageUrl;
@@ -102,7 +102,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
               }
             }
           }
-          
+
           shows.add({
             'seriesTitle': series.title ?? 'Unknown Series',
             'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
@@ -118,7 +118,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
           });
         }
       }
-      
+
       setState(() {
         _airingNextShows = shows;
         _isLoading = false;
@@ -131,17 +131,17 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       });
     }
   }
-  
+
   String _formatAiringTime(DateTime? airDateUtc, String? network) {
     if (airDateUtc == null) return '';
-    
+
     // Convert UTC to local time
     final localTime = airDateUtc.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final episodeDay = DateTime(localTime.year, localTime.month, localTime.day);
-    
+
     String dayLabel;
     if (episodeDay == today) {
       dayLabel = 'Today';
@@ -150,25 +150,39 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
     } else {
       // Format as "Mon, Jan 15"
       final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      dayLabel = '${weekdays[localTime.weekday % 7]}, ${months[localTime.month - 1]} ${localTime.day}';
+      final months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ];
+      dayLabel =
+          '${weekdays[localTime.weekday % 7]}, ${months[localTime.month - 1]} ${localTime.day}';
     }
-    
+
     // Format time as "3:00 PM"
     final hour = localTime.hour;
     final minute = localTime.minute.toString().padLeft(2, '0');
     final period = hour >= 12 ? 'PM' : 'AM';
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    
+
     // Truncate network name if too long
     final networkName = network ?? '';
-    final truncatedNetwork = networkName.length > 12 
-        ? '${networkName.substring(0, 12)}...' 
+    final truncatedNetwork = networkName.length > 12
+        ? '${networkName.substring(0, 12)}...'
         : networkName;
-    
+
     return '$dayLabel • $displayHour:$minute $period${truncatedNetwork.isNotEmpty ? ' on $truncatedNetwork' : ''}';
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -177,7 +191,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       body: _body(),
     );
   }
-  
+
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'Airing Next',
@@ -220,7 +234,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       ],
     ) as PreferredSizeWidget;
   }
-  
+
   Widget _body() {
     if (_isLoading) {
       return Center(
@@ -229,13 +243,13 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
         ),
       );
     }
-    
+
     if (_error != null) {
       return ZagMessage.error(
         onTap: _loadAiringNextShows,
       );
     }
-    
+
     if (_airingNextShows.isEmpty) {
       return Center(
         child: Column(
@@ -266,7 +280,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
         ),
       );
     }
-    
+
     return RefreshIndicator(
       onRefresh: _loadAiringNextShows,
       child: ListView.builder(
@@ -280,7 +294,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       ),
     );
   }
-  
+
   Widget _episodeCard(Map<String, dynamic> episode) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -364,10 +378,11 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
                           children: [
                             Expanded(
                               child: Text(
-                                _formatAiringTime(episode['airDateUtc'], episode['network']),
-                                style: TextStyle(
+                                _formatAiringTime(
+                                    episode['airDateUtc'], episode['network']),
+                                style: const TextStyle(
                                   fontSize: 10,
-                                  color: ZagColours.currentAccent,
+                                  color: Color(0xFF35C5F4),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -395,7 +410,7 @@ class _State extends State<SonarrAiringNextRoute> with ZagScrollControllerMixin 
       ),
     );
   }
-  
+
   Widget _thumbnailPlaceholder() {
     return Container(
       color: Colors.grey.shade700,

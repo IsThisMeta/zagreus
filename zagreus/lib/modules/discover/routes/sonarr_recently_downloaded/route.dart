@@ -6,7 +6,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 
 class SonarrRecentlyDownloadedRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
-  
+
   const SonarrRecentlyDownloadedRoute({
     Key? key,
     this.initialData,
@@ -16,13 +16,14 @@ class SonarrRecentlyDownloadedRoute extends StatefulWidget {
   State<SonarrRecentlyDownloadedRoute> createState() => _State();
 }
 
-class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControllerMixin {
+class _State extends State<SonarrRecentlyDownloadedRoute>
+    with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   List<Map<String, dynamic>> _recentlyDownloadedShows = [];
   bool _isLoading = true;
   String? _error;
-  
+
   @override
   void initState() {
     super.initState();
@@ -35,13 +36,13 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       _loadRecentlyDownloadedShows();
     }
   }
-  
+
   Future<void> _loadRecentlyDownloadedShows() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    
+
     try {
       final sonarrState = context.read<SonarrState>();
       if (!sonarrState.enabled || sonarrState.api == null) {
@@ -51,9 +52,9 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
         });
         return;
       }
-      
+
       final api = sonarrState.api!;
-      
+
       // Fetch history sorted by date descending
       final history = await api.history.get(
         page: 1,
@@ -63,27 +64,28 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
         includeEpisode: true,
         includeSeries: true,
       );
-      
+
       // Filter to only downloadFolderImported events and dedupe by episodeId
       final downloadedRecords = <SonarrHistoryRecord>[];
       final seenEpisodeIds = <int>{};
-      
+
       for (final record in history.records ?? []) {
         if (record.eventType == SonarrEventType.DOWNLOAD_FOLDER_IMPORTED &&
             record.episodeId != null &&
             !seenEpisodeIds.contains(record.episodeId)) {
           seenEpisodeIds.add(record.episodeId!);
           downloadedRecords.add(record);
-          if (downloadedRecords.length >= 50) break; // Show more items on dedicated page
+          if (downloadedRecords.length >= 50)
+            break; // Show more items on dedicated page
         }
       }
-      
+
       // Map to UI format
       final shows = <Map<String, dynamic>>[];
       for (final record in downloadedRecords) {
         final episode = record.episode;
         final series = record.series;
-        
+
         if (episode != null && series != null) {
           // Get fanart or poster image
           String? imageUrl;
@@ -102,7 +104,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
               }
             }
           }
-          
+
           shows.add({
             'seriesTitle': series.title ?? 'Unknown Series',
             'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
@@ -114,10 +116,11 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
             'seriesId': series.id,
             'episodeId': episode.id,
             'date': record.date,
+            'hasFile': true,
           });
         }
       }
-      
+
       setState(() {
         _recentlyDownloadedShows = shows;
         _isLoading = false;
@@ -130,28 +133,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       });
     }
   }
-  
-  String _formatDate(DateTime? date) {
-    if (date == null) return '';
-    
-    final now = DateTime.now();
-    final difference = now.difference(date);
-    
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks ${weeks == 1 ? 'week' : 'weeks'} ago';
-    } else {
-      final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
-    }
-  }
-  
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -160,7 +142,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       body: _body(),
     );
   }
-  
+
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'Recently Downloaded',
@@ -172,7 +154,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       ],
     ) as PreferredSizeWidget;
   }
-  
+
   Widget _body() {
     if (_isLoading) {
       return Center(
@@ -181,13 +163,13 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
         ),
       );
     }
-    
+
     if (_error != null) {
       return ZagMessage.error(
         onTap: _loadRecentlyDownloadedShows,
       );
     }
-    
+
     if (_recentlyDownloadedShows.isEmpty) {
       return Center(
         child: Column(
@@ -218,7 +200,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
         ),
       );
     }
-    
+
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView.builder(
@@ -232,8 +214,18 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       ),
     );
   }
-  
+
   Widget _episodeCard(Map<String, dynamic> episode) {
+    const downloadedColour = Color(0xFF35C5F4);
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
+            Colors.grey.shade400;
+    final tertiaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5) ??
+            Colors.grey.shade500;
+    final seasonEpisode =
+        '${episode['seasonNumber']}x${(episode['episodeNumber'] ?? 0).toString().padLeft(2, '0')}';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -303,38 +295,46 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')} • ${episode['episodeTitle']}',
+                          episode['episodeTitle'] ?? '',
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
+                            fontSize: 12,
+                            color: secondaryTextColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 10,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
                             Text(
-                              _formatDate(episode['date']),
+                              seasonEpisode,
                               style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
+                                fontSize: 12,
+                                color: tertiaryTextColor,
                               ),
                             ),
-                            const Spacer(),
-                            Text(
-                              'Downloaded',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: ZagColours.currentAccent,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  (episode['network'] as String?) ??
+                                      'Downloaded',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: downloadedColour,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (episode['hasFile'] == true) ...[
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 14,
+                                    color: downloadedColour,
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
@@ -349,7 +349,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute> with ZagScrollControll
       ),
     );
   }
-  
+
   Widget _thumbnailPlaceholder() {
     return Container(
       color: Colors.grey.shade700,
