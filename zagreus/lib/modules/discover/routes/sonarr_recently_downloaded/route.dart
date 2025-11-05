@@ -116,7 +116,6 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
             'seriesId': series.id,
             'episodeId': episode.id,
             'date': record.date,
-            'hasFile': true,
           });
         }
       }
@@ -314,27 +313,13 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                                 color: tertiaryTextColor,
                               ),
                             ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  (episode['network'] as String?) ??
-                                      'Downloaded',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: downloadedColour,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                if (episode['hasFile'] == true) ...[
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.check_circle,
-                                    size: 14,
-                                    color: downloadedColour,
-                                  ),
-                                ],
-                              ],
+                            Text(
+                              (episode['network'] as String?) ?? 'Downloaded',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: downloadedColour,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),

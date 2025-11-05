@@ -699,7 +699,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
             'episodeId': episode.id,
-            'hasFile': episode.hasFile ?? false,
           });
         }
       }
@@ -5844,14 +5843,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (episode['hasFile'] == true) ...[
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.check_circle,
-                                size: 14,
-                                color: const Color(0xFF35C5F4),
-                              ),
-                            ],
                           ],
                         ),
                       ],
