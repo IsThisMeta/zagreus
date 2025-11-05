@@ -653,10 +653,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         includeEpisodeFile: true,
       );
 
-      // Filter to only monitored episodes that haven't aired yet and don't have files
+      // Filter to only monitored episodes that haven't aired yet
       final upcomingEpisodes = calendar.where((episode) {
         return episode.monitored == true &&
-            episode.hasFile != true &&
             episode.airDateUtc != null &&
             episode.airDateUtc!.isAfter(now);
       }).toList();
@@ -699,6 +698,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
             'episodeId': episode.id,
+            'hasFile': episode.hasFile ?? false,
           });
         }
       }
@@ -5821,8 +5821,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         Text(
                           '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')} • ${episode['episodeTitle']}',
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey,
+                            fontSize: 12,
+                            color: Colors.grey.shade400,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -5835,7 +5835,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 _formatAiringTime(
                                     episode['airDateUtc'], episode['network']),
                                 style: const TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 11,
                                   color: Color(0xFF35C5F4),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -5843,6 +5843,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (episode['hasFile'] == true) ...[
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Downloaded',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF35C5F4),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ],

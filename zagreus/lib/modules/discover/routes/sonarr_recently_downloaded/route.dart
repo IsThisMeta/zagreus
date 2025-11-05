@@ -215,7 +215,6 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
   }
 
   Widget _episodeCard(Map<String, dynamic> episode) {
-    const downloadedColour = Color(0xFF35C5F4);
     final secondaryTextColor =
         Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
             Colors.grey.shade400;
@@ -303,25 +302,12 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              seasonEpisode,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: tertiaryTextColor,
-                              ),
-                            ),
-                            Text(
-                              (episode['network'] as String?) ?? 'Downloaded',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: downloadedColour,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          seasonEpisode,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: tertiaryTextColor,
+                          ),
                         ),
                       ],
                     ),
