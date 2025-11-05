@@ -5760,6 +5760,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               }
             },
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Thumbnail
                 Container(
@@ -5803,7 +5804,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 // Content
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -5901,6 +5902,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               }
             },
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Thumbnail
                 Container(
@@ -5936,9 +5938,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 // Content
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(

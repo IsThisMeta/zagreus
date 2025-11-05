@@ -317,6 +317,7 @@ class _State extends State<SonarrAiringNextRoute>
               }
             },
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Thumbnail
                 Container(
@@ -350,7 +351,7 @@ class _State extends State<SonarrAiringNextRoute>
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
