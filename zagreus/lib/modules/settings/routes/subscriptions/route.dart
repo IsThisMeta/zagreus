@@ -186,12 +186,12 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, SSID Auto Switching, and Z Assistant access with GPT-5 mini (3 messages every 12 hours)."
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, Z Assistant access with GPT-5 mini, and more!"
                   : 'Zagreus Pro unlocks:\n'
                       '• Discover module\n'
                       '• Server module\n'
-                      '• SSID Auto Switching\n'
-                      '• Limited Z Assistant access with GPT-5 mini\n\n'
+                      '• Limited Z Assistant access with GPT-5 mini\n'
+                      '• And more!\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
