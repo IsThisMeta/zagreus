@@ -198,6 +198,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             }
           }
         }
+
+        // Check against Sonarr library if available
+        final sonarrState = context.read<SonarrState>();
+        if (sonarrState.enabled && sonarrState.api != null) {
+          try {
+            final sonarrSeries = await sonarrState.api!.series.getAll();
+            for (final item in items) {
+              if (item['mediaType'] == 'tv') {
+                final title = item['title'] as String;
+                // Check if this show is in Sonarr library by title match
+                final inLibrary = sonarrSeries.any((series) {
+                  return series.title?.toLowerCase() == title.toLowerCase();
+                });
+                item['inLibrary'] = inLibrary;
+              }
+            }
+          } catch (e) {
+            print('📺 Error checking Sonarr library for trending: $e');
+          }
+        }
       }
 
       if (mounted) {
