@@ -2187,6 +2187,54 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     );
                   },
                 ),
+                const SizedBox(height: 12),
+                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                    .listenableBuilder(
+                  builder: (context, _) {
+                    final enabled = ZagreusDatabase
+                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                        .read();
+                    if (!enabled) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Enable the library cache to trigger a manual sync.',
+                          style: descriptionStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
+                    if (_isSyncing) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                ZagColours.currentAccent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Center(
+                      child: TextButton(
+                        onPressed: _forceLibrarySync,
+                        style: TextButton.styleFrom(
+                          foregroundColor: ZagColours.currentAccent,
+                        ),
+                        child: const Text('Sync library now'),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
                 // Privacy notice
                 if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
                   Padding(
@@ -2251,53 +2299,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                   ),
                 const SizedBox(height: 24),
-                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                    .listenableBuilder(
-                  builder: (context, _) {
-                    final enabled = ZagreusDatabase
-                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                        .read();
-                    if (!enabled) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Enable the library cache to trigger a manual sync.',
-                          style: descriptionStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }
-
-                    if (_isSyncing) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                ZagColours.currentAccent,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return Center(
-                      child: TextButton(
-                        onPressed: _forceLibrarySync,
-                        style: TextButton.styleFrom(
-                          foregroundColor: ZagColours.currentAccent,
-                        ),
-                        child: const Text('Sync library now'),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
               ],
             ),
           ),
