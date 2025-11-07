@@ -94,8 +94,7 @@ class RadarrState extends ZagModuleState {
           headers: Map<String, dynamic>.from(_headers),
         );
         ZagLogger().debug('Radarr API instance created successfully');
-        // Sync webhook if enabled
-        _syncWebhook();
+        // Note: Webhook sync is handled by WebhookSyncService with proper 24h throttling
       } catch (e, stackTrace) {
         ZagLogger()
             .error('Failed to create Radarr API instance', e, stackTrace);
