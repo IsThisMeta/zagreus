@@ -105,6 +105,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<_UserOption> _availableUsers = [];
   bool _loadingUsers = false;
   String? _selectedUser;
+  StateSetter? _quickSetupModalSetState;
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
@@ -129,6 +130,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
     _startAutoScroll();
+  }
+
+  void _refreshQuickSetupModal() {
+    _quickSetupModalSetState?.call(() {});
   }
 
   @override
@@ -1798,6 +1803,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _forceLibrarySync() async {
     setState(() => _isSyncing = true);
+    _refreshQuickSetupModal();
 
     try {
       final result = await LibrarySyncService().syncLibrary(force: true);
@@ -1882,6 +1888,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } finally {
       if (mounted) {
         setState(() => _isSyncing = false);
+        _refreshQuickSetupModal();
       }
     }
   }
@@ -1894,6 +1901,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (!mounted) return;
     setState(() => _loadingUsers = true);
+    _refreshQuickSetupModal();
 
     try {
       final deviceId = DeviceIdService().deviceId;
@@ -1930,6 +1938,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               _selectedUser = ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.read();
             }
           });
+          _refreshQuickSetupModal();
         }
       } else {
         print('❌ Failed to load users: ${response.error}');
@@ -1952,6 +1961,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } finally {
       if (mounted) {
         setState(() => _loadingUsers = false);
+        _refreshQuickSetupModal();
       }
     }
   }
@@ -2026,6 +2036,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (response.success) {
         setState(() => _selectedUser = userAlias);
+        _refreshQuickSetupModal();
         ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
         showZagSuccessSnackBar(
           title: 'User Selected',
@@ -2073,240 +2084,247 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (modalContext) {
-        final theme = Theme.of(modalContext);
-        final descriptionStyle = theme.textTheme.bodyMedium?.copyWith(
-          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-        );
+        return StatefulBuilder(
+          builder: (context, modalSetState) {
+            _quickSetupModalSetState = modalSetState;
+            final theme = Theme.of(context);
+            final descriptionStyle = theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            );
 
-        return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: theme.colorScheme.primary),
-                    const SizedBox(width: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Z Agent setup',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      'Z Agent setup',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
+                      style: descriptionStyle,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
-                  style: descriptionStyle,
-                ),
-                const SizedBox(height: 16),
-                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                    .listenableBuilder(
-                  builder: (context, _) {
-                    final enabled = ZagreusDatabase
-                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                        .read();
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: ZagBlock(
-                        title: 'Library Cache',
-                        body: [
-                          TextSpan(
-                            text: enabled
-                                ? 'Library is synced to Z Agent'
-                                : 'Let Z Agent analyze your library',
-                          ),
-                        ],
-                        trailing: ZagSwitch(
-                          value: enabled,
-                          onChanged: (value) {
-                            ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                                .update(value);
-                            if (value) {
-                              showZagInfoSnackBar(
-                                title: 'Library Cache Enabled',
-                                message:
-                                    'Z Agent will now sync your library periodically',
-                              );
-                            } else {
-                              showZagInfoSnackBar(
-                                title: 'Library Cache Disabled',
-                                message:
-                                    'Z Agent will no longer sync your library',
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                    .listenableBuilder(
-                  builder: (context, _) {
-                    final enabled = ZagreusDatabase
-                        .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                        .read();
-                    return ZagBlock(
-                      title: 'Watch History Cache',
-                      body: [
-                        TextSpan(
-                          text: enabled
-                              ? 'Tautulli watch history synced to Z Agent'
-                              : 'Sync your Tautulli watch history',
-                        ),
-                      ],
-                      trailing: ZagSwitch(
-                        value: enabled,
-                        onChanged: (value) {
-                          ZagreusDatabase
-                              .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                              .update(value);
-                          if (value) {
-                            showZagInfoSnackBar(
-                              title: 'Watch History Cache Enabled',
-                              message:
-                                  'Z Agent will now sync your Tautulli watch history',
-                            );
-                            _loadAvailableUsers();
-                          } else {
-                            showZagInfoSnackBar(
-                              title: 'Watch History Cache Disabled',
-                              message:
-                                  'Z Agent will no longer sync watch history',
-                            );
-                            setState(() {
-                              _availableUsers = [];
-                              _selectedUser = null;
-                            });
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 12),
-                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                    .listenableBuilder(
-                  builder: (context, _) {
-                    final enabled = ZagreusDatabase
-                        .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                        .read();
-                    if (!enabled) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Enable the library cache to trigger a manual sync.',
-                          style: descriptionStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }
-
-                    if (_isSyncing) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                ZagColours.currentAccent,
+                    const SizedBox(height: 16),
+                    ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                        .listenableBuilder(
+                      builder: (context, _) {
+                        final enabled = ZagreusDatabase
+                            .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                            .read();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: ZagBlock(
+                            title: 'Library Cache',
+                            body: [
+                              TextSpan(
+                                text: enabled
+                                    ? 'Library is synced to Z Agent'
+                                    : 'Let Z Agent analyze your library',
                               ),
+                            ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                                    .update(value);
+                                if (value) {
+                                  showZagInfoSnackBar(
+                                    title: 'Library Cache Enabled',
+                                    message:
+                                        'Z Agent will now sync your library periodically',
+                                  );
+                                } else {
+                                  showZagInfoSnackBar(
+                                    title: 'Library Cache Disabled',
+                                    message:
+                                        'Z Agent will no longer sync your library',
+                                  );
+                                }
+                              },
                             ),
                           ),
-                        ),
-                      );
-                    }
-
-                    return Center(
-                      child: TextButton(
-                        onPressed: _forceLibrarySync,
-                        style: TextButton.styleFrom(
-                          foregroundColor: ZagColours.currentAccent,
-                        ),
-                        child: const Text('Sync library now'),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                // Privacy notice
-                if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(
-                      'Usernames shown exactly as they appear in Tautulli. Only this device sees them.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
+                        );
+                      },
                     ),
-                  ),
-                // User selection UI
-                if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: ZagBlock(
-                      title: 'Select Your Tautulli User',
-                      body: [
-                        TextSpan(
-                          text: _selectedUser != null
-                              ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
-                              : 'Choose which Tautulli user you are',
-                        ),
-                      ],
-                      bottom: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                          ..._availableUsers.map((userOption) {
-                            final isSelected = _selectedUser == userOption.alias;
-                            return Padding(
+                    ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                        .listenableBuilder(
+                      builder: (context, _) {
+                        final enabled = ZagreusDatabase
+                            .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                            .read();
+                        return ZagBlock(
+                          title: 'Watch History Cache',
+                          body: [
+                            TextSpan(
+                              text: enabled
+                                  ? 'Tautulli watch history synced to Z Agent'
+                                  : 'Sync your Tautulli watch history',
+                            ),
+                          ],
+                          trailing: ZagSwitch(
+                            value: enabled,
+                            onChanged: (value) {
+                              ZagreusDatabase
+                                  .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                                  .update(value);
+                              if (value) {
+                                showZagInfoSnackBar(
+                                  title: 'Watch History Cache Enabled',
+                                  message:
+                                      'Z Agent will now sync your Tautulli watch history',
+                                );
+                                _loadAvailableUsers();
+                              } else {
+                                showZagInfoSnackBar(
+                                  title: 'Watch History Cache Disabled',
+                                  message:
+                                      'Z Agent will no longer sync watch history',
+                                );
+                                setState(() {
+                                  _availableUsers = [];
+                                  _selectedUser = null;
+                                });
+                                _refreshQuickSetupModal();
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                        .listenableBuilder(
+                      builder: (context, _) {
+                        final enabled = ZagreusDatabase
+                            .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                            .read();
+                        if (!enabled) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Enable the library cache to trigger a manual sync.',
+                              style: descriptionStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+
+                        if (_isSyncing) {
+                          return Center(
+                            child: Padding(
                               padding: const EdgeInsets.only(bottom: 8),
-                              child: ZagButton.text(
-                                text: userOption.label,
-                                icon: isSelected ? Icons.check_circle : Icons.circle_outlined,
-                                onTap: () => _selectUser(userOption.alias),
-                                backgroundColor: isSelected ? ZagColours.currentAccent : null,
-                              ),
-                            );
-                          }).toList(),
-                          if (_loadingUsers && _availableUsers.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8),
-                              child: Center(child: CircularProgressIndicator()),
-                            ),
-                          if (_availableUsers.isEmpty && !_loadingUsers)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Center(
-                                child: ZagButton.text(
-                                  text: 'Load Users',
-                                  icon: Icons.refresh,
-                                  onTap: _loadAvailableUsers,
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    ZagColours.currentAccent,
+                                  ),
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding,
+                          );
+                        }
+
+                        return Center(
+                          child: TextButton(
+                            onPressed: _forceLibrarySync,
+                            style: TextButton.styleFrom(
+                              foregroundColor: ZagColours.currentAccent,
+                            ),
+                            child: const Text('Sync library now'),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+                    const SizedBox(height: 8),
+                    // Privacy notice
+                    if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          'Usernames shown exactly as they appear in Tautulli. Only this device sees them.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    // User selection UI
+                    if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: ZagBlock(
+                          title: 'Select Your Tautulli User',
+                          body: [
+                            TextSpan(
+                              text: _selectedUser != null
+                                  ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
+                                  : 'Choose which Tautulli user you are',
+                            ),
+                          ],
+                          bottom: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              ..._availableUsers.map((userOption) {
+                                final isSelected = _selectedUser == userOption.alias;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: ZagButton.text(
+                                    text: userOption.label,
+                                    icon: isSelected ? Icons.check_circle : Icons.circle_outlined,
+                                    onTap: () => _selectUser(userOption.alias),
+                                    backgroundColor: isSelected ? ZagColours.currentAccent : null,
+                                  ),
+                                );
+                              }).toList(),
+                              if (_loadingUsers && _availableUsers.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8),
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                              if (_availableUsers.isEmpty && !_loadingUsers)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Center(
+                                    child: ZagButton.text(
+                                      text: 'Load Users',
+                                      icon: Icons.refresh,
+                                      onTap: _loadAvailableUsers,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding,
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
-    );
+    ).whenComplete(() => _quickSetupModalSetState = null);
   }
 
   void _showZAssistantSettings() {
