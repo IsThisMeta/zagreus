@@ -155,24 +155,21 @@ class WatchHistorySyncService {
       final history = await api.history.getHistory(
         length: historyLimit,
       );
-      print('  Received ${history.data.length} history records');
+      print('  Received ${history.records?.length ?? 0} history records');
 
       // Scrub and convert history records
       final List<Map<String, dynamic>> scrubbedHistory = [];
-      for (final record in history.data) {
+      for (final record in history.records ?? []) {
         final scrubbed = {
           'title': record.fullTitle ?? record.title,
           'year': record.year,
-          'media_type': record.mediaType,
-          'watched_at': record.date != null
-              ? DateTime.fromMillisecondsSinceEpoch(record.date! * 1000)
-                  .toIso8601String()
-              : null,
+          'media_type': record.mediaType?.value,
+          'watched_at': record.date?.toIso8601String(),
           'completion_percent': record.percentComplete,
           'rating_key': record.ratingKey,
           'parent_rating_key': record.parentRatingKey,
           'grandparent_rating_key': record.grandparentRatingKey,
-          'watched_status': record.watchedStatus,
+          'watched_status': TautulliUtilities.watchedStatusToJson(record.watchedStatus),
           'user_id_alias': scrubber.getUserIdAlias(record.userId ?? 0),
         };
 

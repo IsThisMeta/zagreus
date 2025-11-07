@@ -281,6 +281,78 @@ class ZAssistantService {
       throw Exception('Search failed: $e');
     }
   }
+
+  /// Get available Tautulli users from watch history
+  Future<ZAssistantApiResponse> getAvailableUsers(String deviceId) async {
+    try {
+      ZagLogger().debug('Fetching available Tautulli users for device: ${deviceId.substring(0, 8)}...');
+
+      final response = await _dio.get('/watch-history/available-users/$deviceId');
+
+      if (response.statusCode == 200) {
+        return ZAssistantApiResponse(
+          success: true,
+          data: response.data,
+        );
+      } else {
+        return ZAssistantApiResponse(
+          success: false,
+          error: 'Failed to fetch users: ${response.statusCode}',
+        );
+      }
+    } on dio.DioException catch (e, stack) {
+      ZagLogger().error('Error fetching available users', e, stack);
+      return ZAssistantApiResponse(
+        success: false,
+        error: e.message ?? 'Network error',
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Unexpected error fetching users', e, stack);
+      return ZAssistantApiResponse(
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Select a Tautulli user for personalized recommendations
+  Future<ZAssistantApiResponse> selectUser(String deviceId, String userAlias) async {
+    try {
+      ZagLogger().debug('Selecting user $userAlias for device: ${deviceId.substring(0, 8)}...');
+
+      final response = await _dio.post(
+        '/watch-history/select-user',
+        data: {
+          'device_id': deviceId,
+          'user_alias': userAlias,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return ZAssistantApiResponse(
+          success: true,
+          data: response.data,
+        );
+      } else {
+        return ZAssistantApiResponse(
+          success: false,
+          error: 'Failed to select user: ${response.statusCode}',
+        );
+      }
+    } on dio.DioException catch (e, stack) {
+      ZagLogger().error('Error selecting user', e, stack);
+      return ZAssistantApiResponse(
+        success: false,
+        error: e.message ?? 'Network error',
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Unexpected error selecting user', e, stack);
+      return ZAssistantApiResponse(
+        success: false,
+        error: e.toString(),
+      );
+    }
+  }
 }
 
 /// Response from Z Assistant
@@ -322,4 +394,17 @@ class ZAssistantCommand {
       mediaType: json['media_type'] as String?,
     );
   }
+}
+
+/// Generic API response for non-chat endpoints
+class ZAssistantApiResponse {
+  final bool success;
+  final Map<String, dynamic>? data;
+  final String? error;
+
+  ZAssistantApiResponse({
+    required this.success,
+    this.data,
+    this.error,
+  });
 }

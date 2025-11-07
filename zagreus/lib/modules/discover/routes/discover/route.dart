@@ -30,6 +30,8 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
+import 'package:zagreus/services/watch_history_sync_service.dart';
+import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
@@ -89,6 +91,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String? _sonarrSeriesType;
   bool _sonarrSearchForMissing = true;
   bool _sonarrSearchForCutoffUnmet = false;
+
+  // Z Assistant user selection
+  List<String> _availableUsers = [];
+  bool _loadingUsers = false;
+  String? _selectedUser;
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
@@ -1741,6 +1748,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               'Mosaic completed - triggering background library sync...');
           syncService.syncIfNeeded();
         }
+
+        // Also trigger watch history sync if needed
+        final watchHistoryService = WatchHistorySyncService();
+        if (watchHistoryService.needsSync) {
+          ZagLogger().debug(
+              'Triggering background watch history sync...');
+          watchHistoryService.syncIfNeeded();
+        }
       });
     } catch (e) {
       print('❌ Z Assistant error: $e');
@@ -1785,6 +1800,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             message: 'Your library has been synced to Z Assistant',
             type: ZagSnackbarType.SUCCESS,
           );
+
+          // Also trigger watch history sync if enabled
+          final watchHistoryResult = await WatchHistorySyncService().syncWatchHistory(force: true);
+          if (watchHistoryResult.success) {
+            showZagSnackBar(
+              title: 'Watch History Synced',
+              message: 'Your Tautulli watch history has been synced',
+              type: ZagSnackbarType.SUCCESS,
+            );
+          } else if (watchHistoryResult.error != WatchHistorySyncError.cacheDisabled &&
+                     watchHistoryResult.error != WatchHistorySyncError.tautulliNotConfigured) {
+            // Only show error if it's not just disabled/not configured
+            showZagSnackBar(
+              title: 'Watch History Sync Failed',
+              message: watchHistoryResult.errorMessage ?? 'Could not sync watch history',
+              type: ZagSnackbarType.ERROR,
+            );
+          }
         } else {
           // Show specific error message based on error type
           String title;
@@ -1844,6 +1877,103 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _loadAvailableUsers() async {
+    if (!ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read()) {
+      print('⏭️  Skipping user load - watch history cache disabled');
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _loadingUsers = true);
+
+    try {
+      final deviceId = DeviceIdService().deviceId;
+      print('📥 Loading available users for device: ${deviceId.substring(0, 8)}...');
+
+      final service = ZAssistantService();
+      final response = await service.getAvailableUsers(deviceId).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('⏱️  Request timed out');
+          return ZAssistantApiResponse(
+            success: false,
+            error: 'Request timed out',
+          );
+        },
+      );
+
+      print('📥 Response success: ${response.success}');
+      print('📥 Response data: ${response.data}');
+      print('📥 Response error: ${response.error}');
+
+      if (response.success && response.data != null) {
+        final users = List<String>.from(response.data!['users'] ?? []);
+        print('✅ Found ${users.length} available users: $users');
+
+        if (mounted) {
+          setState(() {
+            _availableUsers = users;
+            final serverSelected = response.data!['selected_user_alias'];
+            if (serverSelected != null) {
+              _selectedUser = serverSelected;
+              ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(serverSelected);
+            } else {
+              _selectedUser = ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.read();
+            }
+          });
+        }
+      } else {
+        print('❌ Failed to load users: ${response.error}');
+        if (mounted) {
+          showZagErrorSnackBar(
+            title: 'Failed to Load Users',
+            message: response.error ?? 'Unknown error',
+          );
+        }
+      }
+    } catch (e, stack) {
+      print('❌ Error loading available users: $e');
+      print('Stack trace: $stack');
+      if (mounted) {
+        showZagErrorSnackBar(
+          title: 'Error',
+          message: 'Failed to load Tautulli users: $e',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loadingUsers = false);
+      }
+    }
+  }
+
+  Future<void> _selectUser(String userAlias) async {
+    try {
+      final deviceId = DeviceIdService().deviceId;
+      final service = ZAssistantService();
+      final response = await service.selectUser(deviceId, userAlias);
+
+      if (response.success) {
+        setState(() => _selectedUser = userAlias);
+        ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
+        showZagSuccessSnackBar(
+          title: 'User Selected',
+          message: 'Z Agent will now focus on $userAlias\'s viewing history',
+        );
+      } else {
+        showZagErrorSnackBar(
+          title: 'Error',
+          message: response.error ?? 'Failed to select user',
+        );
+      }
+    } catch (e) {
+      showZagErrorSnackBar(
+        title: 'Error',
+        message: 'Failed to select user: $e',
+      );
+    }
+  }
+
   void _loadSavedSettings() {
     _radarrQualityProfileId =
         ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
@@ -1867,6 +1997,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   void _showZAgentQuickSetup() {
+    // Load available users when opening the setup
+    _loadAvailableUsers();
+
     showModalBottomSheet(
       context: context,
       builder: (modalContext) {
@@ -1968,18 +2101,82 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               message:
                                   'Z Agent will now sync your Tautulli watch history',
                             );
+                            _loadAvailableUsers();
                           } else {
                             showZagInfoSnackBar(
                               title: 'Watch History Cache Disabled',
                               message:
                                   'Z Agent will no longer sync watch history',
                             );
+                            setState(() {
+                              _availableUsers = [];
+                              _selectedUser = null;
+                            });
                           }
                         },
                       ),
                     );
                   },
                 ),
+                // User selection UI
+                if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ZagBlock(
+                      title: 'Select Your Tautulli User',
+                      body: [
+                        TextSpan(
+                          text: _selectedUser != null
+                              ? 'AI recommendations personalized for $_selectedUser'
+                              : 'Choose which Tautulli user you are',
+                        ),
+                        TextSpan(text: '\n'),
+                        TextSpan(
+                          text: 'Usernames are anonymized (UserID0, UserID1, etc.) for privacy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                      bottom: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 12),
+                          ..._availableUsers.map((userAlias) {
+                            final isSelected = _selectedUser == userAlias;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: ZagButton.text(
+                                text: userAlias,
+                                icon: isSelected ? Icons.check_circle : Icons.circle_outlined,
+                                onTap: () => _selectUser(userAlias),
+                                backgroundColor: isSelected ? ZagColours.currentAccent : null,
+                              ),
+                            );
+                          }).toList(),
+                          if (_loadingUsers)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                          if (_availableUsers.isEmpty && !_loadingUsers)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Center(
+                                child: ZagButton.text(
+                                  text: 'Load Users',
+                                  icon: Icons.refresh,
+                                  onTap: _loadAvailableUsers,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12,
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
                     .listenableBuilder(

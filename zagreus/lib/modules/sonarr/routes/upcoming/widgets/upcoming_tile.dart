@@ -73,7 +73,7 @@ class _State extends State<SonarrUpcomingTile> {
 
   TextSpan _subtitle3() {
     Color color = widget.record.hasFile!
-        ? ZagColours.accent
+        ? ZagColours.currentAccent
         : widget.record.zagHasAired
             ? ZagColours.red
             : ZagColours.blue;

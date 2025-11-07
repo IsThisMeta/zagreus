@@ -324,6 +324,7 @@ class ZagBlock extends StatelessWidget {
 
   Widget? _subtitle() {
     int maxLines = customBodyMaxLines ?? 1;
+    double height = SUBTITLE_HEIGHT * maxLines;
 
     if (bodyLeadingIcons != null) {
       assert(
@@ -333,55 +334,65 @@ class ZagBlock extends StatelessWidget {
     }
 
     Widget _wrapper(List<Widget> children) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
+      return Expanded(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
       );
     }
 
     Widget _entry(TextSpan textSpan, IconData? icon) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (icon != null)
-            Padding(
-              padding: const EdgeInsets.only(
-                right: ZagUI.DEFAULT_MARGIN_SIZE / 4,
-              ),
-              child: SizedBox(
-                width: ZagUI.FONT_SIZE_H2 + ZagUI.DEFAULT_MARGIN_SIZE / 2,
-                child: Icon(
-                  icon,
-                  color: bodyLeadingIconsColor,
-                  size: ZagUI.FONT_SIZE_H2,
+      return SizedBox(
+        height: height,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (icon != null)
+              Padding(
+                padding: const EdgeInsets.only(
+                  right: ZagUI.DEFAULT_MARGIN_SIZE / 4,
+                ),
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  height: SUBTITLE_HEIGHT * maxLines,
+                  width: SUBTITLE_HEIGHT,
+                  child: Icon(
+                    icon,
+                    color: bodyLeadingIconsColor,
+                    size: ZagUI.FONT_SIZE_H2,
+                  ),
                 ),
               ),
-            ),
-          Expanded(
-            child: _scrollableText(
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Builder(
-                  builder: (context) => RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: ZagUI.FONT_SIZE_H3,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? ZagColours.grey
-                            : Colors.grey.shade900,
+            Expanded(
+              child: _scrollableText(
+                scrollDirection:
+                    maxLines > 1 ? Axis.vertical : Axis.horizontal,
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  child: Builder(
+                    builder: (context) => RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: ZagUI.FONT_SIZE_H3,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? ZagColours.grey
+                              : Colors.grey.shade900,
+                        ),
+                        children: [textSpan],
                       ),
-                      children: [textSpan],
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: maxLines == 1 ? false : true,
+                      maxLines: maxLines,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: maxLines == 1 ? false : true,
-                    maxLines: maxLines,
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -393,17 +404,11 @@ class ZagBlock extends StatelessWidget {
       } else {
         for (int i = 0; i < body!.length; i++) {
           _children.add(_entry(body![i], bodyLeadingIcons?.elementAtOrNull(i)));
-          if (i != body!.length - 1) {
-            _children.add(const SizedBox(height: ZagUI.MARGIN_SIZE_HALF));
-          }
         }
       }
     }
 
     if (bottom != null) {
-      if (_children.isNotEmpty) {
-        _children.add(const SizedBox(height: ZagUI.MARGIN_SIZE_HALF));
-      }
       _children.add(
         SizedBox(
           height: bottomHeight,

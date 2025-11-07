@@ -89,6 +89,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   // Z Assistant settings
   Z_ASSISTANT_LIBRARY_CACHE_ENABLED<bool>(false),
   Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED<bool>(false),
+  Z_ASSISTANT_SELECTED_USER_ALIAS<String?>(null),
   // Z Assistant multi-add settings
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID<int?>(null),
   Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME<String?>(null),
