@@ -122,6 +122,30 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
         _isThinking = false;
       });
 
+      if (response.isRateLimited) {
+        final detail = response.text.isNotEmpty
+            ? response.text
+            : 'Rate Limit Reached';
+        final meta = _formatRateLimitInfo(response.rateLimitInfo);
+        final displayMessage =
+            meta.isNotEmpty ? '$detail\n$meta' : detail;
+
+        setState(() {
+          _messages.add(_ChatMessage(
+            content: displayMessage,
+            isUser: false,
+          ));
+        });
+        _scrollToBottom();
+
+        showZagSnackBar(
+          title: 'Rate Limit Reached',
+          message: displayMessage,
+          type: ZagSnackbarType.INFO,
+        );
+        return;
+      }
+
       ZagLogger().debug(
           '📨 Z Assistant response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
 
@@ -258,6 +282,43 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
           ZagLogger().warning('Unknown command action: ${command.action}');
       }
     }
+  }
+
+  String _formatRateLimitInfo(RateLimitInfo? info) {
+    if (info == null) {
+      return '';
+    }
+
+    final parts = <String>[];
+    final tier = info.tier;
+    if (tier != null && tier.isNotEmpty) {
+      parts.add('Plan: $tier');
+    }
+
+    final retry = info.retryAfterSeconds;
+    if (retry != null && retry > 0) {
+      final duration = Duration(seconds: retry);
+      final segments = <String>[];
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes % 60;
+      final seconds = duration.inSeconds % 60;
+
+      if (hours > 0) {
+        segments.add('${hours}h');
+      }
+      if (minutes > 0) {
+        segments.add('${minutes}m');
+      }
+      if (segments.isEmpty && seconds > 0) {
+        segments.add('${seconds}s');
+      }
+
+      if (segments.isNotEmpty) {
+        parts.add('Retry in ${segments.join(' ')}');
+      }
+    }
+
+    return parts.join(' • ');
   }
 
   Future<void> _executeQueueOperation(StagedOperation operation) async {

@@ -193,7 +193,23 @@ class ZAssistantService {
       );
 
       if (response.statusCode == 200) {
-        final responseText = response.data['response'] as String;
+        final bool rateLimited = response.data['rate_limited'] == true;
+        RateLimitInfo? rateLimitInfo;
+
+        if (rateLimited && response.data['rate_limit'] is Map) {
+          final rl = Map<String, dynamic>.from(response.data['rate_limit'] as Map);
+          rateLimitInfo = RateLimitInfo.fromJson(rl);
+        }
+
+        String responseText =
+            (response.data['response'] as String? ?? '').trim();
+        if (rateLimited) {
+          final detail = rateLimitInfo?.detail;
+          if (detail != null && detail.isNotEmpty) {
+            responseText = detail;
+          }
+        }
+
         final isStaged = response.data['staged'] == true;
         final stageId = response.data['stage_id'] as String?;
         final operation = response.data['operation'] as String?;
@@ -214,11 +230,13 @@ class ZAssistantService {
             'Z Assistant response: $responseText (staged: $isStaged, stage_id: $stageId, operation: $operation)');
 
         return ZAssistantResponse(
-          text: responseText.trim(),
+          text: responseText,
           isStaged: isStaged,
           stageId: stageId,
           operation: operation,
           commands: commands,
+          isRateLimited: rateLimited,
+          rateLimitInfo: rateLimitInfo,
         );
       } else {
         throw Exception(
@@ -362,6 +380,8 @@ class ZAssistantResponse {
   final String? stageId; // For staged operations
   final String? operation; // add/remove/update/explore/queue
   final List<ZAssistantCommand> commands;
+  final bool isRateLimited;
+  final RateLimitInfo? rateLimitInfo;
 
   ZAssistantResponse({
     required this.text,
@@ -369,6 +389,8 @@ class ZAssistantResponse {
     this.stageId,
     this.operation,
     this.commands = const [],
+    this.isRateLimited = false,
+    this.rateLimitInfo,
   });
 }
 
@@ -407,4 +429,28 @@ class ZAssistantApiResponse {
     this.data,
     this.error,
   });
+}
+
+class RateLimitInfo {
+  final String? detail;
+  final int? retryAfterSeconds;
+  final String? tier;
+
+  const RateLimitInfo({
+    this.detail,
+    this.retryAfterSeconds,
+    this.tier,
+  });
+
+  factory RateLimitInfo.fromJson(Map<String, dynamic> json) {
+    return RateLimitInfo(
+      detail: json['detail'] as String?,
+      retryAfterSeconds: json['retry_after_seconds'] is int
+          ? json['retry_after_seconds'] as int
+          : json['retry_after_seconds'] is num
+              ? (json['retry_after_seconds'] as num).toInt()
+              : null,
+      tier: json['tier'] as String?,
+    );
+  }
 }
