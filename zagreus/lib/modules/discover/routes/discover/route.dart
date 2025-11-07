@@ -2118,10 +2118,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     );
                   },
                 ),
-                // User selection UI
+                // Privacy notice
                 if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Usernames are anonymized (UserID0, UserID1, etc.) for privacy',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                // User selection UI
+                if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
                     child: ZagBlock(
                       title: 'Select Your Tautulli User',
                       body: [
@@ -2129,15 +2142,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           text: _selectedUser != null
                               ? 'AI recommendations personalized for $_selectedUser'
                               : 'Choose which Tautulli user you are',
-                        ),
-                        TextSpan(text: '\n'),
-                        TextSpan(
-                          text: 'Usernames are anonymized (UserID0, UserID1, etc.) for privacy',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
-                          ),
                         ),
                       ],
                       bottom: Column(
