@@ -302,7 +302,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
                     ),
                   );
                 }).toList(),
-                if (_loadingUsers)
+                if (_loadingUsers && _availableUsers.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 8),
                     child: Center(child: CircularProgressIndicator()),

@@ -2279,7 +2279,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ),
                             );
                           }).toList(),
-                          if (_loadingUsers)
+                          if (_loadingUsers && _availableUsers.isEmpty)
                             const Padding(
                               padding: EdgeInsets.only(top: 8),
                               child: Center(child: CircularProgressIndicator()),
