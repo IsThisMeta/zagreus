@@ -307,9 +307,10 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
                     padding: EdgeInsets.only(top: 8),
                     child: Center(child: CircularProgressIndicator()),
                   ),
+                const SizedBox(height: 24),
               ],
             ),
-            bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : 0) + 12 + _userListExtraPadding,
+            bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : 0) + 12 + _userListExtraPadding + 24,
           ),
       ],
     );

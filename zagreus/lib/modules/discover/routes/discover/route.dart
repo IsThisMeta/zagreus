@@ -2279,10 +2279,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   : 'Choose which Tautulli user you are',
                             ),
                           ],
-                          bottom: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 12),
+                      bottom: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 12),
                               ..._availableUsers.map((userOption) {
                                 final isSelected = _selectedUser == userOption.alias;
                                 return Padding(
@@ -2300,22 +2300,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   padding: EdgeInsets.only(top: 8),
                                   child: Center(child: CircularProgressIndicator()),
                                 ),
-                              if (_availableUsers.isEmpty && !_loadingUsers)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Center(
-                                    child: ZagButton.text(
-                                      text: 'Load Users',
-                                      icon: Icons.refresh,
-                                      onTap: _loadAvailableUsers,
-                                    ),
-                                  ),
+                          if (_availableUsers.isEmpty && !_loadingUsers)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Center(
+                                child: ZagButton.text(
+                                  text: 'Load Users',
+                                  icon: Icons.refresh,
+                                  onTap: _loadAvailableUsers,
                                 ),
-                            ],
-                          ),
-                          bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding,
-                        ),
+                              ),
+                            ),
+                          const SizedBox(height: 24),
+                        ],
                       ),
+                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding + 24,
+                    ),
+                  ),
                     const SizedBox(height: 24),
                   ],
                 ),
