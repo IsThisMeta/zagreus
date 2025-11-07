@@ -2094,13 +2094,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
             );
 
-            return SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            return FractionallySizedBox(
+              heightFactor: 0.65,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     Row(
                       children: [
                         Icon(Icons.info_outline, color: theme.colorScheme.primary),
@@ -2317,8 +2319,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding + 24,
                     ),
                   ),
-                    const SizedBox(height: 24),
-                  ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             );
