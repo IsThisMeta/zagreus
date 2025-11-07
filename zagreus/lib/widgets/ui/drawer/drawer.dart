@@ -116,6 +116,11 @@ class ZagDrawer extends StatelessWidget {
     void Function()? onTap,
   }) {
     bool currentPage = page == module.key.toLowerCase();
+    final theme = Theme.of(context);
+    final isLightTheme = theme.brightness == Brightness.light;
+    final selectedColor = module.color;
+    final unselectedColor = isLightTheme ? Colors.black87 : ZagColours.white;
+
     return SizedBox(
       height: ZagTextInputBar.defaultAppBarHeight,
       child: InkWell(
@@ -125,18 +130,14 @@ class ZagDrawer extends StatelessWidget {
             Padding(
               child: Icon(
                 module.icon,
-                color: currentPage 
-                    ? (Theme.of(context).brightness == Brightness.light ? ZagColours.currentAccentLight : module.color)
-                    : (Theme.of(context).brightness == Brightness.light ? Colors.black87 : ZagColours.white),
+                color: currentPage ? selectedColor : unselectedColor,
               ),
               padding: ZagUI.MARGIN_DEFAULT_HORIZONTAL * 1.5,
             ),
             Text(
               module.title,
               style: TextStyle(
-                color: currentPage 
-                    ? (Theme.of(context).brightness == Brightness.light ? ZagColours.currentAccentLight : module.color)
-                    : (Theme.of(context).brightness == Brightness.light ? Colors.black87 : ZagColours.white),
+                color: currentPage ? selectedColor : unselectedColor,
                 fontWeight: ZagUI.FONT_WEIGHT_BOLD,
               ),
             ),

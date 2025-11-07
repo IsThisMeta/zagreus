@@ -119,6 +119,26 @@ class _ServerSystemPageState extends State<ServerSystemPage>
 
   Widget _buildServerInfoCard() {
     final info = _systemInfo!;
+    final theme = Theme.of(context);
+    final isLightTheme = theme.brightness == Brightness.light;
+
+    final titleStyle = (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.0,
+      color: theme.textTheme.titleMedium?.color ??
+          (isLightTheme ? Colors.black87 : Colors.white),
+    );
+
+    final bodyStyle = (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+      fontSize: 14,
+      color: theme.textTheme.bodyMedium?.color ??
+          (isLightTheme ? Colors.black87 : Colors.white),
+    );
+
+    final iconColor =
+        theme.iconTheme.color?.withOpacity(isLightTheme ? 0.6 : 0.5) ??
+            (isLightTheme ? Colors.black45 : Colors.grey.shade500);
 
     return Container(
       margin: const EdgeInsets.only(
@@ -128,37 +148,33 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       ),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: BoxDecoration(
-        color: ZagColours.white10,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
+        border: isLightTheme ? Border.all(color: Colors.black12) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             info.name.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.0,
-              color: Colors.white,
-            ),
+            style: titleStyle,
           ),
           const SizedBox(height: 10),
           // Version
           Text(
             'Version: ${info.version}',
-            style: const TextStyle(fontSize: 14, color: Colors.white),
+            style: bodyStyle,
           ),
           const SizedBox(height: 8),
           // Registration
           if (info.registrationType != null) ...[
             Row(
               children: [
-                Icon(Icons.badge, size: 16, color: Colors.grey.shade500),
+                Icon(Icons.badge, size: 16, color: iconColor),
                 const SizedBox(width: 8),
                 Text(
                   'Registration: ${info.formattedRegistrationType}',
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                  style: bodyStyle,
                 ),
               ],
             ),
@@ -167,11 +183,11 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           // Uptime
           Row(
             children: [
-              Icon(Icons.schedule, size: 16, color: Colors.grey.shade500),
+              Icon(Icons.schedule, size: 16, color: iconColor),
               const SizedBox(width: 8),
               Text(
                 'Uptime: ${info.os.formattedUptime}',
-                style: const TextStyle(fontSize: 14, color: Colors.white),
+                style: bodyStyle,
               ),
             ],
           ),
@@ -179,19 +195,17 @@ class _ServerSystemPageState extends State<ServerSystemPage>
           // Array status
           Row(
             children: [
-              Icon(Icons.dns, size: 16, color: Colors.grey.shade500),
+              Icon(Icons.dns, size: 16, color: iconColor),
               const SizedBox(width: 8),
-              const Text(
-                'Array: ',
-                style: TextStyle(fontSize: 14, color: Colors.white),
-              ),
+              Text('Array: ', style: bodyStyle),
               Text(
                 _arrayInfo?.state ?? "Unknown",
                 style: TextStyle(
                   fontSize: 14,
                   color: _arrayInfo?.isStarted == true
                       ? Colors.green
-                      : Colors.grey,
+                      : (bodyStyle.color?.withOpacity(isLightTheme ? 0.65 : 0.6) ??
+                          (isLightTheme ? Colors.black45 : Colors.grey)),
                 ),
               ),
             ],
