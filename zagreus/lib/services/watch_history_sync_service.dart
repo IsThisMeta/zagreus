@@ -160,6 +160,12 @@ class WatchHistorySyncService {
       // Scrub and convert history records
       final List<Map<String, dynamic>> scrubbedHistory = [];
       for (final record in history.records ?? []) {
+        final displayName = (record.friendlyName?.trim().isNotEmpty ?? false)
+            ? record.friendlyName!.trim()
+            : (record.user?.trim().isNotEmpty ?? false)
+                ? record.user!.trim()
+                : 'Unknown User';
+
         final scrubbed = {
           'title': record.fullTitle ?? record.title,
           'year': record.year,
@@ -171,6 +177,7 @@ class WatchHistorySyncService {
           'grandparent_rating_key': record.grandparentRatingKey,
           'watched_status': TautulliUtilities.watchedStatusToJson(record.watchedStatus),
           'user_id_alias': scrubber.getUserIdAlias(record.userId ?? 0),
+          'user_display_name': displayName,
         };
 
         // Only include records with valid completion data

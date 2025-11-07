@@ -10,9 +10,16 @@ class ZAgentSettingsRoute extends StatefulWidget {
   State<ZAgentSettingsRoute> createState() => _State();
 }
 
+class _UserOption {
+  final String alias;
+  final String label;
+
+  const _UserOption({required this.alias, required this.label});
+}
+
 class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<String> _availableUsers = [];
+  List<_UserOption> _availableUsers = [];
   bool _loadingUsers = false;
   String? _selectedUser;
 
@@ -58,8 +65,8 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
       print('📥 Response error: ${response.error}');
 
       if (response.success && response.data != null) {
-        final users = List<String>.from(response.data!['users'] ?? []);
-        print('✅ Found ${users.length} available users: $users');
+        final users = _parseUserOptions(response.data!['users']);
+        print('✅ Found ${users.length} available users: ${users.map((u) => u.label).toList()}');
 
         setState(() {
           _availableUsers = users;
@@ -92,6 +99,69 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
     }
   }
 
+  List<_UserOption> _parseUserOptions(dynamic rawUsers) {
+    if (rawUsers is! List) {
+      return [];
+    }
+
+    final Map<String, _UserOption> deduped = {};
+    for (final entry in rawUsers) {
+      if (entry is String) {
+        deduped.putIfAbsent(
+          entry,
+          () => _UserOption(alias: entry, label: entry),
+        );
+        continue;
+      }
+
+      if (entry is Map) {
+        final aliasValue = entry['alias'] ??
+            entry['user_id_alias'] ??
+            entry['value'] ??
+            entry['id'];
+        final alias = aliasValue?.toString();
+        if (alias == null || alias.isEmpty) {
+          continue;
+        }
+
+        final labelValue = entry['label'] ??
+            entry['name'] ??
+            entry['display_name'] ??
+            entry['display'] ??
+            alias;
+        final label = labelValue?.toString() ?? alias;
+
+        deduped.putIfAbsent(
+          alias,
+          () => _UserOption(alias: alias, label: label),
+        );
+      }
+    }
+
+    return deduped.values.toList();
+  }
+
+  _UserOption? _findUserOption(String? alias) {
+    if (alias == null) {
+      return null;
+    }
+
+    for (final option in _availableUsers) {
+      if (option.alias == alias) {
+        return option;
+      }
+    }
+    return null;
+  }
+
+  String _labelForAlias(String? alias) {
+    if (alias == null || alias.isEmpty) {
+      return 'Unknown User';
+    }
+
+    return _findUserOption(alias)?.label ?? alias;
+  }
+
   Future<void> _selectUser(String userAlias) async {
     try {
       final deviceId = DeviceIdService().deviceId;
@@ -103,7 +173,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
         ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
         showZagSuccessSnackBar(
           title: 'User Selected',
-          message: 'Z Agent will now focus on $userAlias\'s viewing history',
+          message: 'Z Agent will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
         );
       } else {
         showZagErrorSnackBar(
@@ -210,7 +280,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
             body: [
               TextSpan(
                 text: _selectedUser != null
-                    ? 'AI recommendations personalized for $_selectedUser'
+                    ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
                     : 'Choose which Tautulli user you are',
               ),
             ],
@@ -218,14 +288,14 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                ..._availableUsers.map((userAlias) {
-                  final isSelected = _selectedUser == userAlias;
+                ..._availableUsers.map((userOption) {
+                  final isSelected = _selectedUser == userOption.alias;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: ZagButton.text(
-                      text: userAlias,
+                      text: userOption.label,
                       icon: isSelected ? Icons.check_circle : Icons.circle_outlined,
-                      onTap: () => _selectUser(userAlias),
+                      onTap: () => _selectUser(userOption.alias),
                       backgroundColor: isSelected ? ZagColours.currentAccent : null,
                     ),
                   );

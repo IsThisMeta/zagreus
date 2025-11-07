@@ -6,6 +6,7 @@ class TautulliScrubber {
   final Map<String, String> _deviceAliases = {};
   final Map<int, String> _userIdAliases = {};
   int _userCounter = 1;
+  int _userIdCounter = 1;
   int _deviceCounter = 1;
 
   /// Scrub sensitive data from Tautulli history response
@@ -130,7 +131,8 @@ class TautulliScrubber {
 
   String _getUserIdAlias(int userId) {
     if (!_userIdAliases.containsKey(userId)) {
-      _userIdAliases[userId] = 'UserID${_userCounter - 1}';
+      _userIdAliases[userId] = 'UserID$_userIdCounter';
+      _userIdCounter++;
     }
     return _userIdAliases[userId]!;
   }
@@ -164,6 +166,7 @@ class TautulliScrubber {
     _deviceAliases.clear();
     _userIdAliases.clear();
     _userCounter = 1;
+    _userIdCounter = 1;
     _deviceCounter = 1;
   }
 }
