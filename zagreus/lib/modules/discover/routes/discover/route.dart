@@ -53,6 +53,8 @@ class _UserOption {
   const _UserOption({required this.alias, required this.label});
 }
 
+const double _userListExtraPadding = 32.0;
+
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
@@ -2295,7 +2297,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                         ],
                       ),
-                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12,
+                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding,
                     ),
                   ),
                 const SizedBox(height: 24),
