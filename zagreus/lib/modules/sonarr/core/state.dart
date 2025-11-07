@@ -77,8 +77,7 @@ class SonarrState extends ZagModuleState {
           apiKey: _apiKey,
           headers: Map<String, dynamic>.from(_headers),
         );
-        // Sync webhook if enabled
-        _syncWebhook();
+        // Note: Webhook sync is handled by WebhookSyncService with proper 24h throttling
       } catch (e, stackTrace) {
         ZagLogger()
             .error('Failed to create Sonarr API instance', e, stackTrace);
