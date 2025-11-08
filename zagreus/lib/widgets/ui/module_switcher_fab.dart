@@ -23,6 +23,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
 
   // Track last launched module for long press
   static String? _lastLaunchedModuleKey;
+  static String? _previousModuleKey;
 
   @override
   void initState() {
@@ -159,21 +160,21 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                         if (_isOpen) return;
                         
                         print('🔍 FAB: Long press detected!');
-                        if (_lastLaunchedModuleKey != null) {
-                          print('🔍 FAB: Launching last used module: $_lastLaunchedModuleKey');
-                          final lastModule = modules.firstWhere(
-                            (m) => m.key == _lastLaunchedModuleKey,
+                        if (_previousModuleKey != null) {
+                          print('🔍 FAB: Launching previous module: $_previousModuleKey');
+                          final previousModule = modules.firstWhere(
+                            (m) => m.key == _previousModuleKey,
                             orElse: () => modules.first,
                           );
                           
                           try {
-                            await lastModule.launch();
-                            print('🔍 FAB: Successfully launched $_lastLaunchedModuleKey');
+                            await previousModule.launch();
+                            print('🔍 FAB: Successfully launched $_previousModuleKey');
                           } catch (e) {
                             print('🔍 FAB: Error launching module: $e');
                           }
                         } else {
-                          print('🔍 FAB: No last module tracked yet');
+                          print('🔍 FAB: No previous module tracked yet');
                         }
                       },
                       borderRadius: BorderRadius.circular(28),
@@ -286,9 +287,10 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
               await module.launch();
               print('🔍 FAB: module.launch() completed successfully');
               
-              // Track this as the last launched module
+              // Track previous module before updating current
+              _previousModuleKey = _lastLaunchedModuleKey;
               _lastLaunchedModuleKey = module.key;
-              print('🔍 FAB: Saved last launched module: ${module.key}');
+              print('🔍 FAB: Previous module: $_previousModuleKey, Current module: ${module.key}');
             } catch (e, stack) {
               print('🔍 FAB: ERROR during launch: $e');
               print('🔍 FAB: Stack trace: $stack');
