@@ -26,7 +26,7 @@ class _State extends State<TautulliRoute> {
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: null,
+      module: ZagModule.TAUTULLI,
       drawer: _drawer(),
       appBar: _appBar(),
       bottomNavigationBar: _bottomNavigationBar(),

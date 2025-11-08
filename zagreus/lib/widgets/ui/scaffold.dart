@@ -61,9 +61,11 @@ class ZagScaffold extends StatelessWidget {
         onProfileChange?.call(context);
 
         // Auto-add module switcher FAB if enabled and no custom FAB provided
+        // Only for main routes (identified by having a drawer)
         Widget? finalFAB = floatingActionButton;
         if (finalFAB == null &&
             module != null &&
+            drawer != null &&
             ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()) {
           finalFAB = ZagModuleSwitcherFAB(
             currentModuleKey: module!.key,

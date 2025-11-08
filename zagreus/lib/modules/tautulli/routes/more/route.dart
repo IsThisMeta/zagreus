@@ -24,7 +24,7 @@ class _State extends State<TautulliMoreRoute>
     super.build(context);
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: null,
+      module: ZagModule.TAUTULLI,
       body: _body,
     );
   }
