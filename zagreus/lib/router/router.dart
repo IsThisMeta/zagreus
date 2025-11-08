@@ -37,8 +37,20 @@ class ZagRouter {
 
 /// Observer that tracks route changes for the global FAB
 class _FABRouteObserver extends NavigatorObserver {
+  bool _hasInjectedFAB = false;
+
   @override
   void didPush(Route route, Route? previousRoute) {
+    // Inject FAB on first route push
+    if (!_hasInjectedFAB && navigator?.context != null) {
+      _hasInjectedFAB = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (navigator?.context != null) {
+          print('🔍 FABRouteObserver: Injecting FAB on first route');
+          ZagGlobalFABManager.instance.injectFAB(navigator!.context);
+        }
+      });
+    }
     _updateFAB(route);
   }
 

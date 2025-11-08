@@ -29,6 +29,11 @@ class _State extends State<TautulliRoute> {
     
     _pageController = PageController(initialPage: initialPage);
     print('🔍 Page controller created with initialPage: $initialPage');
+    
+    // Inject global FAB overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ZagGlobalFABManager.instance.injectFAB(context);
+    });
   }
 
   @override

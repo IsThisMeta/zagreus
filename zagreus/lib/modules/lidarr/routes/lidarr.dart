@@ -39,6 +39,11 @@ class _State extends State<LidarrRoute> {
     
     _pageController = ZagPageController(initialPage: initialPage);
     print('🔍 Page controller created with initialPage: $initialPage');
+    
+    // Inject global FAB overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ZagGlobalFABManager.instance.injectFAB(context);
+    });
   }
 
   @override

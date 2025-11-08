@@ -29,6 +29,11 @@ class _State extends State<SonarrRoute> {
       initialPage: savedIndex,
     );
     print('🔍 Page controller created with initialPage: $savedIndex');
+    
+    // Inject global FAB overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ZagGlobalFABManager.instance.injectFAB(context);
+    });
   }
 
   void _saveCurrentPage() {
