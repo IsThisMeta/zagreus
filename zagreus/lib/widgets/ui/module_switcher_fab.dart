@@ -150,10 +150,13 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                           builder: (context, child) {
                             return Transform.rotate(
                               angle: _rotateAnimation.value * 2 * 3.14159,
-                              child: Icon(
-                                Icons.apps_rounded,
-                                color: currentModule.color,
-                                size: 32,
+                              child: Opacity(
+                                opacity: _isOpen ? 1.0 : 0.5,
+                                child: Icon(
+                                  Icons.apps_rounded,
+                                  color: currentModule.color,
+                                  size: 32,
+                                ),
                               ),
                             );
                           },

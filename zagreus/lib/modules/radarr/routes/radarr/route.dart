@@ -44,6 +44,18 @@ class _State extends State<RadarrRoute> {
   }
 
   @override
+  void deactivate() {
+    print('🔍 RadarrRoute deactivate() called');
+    // Save current tab to session memory when navigating away
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round() ?? _currentPage;
+      _sessionTabIndex = currentPage;
+      print('🔍 RadarrRoute deactivate() - saving tab index to session: $currentPage');
+    }
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     // Save current tab to session memory on exit
     if (_pageController?.hasClients ?? false) {
