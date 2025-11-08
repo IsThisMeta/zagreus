@@ -86,6 +86,11 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     }
   }
 
+  Color _sectionIconColor(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.brightness == Brightness.light ? Colors.black54 : Colors.white70;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -232,12 +237,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     final usageLabel =
         '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)';
 
+    final iconColor = _sectionIconColor(context);
+
     return ZagBlock(
       title: 'Array capacity',
-      leading: const Icon(
+      leading: Icon(
         Icons.storage,
         size: 32,
-        color: Colors.white70,
+        color: iconColor,
       ),
       body: [
         TextSpan(
@@ -301,12 +308,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
 
     final usageText = '$percentLabel ($freeLabel)';
 
+    final iconColor = _sectionIconColor(context);
+
     return ZagBlock(
       title: 'Memory',
-      leading: const Icon(
+      leading: Icon(
         Icons.memory,
         size: 32,
-        color: Colors.white70,
+        color: iconColor,
       ),
       body: [
         TextSpan(text: memoryInfo),
@@ -332,12 +341,14 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   Widget _buildPowerCard() {
     final ups = _upsInfo!;
 
+    final iconColor = _sectionIconColor(context);
+
     return ZagBlock(
       title: 'POWER',
-      leading: const Icon(
+      leading: Icon(
         Icons.power,
         size: 32,
-        color: Colors.white70,
+        color: iconColor,
       ),
       body: [
         TextSpan(text: 'UPS Model: ${ups.displayName}'),
