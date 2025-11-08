@@ -227,7 +227,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
   Widget _episodeCard(Map<String, dynamic> episode) {
     final secondaryTextColor =
         Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
-            Colors.grey.shade400;
+            Colors.grey.shade700;
     final seasonEpisode =
         '${episode['seasonNumber']}x${(episode['episodeNumber'] ?? 0).toString().padLeft(2, '0')}';
     final sizeGb = episode['sizeGb'] is num ? episode['sizeGb'] as num : null;
@@ -320,7 +320,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                                     .bodySmall
                                     ?.color
                                     ?.withOpacity(0.55) ??
-                                Colors.grey.shade500,
+                                Colors.grey.shade700,
                           ),
                         ),
                         if (sizeGb != null) ...[

@@ -368,7 +368,7 @@ class _State extends State<SonarrAiringNextRoute>
                           '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')} • ${episode['episodeTitle']}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade400,
+                            color: Colors.grey.shade700,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
