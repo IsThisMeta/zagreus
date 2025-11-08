@@ -13,6 +13,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
 
 class DashboardRoute extends StatefulWidget {
   const DashboardRoute({
@@ -35,6 +36,11 @@ class _State extends State<DashboardRoute> {
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(initialPage: page);
 
+    // Inject global FAB overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ZagGlobalFABManager.instance.injectFAB(context);
+    });
+
     // Update home screen widget with Radarr/Sonarr upcoming content
     print('🏠 Dashboard: Platform is iOS? ${ZagPlatform.isIOS}');
     if (ZagPlatform.isIOS) {
@@ -52,7 +58,8 @@ class _State extends State<DashboardRoute> {
       final radarrState = context.read<RadarrState>();
       final sonarrState = context.read<SonarrState>();
 
-      print('🔄 Dashboard: Radarr enabled=${radarrState.enabled}, Sonarr enabled=${sonarrState.enabled}');
+      print(
+          '🔄 Dashboard: Radarr enabled=${radarrState.enabled}, Sonarr enabled=${sonarrState.enabled}');
 
       // Wait a bit for states to initialize if needed
       await Future.delayed(const Duration(milliseconds: 500));
@@ -60,6 +67,7 @@ class _State extends State<DashboardRoute> {
       await UpcomingWidgetService.updateWidget(
         radarrState: radarrState,
         sonarrState: sonarrState,
+        skipIfAlreadyUpdated: true,
       );
     } catch (e) {
       print('❌ Dashboard: Widget update error: $e');

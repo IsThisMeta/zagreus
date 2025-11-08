@@ -7,6 +7,7 @@ import 'package:zagreus/modules/sonarr.dart';
 /// Uses Radarr and Sonarr upcoming data instead of TMDB
 class UpcomingWidgetService {
   static const String _appGroupId = 'group.app.zagreus';
+  static bool _initialUpdateCompleted = false;
 
   /// Initialize the widget service (call this in main.dart bootstrap)
   static Future<void> initialize() async {
@@ -56,8 +57,6 @@ class UpcomingWidgetService {
         return aDate.compareTo(bDate);
       });
 
-      print('📊 Filtered to ${thisWeekContent.length} items airing this week');
-
       // Return top 10 most relevant items
       return thisWeekContent.take(10).toList();
     } catch (e) {
@@ -76,8 +75,6 @@ class UpcomingWidgetService {
       }
 
       final movies = await radarrState.upcoming!;
-
-      print('🎬 Got ${movies.length} upcoming movies from Radarr');
 
       return movies.take(10).map((movie) {
         // Use digital release date (prefer digital, fall back to physical/cinema)
@@ -99,13 +96,6 @@ class UpcomingWidgetService {
           );
           posterUrl = poster.remoteUrl;
         }
-
-        print('🎬 Movie: ${movie.title}');
-        print('🎬   - Digital: ${movie.digitalRelease}');
-        print('🎬   - Physical: ${movie.physicalRelease}');
-        print('🎬   - Cinema: ${movie.inCinemas}');
-        print('🎬   - Using date: $releaseDate');
-        print('🎬   - Poster: $posterUrl');
 
         return {
           'id': movie.id ?? 0,
@@ -134,8 +124,6 @@ class UpcomingWidgetService {
 
       final episodes = await sonarrState.upcoming!;
 
-      print('📺 Got ${episodes.length} upcoming episodes from Sonarr');
-
       return episodes.take(5).map((episode) {
         final seriesTitle = episode.series?.title ?? "Unknown";
         final episodeTitle = episode.title ?? "Episode";
@@ -149,18 +137,6 @@ class UpcomingWidgetService {
           );
           posterUrl = poster.remoteUrl;
         }
-
-        print('📺 Episode ID: ${episode.id}');
-        print('📺   - Episode title: $episodeTitle');
-        print('📺   - Series object exists: ${episode.series != null}');
-        if (episode.series != null) {
-          print('📺   - Series title: ${episode.series!.title}');
-          print('📺   - Series ID: ${episode.series!.id}');
-        } else {
-          print('📺   - Series is NULL - seriesId=${episode.seriesId}');
-        }
-        print('📺   - Final seriesTitle being used: $seriesTitle');
-        print('📺   - Poster: $posterUrl');
 
         return {
           'id': episode.id ?? 0,
@@ -184,7 +160,12 @@ class UpcomingWidgetService {
   static Future<bool> updateWidget({
     RadarrState? radarrState,
     SonarrState? sonarrState,
+    bool skipIfAlreadyUpdated = false,
   }) async {
+    if (skipIfAlreadyUpdated && _initialUpdateCompleted) {
+      print('ℹ️ Flutter: Initial widget update already completed; skipping duplicate call.');
+      return false;
+    }
     try {
       print('📱 Flutter: Updating upcoming widget...');
 
@@ -209,8 +190,6 @@ class UpcomingWidgetService {
       // Convert to JSON for widget
       final jsonData = json.encode(widgetData);
       print('💾 Flutter: Saving to UserDefaults with key "upcoming_content"');
-      print('💾 Flutter: JSON length: ${jsonData.length} chars');
-      print('💾 Flutter: First 200 chars: ${jsonData.substring(0, jsonData.length < 200 ? jsonData.length : 200)}');
 
       await HomeWidget.saveWidgetData<String>('upcoming_content', jsonData);
       await HomeWidget.saveWidgetData<String>(
@@ -218,7 +197,6 @@ class UpcomingWidgetService {
         DateTime.now().toIso8601String(),
       );
 
-      print('🔄 Flutter: Calling widget update...');
       // Update the widget UI
       await HomeWidget.updateWidget(
         iOSName: 'UpcomingWidget',
@@ -226,6 +204,7 @@ class UpcomingWidgetService {
       );
 
       print('✅ Flutter: Widget updated with ${widgetData.length} items');
+      _initialUpdateCompleted = true;
       return true;
     } catch (e) {
       print('❌ Flutter: Error updating widget: $e');

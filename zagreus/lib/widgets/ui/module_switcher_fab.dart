@@ -118,54 +118,58 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         );
         print('🔍 FAB: Current module: ${currentModule.title}');
 
-        return Stack(
-          alignment: Alignment.bottomRight,
-          clipBehavior: Clip.none,
-          children: [
-            // Backdrop - captures background taps only
-            if (_isOpen)
-              Positioned.fill(
-                child: Listener(
-                  onPointerDown: (_) {
-                    print('🔍 FAB: Background tapped, closing menu');
-                    _toggle();
-                  },
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.45),
-                  ),
-                ),
-              ),
-            // Module buttons - these are positioned widgets and will be on top
-            ..._buildModuleButtons(context, modules, currentModule),
-            // Main FAB - always on top
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: FloatingActionButton(
-                  heroTag: 'module_switcher',
-                  backgroundColor: currentModule.color,
-                  onPressed: () {
-                    print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
-                    _toggle();
-                  },
-                  child: AnimatedBuilder(
-                    animation: _rotateAnimation,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: _rotateAnimation.value * 2 * 3.14159,
-                        child: Icon(
-                          _isOpen ? Icons.close : Icons.apps_rounded,
-                          color: Colors.white,
-                        ),
-                      );
+        return SizedBox(
+          width: 56, // FAB size
+          height: 56,
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            clipBehavior: Clip.none,
+            children: [
+              // Backdrop - captures background taps only
+              if (_isOpen)
+                Positioned.fill(
+                  child: Listener(
+                    onPointerDown: (_) {
+                      print('🔍 FAB: Background tapped, closing menu');
+                      _toggle();
                     },
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ),
+              // Module buttons - these are positioned widgets and will be on top
+              ..._buildModuleButtons(context, modules, currentModule),
+              // Main FAB - always on top
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: FloatingActionButton(
+                    heroTag: 'module_switcher',
+                    backgroundColor: currentModule.color,
+                    onPressed: () {
+                      print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
+                      _toggle();
+                    },
+                    child: AnimatedBuilder(
+                      animation: _rotateAnimation,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: _rotateAnimation.value * 2 * 3.14159,
+                          child: Icon(
+                            _isOpen ? Icons.close : Icons.apps_rounded,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

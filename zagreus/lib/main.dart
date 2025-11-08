@@ -19,6 +19,7 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/system/recovery_mode/main.dart';
 import 'package:zagreus/system/window_manager/window_manager.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';
@@ -173,7 +174,9 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
                   localizationsDelegates: context.localizationDelegates,
                   supportedLocales: context.supportedLocales,
                   locale: context.locale,
-                  builder: DevicePreview.appBuilder,
+                  builder: (context, child) {
+                    return DevicePreview.appBuilder(context, child);
+                  },
                   darkTheme:
                       theme.activeTheme(systemBrightness: Brightness.dark),
                   theme: theme.activeTheme(systemBrightness: Brightness.light),
@@ -234,6 +237,7 @@ class _WidgetUpdateTriggerState extends State<_WidgetUpdateTrigger> {
       await UpcomingWidgetService.updateWidget(
         radarrState: radarrState,
         sonarrState: sonarrState,
+        skipIfAlreadyUpdated: true,
       );
     } catch (e, stack) {
       print('❌ WidgetUpdateTrigger: Widget update error: $e');

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/widgets/ui/module_switcher_fab.dart';
 
 class ZagScaffold extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -60,25 +59,13 @@ class ZagScaffold extends StatelessWidget {
       builder: (context, _) {
         onProfileChange?.call(context);
 
-        // Auto-add module switcher FAB if enabled and no custom FAB provided
-        // Only for main routes (identified by having a drawer)
-        Widget? finalFAB = floatingActionButton;
-        if (finalFAB == null &&
-            module != null &&
-            drawer != null &&
-            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()) {
-          finalFAB = ZagModuleSwitcherFAB(
-            currentModuleKey: module!.key,
-          );
-        }
-
         return Scaffold(
           key: scaffoldKey,
           appBar: appBar,
           body: body,
           drawer: drawer,
           bottomNavigationBar: bottomNavigationBar,
-          floatingActionButton: finalFAB,
+          floatingActionButton: floatingActionButton,
           extendBody: extendBody,
           extendBodyBehindAppBar: extendBodyBehindAppBar,
           onDrawerChanged: (_) => FocusManager.instance.primaryFocus?.unfocus(),

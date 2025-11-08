@@ -16,6 +16,7 @@ export 'ui/dialog.dart';
 export 'ui/divider.dart';
 export 'ui/drawer.dart';
 export 'ui/floating_action_button.dart';
+export 'ui/global_fab_overlay.dart';
 export 'ui/grid_view.dart';
 export 'ui/header.dart';
 export 'ui/highlighted_node.dart';
