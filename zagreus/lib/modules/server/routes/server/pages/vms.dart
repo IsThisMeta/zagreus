@@ -135,6 +135,14 @@ class _ServerVmPageState extends State<ServerVmPage>
 
   Widget _buildVmCard(UnraidVirtualMachine vm) {
     final pendingAction = _pendingActions[vm.id];
+    final theme = Theme.of(context);
+    final isLightTheme = theme.brightness == Brightness.light;
+    final titleStyle = (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: theme.textTheme.titleMedium?.color ??
+          (isLightTheme ? Colors.black87 : Colors.white),
+    );
 
     return Container(
       margin: const EdgeInsets.only(
@@ -144,8 +152,9 @@ class _ServerVmPageState extends State<ServerVmPage>
       ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: ZagColours.white10,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
+        border: isLightTheme ? Border.all(color: Colors.black12) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,11 +167,7 @@ class _ServerVmPageState extends State<ServerVmPage>
               Expanded(
                 child: Text(
                   vm.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                  style: titleStyle,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
