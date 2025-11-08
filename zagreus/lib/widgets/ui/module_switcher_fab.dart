@@ -21,6 +21,9 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
   late Animation<double> _rotateAnimation;
   late Animation<double> _scaleAnimation;
 
+  // Track last launched module for long press
+  static String? _lastLaunchedModuleKey;
+
   @override
   void initState() {
     super.initState();
@@ -140,6 +143,27 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                         print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
                         _toggle();
                       },
+                      onLongPress: () async {
+                        if (_isOpen) return;
+                        
+                        print('🔍 FAB: Long press detected!');
+                        if (_lastLaunchedModuleKey != null) {
+                          print('🔍 FAB: Launching last used module: $_lastLaunchedModuleKey');
+                          final lastModule = modules.firstWhere(
+                            (m) => m.key == _lastLaunchedModuleKey,
+                            orElse: () => modules.first,
+                          );
+                          
+                          try {
+                            await lastModule.launch();
+                            print('🔍 FAB: Successfully launched $_lastLaunchedModuleKey');
+                          } catch (e) {
+                            print('🔍 FAB: Error launching module: $e');
+                          }
+                        } else {
+                          print('🔍 FAB: No last module tracked yet');
+                        }
+                      },
                       borderRadius: BorderRadius.circular(28),
                       child: Container(
                         width: 56,
@@ -250,6 +274,10 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
             try {
               await module.launch();
               print('🔍 FAB: module.launch() completed successfully');
+              
+              // Track this as the last launched module
+              _lastLaunchedModuleKey = module.key;
+              print('🔍 FAB: Saved last launched module: ${module.key}');
             } catch (e, stack) {
               print('🔍 FAB: ERROR during launch: $e');
               print('🔍 FAB: Stack trace: $stack');
