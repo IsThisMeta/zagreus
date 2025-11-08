@@ -3269,12 +3269,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.play_circle_fill,
-                                      size: 20,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 8),
                                     Text(
                                       'In library',
                                       style: TextStyle(
