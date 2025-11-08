@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/system/session_state.dart';
 
 class SonarrRoute extends StatefulWidget {
   const SonarrRoute({
@@ -19,9 +20,11 @@ class _State extends State<SonarrRoute> {
   @override
   void initState() {
     super.initState();
-    final savedIndex = SonarrDatabase.NAVIGATION_INDEX.read();
+    // Try to get saved position from session state, default to 0 (first tab)
+    final savedIndex =
+        ZagSessionState.instance.getModuleTabPosition('sonarr') ?? 0;
     print('🔍 SonarrRoute initState() called');
-    print('🔍 Reading saved index from database: $savedIndex');
+    print('🔍 Reading saved index from session: $savedIndex');
     _pageController = ZagPageController(
       initialPage: savedIndex,
     );
@@ -33,9 +36,9 @@ class _State extends State<SonarrRoute> {
       final page = _pageController!.page;
       print('🔍 Current page (double): $page');
       final currentIndex = (page?.round()) ?? 0;
-      print('🔍 Saving index: $currentIndex');
-      SonarrDatabase.NAVIGATION_INDEX.update(currentIndex);
-      print('🔍 Saved to database');
+      print('🔍 Saving index to session: $currentIndex');
+      // Save to session state (in-memory only)
+      ZagSessionState.instance.setModuleTabPosition('sonarr', currentIndex);
     } else {
       print('🔍 Page controller has no clients or is null, not saving');
     }
