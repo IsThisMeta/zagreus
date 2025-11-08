@@ -265,7 +265,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  module.title,
+                  module.key == 'dashboard' ? 'Home' : module.title,
                   style: TextStyle(
                     color: module.color,
                     fontSize: 8,
