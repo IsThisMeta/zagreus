@@ -303,7 +303,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
             child: Icon(
               module.icon,
               color: module.color,
-              size: 23,
+              size: 25,
             ),
           ),
         ),
