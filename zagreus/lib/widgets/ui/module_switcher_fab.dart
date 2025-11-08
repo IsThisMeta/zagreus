@@ -121,9 +121,14 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         );
         print('🔍 FAB: Current module: ${currentModule.title}');
 
+        // Calculate dynamic height: 56px for FAB + 72px per module button
+        final moduleCount = modules.where((m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase()).length;
+        final dynamicHeight = 56.0 + (72.0 * moduleCount);
+        print('🔍 FAB: Module count (excluding current): $moduleCount, Dynamic height: $dynamicHeight');
+
         return SizedBox(
           width: 56,
-          height: _isOpen ? 500 : 56, // Expand when open, shrink when closed
+          height: _isOpen ? dynamicHeight : 56, // Expand dynamically based on module count
           child: Stack(
             alignment: Alignment.bottomRight,
             clipBehavior: Clip.none,
@@ -208,7 +213,6 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
     final visibleModules = modules
         .where(
             (m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase())
-        .take(6)
         .toList()
         .reversed // Reverse so first module is farthest, last is closest
         .toList();
