@@ -18,10 +18,18 @@ class _State extends State<RadarrRoute> {
   ZagPageController? _pageController;
   int _currentPage = 0;
 
+  // Session-based tab memory (cleared on app restart)
+  static int? _sessionTabIndex;
+
   @override
   void initState() {
     super.initState();
-    _currentPage = RadarrDatabase.NAVIGATION_INDEX.read();
+    print('🔍 RadarrRoute initState() called');
+    
+    // Read from session first, fallback to database
+    _currentPage = _sessionTabIndex ?? RadarrDatabase.NAVIGATION_INDEX.read();
+    print('🔍 Reading saved index from session: $_currentPage');
+    
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(() {
@@ -31,6 +39,20 @@ class _State extends State<RadarrRoute> {
           });
         }
       });
+    
+    print('🔍 Page controller created with initialPage: $_currentPage');
+  }
+
+  @override
+  void dispose() {
+    // Save current tab to session memory on exit
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round() ?? _currentPage;
+      _sessionTabIndex = currentPage;
+      print('🔍 RadarrRoute dispose() - saving tab index to session: $currentPage');
+    }
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override

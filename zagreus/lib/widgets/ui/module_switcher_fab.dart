@@ -133,24 +133,32 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                 right: 0,
                 child: ScaleTransition(
                   scale: _scaleAnimation,
-                  child: FloatingActionButton(
-                    heroTag: 'module_switcher',
-                    backgroundColor: currentModule.color,
-                    onPressed: () {
-                      print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
-                      _toggle();
-                    },
-                    child: AnimatedBuilder(
-                      animation: _rotateAnimation,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotateAnimation.value * 2 * 3.14159,
-                          child: Icon(
-                            Icons.apps_rounded,
-                            color: Colors.white,
-                          ),
-                        );
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
+                        _toggle();
                       },
+                      borderRadius: BorderRadius.circular(28),
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        alignment: Alignment.center,
+                        child: AnimatedBuilder(
+                          animation: _rotateAnimation,
+                          builder: (context, child) {
+                            return Transform.rotate(
+                              angle: _rotateAnimation.value * 2 * 3.14159,
+                              child: Icon(
+                                Icons.apps_rounded,
+                                color: currentModule.color,
+                                size: 32,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ),
