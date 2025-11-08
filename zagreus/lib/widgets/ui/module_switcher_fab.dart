@@ -121,20 +121,28 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         );
         print('🔍 FAB: Current module: ${currentModule.title}');
 
-        // Calculate dynamic height: 56px for FAB + 72px per module button
+        // Calculate dynamic height: 56px for FAB + 48px per module button (40px + 8px gap)
         final moduleCount = modules.where((m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase()).length;
-        final dynamicHeight = 56.0 + (72.0 * moduleCount);
-        print('🔍 FAB: Module count (excluding current): $moduleCount, Dynamic height: $dynamicHeight');
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxHeight = screenHeight - 200;
+        
+        final idealHeight = 56.0 + (48.0 * moduleCount);
+        final buttonSpacing = idealHeight > maxHeight 
+            ? (maxHeight - 56.0) / moduleCount
+            : 48.0;
+        
+        final dynamicHeight = idealHeight > maxHeight ? maxHeight : idealHeight;
+        print('🔍 FAB: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
 
         return SizedBox(
           width: 56,
-          height: _isOpen ? dynamicHeight : 56, // Expand dynamically based on module count
+          height: _isOpen ? dynamicHeight : 56,
           child: Stack(
             alignment: Alignment.bottomRight,
-            clipBehavior: Clip.none,
+            clipBehavior: Clip.hardEdge,
             children: [
-              // Module buttons - these are positioned widgets and will be on top
-              ..._buildModuleButtons(context, modules, currentModule),
+              // Module buttons
+              ..._buildModuleButtons(context, modules, currentModule, buttonSpacing),
               // Main FAB - always on top
               Positioned(
                 bottom: 0,
@@ -206,6 +214,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
     BuildContext context,
     List<ZagModule> modules,
     ZagModule currentModule,
+    double spacing,
   ) {
     if (!_isOpen) return [];
 
@@ -214,14 +223,14 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         .where(
             (m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase())
         .toList()
-        .reversed // Reverse so first module is farthest, last is closest
+        .reversed
         .toList();
 
-    print('🔍 FAB: Building ${visibleModules.length} module buttons');
+    print('🔍 FAB: Building ${visibleModules.length} module buttons with spacing: $spacing');
 
     for (int i = 0; i < visibleModules.length; i++) {
       final module = visibleModules[i];
-      final distance = 72.0 * (i + 1);
+      final distance = spacing * (i + 1);
 
       buttons.add(
         Positioned(
@@ -251,16 +260,16 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
 
   Widget _buildModuleButton(BuildContext context, ZagModule module) {
     return Material(
-      elevation: 6,
-      borderRadius: BorderRadius.circular(28),
+      elevation: 4,
+      borderRadius: BorderRadius.circular(12),
       color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: module.color.withValues(alpha: 0.5),
-            width: 2,
+            width: 1.5,
           ),
         ),
         child: InkWell(
@@ -287,32 +296,15 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
               print('🔍 FAB: Stack trace: $stack');
             }
           },
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            width: 56,
-            height: 56,
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  module.icon,
-                  color: module.color,
-                  size: 24,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  module.key == 'dashboard' ? 'Home' : module.title,
-                  style: TextStyle(
-                    color: module.color,
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              module.icon,
+              color: module.color,
+              size: 20,
             ),
           ),
         ),
