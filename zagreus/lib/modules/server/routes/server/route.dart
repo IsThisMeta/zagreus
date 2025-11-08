@@ -32,6 +32,11 @@ class _State extends State<ServerRoute> {
           });
         }
       });
+    
+    // Inject global FAB overlay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ZagGlobalFABManager.instance.injectFAB(context);
+    });
   }
 
   @override
