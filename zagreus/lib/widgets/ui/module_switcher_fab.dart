@@ -26,21 +26,21 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 200),
     );
     _rotateAnimation = Tween<double>(
       begin: 0.0,
-      end: 0.625, // 225 degrees (5/8 turn)
+      end: 0.125, // 45 degrees (1/8 turn) - much subtler
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOut,
     ));
     _scaleAnimation = Tween<double>(
       begin: 1.0,
-      end: 0.9,
+      end: 0.95, // Barely scales down
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOut,
     ));
   }
 
