@@ -21,7 +21,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   THEME_AMOLED<bool>(false),
   THEME_AMOLED_BORDER<bool>(false),
   THEME_LIGHT_BORDER<bool>(false),
-  THEME_IMAGE_BACKGROUND_OPACITY<int>(25),
+  THEME_IMAGE_BACKGROUND_OPACITY<int>(20),
   THEME_MODE<String>('dark'),
   THEME_FOLLOW_SYSTEM<bool>(false),
   THEME_USE_LUNASEA_COLORS<bool>(false),
