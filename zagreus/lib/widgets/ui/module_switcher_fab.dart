@@ -25,6 +25,13 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
   static String? _lastLaunchedModuleKey;
   static String? _previousModuleKey;
 
+  // Public method to update tracking when modules launch from anywhere!
+  static void updateModuleTracking(String moduleKey) {
+    _previousModuleKey = _lastLaunchedModuleKey;
+    _lastLaunchedModuleKey = moduleKey;
+    print('🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $moduleKey');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -293,10 +300,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
               await module.launch();
               print('🔍 FAB: module.launch() completed successfully');
               
-              // Track previous module before updating current
-              _previousModuleKey = _lastLaunchedModuleKey;
-              _lastLaunchedModuleKey = module.key;
-              print('🔍 FAB: Previous module: $_previousModuleKey, Current module: ${module.key}');
+              // Use the public method to update tracking
+              updateModuleTracking(module.key);
             } catch (e, stack) {
               print('🔍 FAB: ERROR during launch: $e');
               print('🔍 FAB: Stack trace: $stack');

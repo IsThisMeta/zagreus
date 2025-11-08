@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/widgets/ui/module_switcher_fab.dart';
 
 class ZagDrawer extends StatelessWidget {
   final String page;
@@ -146,7 +147,10 @@ class ZagDrawer extends StatelessWidget {
         onTap: onTap ??
             () async {
               Navigator.of(context).pop();
-              if (!currentPage) module.launch();
+              if (!currentPage) {
+                ZagModuleSwitcherFAB.updateModuleTracking(module.key);
+                module.launch();
+              }
             },
       ),
     );
