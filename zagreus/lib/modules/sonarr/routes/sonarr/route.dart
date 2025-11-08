@@ -65,6 +65,11 @@ class _State extends State<SonarrRoute> {
       drawer: _drawer(),
       appBar: _appBar(),
       bottomNavigationBar: _bottomNavigationBar(),
+      floatingActionButton: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()
+          ? ZagModuleSwitcherFAB(
+              currentModuleKey: ZagModule.SONARR.key,
+            )
+          : null,
       body: _body(),
     );
   }

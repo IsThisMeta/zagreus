@@ -15,6 +15,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DRAWER_AUTOMATIC_MANAGE<bool>(true),
   DRAWER_MANUAL_ORDER<List>([]),
   ENABLED_PROFILE<String>(ZagProfile.DEFAULT_PROFILE),
+  MODULE_SWITCHER_FAB_ENABLED<bool>(true),
   NETWORKING_TLS_VALIDATION<bool>(false),
   NETWORKING_LOCAL_SWITCHING_ENABLED<bool>(false),
   NAVIGATION_DISABLE_HORIZONTAL_SWIPE<bool>(false),
@@ -151,7 +152,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
           if (module != null) item.add(module);
         });
         result = item;
-        print('[DEBUG] Converted to modules: ${item.map((m) => m.key).toList()}');
+        print(
+            '[DEBUG] Converted to modules: ${item.map((m) => m.key).toList()}');
         break;
       case ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE:
         print('[DEBUG] Importing DRAWER_AUTOMATIC_MANAGE: $value');
@@ -162,7 +164,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
         break;
     }
 
-    print('[DEBUG] About to call super.import for ${db.name} with value: $result');
+    print(
+        '[DEBUG] About to call super.import for ${db.name} with value: $result');
     return super.import(result);
   }
 }
