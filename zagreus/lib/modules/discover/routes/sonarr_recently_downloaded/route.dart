@@ -27,14 +27,8 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
   @override
   void initState() {
     super.initState();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _recentlyDownloadedShows = widget.initialData!;
-      _isLoading = false;
-    } else {
-      // Load data from API
-      _loadRecentlyDownloadedShows();
-    }
+    // Always load fresh data to ensure we have the latest including file sizes
+    _loadRecentlyDownloadedShows();
   }
 
   Future<void> _loadRecentlyDownloadedShows() async {
