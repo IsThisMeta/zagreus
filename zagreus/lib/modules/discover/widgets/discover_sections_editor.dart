@@ -6,15 +6,9 @@ class DiscoverSectionsEditor extends StatefulWidget {
   const DiscoverSectionsEditor({
     super.key,
     this.onHasChangesChanged,
-    this.showInlineSaveButton = false,
-    this.showResetButton = false,
-    this.onSaved,
   });
 
   final ValueChanged<bool>? onHasChangesChanged;
-  final bool showInlineSaveButton;
-  final bool showResetButton;
-  final VoidCallback? onSaved;
 
   @override
   DiscoverSectionsEditorState createState() => DiscoverSectionsEditorState();
@@ -80,9 +74,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         : List<String>.from(_defaultTVSections);
   }
 
-  void saveChanges() {
+  Future<void> saveChanges() async {
     if (!_hasChanges) {
-      widget.onSaved?.call();
       return;
     }
     ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(_movieSections);
@@ -93,7 +86,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       title: 'Section Order Saved',
       message: 'Discover sections have been reordered',
     );
-    widget.onSaved?.call();
   }
 
   void resetToDefaults() {
@@ -144,35 +136,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               ],
             ),
           ),
-          if (widget.showInlineSaveButton) _buildInlineActions(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInlineActions(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        ZagUI.DEFAULT_MARGIN_SIZE,
-        12,
-        ZagUI.DEFAULT_MARGIN_SIZE,
-        4,
-      ),
-      child: Column(
-        children: [
-          ZagButton(
-            type: ZagButtonType.TEXT,
-            text: 'Save Order',
-            icon: Icons.save_rounded,
-            color: _hasChanges ? ZagColours.currentAccent : Colors.grey,
-            onTap: _hasChanges ? saveChanges : null,
-          ),
-          if (widget.showResetButton)
-            TextButton.icon(
-              onPressed: resetToDefaults,
-              icon: const Icon(Icons.restart_alt_rounded),
-              label: const Text('Reset to Defaults'),
-            ),
         ],
       ),
     );
@@ -267,6 +230,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
 Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
   final editorKey = GlobalKey<DiscoverSectionsEditorState>();
+  bool hasChanges = false;
+  bool isSaving = false;
 
   return showModalBottomSheet<bool>(
     context: context,
@@ -279,58 +244,107 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
       final mediaQuery = MediaQuery.of(sheetContext);
       final height = mediaQuery.size.height * 0.75;
 
-      return SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: mediaQuery.viewInsets.bottom,
-          ),
-          child: SizedBox(
-            height: height,
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(sheetContext).brightness == Brightness.dark
-                        ? Colors.white24
-                        : Colors.black26,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Discover Sections',
-                        style: Theme.of(sheetContext)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+      return StatefulBuilder(
+        builder: (context, setModalState) {
+          Future<void> handleSave() async {
+            if (!hasChanges || isSaving) return;
+            final state = editorKey.currentState;
+            if (state == null) return;
+            setModalState(() => isSaving = true);
+            await state.saveChanges();
+            setModalState(() => isSaving = false);
+            Navigator.of(sheetContext).pop(true);
+          }
+
+          void handleReset() {
+            if (isSaving) return;
+            editorKey.currentState?.resetToDefaults();
+          }
+
+          return SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: mediaQuery.viewInsets.bottom,
+              ),
+              child: SizedBox(
+                height: height,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color:
+                            Theme.of(sheetContext).brightness == Brightness.dark
+                                ? Colors.white24
+                                : Colors.black26,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.of(sheetContext).pop(false),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Discover Sections',
+                            style: Theme.of(sheetContext)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.restart_alt_rounded),
+                            tooltip: 'Reset to Defaults',
+                            onPressed:
+                                hasChanges && !isSaving ? handleReset : null,
+                          ),
+                          if (isSaving)
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            IconButton(
+                              icon: const Icon(Icons.save_rounded),
+                              tooltip: 'Save Order',
+                              color: hasChanges
+                                  ? ZagColours.currentAccent
+                                  : Colors.grey,
+                              onPressed: hasChanges ? handleSave : null,
+                            ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: () =>
+                                Navigator.of(sheetContext).pop(false),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Expanded(
+                      child: DiscoverSectionsEditor(
+                        key: editorKey,
+                        onHasChangesChanged: (value) =>
+                            setModalState(() => hasChanges = value),
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: DiscoverSectionsEditor(
-                    key: editorKey,
-                    showInlineSaveButton: true,
-                    showResetButton: true,
-                    onSaved: () => Navigator.of(sheetContext).pop(true),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
     },
   );
