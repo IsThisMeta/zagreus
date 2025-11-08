@@ -63,6 +63,7 @@ class _State extends State<ConfigurationGeneralRoute>
       children: [
         ..._localization(),
         ..._modules(),
+        ..._navigation(),
         ..._security(),
         if (ZagNetwork.isSupported) ..._network(),
         ..._platform(),
@@ -82,6 +83,31 @@ class _State extends State<ConfigurationGeneralRoute>
       ZagHeader(text: 'dashboard.Modules'.tr()),
       _bootModule(),
     ];
+  }
+
+  List<Widget> _navigation() {
+    return [
+      const ZagHeader(text: 'Navigation'),
+      _horizontalSwipeToggle(),
+    ];
+  }
+
+  Widget _horizontalSwipeToggle() {
+    const db = ZagreusDatabase.NAVIGATION_DISABLE_HORIZONTAL_SWIPE;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Swipe Between Tabs',
+        body: const [
+          TextSpan(
+            text: 'Allow horizontal swiping between module tabs.',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: !db.read(),
+          onChanged: (value) => db.update(!value),
+        ),
+      ),
+    );
   }
 
   Widget _settingsLockToggle({

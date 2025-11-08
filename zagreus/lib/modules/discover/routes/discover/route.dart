@@ -1189,6 +1189,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _heroCarousel(),
           // TV shows sections in custom order
           ..._buildTVSections(),
+          const SizedBox(height: 16),
           _discoverSectionsButton(),
           const SizedBox(height: 32),
         ],
