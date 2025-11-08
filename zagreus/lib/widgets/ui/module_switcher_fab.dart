@@ -109,45 +109,59 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
     return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
       builder: (context, _) {
         final modules = _getActiveModules();
+        print('🔍 FAB: Active modules count: ${modules.length}');
+        print('🔍 FAB: Modules: ${modules.map((m) => m.title).join(", ")}');
+
         final currentModule = modules.firstWhere(
           (m) => m.key.toLowerCase() == widget.currentModuleKey.toLowerCase(),
           orElse: () => ZagModule.DASHBOARD,
         );
+        print('🔍 FAB: Current module: ${currentModule.title}');
 
         return Stack(
           alignment: Alignment.bottomRight,
           clipBehavior: Clip.none,
           children: [
-            // Backdrop
+            // Backdrop - captures background taps only
             if (_isOpen)
               Positioned.fill(
-                child: GestureDetector(
-                  onTap: _toggle,
+                child: Listener(
+                  onPointerDown: (_) {
+                    print('🔍 FAB: Background tapped, closing menu');
+                    _toggle();
+                  },
                   child: Container(
-                    color: Colors.black45,
+                    color: Colors.black.withValues(alpha: 0.45),
                   ),
                 ),
               ),
-            // Module buttons
+            // Module buttons - these are positioned widgets and will be on top
             ..._buildModuleButtons(context, modules, currentModule),
-            // Main FAB
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: FloatingActionButton(
-                heroTag: 'module_switcher',
-                backgroundColor: currentModule.color,
-                onPressed: _toggle,
-                child: AnimatedBuilder(
-                  animation: _rotateAnimation,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _rotateAnimation.value * 2 * 3.14159,
-                      child: Icon(
-                        _isOpen ? Icons.close : Icons.apps_rounded,
-                        color: Colors.white,
-                      ),
-                    );
+            // Main FAB - always on top
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: FloatingActionButton(
+                  heroTag: 'module_switcher',
+                  backgroundColor: currentModule.color,
+                  onPressed: () {
+                    print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
+                    _toggle();
                   },
+                  child: AnimatedBuilder(
+                    animation: _rotateAnimation,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: _rotateAnimation.value * 2 * 3.14159,
+                        child: Icon(
+                          _isOpen ? Icons.close : Icons.apps_rounded,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -171,20 +185,23 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         .take(6)
         .toList();
 
+    print('🔍 FAB: Building ${visibleModules.length} module buttons');
+
     for (int i = 0; i < visibleModules.length; i++) {
       final module = visibleModules[i];
       final distance = 72.0 * (i + 1);
 
       buttons.add(
-        AnimatedPositioned(
-          duration: Duration(milliseconds: 150 + (i * 30)),
-          curve: Curves.easeOutBack,
+        Positioned(
           bottom: _isOpen ? distance : 0,
           right: 0,
-          child: AnimatedOpacity(
-            duration: Duration(milliseconds: 150 + (i * 30)),
-            opacity: _isOpen ? 1.0 : 0.0,
-            child: _buildModuleButton(context, module),
+          child: IgnorePointer(
+            ignoring: !_isOpen,
+            child: AnimatedOpacity(
+              duration: Duration(milliseconds: 150 + (i * 30)),
+              opacity: _isOpen ? 1.0 : 0.0,
+              child: _buildModuleButton(context, module),
+            ),
           ),
         ),
       );
@@ -208,11 +225,24 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
           ),
         ),
         child: InkWell(
-          onTap: () {
+          onTap: () async {
+            print('🔍 FAB: Module button tapped: ${module.title}');
+            print('🔍 FAB: Module key: ${module.key}');
+            print('🔍 FAB: Module is enabled: ${module.isEnabled}');
+            print('🔍 FAB: Module homeRoute: ${module.homeRoute}');
+            print('🔍 FAB: Closing menu...');
             _toggle();
-            Future.delayed(const Duration(milliseconds: 100), () {
-              module.launch();
-            });
+
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            print('🔍 FAB: Calling module.launch()...');
+            try {
+              await module.launch();
+              print('🔍 FAB: module.launch() completed successfully');
+            } catch (e, stack) {
+              print('🔍 FAB: ERROR during launch: $e');
+              print('🔍 FAB: Stack trace: $stack');
+            }
           },
           borderRadius: BorderRadius.circular(28),
           child: Container(
