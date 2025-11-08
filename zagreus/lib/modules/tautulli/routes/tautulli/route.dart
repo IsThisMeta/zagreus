@@ -15,11 +15,48 @@ class _State extends State<TautulliRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   PageController? _pageController;
 
+  // Session-based tab memory (cleared on app restart)
+  static int? _sessionTabIndex;
+
   @override
   void initState() {
     super.initState();
-    _pageController =
-        PageController(initialPage: TautulliDatabase.NAVIGATION_INDEX.read());
+    print('🔍 TautulliRoute initState() called');
+    
+    // Read from session first, fallback to database
+    final initialPage = _sessionTabIndex ?? TautulliDatabase.NAVIGATION_INDEX.read();
+    print('🔍 Reading saved index from session: $initialPage');
+    
+    _pageController = PageController(initialPage: initialPage);
+    print('🔍 Page controller created with initialPage: $initialPage');
+  }
+
+  @override
+  void deactivate() {
+    print('🔍 TautulliRoute deactivate() called');
+    // Save current tab to session memory when navigating away
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round();
+      if (currentPage != null) {
+        _sessionTabIndex = currentPage;
+        print('🔍 TautulliRoute deactivate() - saving tab index to session: $currentPage');
+      }
+    }
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    // Save current tab to session memory on exit
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round();
+      if (currentPage != null) {
+        _sessionTabIndex = currentPage;
+        print('🔍 TautulliRoute dispose() - saving tab index to session: $currentPage');
+      }
+    }
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override

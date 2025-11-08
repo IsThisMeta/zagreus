@@ -17,9 +17,18 @@ class _State extends State<OverseerrRoute> {
   ZagPageController? _pageController;
   int _currentPage = 0;
 
+  // Session-based tab memory (cleared on app restart)
+  static int? _sessionTabIndex;
+
   @override
   void initState() {
     super.initState();
+    print('🔍 OverseerrRoute initState() called');
+    
+    // Read from session first, fallback to 0 (no database default for Overseerr)
+    _currentPage = _sessionTabIndex ?? 0;
+    print('🔍 Reading saved index from session: $_currentPage');
+    
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(() {
@@ -29,6 +38,32 @@ class _State extends State<OverseerrRoute> {
           });
         }
       });
+    
+    print('🔍 Page controller created with initialPage: $_currentPage');
+  }
+
+  @override
+  void deactivate() {
+    print('🔍 OverseerrRoute deactivate() called');
+    // Save current tab to session memory when navigating away
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round() ?? _currentPage;
+      _sessionTabIndex = currentPage;
+      print('🔍 OverseerrRoute deactivate() - saving tab index to session: $currentPage');
+    }
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    // Save current tab to session memory on exit
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round() ?? _currentPage;
+      _sessionTabIndex = currentPage;
+      print('🔍 OverseerrRoute dispose() - saving tab index to session: $currentPage');
+    }
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override
