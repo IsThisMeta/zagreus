@@ -119,25 +119,12 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         print('🔍 FAB: Current module: ${currentModule.title}');
 
         return SizedBox(
-          width: 56, // FAB size
-          height: 56,
+          width: 56,
+          height: 500, // Tall enough for all buttons (6 × 72 = 432 + FAB)
           child: Stack(
             alignment: Alignment.bottomRight,
             clipBehavior: Clip.none,
             children: [
-              // Backdrop - captures background taps only (transparent)
-              if (_isOpen)
-                Positioned.fill(
-                  child: Listener(
-                    onPointerDown: (_) {
-                      print('🔍 FAB: Background tapped, closing menu');
-                      _toggle();
-                    },
-                    child: Container(
-                      color: Colors.transparent,
-                    ),
-                  ),
-                ),
               // Module buttons - these are positioned widgets and will be on top
               ..._buildModuleButtons(context, modules, currentModule),
               // Main FAB - always on top
@@ -201,23 +188,20 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         Positioned(
           bottom: 0,
           right: 0,
-          child: IgnorePointer(
-            ignoring: !_isOpen,
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                final slideDistance = distance * _animationController.value;
-                final opacity = _animationController.value;
-                return Transform.translate(
-                  offset: Offset(0, -slideDistance),
-                  child: Opacity(
-                    opacity: opacity,
-                    child: child,
-                  ),
-                );
-              },
-              child: _buildModuleButton(context, module),
-            ),
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              final slideDistance = distance * _animationController.value;
+              final opacity = _animationController.value;
+              return Transform.translate(
+                offset: Offset(0, -slideDistance),
+                child: Opacity(
+                  opacity: opacity,
+                  child: child,
+                ),
+              );
+            },
+            child: _buildModuleButton(context, module),
           ),
         ),
       );
