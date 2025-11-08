@@ -41,7 +41,7 @@ class _State extends State<SABnzbdQueue>
           ? null
           : SABnzbdQueueFAB(
               scrollController: SABnzbdNavigationBar.scrollControllers[0]),
-      floatingActionButtonLocation: const _LeftOfModuleSwitcherFABLocation(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 
@@ -161,25 +161,5 @@ class _State extends State<SABnzbdQueue>
         refresh: _fetchWithoutMessage,
       ),
     );
-  }
-}
-
-/// Custom FAB location: just left of the module switcher FAB
-class _LeftOfModuleSwitcherFABLocation extends FloatingActionButtonLocation {
-  const _LeftOfModuleSwitcherFABLocation();
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    // Position at bottom-right but offset left by 72px (FAB width + gap)
-    final double fabX = scaffoldGeometry.scaffoldSize.width -
-        16 -
-        56 -
-        16 -
-        56; // right margin - FAB - gap - another FAB
-    final double fabY = scaffoldGeometry.scaffoldSize.height -
-        scaffoldGeometry.minInsets.bottom -
-        85 -
-        56; // match module switcher height
-    return Offset(fabX, fabY);
   }
 }
