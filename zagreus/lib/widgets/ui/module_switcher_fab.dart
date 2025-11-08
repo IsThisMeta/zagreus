@@ -138,7 +138,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
           width: 56,
           height: _isOpen ? dynamicHeight : 56,
           child: Stack(
-            alignment: Alignment.bottomRight,
+            alignment: Alignment.bottomCenter,
             clipBehavior: Clip.hardEdge,
             children: [
               // Module buttons
@@ -146,7 +146,6 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
               // Main FAB - always on top
               Positioned(
                 bottom: 0,
-                right: 0,
                 child: ScaleTransition(
                   scale: _scaleAnimation,
                   child: Material(
@@ -235,7 +234,6 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
       buttons.add(
         Positioned(
           bottom: 0,
-          right: 0,
           child: AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
