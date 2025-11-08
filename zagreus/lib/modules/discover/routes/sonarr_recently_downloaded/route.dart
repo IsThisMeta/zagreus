@@ -324,7 +324,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                           ),
                         ),
                         if (sizeGb != null) ...[
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             '${sizeGb.toStringAsFixed(2)} GB',
                             style: TextStyle(
