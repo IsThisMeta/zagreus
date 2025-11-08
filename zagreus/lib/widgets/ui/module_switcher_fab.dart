@@ -125,7 +125,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
             alignment: Alignment.bottomRight,
             clipBehavior: Clip.none,
             children: [
-              // Backdrop - captures background taps only
+              // Backdrop - captures background taps only (transparent)
               if (_isOpen)
                 Positioned.fill(
                   child: Listener(
@@ -134,7 +134,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                       _toggle();
                     },
                     child: Container(
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: Colors.transparent,
                     ),
                   ),
                 ),
@@ -159,7 +159,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                         return Transform.rotate(
                           angle: _rotateAnimation.value * 2 * 3.14159,
                           child: Icon(
-                            _isOpen ? Icons.close : Icons.apps_rounded,
+                            Icons.apps_rounded,
                             color: Colors.white,
                           ),
                         );
