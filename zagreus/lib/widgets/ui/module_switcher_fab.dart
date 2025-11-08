@@ -121,15 +121,15 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         );
         print('🔍 FAB: Current module: ${currentModule.title}');
 
-        // Calculate dynamic height: 56px for FAB + 52px per module button (44px + 8px gap)
+        // Calculate dynamic height: 56px for FAB + 54px per module button (46px + 8px gap)
         final moduleCount = modules.where((m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase()).length;
         final screenHeight = MediaQuery.of(context).size.height;
         final maxHeight = screenHeight - 200;
         
-        final idealHeight = 56.0 + (52.0 * moduleCount);
+        final idealHeight = 56.0 + (54.0 * moduleCount);
         final buttonSpacing = idealHeight > maxHeight 
             ? (maxHeight - 56.0) / moduleCount
-            : 52.0;
+            : 54.0;
         
         final dynamicHeight = idealHeight > maxHeight ? maxHeight : idealHeight;
         print('🔍 FAB: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
@@ -296,14 +296,14 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            width: 44,
-            height: 44,
+            width: 46,
+            height: 46,
             alignment: Alignment.center,
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(7.35),
             child: Icon(
               module.icon,
               color: module.color,
-              size: 22,
+              size: 23,
             ),
           ),
         ),
