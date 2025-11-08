@@ -199,13 +199,23 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
 
       buttons.add(
         Positioned(
-          bottom: _isOpen ? distance : 0,
+          bottom: 0,
           right: 0,
           child: IgnorePointer(
             ignoring: !_isOpen,
-            child: AnimatedOpacity(
-              duration: Duration(milliseconds: 150 + (i * 30)),
-              opacity: _isOpen ? 1.0 : 0.0,
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                final slideDistance = distance * _animationController.value;
+                final opacity = _animationController.value;
+                return Transform.translate(
+                  offset: Offset(0, -slideDistance),
+                  child: Opacity(
+                    opacity: opacity,
+                    child: child,
+                  ),
+                );
+              },
               child: _buildModuleButton(context, module),
             ),
           ),
