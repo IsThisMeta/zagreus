@@ -123,7 +123,7 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
 
         return SizedBox(
           width: 56,
-          height: 500, // Tall enough for all buttons (6 × 72 = 432 + FAB)
+          height: _isOpen ? 500 : 56, // Expand when open, shrink when closed
           child: Stack(
             alignment: Alignment.bottomRight,
             clipBehavior: Clip.none,
