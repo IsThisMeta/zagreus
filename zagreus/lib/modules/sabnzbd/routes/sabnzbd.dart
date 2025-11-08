@@ -30,11 +30,48 @@ class _State extends State<SABnzbdRoute> {
     GlobalKey<RefreshIndicatorState>(),
   ];
 
+  // Session-based tab memory (cleared on app restart)
+  static int? _sessionTabIndex;
+
   @override
   void initState() {
     super.initState();
-    _pageController = ZagPageController(
-        initialPage: SABnzbdDatabase.NAVIGATION_INDEX.read());
+    print('🔍 SABnzbdRoute initState() called');
+    
+    // Read from session first, fallback to database
+    final initialPage = _sessionTabIndex ?? SABnzbdDatabase.NAVIGATION_INDEX.read();
+    print('🔍 Reading saved index from session: $initialPage');
+    
+    _pageController = ZagPageController(initialPage: initialPage);
+    print('🔍 Page controller created with initialPage: $initialPage');
+  }
+
+  @override
+  void deactivate() {
+    print('🔍 SABnzbdRoute deactivate() called');
+    // Save current tab to session memory when navigating away
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round();
+      if (currentPage != null) {
+        _sessionTabIndex = currentPage;
+        print('🔍 SABnzbdRoute deactivate() - saving tab index to session: $currentPage');
+      }
+    }
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    // Save current tab to session memory on exit
+    if (_pageController?.hasClients ?? false) {
+      final currentPage = _pageController!.page?.round();
+      if (currentPage != null) {
+        _sessionTabIndex = currentPage;
+        print('🔍 SABnzbdRoute dispose() - saving tab index to session: $currentPage');
+      }
+    }
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override
