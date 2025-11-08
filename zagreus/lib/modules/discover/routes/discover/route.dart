@@ -26,6 +26,7 @@ import 'package:zagreus/modules/discover/routes/tmdb_popular_people/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
+import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
@@ -1116,6 +1117,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _heroCarousel(),
           // Content sections in custom order
           ..._buildMovieSections(),
+          _discoverSectionsButton(),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -1186,6 +1189,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _heroCarousel(),
           // TV shows sections in custom order
           ..._buildTVSections(),
+          _discoverSectionsButton(),
           const SizedBox(height: 32),
         ],
       ),
@@ -1229,6 +1233,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
     }
     return sections;
+  }
+
+  Widget _discoverSectionsButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+        vertical: 8,
+      ),
+      child: ZagButton(
+        type: ZagButtonType.TEXT,
+        text: 'Edit Sections',
+        icon: Icons.tune_rounded,
+        color: ZagColours.currentAccent,
+        onTap: _openDiscoverSectionsEditor,
+      ),
+    );
+  }
+
+  Future<void> _openDiscoverSectionsEditor() async {
+    final updated = await showDiscoverSectionsEditorSheet(context);
+    if (updated == true && mounted) {
+      setState(() {});
+    }
   }
 
   /*
