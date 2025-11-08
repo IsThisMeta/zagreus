@@ -105,6 +105,21 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
             }
           }
 
+          // Pull file size from record.data (size is stored there for download events)
+          double? sizeGb;
+          final dynamic rawSize = record.data?['size'];
+          
+          if (rawSize != null) {
+            if (rawSize is num) {
+              sizeGb = rawSize / (1024 * 1024 * 1024);
+            } else if (rawSize is String) {
+              final parsed = num.tryParse(rawSize);
+              if (parsed != null) {
+                sizeGb = parsed / (1024 * 1024 * 1024);
+              }
+            }
+          }
+
           shows.add({
             'seriesTitle': series.title ?? 'Unknown Series',
             'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
@@ -116,6 +131,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
             'seriesId': series.id,
             'episodeId': episode.id,
             'date': record.date,
+            'sizeGb': sizeGb,
           });
         }
       }
@@ -218,11 +234,9 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
     final secondaryTextColor =
         Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
             Colors.grey.shade400;
-    final tertiaryTextColor =
-        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5) ??
-            Colors.grey.shade500;
     final seasonEpisode =
         '${episode['seasonNumber']}x${(episode['episodeNumber'] ?? 0).toString().padLeft(2, '0')}';
+    final sizeGb = episode['sizeGb'] is num ? episode['sizeGb'] as num : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -307,9 +321,25 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                           seasonEpisode,
                           style: TextStyle(
                             fontSize: 12,
-                            color: tertiaryTextColor,
+                            color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color
+                                    ?.withOpacity(0.55) ??
+                                Colors.grey.shade500,
                           ),
                         ),
+                        if (sizeGb != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '${sizeGb.toStringAsFixed(2)} GB',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: ZagColours.currentAccent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
