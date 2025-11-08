@@ -36,6 +36,7 @@ class _State extends State<LidarrRoute> {
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
+      module: ZagModule.LIDARR,
       body: _body(),
       drawer: _drawer(),
       appBar: _appBar() as PreferredSizeWidget?,

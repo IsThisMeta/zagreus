@@ -17,7 +17,7 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
   @override
   Widget build(BuildContext context) => ZagScaffold(
         scaffoldKey: _scaffoldKey,
-        module: ZagModule.TAUTULLI,
+        module: null,
         appBar: TautulliSearchAppBar(scrollController: scrollController)
             as PreferredSizeWidget?,
         body: TautulliSearchSearchResults(scrollController: scrollController),

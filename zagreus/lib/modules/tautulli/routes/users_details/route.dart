@@ -53,7 +53,7 @@ class _State extends State<UserDetailsRoute> with ZagLoadCallbackMixin {
 
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: ZagModule.TAUTULLI,
+      module: null,
       appBar: _appBar(),
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body,

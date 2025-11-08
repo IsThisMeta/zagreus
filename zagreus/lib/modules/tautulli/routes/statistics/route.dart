@@ -32,7 +32,7 @@ class _State extends State<StatisticsRoute>
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: ZagModule.TAUTULLI,
+      module: null,
       appBar: _appBar() as PreferredSizeWidget?,
       body: _body(),
     );

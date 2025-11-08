@@ -26,7 +26,7 @@ class _State extends State<SyncedItemsRoute>
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: ZagModule.TAUTULLI,
+      module: null,
       appBar: _appBar() as PreferredSizeWidget?,
       body: _body(),
     );
