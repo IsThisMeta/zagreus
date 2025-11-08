@@ -41,6 +41,7 @@ class _State extends State<NZBGetQueue>
           ? null
           : NZBGetQueueFAB(
               scrollController: NZBGetNavigationBar.scrollControllers[0]),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 
