@@ -183,6 +183,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         .where(
             (m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase())
         .take(6)
+        .toList()
+        .reversed // Reverse so first module is farthest, last is closest
         .toList();
 
     print('🔍 FAB: Building ${visibleModules.length} module buttons');
