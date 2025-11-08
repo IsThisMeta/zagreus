@@ -170,6 +170,12 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                           try {
                             await previousModule.launch();
                             print('🔍 FAB: Successfully launched $_previousModuleKey');
+                            
+                            // Swap the tracking so we can bounce back!
+                            final temp = _lastLaunchedModuleKey;
+                            _lastLaunchedModuleKey = _previousModuleKey;
+                            _previousModuleKey = temp;
+                            print('🔍 FAB: Swapped! Previous: $_previousModuleKey, Current: $_lastLaunchedModuleKey');
                           } catch (e) {
                             print('🔍 FAB: Error launching module: $e');
                           }
