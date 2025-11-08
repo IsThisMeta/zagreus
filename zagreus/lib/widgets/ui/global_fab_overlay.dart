@@ -88,8 +88,8 @@ class ZagGlobalFABManager {
     if (routeLower.contains('overseerr')) return 'overseerr';
     if (routeLower.contains('search')) return 'search';
     if (routeLower.contains('settings')) return 'settings';
-    if (routeLower.contains('dashboard')) return 'dashboard';
-    if (routeLower == '/') return 'dashboard';
+    if (routeLower.contains('dashboard')) return ''; // Hide FAB on dashboard
+    if (routeLower == '/') return ''; // Hide FAB on dashboard
 
     return '';
   }
