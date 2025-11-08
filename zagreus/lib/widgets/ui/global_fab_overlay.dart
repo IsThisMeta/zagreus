@@ -30,7 +30,7 @@ class ZagGlobalFABManager {
         builder: (context) {
           print('🔍 OverlayEntry: Building FAB');
           return Positioned(
-            bottom: 16,
+            bottom: 85, // Align with SABnzbd FAB (above bottom nav bar)
             right: 16,
             child: SafeArea(
               child: Material(
