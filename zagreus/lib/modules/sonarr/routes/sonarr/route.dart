@@ -19,9 +19,42 @@ class _State extends State<SonarrRoute> {
   @override
   void initState() {
     super.initState();
+    final savedIndex = SonarrDatabase.NAVIGATION_INDEX.read();
+    print('🔍 SonarrRoute initState() called');
+    print('🔍 Reading saved index from database: $savedIndex');
     _pageController = ZagPageController(
-      initialPage: SonarrDatabase.NAVIGATION_INDEX.read(),
+      initialPage: savedIndex,
     );
+    print('🔍 Page controller created with initialPage: $savedIndex');
+  }
+
+  void _saveCurrentPage() {
+    if (_pageController?.hasClients ?? false) {
+      final page = _pageController!.page;
+      print('🔍 Current page (double): $page');
+      final currentIndex = (page?.round()) ?? 0;
+      print('🔍 Saving index: $currentIndex');
+      SonarrDatabase.NAVIGATION_INDEX.update(currentIndex);
+      print('🔍 Saved to database');
+    } else {
+      print('🔍 Page controller has no clients or is null, not saving');
+    }
+  }
+
+  @override
+  void deactivate() {
+    print('🔍 SonarrRoute deactivate() called');
+    _saveCurrentPage();
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    print('🔍 SonarrRoute dispose() called');
+    print('🔍 _pageController: $_pageController');
+    print('🔍 hasClients: ${_pageController?.hasClients}');
+    _saveCurrentPage();
+    super.dispose();
   }
 
   @override
@@ -80,22 +113,23 @@ class _State extends State<SonarrRoute> {
       builder: (context, data, _) {
         final enabled = data.item1;
         final isConfigured = data.item2;
-        
+
         if (!enabled) {
           return ZagMessage.moduleNotEnabled(
             context: context,
             module: 'Sonarr',
           );
         }
-        
+
         if (!isConfigured) {
           return ZagMessage(
-            text: 'Please configure your Sonarr connection details in Settings.',
+            text:
+                'Please configure your Sonarr connection details in Settings.',
             buttonText: 'Go to Settings',
             onTap: () => SettingsRoutes.CONFIGURATION_SONARR.go(),
           );
         }
-        
+
         return ZagPageView(
           controller: _pageController,
           children: const [
