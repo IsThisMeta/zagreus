@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/routes/series_details/sheets/links.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class AddSeriesDetailsRoute extends StatefulWidget {
@@ -52,6 +53,14 @@ class _State extends State<AddSeriesDetailsRoute>
     return ZagAppBar(
       title: 'sonarr.AddSeries'.tr(),
       scrollControllers: [scrollController],
+      actions: widget.series == null
+          ? null
+          : [
+              ZagIconButton(
+                icon: ZagIcons.LINK,
+                onPressed: () => LinksSheet(series: widget.series!).show(),
+              ),
+            ],
     );
   }
 
