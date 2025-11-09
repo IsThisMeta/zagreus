@@ -62,7 +62,7 @@ const double _heroTitleFontSize = 26;
 const double _posterHeight = 162.0;
 const double _posterAspectRatio = 2 / 3;
 const double _posterWidth = _posterHeight * _posterAspectRatio;
-const double _posterListHeight = 190.0;
+const double _posterListHeight = _posterHeight + 36.0;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
