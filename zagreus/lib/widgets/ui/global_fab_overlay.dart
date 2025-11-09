@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/widgets/ui/module_switcher_fab.dart';
+import 'package:zagreus/system/session_state.dart';
+import 'package:zagreus/router/router.dart';
 
 /// Manager to track current module globally and inject FAB via Overlay
 class ZagGlobalFABManager {
@@ -11,6 +13,10 @@ class ZagGlobalFABManager {
   final ValueNotifier<String> currentModuleNotifier = ValueNotifier<String>('');
   OverlayEntry? _overlayEntry;
   bool _isInjected = false;
+  
+  // Track current route for saving when switching modules
+  String _currentRoute = '';
+  String _currentModule = '';
 
   void injectFAB(BuildContext context) {
     if (_isInjected) {
@@ -67,12 +73,35 @@ class ZagGlobalFABManager {
     }
   }
 
-  void updateModule(String route) {
-    final module = _extractModuleFromRoute(route);
-    print('🔍 FABManager: Route: $route → Module: $module');
+  void updateModule(String routeName) {
+    final module = _extractModuleFromRoute(routeName);
+    print('🔍 FABManager: Route name: $routeName → Module: $module');
+    
+    // Get the actual router location for accurate path tracking
+    String? actualPath;
+    try {
+      actualPath = ZagRouter.router.routerDelegate.currentConfiguration.uri.toString();
+      print('🔍 FABManager: Actual path: $actualPath');
+    } catch (e) {
+      print('🔍 FABManager: Could not get router path: $e');
+    }
+    
+    final currentPath = actualPath ?? routeName;
+    
+    // Update current tracking
+    _currentRoute = currentPath;
+    _currentModule = module;
+    
     if (module != currentModuleNotifier.value) {
       currentModuleNotifier.value = module;
     }
+  }
+  
+  /// Call this when a module is launched (e.g., from drawer)
+  void trackModuleLaunch(String targetModuleKey) {
+    print('🔍 FABManager: trackModuleLaunch called for: $targetModuleKey');
+    // Forward to the FAB's static tracking method
+    ZagModuleSwitcherFAB.updateModuleTracking(targetModuleKey);
   }
 
   String _extractModuleFromRoute(String route) {

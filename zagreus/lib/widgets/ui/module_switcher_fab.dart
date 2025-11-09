@@ -10,6 +10,11 @@ class ZagModuleSwitcherFAB extends StatefulWidget {
     required this.currentModuleKey,
   }) : super(key: key);
 
+  // Public static method accessible from outside
+  static void updateModuleTracking(String moduleKey) {
+    _ZagModuleSwitcherFABState._updateTracking(moduleKey);
+  }
+
   @override
   State<ZagModuleSwitcherFAB> createState() => _ZagModuleSwitcherFABState();
 }
@@ -25,8 +30,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
   static String? _lastLaunchedModuleKey;
   static String? _previousModuleKey;
 
-  // Public method to update tracking when modules launch from anywhere!
-  static void updateModuleTracking(String moduleKey) {
+  // Internal tracking method
+  static void _updateTracking(String moduleKey) {
     _previousModuleKey = _lastLaunchedModuleKey;
     _lastLaunchedModuleKey = moduleKey;
     print('🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $moduleKey');
@@ -300,8 +305,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
               await module.launch();
               print('🔍 FAB: module.launch() completed successfully');
               
-              // Use the public method to update tracking
-              updateModuleTracking(module.key);
+              // Use the internal tracking method
+              _updateTracking(module.key);
             } catch (e, stack) {
               print('🔍 FAB: ERROR during launch: $e');
               print('🔍 FAB: Stack trace: $stack');
