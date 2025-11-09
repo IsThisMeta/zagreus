@@ -41,6 +41,7 @@ class _State extends State<ConfigurationAppearanceRoute>
         _amoledTheme(),
         _amoledThemeBorders(),
         _lightThemeBorders(),
+        _moduleSwitcherFAB(),
       ],
     );
   }
@@ -211,6 +212,22 @@ class _State extends State<ConfigurationAppearanceRoute>
           ),
         );
       },
+    );
+  }
+
+  Widget _moduleSwitcherFAB() {
+    const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Show Module Switcher FAB',
+        body: const [
+          TextSpan(text: 'Hide the floating module switcher when disabled'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
     );
   }
 }

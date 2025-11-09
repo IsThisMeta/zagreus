@@ -11,7 +11,7 @@ class ZagGlobalFABManager {
   final ValueNotifier<String> currentModuleNotifier = ValueNotifier<String>('');
   OverlayEntry? _overlayEntry;
   bool _isInjected = false;
-  
+
   // Track current route for saving when switching modules
   String _currentRoute = '';
   String _currentModule = '';
@@ -39,20 +39,31 @@ class ZagGlobalFABManager {
             child: SafeArea(
               child: Material(
                 color: Colors.transparent,
-                child: ValueListenableBuilder<String>(
-                  valueListenable: currentModuleNotifier,
-                  builder: (context, currentModule, _) {
-                    print('🔍 GlobalFAB: Building with module: $currentModule');
-
-                    if (currentModule.isEmpty ||
-                        !ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()) {
-                      print('🔍 GlobalFAB: Empty or disabled, hiding');
+                child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
+                    .listenableBuilder(
+                  builder: (context, _) {
+                    final enabled =
+                        ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
+                    if (!enabled) {
+                      print('🔍 GlobalFAB: Disabled via settings, hiding');
                       return const SizedBox.shrink();
                     }
+                    return ValueListenableBuilder<String>(
+                      valueListenable: currentModuleNotifier,
+                      builder: (context, currentModule, __) {
+                        print(
+                            '🔍 GlobalFAB: Building with module: $currentModule');
 
-                    print('🔍 GlobalFAB: Creating FAB widget');
-                    return ZagModuleSwitcherFAB(
-                      currentModuleKey: currentModule,
+                        if (currentModule.isEmpty) {
+                          print('🔍 GlobalFAB: Empty module, hiding');
+                          return const SizedBox.shrink();
+                        }
+
+                        print('🔍 GlobalFAB: Creating FAB widget');
+                        return ZagModuleSwitcherFAB(
+                          currentModuleKey: currentModule,
+                        );
+                      },
                     );
                   },
                 ),
@@ -82,7 +93,7 @@ class ZagGlobalFABManager {
       currentModuleNotifier.value = module;
     }
   }
-  
+
   /// Call this when a module is launched (e.g., from drawer)
   void trackModuleLaunch(String targetModuleKey) {
     print('🔍 FABManager: trackModuleLaunch called for: $targetModuleKey');
