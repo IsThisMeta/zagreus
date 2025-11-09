@@ -479,45 +479,6 @@ extension ZagModuleRoutingExtension on ZagModule {
   }
 }
 
-void rememberCurrentModuleRoute(String moduleKey) {
-  final module = ZagModule.fromKey(moduleKey);
-  if (module == null) return;
-
-  final moduleHome = module.homeRoute;
-  if (moduleHome == null) return;
-
-  final currentLocation = _currentRouterLocation();
-  if (currentLocation.isEmpty) return;
-
-  if (currentLocation.startsWith(moduleHome)) {
-    print(
-        '🔍 ModuleRouteTracker: Saving ${module.key} route: $currentLocation');
-    ZagSessionState.instance.setModuleLastRoute(module.key, currentLocation);
-  } else {
-    print(
-        '🔍 ModuleRouteTracker: Current path $currentLocation does not belong to ${module.key}');
-  }
-}
-
-String _currentRouterLocation() {
-  try {
-    final provider = ZagRouter.router.routeInformationProvider;
-    final location = provider.value.location ?? '';
-    if (location.isNotEmpty) {
-      return location;
-    }
-  } catch (e) {
-    print('🔍 ModuleRouteTracker: Failed to read route information: $e');
-  }
-
-  try {
-    return ZagRouter.router.routerDelegate.currentConfiguration.uri.toString();
-  } catch (e) {
-    print('🔍 ModuleRouteTracker: Failed to resolve router location: $e');
-    return '';
-  }
-}
-
 extension ZagModuleWebhookExtension on ZagModule {
   bool get hasWebhooks {
     switch (this) {

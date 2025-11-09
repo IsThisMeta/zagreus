@@ -4,7 +4,6 @@ import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
-import 'package:zagreus/modules.dart';
 
 class ZagDrawer extends StatelessWidget {
   final String page;
@@ -152,7 +151,6 @@ class ZagDrawer extends StatelessWidget {
             () async {
               Navigator.of(context).pop();
               if (!currentPage) {
-                rememberCurrentModuleRoute(page);
                 ZagGlobalFABManager.instance.trackModuleLaunch(module.key);
                 module.launch();
               }

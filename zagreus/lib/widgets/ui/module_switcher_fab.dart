@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
-import 'package:zagreus/modules.dart';
 
 class ZagModuleSwitcherFAB extends StatefulWidget {
   final String currentModuleKey;
@@ -187,10 +186,6 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                           );
 
                           try {
-                            if (widget.currentModuleKey.isNotEmpty) {
-                              rememberCurrentModuleRoute(
-                                  widget.currentModuleKey);
-                            }
                             await previousModule.launch();
                             print(
                                 '🔍 FAB: Successfully launched $_previousModuleKey');
@@ -313,10 +308,6 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
             _toggle();
 
             await Future.delayed(const Duration(milliseconds: 100));
-
-            if (widget.currentModuleKey.isNotEmpty) {
-              rememberCurrentModuleRoute(widget.currentModuleKey);
-            }
 
             print('🔍 FAB: Calling module.launch()...');
             try {

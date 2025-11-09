@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/settings_lock_service.dart';
-import 'package:zagreus/modules.dart';
 
 class ZagDrawerHeader extends StatelessWidget {
   final String page;
@@ -35,7 +34,6 @@ class ZagDrawerHeader extends StatelessWidget {
                 final unlocked =
                     await SettingsLockService.instance.ensureUnlocked(context);
                 if (unlocked) {
-                  rememberCurrentModuleRoute(page);
                   ZagModule.SETTINGS.launch();
                 }
               },

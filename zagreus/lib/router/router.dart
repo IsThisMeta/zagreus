@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/logger.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/widgets/pages/error_route.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
 import 'package:zagreus/router/routes.dart';
@@ -9,6 +11,7 @@ import 'package:zagreus/vendor.dart';
 class ZagRouter {
   static late GoRouter router;
   static GlobalKey<NavigatorState> navigator = GlobalKey<NavigatorState>();
+  static _RouteLocationTracker? _routeTracker;
 
   void initialize() {
     router = GoRouter(
@@ -20,6 +23,7 @@ class ZagRouter {
         _FABRouteObserver(), // Track routes for global FAB
       ],
     );
+    _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
   }
 
   void popSafely() {
@@ -71,5 +75,60 @@ class _FABRouteObserver extends NavigatorObserver {
   void _updateFAB(Route route) {
     final name = route.settings.name ?? '';
     ZagGlobalFABManager.instance.updateModule(name);
+  }
+}
+
+class _RouteLocationTracker {
+  _RouteLocationTracker(this._provider) {
+    _provider.addListener(_handleLocationChange);
+    _handleLocationChange();
+  }
+
+  final GoRouteInformationProvider _provider;
+
+  void dispose() {
+    _provider.removeListener(_handleLocationChange);
+  }
+
+  void _handleLocationChange() {
+    final location = _provider.value.location ?? '';
+    if (location.isEmpty) return;
+
+    final path = _sanitizePath(location);
+    final module = _moduleForPath(path);
+    if (module == null) return;
+
+    final home = module.homeRoute;
+    if (home == null) return;
+
+    if (!(path == home || path.startsWith('$home/'))) return;
+
+    final last = ZagSessionState.instance.getModuleLastRoute(module.key);
+    if (last == path) return;
+
+    ZagSessionState.instance.setModuleLastRoute(module.key, path);
+  }
+
+  String _sanitizePath(String location) {
+    var path = location.split('#').first;
+    path = path.split('?').first;
+    if (!path.startsWith('/')) {
+      path = '/$path';
+    }
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
+    return path;
+  }
+
+  ZagModule? _moduleForPath(String path) {
+    for (final module in ZagModule.values) {
+      final home = module.homeRoute;
+      if (home == null) continue;
+      if (path == home || path.startsWith('$home/')) {
+        return module;
+      }
+    }
+    return null;
   }
 }
