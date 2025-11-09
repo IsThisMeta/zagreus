@@ -37,14 +37,28 @@ class _State extends State<SABnzbdRoute> {
   void initState() {
     super.initState();
     print('🔍 SABnzbdRoute initState() called');
-    
+
     // Read from session first, fallback to database
-    final initialPage = _sessionTabIndex ?? SABnzbdDatabase.NAVIGATION_INDEX.read();
+    final initialPage =
+        _sessionTabIndex ?? SABnzbdDatabase.NAVIGATION_INDEX.read();
     print('🔍 Reading saved index from session: $initialPage');
-    
+
     _pageController = ZagPageController(initialPage: initialPage);
+
+    // Listen to page changes and save immediately
+    _pageController!.addListener(() {
+      if (_pageController!.hasClients) {
+        final page = _pageController!.page;
+        if (page != null) {
+          final currentIndex = page.round();
+          _sessionTabIndex = currentIndex;
+          print('🔍 Tab changed to: $currentIndex');
+        }
+      }
+    });
+
     print('🔍 Page controller created with initialPage: $initialPage');
-    
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -54,27 +68,11 @@ class _State extends State<SABnzbdRoute> {
   @override
   void deactivate() {
     print('🔍 SABnzbdRoute deactivate() called');
-    // Save current tab to session memory when navigating away
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round();
-      if (currentPage != null) {
-        _sessionTabIndex = currentPage;
-        print('🔍 SABnzbdRoute deactivate() - saving tab index to session: $currentPage');
-      }
-    }
     super.deactivate();
   }
 
   @override
   void dispose() {
-    // Save current tab to session memory on exit
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round();
-      if (currentPage != null) {
-        _sessionTabIndex = currentPage;
-        print('🔍 SABnzbdRoute dispose() - saving tab index to session: $currentPage');
-      }
-    }
     _pageController?.dispose();
     super.dispose();
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/modules.dart';
 
 class ZagModuleSwitcherFAB extends StatefulWidget {
   final String currentModuleKey;
@@ -34,7 +35,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
   static void _updateTracking(String moduleKey) {
     _previousModuleKey = _lastLaunchedModuleKey;
     _lastLaunchedModuleKey = moduleKey;
-    print('🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $moduleKey');
+    print(
+        '🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $moduleKey');
   }
 
   @override
@@ -135,17 +137,20 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         print('🔍 FAB: Current module: ${currentModule.title}');
 
         // Calculate dynamic height: 56px for FAB + 54px per module button (46px + 8px gap)
-        final moduleCount = modules.where((m) => m.key.toLowerCase() != widget.currentModuleKey.toLowerCase()).length;
+        final moduleCount = modules
+            .where((m) =>
+                m.key.toLowerCase() != widget.currentModuleKey.toLowerCase())
+            .length;
         final screenHeight = MediaQuery.of(context).size.height;
         final maxHeight = screenHeight - 200;
-        
+
         final idealHeight = 56.0 + (54.0 * moduleCount);
-        final buttonSpacing = idealHeight > maxHeight 
-            ? (maxHeight - 56.0) / moduleCount
-            : 54.0;
-        
+        final buttonSpacing =
+            idealHeight > maxHeight ? (maxHeight - 56.0) / moduleCount : 54.0;
+
         final dynamicHeight = idealHeight > maxHeight ? maxHeight : idealHeight;
-        print('🔍 FAB: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
+        print(
+            '🔍 FAB: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
 
         return SizedBox(
           width: 56,
@@ -155,7 +160,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
             clipBehavior: Clip.hardEdge,
             children: [
               // Module buttons
-              ..._buildModuleButtons(context, modules, currentModule, buttonSpacing),
+              ..._buildModuleButtons(
+                  context, modules, currentModule, buttonSpacing),
               // Main FAB - always on top
               Positioned(
                 bottom: 0,
@@ -170,24 +176,31 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
                       },
                       onLongPress: () async {
                         if (_isOpen) return;
-                        
+
                         print('🔍 FAB: Long press detected!');
                         if (_previousModuleKey != null) {
-                          print('🔍 FAB: Launching previous module: $_previousModuleKey');
+                          print(
+                              '🔍 FAB: Launching previous module: $_previousModuleKey');
                           final previousModule = modules.firstWhere(
                             (m) => m.key == _previousModuleKey,
                             orElse: () => modules.first,
                           );
-                          
+
                           try {
+                            if (widget.currentModuleKey.isNotEmpty) {
+                              rememberCurrentModuleRoute(
+                                  widget.currentModuleKey);
+                            }
                             await previousModule.launch();
-                            print('🔍 FAB: Successfully launched $_previousModuleKey');
-                            
+                            print(
+                                '🔍 FAB: Successfully launched $_previousModuleKey');
+
                             // Swap the tracking so we can bounce back!
                             final temp = _lastLaunchedModuleKey;
                             _lastLaunchedModuleKey = _previousModuleKey;
                             _previousModuleKey = temp;
-                            print('🔍 FAB: Swapped! Previous: $_previousModuleKey, Current: $_lastLaunchedModuleKey');
+                            print(
+                                '🔍 FAB: Swapped! Previous: $_previousModuleKey, Current: $_lastLaunchedModuleKey');
                           } catch (e) {
                             print('🔍 FAB: Error launching module: $e');
                           }
@@ -244,7 +257,8 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
         .reversed
         .toList();
 
-    print('🔍 FAB: Building ${visibleModules.length} module buttons with spacing: $spacing');
+    print(
+        '🔍 FAB: Building ${visibleModules.length} module buttons with spacing: $spacing');
 
     for (int i = 0; i < visibleModules.length; i++) {
       final module = visibleModules[i];
@@ -300,11 +314,15 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
 
             await Future.delayed(const Duration(milliseconds: 100));
 
+            if (widget.currentModuleKey.isNotEmpty) {
+              rememberCurrentModuleRoute(widget.currentModuleKey);
+            }
+
             print('🔍 FAB: Calling module.launch()...');
             try {
               await module.launch();
               print('🔍 FAB: module.launch() completed successfully');
-              
+
               // Use the internal tracking method
               _updateTracking(module.key);
             } catch (e, stack) {

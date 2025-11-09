@@ -25,23 +25,27 @@ class _State extends State<RadarrRoute> {
   void initState() {
     super.initState();
     print('🔍 RadarrRoute initState() called');
-    
+
     // Read from session first, fallback to database
     _currentPage = _sessionTabIndex ?? RadarrDatabase.NAVIGATION_INDEX.read();
     print('🔍 Reading saved index from session: $_currentPage');
-    
+
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(() {
         if (_pageController!.page?.round() != _currentPage) {
+          final newPage = _pageController!.page!.round();
           setState(() {
-            _currentPage = _pageController!.page!.round();
+            _currentPage = newPage;
           });
+          // Save immediately when tab changes
+          _sessionTabIndex = newPage;
+          print('🔍 Tab changed to: $newPage');
         }
       });
-    
+
     print('🔍 Page controller created with initialPage: $_currentPage');
-    
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -51,23 +55,11 @@ class _State extends State<RadarrRoute> {
   @override
   void deactivate() {
     print('🔍 RadarrRoute deactivate() called');
-    // Save current tab to session memory when navigating away
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round() ?? _currentPage;
-      _sessionTabIndex = currentPage;
-      print('🔍 RadarrRoute deactivate() - saving tab index to session: $currentPage');
-    }
     super.deactivate();
   }
 
   @override
   void dispose() {
-    // Save current tab to session memory on exit
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round() ?? _currentPage;
-      _sessionTabIndex = currentPage;
-      print('🔍 RadarrRoute dispose() - saving tab index to session: $currentPage');
-    }
     _pageController?.dispose();
     super.dispose();
   }
@@ -139,22 +131,23 @@ class _State extends State<RadarrRoute> {
       builder: (context, data, _) {
         final enabled = data.item1;
         final isConfigured = data.item2;
-        
+
         if (!enabled) {
           return ZagMessage.moduleNotEnabled(
             context: context,
             module: 'Radarr',
           );
         }
-        
+
         if (!isConfigured) {
           return ZagMessage(
-            text: 'Please configure your Radarr connection details in Settings.',
+            text:
+                'Please configure your Radarr connection details in Settings.',
             buttonText: 'Go to Settings',
             onTap: () => SettingsRoutes.CONFIGURATION_RADARR.go(),
           );
         }
-        
+
         return ZagPageView(
           controller: _pageController,
           children: [

@@ -24,23 +24,27 @@ class _State extends State<OverseerrRoute> {
   void initState() {
     super.initState();
     print('🔍 OverseerrRoute initState() called');
-    
+
     // Read from session first, fallback to 0 (no database default for Overseerr)
     _currentPage = _sessionTabIndex ?? 0;
     print('🔍 Reading saved index from session: $_currentPage');
-    
+
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(() {
         if (_pageController!.page?.round() != _currentPage) {
+          final newPage = _pageController!.page!.round();
           setState(() {
-            _currentPage = _pageController!.page!.round();
+            _currentPage = newPage;
           });
+          // Save immediately when tab changes
+          _sessionTabIndex = newPage;
+          print('🔍 Tab changed to: $newPage');
         }
       });
-    
+
     print('🔍 Page controller created with initialPage: $_currentPage');
-    
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -50,23 +54,11 @@ class _State extends State<OverseerrRoute> {
   @override
   void deactivate() {
     print('🔍 OverseerrRoute deactivate() called');
-    // Save current tab to session memory when navigating away
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round() ?? _currentPage;
-      _sessionTabIndex = currentPage;
-      print('🔍 OverseerrRoute deactivate() - saving tab index to session: $currentPage');
-    }
     super.deactivate();
   }
 
   @override
   void dispose() {
-    // Save current tab to session memory on exit
-    if (_pageController?.hasClients ?? false) {
-      final currentPage = _pageController!.page?.round() ?? _currentPage;
-      _sessionTabIndex = currentPage;
-      print('🔍 OverseerrRoute dispose() - saving tab index to session: $currentPage');
-    }
     _pageController?.dispose();
     super.dispose();
   }

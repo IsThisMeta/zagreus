@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/settings_lock_service.dart';
+import 'package:zagreus/modules.dart';
 
 class ZagDrawerHeader extends StatelessWidget {
   final String page;
@@ -31,22 +32,26 @@ class ZagDrawerHeader extends StatelessWidget {
                   return;
                 }
 
-                final unlocked = await SettingsLockService.instance
-                    .ensureUnlocked(context);
+                final unlocked =
+                    await SettingsLockService.instance.ensureUnlocked(context);
                 if (unlocked) {
+                  rememberCurrentModuleRoute(page);
                   ZagModule.SETTINGS.launch();
                 }
               },
               onLongPress: () {
                 // Toggle between light and dark mode
                 final currentMode = ZagreusDatabase.THEME_MODE.read();
-                ZagreusDatabase.THEME_MODE.update(currentMode == 'light' ? 'dark' : 'light');
+                ZagreusDatabase.THEME_MODE
+                    .update(currentMode == 'light' ? 'dark' : 'light');
                 ZagTheme().initialize();
                 ZagState.reset(context);
-                
+
                 // Show feedback
                 showZagSuccessSnackBar(
-                  title: currentMode == 'light' ? 'Dark Mode Enabled' : 'Light Mode Enabled',
+                  title: currentMode == 'light'
+                      ? 'Dark Mode Enabled'
+                      : 'Light Mode Enabled',
                   message: 'Long press to toggle again',
                 );
               },
@@ -54,8 +59,8 @@ class ZagDrawerHeader extends StatelessWidget {
           ],
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.light 
-              ? ZagColours.currentAccentLight 
+          color: Theme.of(context).brightness == Brightness.light
+              ? ZagColours.currentAccentLight
               : ZagColours.currentAccent,
           image: DecorationImage(
             image: const AssetImage(ZagAssets.brandingLogo),

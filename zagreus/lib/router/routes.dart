@@ -16,6 +16,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/router/routes/tautulli.dart';
 import 'package:zagreus/router/routes/discover.dart';
 import 'package:zagreus/router/routes/server.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/vendor.dart';
 import 'package:zagreus/widgets/pages/not_enabled.dart';
 
@@ -68,6 +69,7 @@ mixin ZagRoutesMixin on Enum {
       routes: subroutes,
       builder: (context, state) {
         if (isModuleEnabled(context)) {
+          _rememberModuleRoute(state);
           return builder?.call(context, state) ?? widget!;
         }
         return NotEnabledPage(module: module?.title ?? 'Zagreus');
@@ -105,5 +107,21 @@ mixin ZagRoutesMixin on Enum {
       pathParameters: params,
       queryParameters: queryParams,
     );
+  }
+
+  void _rememberModuleRoute(GoRouterState state) {
+    final moduleKey = module?.key;
+    if (moduleKey == null) return;
+
+    final moduleHome = module?.homeRoute;
+    if (moduleHome == null) return;
+
+    final uri = state.uri.toString();
+    if (uri.isEmpty || !uri.startsWith(moduleHome)) return;
+
+    final lastRoute = ZagSessionState.instance.getModuleLastRoute(moduleKey);
+    if (lastRoute == uri) return;
+
+    ZagSessionState.instance.setModuleLastRoute(moduleKey, uri);
   }
 }

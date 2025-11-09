@@ -18,6 +18,7 @@ import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
+import 'package:zagreus/system/session_state.dart';
 
 part 'modules.g.dart';
 
@@ -465,9 +466,66 @@ extension ZagModuleRoutingExtension on ZagModule {
 
   Future<void> launch() async {
     if (homeRoute != null) {
-      ZagRouter.router.pushReplacement(homeRoute!);
+      // Check if we have a saved route for this module from the current session
+      final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
+      if (savedRoute != null && savedRoute.startsWith(homeRoute!)) {
+        print('🔍 Module.launch: Restoring saved route: $savedRoute');
+        ZagRouter.router.pushReplacement(savedRoute);
+      } else {
+        print('🔍 Module.launch: Launching home route: $homeRoute');
+        ZagRouter.router.pushReplacement(homeRoute!);
+      }
     }
   }
+}
+
+void rememberCurrentModuleRoute(String moduleKey) {
+  final module = ZagModule.fromKey(moduleKey);
+  if (module == null) return;
+
+  final moduleHome = module.homeRoute;
+  if (moduleHome == null) return;
+
+  final currentLocation = _currentRouterLocation(module);
+  if (currentLocation == null) return;
+
+  if (currentLocation.startsWith(moduleHome)) {
+    print(
+        '🔍 ModuleRouteTracker: Saving ${module.key} route: $currentLocation');
+    ZagSessionState.instance.setModuleLastRoute(module.key, currentLocation);
+  } else {
+    print(
+        '🔍 ModuleRouteTracker: Current path $currentLocation does not belong to ${module.key}');
+  }
+}
+
+String? _currentRouterLocation(ZagModule module) {
+  RouteMatchList? configuration;
+  try {
+    configuration = ZagRouter.router.routerDelegate.currentConfiguration;
+  } catch (e) {
+    print('🔍 ModuleRouteTracker: Failed to read router configuration: $e');
+    return null;
+  }
+
+  if (configuration == null) return null;
+
+  // Build path segments without module prefix; configuration matches root list
+  final segments = <String>[];
+  for (final match in configuration.matches) {
+    final path = match.route.path;
+    if (path == '/') {
+      continue;
+    }
+    segments.add(path);
+  }
+
+  if (segments.isEmpty) {
+    return module.homeRoute;
+  }
+
+  final uri = '/${segments.join('/')}';
+  return uri;
 }
 
 extension ZagModuleWebhookExtension on ZagModule {

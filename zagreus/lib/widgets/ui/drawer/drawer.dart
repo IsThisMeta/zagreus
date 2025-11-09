@@ -4,6 +4,7 @@ import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/modules.dart';
 
 class ZagDrawer extends StatelessWidget {
   final String page;
@@ -30,7 +31,8 @@ class ZagDrawer extends StatelessWidget {
       modules.addAll(missing);
       modules.retainWhere((m) => (m as ZagModule).featureFlag);
 
-      print('[DEBUG] moduleOrderedList - final modules: ${modules.map((m) => (m as ZagModule).key).toList()}');
+      print(
+          '[DEBUG] moduleOrderedList - final modules: ${modules.map((m) => (m as ZagModule).key).toList()}');
       return modules.cast<ZagModule>();
     } catch (error, stack) {
       ZagLogger().error('Failed to create ordered module list', error, stack);
@@ -55,8 +57,10 @@ class ZagDrawer extends StatelessWidget {
                     children: _moduleList(
                       context,
                       () {
-                        final autoManage = ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE.read();
-                        print('[DEBUG] Drawer - DRAWER_AUTOMATIC_MANAGE: $autoManage');
+                        final autoManage =
+                            ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE.read();
+                        print(
+                            '[DEBUG] Drawer - DRAWER_AUTOMATIC_MANAGE: $autoManage');
                         if (autoManage) {
                           print('[DEBUG] Using alphabetical list');
                           return moduleAlphabeticalList();
@@ -98,7 +102,7 @@ class ZagDrawer extends StatelessWidget {
             !ZagreusPro.isEnabled) {
           return const SizedBox(height: 0.0);
         }
-        
+
         if (module.isEnabled) {
           return _buildEntry(
             context: context,
@@ -148,6 +152,7 @@ class ZagDrawer extends StatelessWidget {
             () async {
               Navigator.of(context).pop();
               if (!currentPage) {
+                rememberCurrentModuleRoute(page);
                 ZagGlobalFABManager.instance.trackModuleLaunch(module.key);
                 module.launch();
               }

@@ -29,39 +29,39 @@ class _State extends State<SonarrRoute> {
       initialPage: savedIndex,
     );
     print('🔍 Page controller created with initialPage: $savedIndex');
-    
+
+    // Listen to page changes and save immediately
+    _pageController!.addListener(_onPageChanged);
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
     });
   }
 
-  void _saveCurrentPage() {
+  void _onPageChanged() {
     if (_pageController?.hasClients ?? false) {
       final page = _pageController!.page;
-      print('🔍 Current page (double): $page');
-      final currentIndex = (page?.round()) ?? 0;
-      print('🔍 Saving index to session: $currentIndex');
-      // Save to session state (in-memory only)
-      ZagSessionState.instance.setModuleTabPosition('sonarr', currentIndex);
-    } else {
-      print('🔍 Page controller has no clients or is null, not saving');
+      if (page != null) {
+        final currentIndex = page.round();
+        print('🔍 Tab changed to: $currentIndex');
+        // Save immediately when tab changes
+        ZagSessionState.instance.setModuleTabPosition('sonarr', currentIndex);
+      }
     }
   }
 
   @override
   void deactivate() {
     print('🔍 SonarrRoute deactivate() called');
-    _saveCurrentPage();
     super.deactivate();
   }
 
   @override
   void dispose() {
     print('🔍 SonarrRoute dispose() called');
-    print('🔍 _pageController: $_pageController');
-    print('🔍 hasClients: ${_pageController?.hasClients}');
-    _saveCurrentPage();
+    _pageController?.removeListener(_onPageChanged);
+    _pageController?.dispose();
     super.dispose();
   }
 
