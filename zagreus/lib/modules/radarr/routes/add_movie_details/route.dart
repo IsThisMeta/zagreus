@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/routes/movie_details/sheets/links.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class AddMovieDetailsRoute extends StatefulWidget {
@@ -56,6 +57,14 @@ class _State extends State<AddMovieDetailsRoute>
     return ZagAppBar(
       title: 'radarr.AddMovie'.tr(),
       scrollControllers: [scrollController],
+      actions: widget.movie == null
+          ? null
+          : [
+              ZagIconButton(
+                icon: ZagIcons.LINK,
+                onPressed: () => LinksSheet(movie: widget.movie!).show(),
+              ),
+            ],
     );
   }
 
