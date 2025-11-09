@@ -221,9 +221,9 @@ class _State extends State<ConfigurationAppearanceRoute>
     const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Module Switcher FAB',
+        title: 'Module Switcher FAB',
         body: const [
-          TextSpan(text: 'Hide the floating module switcher when disabled'),
+          TextSpan(text: 'Show the floating module switcher button.'),
         ],
         trailing: ZagSwitch(
           value: db.read(),
