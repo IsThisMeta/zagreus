@@ -55,6 +55,8 @@ class _UserOption {
 }
 
 const double _userListExtraPadding = 32.0;
+const EdgeInsets _moduleSectionTitlePadding =
+    EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -1147,23 +1149,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
           ? Column(children: [
               _recentlyDownloadedSection(),
-              const SizedBox(height: 12)
+              const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
       'recommended': () => Column(
-          children: [_recommendedMoviesSection(), const SizedBox(height: 12)]),
+          children: [_recommendedMoviesSection(), const SizedBox(height: 4)]),
       'missing': () => _missingMovies.isNotEmpty
           ? Column(
-              children: [_missingMoviesSection(), const SizedBox(height: 12)])
+              children: [_missingMoviesSection(), const SizedBox(height: 4)])
           : const SizedBox.shrink(),
       'downloading_soon': () => Column(
-          children: [_downloadingSoonSection(), const SizedBox(height: 12)]),
+          children: [_downloadingSoonSection(), const SizedBox(height: 4)]),
       'popular_movies': () => Column(
-          children: [_popularMoviesSection(), const SizedBox(height: 12)]),
+          children: [_popularMoviesSection(), const SizedBox(height: 4)]),
       'popular_people': () => Column(
-          children: [_popularPeopleSection(), const SizedBox(height: 12)]),
+          children: [_popularPeopleSection(), const SizedBox(height: 4)]),
       'deep_cuts': () => ZagreusMega.isEnabled
-          ? Column(children: [_deepCutsSection(), const SizedBox(height: 12)])
+          ? Column(children: [_deepCutsSection(), const SizedBox(height: 4)])
           : const SizedBox.shrink(),
     };
 
@@ -3165,7 +3167,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               color: Color(0xFF6688FF),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 4),
           Text(
             'No recently downloaded movies',
             style: const TextStyle(
@@ -3517,7 +3519,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -3610,7 +3612,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -3686,7 +3688,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -5607,7 +5609,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -5803,7 +5805,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title with navigation
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -5872,7 +5874,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         // Section title with navigation
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: _moduleSectionTitlePadding,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
