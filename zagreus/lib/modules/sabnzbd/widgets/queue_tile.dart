@@ -34,7 +34,9 @@ class _State extends State<SABnzbdQueueTile> {
     return ZagBlock(
       title: widget.data.name,
       body: [TextSpan(text: widget.data.subtitle)],
+      bottomHeight: ZagLinearPercentIndicator.compactHeight,
       bottom: ZagLinearPercentIndicator(
+        compact: true,
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
         progressColor: progressColor,
       ),
