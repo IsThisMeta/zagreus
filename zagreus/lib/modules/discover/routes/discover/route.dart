@@ -58,6 +58,7 @@ const double _userListExtraPadding = 32.0;
 const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 18;
+const double _heroTitleFontSize = 30;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -3286,8 +3287,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             // Title
                             Text(
                               item['title'] as String,
-                              style: const TextStyle(
-                                fontSize: 32,
+                              style: TextStyle(
+                                fontSize: _heroTitleFontSize,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
