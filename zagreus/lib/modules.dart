@@ -486,8 +486,8 @@ void rememberCurrentModuleRoute(String moduleKey) {
   final moduleHome = module.homeRoute;
   if (moduleHome == null) return;
 
-  final currentLocation = _currentRouterLocation(module);
-  if (currentLocation == null) return;
+  final currentLocation = _currentRouterLocation();
+  if (currentLocation.isEmpty) return;
 
   if (currentLocation.startsWith(moduleHome)) {
     print(
@@ -499,33 +499,23 @@ void rememberCurrentModuleRoute(String moduleKey) {
   }
 }
 
-String? _currentRouterLocation(ZagModule module) {
-  RouteMatchList? configuration;
+String _currentRouterLocation() {
   try {
-    configuration = ZagRouter.router.routerDelegate.currentConfiguration;
-  } catch (e) {
-    print('🔍 ModuleRouteTracker: Failed to read router configuration: $e');
-    return null;
-  }
-
-  if (configuration == null) return null;
-
-  // Build path segments without module prefix; configuration matches root list
-  final segments = <String>[];
-  for (final match in configuration.matches) {
-    final path = match.route.path;
-    if (path == '/') {
-      continue;
+    final provider = ZagRouter.router.routeInformationProvider;
+    final location = provider.value.location ?? '';
+    if (location.isNotEmpty) {
+      return location;
     }
-    segments.add(path);
+  } catch (e) {
+    print('🔍 ModuleRouteTracker: Failed to read route information: $e');
   }
 
-  if (segments.isEmpty) {
-    return module.homeRoute;
+  try {
+    return ZagRouter.router.routerDelegate.currentConfiguration.uri.toString();
+  } catch (e) {
+    print('🔍 ModuleRouteTracker: Failed to resolve router location: $e');
+    return '';
   }
-
-  final uri = '/${segments.join('/')}';
-  return uri;
 }
 
 extension ZagModuleWebhookExtension on ZagModule {
