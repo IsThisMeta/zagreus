@@ -91,10 +91,16 @@ class _RouteLocationTracker {
   }
 
   void _handleLocationChange() {
-    final location = _provider.value.location ?? '';
-    if (location.isEmpty) return;
+    final rawLocation = _provider.value.location ?? '';
+    if (rawLocation.isEmpty) return;
 
-    final path = _sanitizePath(location);
+    final uri = _normalizeUri(rawLocation);
+    if (uri == null) return;
+
+    var path = uri.path.isEmpty ? '/' : uri.path;
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
     final module = _moduleForPath(path);
     if (module == null) return;
 
@@ -103,22 +109,24 @@ class _RouteLocationTracker {
 
     if (!(path == home || path.startsWith('$home/'))) return;
 
+    final normalizedLocation = uri.replace(fragment: null).toString();
     final last = ZagSessionState.instance.getModuleLastRoute(module.key);
-    if (last == path) return;
+    if (last == normalizedLocation) return;
 
-    ZagSessionState.instance.setModuleLastRoute(module.key, path);
+    ZagSessionState.instance.setModuleLastRoute(module.key, normalizedLocation);
   }
 
-  String _sanitizePath(String location) {
-    var path = location.split('#').first;
-    path = path.split('?').first;
-    if (!path.startsWith('/')) {
-      path = '/$path';
+  Uri? _normalizeUri(String location) {
+    try {
+      final parsed = Uri.parse(location);
+      return parsed;
+    } catch (_) {
+      try {
+        return Uri.parse('/$location');
+      } catch (_) {
+        return null;
+      }
     }
-    if (path.length > 1 && path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
-    }
-    return path;
   }
 
   ZagModule? _moduleForPath(String path) {
