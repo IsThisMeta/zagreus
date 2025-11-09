@@ -91,6 +91,7 @@ class _State extends State<ConfigurationGeneralRoute>
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
       _moduleTabMemoryToggle(),
+      _moduleSwitcherFAB(),
     ];
   }
 
@@ -130,6 +131,22 @@ class _State extends State<ConfigurationGeneralRoute>
               ZagSessionState.instance.clearAllModuleTabPositions();
             }
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _moduleSwitcherFAB() {
+    const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Module Switcher FAB',
+        body: const [
+          TextSpan(text: 'Show the floating module switcher button.'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
         ),
       ),
     );
