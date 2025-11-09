@@ -5435,41 +5435,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Movie poster with missing indicator
-              Stack(
-                children: [
-                  // Simplified poster container to match regular movie cards
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      height: _posterHeight,
-                      width: _posterWidth,
-                      color: Colors.grey.shade800,
-                      child: _buildPosterImage(context, movie),
-                    ),
-                  ),
-                  // Missing badge
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'MISSING',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              // Movie poster
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  height: _posterHeight,
+                  width: _posterWidth,
+                  color: Colors.grey.shade800,
+                  child: _buildPosterImage(context, movie),
+                ),
               ),
               const SizedBox(height: 8),
               // Movie title
