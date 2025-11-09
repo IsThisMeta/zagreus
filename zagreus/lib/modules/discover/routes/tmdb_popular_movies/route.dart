@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -42,12 +44,15 @@ class _State extends State<TMDBPopularMoviesRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _movies = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _movies = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadPopularMovies(silent: true);
+        }
+      });
     } else {
-      // Load data from API
       _loadPopularMovies();
     }
 
@@ -77,11 +82,15 @@ class _State extends State<TMDBPopularMoviesRoute>
     }
   }
 
-  Future<void> _loadPopularMovies() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadPopularMovies({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
 
     try {
       // Get user's region from locale
@@ -124,14 +133,20 @@ class _State extends State<TMDBPopularMoviesRoute>
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _movies = movies;
         _isLoading = false;
         _currentPage = 1;
         _hasMorePages = movies.isNotEmpty;
+        _error = null;
       });
     } catch (error, stack) {
       ZagLogger().error('Failed to load popular movies', error, stack);
+      if (!mounted) return;
+      if (silent && _movies.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = error.toString();
         _isLoading = false;
@@ -278,7 +293,7 @@ class _State extends State<TMDBPopularMoviesRoute>
       );
     }
 
-    if (_error != null) {
+    if (_error != null && _movies.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

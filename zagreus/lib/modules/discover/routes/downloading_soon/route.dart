@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -27,21 +29,28 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
   @override
   void initState() {
     super.initState();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _movies = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadDownloadingSoon(silent: true);
+        }
+      });
     } else {
-      // Load data from API
       _loadDownloadingSoon();
     }
   }
   
-  Future<void> _loadDownloadingSoon() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadDownloadingSoon({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
     
     try {
       final radarrState = context.read<RadarrState>();
@@ -113,11 +122,17 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         return aDate.compareTo(bDate);
       });
       
+      if (!mounted) return;
       setState(() {
         _movies = comingSoonMovies;
         _isLoading = false;
+        _error = _movies.isEmpty ? 'No movies downloading soon' : null;
       });
     } catch (e) {
+      if (!mounted) return;
+      if (silent && _movies.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -195,7 +210,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       );
     }
     
-    if (_error != null) {
+    if (_error != null && _movies.isEmpty) {
       return ZagMessage.error(
         onTap: _loadDownloadingSoon,
       );

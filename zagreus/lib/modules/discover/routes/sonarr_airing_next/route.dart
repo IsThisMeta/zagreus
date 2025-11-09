@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
@@ -28,21 +30,28 @@ class _State extends State<SonarrAiringNextRoute>
   @override
   void initState() {
     super.initState();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _airingNextShows = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _airingNextShows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadAiringNextShows(silent: true);
+        }
+      });
     } else {
-      // Load data from API
       _loadAiringNextShows();
     }
   }
 
-  Future<void> _loadAiringNextShows() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadAiringNextShows({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
 
     try {
       final sonarrState = context.read<SonarrState>();
@@ -118,12 +127,18 @@ class _State extends State<SonarrAiringNextRoute>
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _airingNextShows = shows;
         _isLoading = false;
+        _error = null;
       });
     } catch (e) {
       print('Error loading Sonarr airing next: $e');
+      if (!mounted) return;
+      if (silent && _airingNextShows.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -243,7 +258,7 @@ class _State extends State<SonarrAiringNextRoute>
       );
     }
 
-    if (_error != null) {
+    if (_error != null && _airingNextShows.isEmpty) {
       return ZagMessage.error(
         onTap: _loadAiringNextShows,
       );

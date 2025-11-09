@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -42,9 +44,14 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData != null) {
-      _shows = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _shows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadTrendingShows(silent: true);
+        }
+      });
     } else {
       _loadTrendingShows();
     }
@@ -60,11 +67,15 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
-  Future<void> _loadTrendingShows() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadTrendingShows({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
 
     try {
       final locale = Localizations.localeOf(context);
@@ -105,12 +116,18 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _shows = shows;
         _isLoading = false;
+        _error = null;
       });
     } catch (error, stack) {
       ZagLogger().error('Failed to load trending TV shows', error, stack);
+      if (!mounted) return;
+      if (silent && _shows.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = error.toString();
         _isLoading = false;
@@ -195,7 +212,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
       return Center(child: ZagLoader());
     }
 
-    if (_error != null) {
+    if (_error != null && _shows.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

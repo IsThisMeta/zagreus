@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -30,21 +32,28 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   @override
   void initState() {
     super.initState();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _movies = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadMissingMovies(silent: true);
+        }
+      });
     } else {
-      // Load data from API
       _loadMissingMovies();
     }
   }
   
-  Future<void> _loadMissingMovies() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadMissingMovies({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
     
     try {
       final radarrState = context.read<RadarrState>();
@@ -72,16 +81,19 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
       
       final missingMovies = await radarrState.missing!;
       
+      if (!mounted) return;
       setState(() {
         _movies = missingMovies;
         _isLoading = false;
-        if (_movies.isEmpty) {
-          _error = 'All movies downloaded!';
-        }
+        _error = _movies.isEmpty ? 'All movies downloaded!' : null;
       });
       
     } catch (error, stack) {
       ZagLogger().error('Failed to load missing movies', error, stack);
+      if (!mounted) return;
+      if (silent && _movies.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = error.toString();
         _isLoading = false;
@@ -163,7 +175,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
       );
     }
     
-    if (_error != null && _error != 'All movies downloaded!') {
+    if (_error != null && _movies.isEmpty && _error != 'All movies downloaded!') {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

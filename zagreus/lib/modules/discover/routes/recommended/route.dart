@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -39,10 +41,14 @@ class _State extends State<DiscoverRecommendedRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData != null) {
-      // Use the provided initial data
-      _movies = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadRecommendedMovies(silent: true);
+        }
+      });
     } else {
       // Load data from API
       _loadRecommendedMovies();
@@ -56,11 +62,15 @@ class _State extends State<DiscoverRecommendedRoute>
     _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
   }
 
-  Future<void> _loadRecommendedMovies() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadRecommendedMovies({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
 
     try {
       final radarrState = context.read<RadarrState>();
@@ -138,16 +148,20 @@ class _State extends State<DiscoverRecommendedRoute>
       // Limit to reasonable number for display
       final displayMovies = recommendedMovies.take(50).toList();
 
+      if (!mounted) return;
       setState(() {
         _movies = displayMovies;
         _isLoading = false;
-        if (_movies.isEmpty) {
-          _error =
-              'No recommendations found. Make sure you have import lists configured in Radarr.';
-        }
+        _error = _movies.isEmpty
+            ? 'No recommendations found. Make sure you have import lists configured in Radarr.'
+            : null;
       });
     } catch (error, stack) {
       ZagLogger().error('Failed to load recommended movies', error, stack);
+      if (!mounted) return;
+      if (silent && _movies.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = error.toString();
         _isLoading = false;
@@ -234,7 +248,7 @@ class _State extends State<DiscoverRecommendedRoute>
       );
     }
 
-    if (_error != null) {
+    if (_error != null && _movies.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

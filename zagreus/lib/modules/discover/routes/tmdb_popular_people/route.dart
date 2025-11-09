@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -29,9 +31,14 @@ class _State extends State<TMDBPopularPeopleRoute>
   @override
   void initState() {
     super.initState();
-    if (widget.initialData != null) {
-      _people = widget.initialData!;
+    if (widget.initialData?.isNotEmpty == true) {
+      _people = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
+      Future.microtask(() {
+        if (mounted) {
+          _loadPopularPeople(silent: true);
+        }
+      });
     } else {
       _loadPopularPeople();
     }
@@ -54,11 +61,15 @@ class _State extends State<TMDBPopularPeopleRoute>
     }
   }
 
-  Future<void> _loadPopularPeople() async {
-    setState(() {
-      _isLoading = true;
+  Future<void> _loadPopularPeople({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
       _error = null;
-    });
+    }
 
     try {
       final locale = Localizations.localeOf(context);
@@ -66,12 +77,18 @@ class _State extends State<TMDBPopularPeopleRoute>
 
       final people = await TMDBApi.getPopularPeople(page: 1, region: region);
 
+      if (!mounted) return;
       setState(() {
         _people = people;
         _isLoading = false;
         _currentPage = 1;
+        _error = null;
       });
     } catch (e) {
+      if (!mounted) return;
+      if (silent && _people.isNotEmpty) {
+        return;
+      }
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -146,7 +163,7 @@ class _State extends State<TMDBPopularPeopleRoute>
       );
     }
 
-    if (_error != null) {
+    if (_error != null && _people.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
