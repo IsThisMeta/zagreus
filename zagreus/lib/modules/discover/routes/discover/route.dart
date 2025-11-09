@@ -5610,7 +5610,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyDownloadedSection() {
-    final cardWidth = _recentlyDownloadedCardWidth(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -5672,7 +5671,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             itemCount: _recentlyDownloaded.length,
             itemBuilder: (context, index) {
               final item = _recentlyDownloaded[index];
-              return _movieCard(item, widthOverride: cardWidth);
+              return _movieCard(item);
             },
           ),
         ),
@@ -5680,20 +5679,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  double _recentlyDownloadedCardWidth(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    const horizontalPadding = 32.0; // 16 left & right
-    const interCardSpacing = 12.0 * 2; // gaps between 3 cards
-    final availableWidth = math.max(
-      0,
-      screenWidth - horizontalPadding - interCardSpacing,
-    );
-    // Clamp to avoid overly narrow cards on tiny screens
-    return availableWidth > 0 ? availableWidth / 3 : _posterWidth;
-  }
-
-  Widget _movieCard(RadarrMovie movie, {double? widthOverride}) {
-    final cardWidth = widthOverride ?? _posterWidth;
+  Widget _movieCard(RadarrMovie movie) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -5715,14 +5701,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           }
         },
         child: Container(
-          width: cardWidth,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Movie poster
               Container(
                 height: _posterHeight,
-                width: cardWidth,
+                width: _posterWidth,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: Colors.grey.shade800,
