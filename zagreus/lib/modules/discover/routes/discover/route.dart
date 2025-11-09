@@ -57,6 +57,7 @@ class _UserOption {
 const double _userListExtraPadding = 32.0;
 const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+const double _moduleSectionTitleFontSize = 18;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -3542,7 +3543,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Radarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFFFEC333),
                   ),
@@ -3552,7 +3553,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Recommended',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -3635,7 +3636,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Radarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFFFEC333),
                   ),
@@ -3645,7 +3646,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Missing',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -3711,7 +3712,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Radarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFFFEC333),
                   ),
@@ -3721,7 +3722,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Downloading Soon',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -3821,7 +3822,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'TMDB',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6688FF),
                   ),
@@ -3831,7 +3832,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Popular Movies',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -4055,7 +4056,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'TMDB',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6688FF),
                   ),
@@ -4065,7 +4066,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Popular TV Shows',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -4299,7 +4300,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'TMDB',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6688FF),
                   ),
@@ -4309,7 +4310,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Trending New Shows',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -4721,7 +4722,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Trakt',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFFED2224),
                   ),
@@ -4731,7 +4732,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Most Anticipated Shows',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -4951,7 +4952,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'TMDB',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6688FF),
                   ),
@@ -4961,7 +4962,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Popular People',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
@@ -5048,7 +5049,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Text(
                     'Z',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: ZagColours.purple,
                     ),
@@ -5058,7 +5059,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: Text(
                       'Deep Cuts',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: _moduleSectionTitleFontSize,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -5632,7 +5633,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Radarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFFFEC333),
                   ),
@@ -5642,7 +5643,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Recently Downloaded',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -5828,7 +5829,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Sonarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF35C5F4),
                   ),
@@ -5838,7 +5839,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Recently Downloaded',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -5897,7 +5898,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 Text(
                   'Sonarr',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF35C5F4),
                   ),
@@ -5907,7 +5908,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Text(
                     'Airing Next',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
