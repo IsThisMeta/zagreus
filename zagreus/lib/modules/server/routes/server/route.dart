@@ -6,6 +6,7 @@ import 'package:zagreus/modules/server/routes/server/pages/system.dart';
 import 'package:zagreus/modules/server/routes/server/pages/array.dart';
 import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
 import 'package:zagreus/modules/server/routes/server/pages/vms.dart';
+import 'package:zagreus/system/session_state.dart';
 
 class ServerRoute extends StatefulWidget {
   const ServerRoute({Key? key}) : super(key: key);
@@ -25,14 +26,8 @@ class _State extends State<ServerRoute> {
     _currentPage = ServerDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(
       initialPage: _currentPage,
-    )..addListener(() {
-        if (_pageController!.page?.round() != _currentPage) {
-          setState(() {
-            _currentPage = _pageController!.page!.round();
-          });
-        }
-      });
-    
+    )..addListener(_handlePageChanged);
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -64,5 +59,31 @@ class _State extends State<ServerRoute> {
         const ServerVmPage(),
       ],
     );
+  }
+
+  void _handlePageChanged() {
+    final controller = _pageController;
+    if (controller == null || !controller.hasClients) return;
+
+    final page = controller.page;
+    if (page == null) return;
+
+    final newIndex = page.round();
+    if (newIndex == _currentPage) return;
+
+    setState(() {
+      _currentPage = newIndex;
+    });
+
+    ServerDatabase.NAVIGATION_INDEX.update(newIndex);
+    ZagSessionState.instance
+        .setModuleTabPosition(ZagModule.SERVER.key, newIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController?.removeListener(_handlePageChanged);
+    _pageController?.dispose();
+    super.dispose();
   }
 }
