@@ -58,11 +58,11 @@ const double _userListExtraPadding = 32.0;
 const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 18;
-const double _heroTitleFontSize = 30;
-const double _posterHeight = 171.0;
+const double _heroTitleFontSize = 26;
+const double _posterHeight = 162.0;
 const double _posterAspectRatio = 2 / 3;
 const double _posterWidth = _posterHeight * _posterAspectRatio;
-const double _posterListHeight = 200.0;
+const double _posterListHeight = 190.0;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
