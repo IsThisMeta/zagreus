@@ -59,6 +59,10 @@ const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 18;
 const double _heroTitleFontSize = 30;
+const double _posterHeight = 171.0;
+const double _posterAspectRatio = 2 / 3;
+const double _posterWidth = _posterHeight * _posterAspectRatio;
+const double _posterListHeight = 200.0;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -3577,7 +3581,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Movie list or placeholder
         _recommendedMovies.isNotEmpty
             ? SizedBox(
-                height: 220,
+                height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -3589,7 +3593,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
               )
             : Container(
-                height: 180,
+                height: _posterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Text(
@@ -3669,7 +3673,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         // Movie list
         SizedBox(
-          height: 220,
+          height: _posterListHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -3745,7 +3749,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         // Movie list
         SizedBox(
-          height: 220,
+          height: _posterListHeight,
           child: _downloadingSoon.isEmpty
               ? Center(
                   child: Padding(
@@ -3857,7 +3861,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Movie list or loading placeholder
         _popularMovies.isNotEmpty
             ? SizedBox(
-                height: 220,
+                height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -3869,7 +3873,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
               )
             : Container(
-                height: 180,
+                height: _posterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Text(
@@ -3897,7 +3901,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _handlePopularMovieTap(movie);
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -3905,8 +3909,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               Stack(
                 children: [
                   Container(
-                    height: 180,
-                    width: 140,
+                    height: _posterHeight,
+                    width: _posterWidth,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.grey.shade800,
@@ -4091,7 +4095,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // TV show list or loading placeholder
         _popularTVShows.isNotEmpty
             ? SizedBox(
-                height: 220,
+                height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -4103,7 +4107,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
               )
             : Container(
-                height: 180,
+                height: _posterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Text(
@@ -4134,7 +4138,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _handlePopularTVShowTap(show);
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -4142,8 +4146,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               Stack(
                 children: [
                   Container(
-                    height: 180,
-                    width: 140,
+                    height: _posterHeight,
+                    width: _posterWidth,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.grey.shade800,
@@ -4335,7 +4339,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // TV show list or loading placeholder
         _trendingNewTVShows.isNotEmpty
             ? SizedBox(
-                height: 220,
+                height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -4347,7 +4351,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
               )
             : Container(
-                height: 180,
+                height: _posterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Text(
@@ -4378,7 +4382,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _handleTrendingNewTVShowTap(show);
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -4386,8 +4390,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               Stack(
                 children: [
                   Container(
-                    height: 180,
-                    width: 140,
+                    height: _posterHeight,
+                    width: _posterWidth,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.grey.shade800,
@@ -4757,7 +4761,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // TV show list or loading placeholder
         _mostAnticipatedShows.isNotEmpty
             ? SizedBox(
-                height: 220,
+                height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -4769,7 +4773,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ),
               )
             : Container(
-                height: 180,
+                height: _posterHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Text(
@@ -4799,7 +4803,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _handleMostAnticipatedShowTap(show);
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -4807,8 +4811,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               Stack(
                 children: [
                   Container(
-                    height: 180,
-                    width: 140,
+                    height: _posterHeight,
+                    width: _posterWidth,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.grey.shade800,
@@ -5427,7 +5431,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           );
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -5438,8 +5442,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      height: 180,
-                      width: 140,
+                      height: _posterHeight,
+                      width: _posterWidth,
                       color: Colors.grey.shade800,
                       child: _buildPosterImage(context, movie),
                     ),
@@ -5527,7 +5531,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           );
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -5538,8 +5542,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      height: 180,
-                      width: 140,
+                      height: _posterHeight,
+                      width: _posterWidth,
                       color: Colors.grey.shade800,
                       child: Stack(
                         fit: StackFit.expand,
@@ -5660,7 +5664,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         // Movie list
         SizedBox(
-          height: 220,
+          height: _posterListHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -5697,14 +5701,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           }
         },
         child: Container(
-          width: 140,
+          width: _posterWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Movie poster
               Container(
-                height: 180,
-                width: 140,
+                height: _posterHeight,
+                width: _posterWidth,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: Colors.grey.shade800,
