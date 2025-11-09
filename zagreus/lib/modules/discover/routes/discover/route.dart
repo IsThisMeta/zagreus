@@ -3195,7 +3195,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     });
 
     return SizedBox(
-      height: 450,
+      height: 420,
       child: Stack(
         children: [
           GestureDetector(
