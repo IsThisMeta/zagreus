@@ -28,9 +28,15 @@ class ZagNavigationBarBadge extends badges.Badge {
             text,
             style: const TextStyle(color: Colors.white),
           ),
-          child: Icon(
-            icon,
-            color: isActive ? ZagColours.currentAccent : Colors.white,
+          child: Builder(
+            builder: (BuildContext context) => Icon(
+              icon,
+              color: isActive
+                  ? ZagColours.currentAccent
+                  : Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+            ),
           ),
           showBadge: showBadge,
         );
