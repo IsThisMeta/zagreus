@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
@@ -31,10 +33,7 @@ class _State extends State<SABnzbdQueueTile> {
 
     return ZagBlock(
       title: widget.data.name,
-      titleMaxLines: 1,
       body: [TextSpan(text: widget.data.subtitle)],
-      customBodyMaxLines: 2,
-      bottomHeight: ZagLinearPercentIndicator.height,
       bottom: ZagLinearPercentIndicator(
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
         progressColor: progressColor,
