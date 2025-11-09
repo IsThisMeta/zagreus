@@ -45,9 +45,8 @@ class _State extends State<SABnzbdQueue>
               ? null
               : SABnzbdQueueFAB(
                   scrollController: SABnzbdNavigationBar.scrollControllers[0]),
-          floatingActionButtonLocation: showModuleFab
-              ? FloatingActionButtonLocation.startFloat
-              : FloatingActionButtonLocation.endFloat,
+          floatingActionButtonLocation:
+              showModuleFab ? FloatingActionButtonLocation.startFloat : null,
         );
       },
     );
