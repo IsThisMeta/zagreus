@@ -30,6 +30,7 @@ class SonarrAPI {
     Map<String, dynamic>? headers,
     bool followRedirects = true,
     int maxRedirects = 5,
+    bool slowServerMode = false,
   }) {
     Dio _dio = Dio(
       BaseOptions(
@@ -42,9 +43,11 @@ class SonarrAPI {
         headers: headers,
         followRedirects: followRedirects,
         maxRedirects: maxRedirects,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 20),
+        connectTimeout:
+            Duration(seconds: slowServerMode ? 40 : 20),
+        receiveTimeout:
+            Duration(seconds: slowServerMode ? 60 : 30),
+        sendTimeout: Duration(seconds: slowServerMode ? 40 : 20),
       ),
     );
     return SonarrAPI._internal(

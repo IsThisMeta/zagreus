@@ -88,10 +88,13 @@ class RadarrState extends ZagModuleState {
     if (_enabled && _host.isNotEmpty && _apiKey.isNotEmpty) {
       try {
         ZagLogger().debug('Creating Radarr API instance...');
+        final useSlowMode =
+            ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE.read();
         _api = RadarrAPI(
           host: _host,
           apiKey: _apiKey,
           headers: Map<String, dynamic>.from(_headers),
+          slowServerMode: useSlowMode,
         );
         ZagLogger().debug('Radarr API instance created successfully');
         // Note: Webhook sync is handled by WebhookSyncService with proper 24h throttling

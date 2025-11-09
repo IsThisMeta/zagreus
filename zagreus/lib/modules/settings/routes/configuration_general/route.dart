@@ -9,6 +9,8 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/services/biometric_service.dart';
+import 'package:zagreus/services/radarr_service.dart';
+import 'package:zagreus/services/sonarr_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_info.dart';
@@ -247,6 +249,7 @@ class _State extends State<ConfigurationGeneralRoute>
       ZagHeader(text: 'settings.Network'.tr()),
       _useTLSValidation(),
       _advancedLocalSwitching(),
+      _slowServerMode(),
     ];
 
     return widgets;
@@ -324,6 +327,28 @@ class _State extends State<ConfigurationGeneralRoute>
               isPro ? null : () => _showProUpgradeToast('Local Switching'),
         );
       },
+    );
+  }
+
+  Widget _slowServerMode() {
+    const db = ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'settings.SlowServerMode'.tr(),
+        body: [
+          TextSpan(
+            text: 'settings.SlowServerModeDescription'.tr(),
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: (value) {
+            db.update(value);
+            ZagRadarrClient.resetTimeouts();
+            ZagSonarrClient.resetTimeouts();
+          },
+        ),
+      ),
     );
   }
 

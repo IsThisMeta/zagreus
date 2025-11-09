@@ -58,6 +58,7 @@ class RadarrAPI {
     Map<String, dynamic>? headers,
     bool followRedirects = true,
     int maxRedirects = 5,
+    bool slowServerMode = false,
   }) {
     // Build the HTTP client
     Dio _dio = Dio(
@@ -71,9 +72,11 @@ class RadarrAPI {
         maxRedirects: maxRedirects,
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 20),
+        connectTimeout:
+            Duration(seconds: slowServerMode ? 40 : 20),
+        receiveTimeout:
+            Duration(seconds: slowServerMode ? 60 : 30),
+        sendTimeout: Duration(seconds: slowServerMode ? 40 : 20),
       ),
     );
     return RadarrAPI._internal(

@@ -19,6 +19,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   NETWORKING_TLS_VALIDATION<bool>(false),
   NETWORKING_LOCAL_SWITCHING_ENABLED<bool>(false),
   NAVIGATION_DISABLE_HORIZONTAL_SWIPE<bool>(false),
+  NETWORKING_SLOW_SERVER_MODE<bool>(false),
   THEME_AMOLED<bool>(false),
   THEME_AMOLED_BORDER<bool>(false),
   THEME_LIGHT_BORDER<bool>(false),

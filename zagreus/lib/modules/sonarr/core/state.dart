@@ -72,10 +72,13 @@ class SonarrState extends ZagModuleState {
     // Create the API instance if Sonarr is enabled and configured
     if (_enabled && _host.isNotEmpty && _apiKey.isNotEmpty) {
       try {
+        final useSlowMode =
+            ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE.read();
         _api = SonarrAPI(
           host: _host,
           apiKey: _apiKey,
           headers: Map<String, dynamic>.from(_headers),
+          slowServerMode: useSlowMode,
         );
         // Note: Webhook sync is handled by WebhookSyncService with proper 24h throttling
       } catch (e, stackTrace) {
