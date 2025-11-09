@@ -232,16 +232,24 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       );
     }
     
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final usesThreeColumns = screenWidth >= 360;
+    final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
+    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+
     return RefreshIndicator(
       onRefresh: _loadDownloadingSoon,
       child: GridView.builder(
         controller: scrollController,
-        padding: const EdgeInsets.all(20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: 20,
+        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: usesThreeColumns ? 3 : 2,
           childAspectRatio: 2 / 3,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
+          crossAxisSpacing: gridSpacing,
+          mainAxisSpacing: gridSpacing,
         ),
         itemCount: _movies.length,
         itemBuilder: (context, index) {

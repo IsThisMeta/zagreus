@@ -192,14 +192,22 @@ class _State extends State<TMDBPopularPeopleRoute>
       );
     }
 
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final usesThreeColumns = screenWidth >= 360;
+    final horizontalPadding = usesThreeColumns ? 16.0 : 12.0;
+    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+
     return GridView.builder(
       controller: scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: 16,
+      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: usesThreeColumns ? 3 : 2,
         childAspectRatio: 0.7,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: gridSpacing,
+        mainAxisSpacing: gridSpacing,
       ),
       itemCount: _people.length + (_isLoadingMore ? 3 : 0),
       itemBuilder: (context, index) {

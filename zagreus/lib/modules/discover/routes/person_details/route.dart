@@ -570,14 +570,24 @@ class _State extends State<PersonDetailsRoute>
       );
     }
 
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final usesThreeColumns = screenWidth >= 360;
+    final horizontalPadding = usesThreeColumns ? 16.0 : 12.0;
+    final gridSpacing = usesThreeColumns ? 12.0 : 10.0;
+
     return SliverPadding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        16,
+        horizontalPadding,
+        16,
+      ),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: usesThreeColumns ? 3 : 2,
           childAspectRatio: 2 / 3,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 10,
+          crossAxisSpacing: gridSpacing,
+          mainAxisSpacing: gridSpacing,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
