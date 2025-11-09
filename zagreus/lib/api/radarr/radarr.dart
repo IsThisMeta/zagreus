@@ -9,6 +9,7 @@ library radarr;
 // Imports
 import 'package:dio/dio.dart';
 import 'package:zagreus/api/radarr/commands.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 /// The core class to handle all connections to Radarr.
 /// Gives you easy access to all implemented command handlers, initialized and ready to call.
@@ -58,8 +59,11 @@ class RadarrAPI {
     Map<String, dynamic>? headers,
     bool followRedirects = true,
     int maxRedirects = 5,
-    bool slowServerMode = false,
+    bool? slowServerMode,
   }) {
+    final bool useSlowMode =
+        slowServerMode ?? ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE.read();
+
     // Build the HTTP client
     Dio _dio = Dio(
       BaseOptions(
@@ -72,11 +76,9 @@ class RadarrAPI {
         maxRedirects: maxRedirects,
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        connectTimeout:
-            Duration(seconds: slowServerMode ? 40 : 20),
-        receiveTimeout:
-            Duration(seconds: slowServerMode ? 60 : 30),
-        sendTimeout: Duration(seconds: slowServerMode ? 40 : 20),
+        connectTimeout: Duration(seconds: useSlowMode ? 40 : 20),
+        receiveTimeout: Duration(seconds: useSlowMode ? 60 : 30),
+        sendTimeout: Duration(seconds: useSlowMode ? 40 : 20),
       ),
     );
     return RadarrAPI._internal(

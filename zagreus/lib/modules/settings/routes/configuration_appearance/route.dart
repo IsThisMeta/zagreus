@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'dart:math';
-
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/settings.dart';
 

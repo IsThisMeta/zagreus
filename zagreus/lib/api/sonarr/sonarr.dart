@@ -2,6 +2,7 @@ library sonarr;
 
 import 'package:dio/dio.dart';
 import 'package:zagreus/api/sonarr/controllers.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
 class SonarrAPI {
   SonarrAPI._internal({
@@ -30,8 +31,10 @@ class SonarrAPI {
     Map<String, dynamic>? headers,
     bool followRedirects = true,
     int maxRedirects = 5,
-    bool slowServerMode = false,
+    bool? slowServerMode,
   }) {
+    final bool useSlowMode =
+        slowServerMode ?? ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE.read();
     Dio _dio = Dio(
       BaseOptions(
         baseUrl: host.endsWith('/') ? '${host}api/v3/' : '$host/api/v3/',
@@ -43,11 +46,9 @@ class SonarrAPI {
         headers: headers,
         followRedirects: followRedirects,
         maxRedirects: maxRedirects,
-        connectTimeout:
-            Duration(seconds: slowServerMode ? 40 : 20),
-        receiveTimeout:
-            Duration(seconds: slowServerMode ? 60 : 30),
-        sendTimeout: Duration(seconds: slowServerMode ? 40 : 20),
+        connectTimeout: Duration(seconds: useSlowMode ? 40 : 20),
+        receiveTimeout: Duration(seconds: useSlowMode ? 60 : 30),
+        sendTimeout: Duration(seconds: useSlowMode ? 40 : 20),
       ),
     );
     return SonarrAPI._internal(

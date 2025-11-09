@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/tautulli.dart';
+import 'package:zagreus/system/session_state.dart';
 
 class TautulliRoute extends StatefulWidget {
   const TautulliRoute({
@@ -17,30 +18,25 @@ class _State extends State<TautulliRoute> {
 
   // Session-based tab memory (cleared on app restart)
   static int? _sessionTabIndex;
+  late final bool _tabMemoryEnabled;
 
   @override
   void initState() {
     super.initState();
     print('🔍 TautulliRoute initState() called');
 
+    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
+
     // Read from session first, fallback to database
-    final initialPage =
-        _sessionTabIndex ?? TautulliDatabase.NAVIGATION_INDEX.read();
+    final initialPage = _tabMemoryEnabled
+        ? _sessionTabIndex ?? TautulliDatabase.NAVIGATION_INDEX.read()
+        : 0;
     print('🔍 Reading saved index from session: $initialPage');
 
     _pageController = PageController(initialPage: initialPage);
 
     // Listen to page changes and save immediately
-    _pageController!.addListener(() {
-      if (_pageController!.hasClients) {
-        final page = _pageController!.page;
-        if (page != null) {
-          final currentIndex = page.round();
-          _sessionTabIndex = currentIndex;
-          print('🔍 Tab changed to: $currentIndex');
-        }
-      }
-    });
+    _pageController!.addListener(_handlePageChanged);
 
     print('🔍 Page controller created with initialPage: $initialPage');
 
@@ -58,6 +54,7 @@ class _State extends State<TautulliRoute> {
 
   @override
   void dispose() {
+    _pageController?.removeListener(_handlePageChanged);
     _pageController?.dispose();
     super.dispose();
   }
@@ -121,5 +118,16 @@ class _State extends State<TautulliRoute> {
         );
       },
     );
+  }
+
+  void _handlePageChanged() {
+    if (!(_pageController?.hasClients ?? false)) return;
+    final page = _pageController!.page;
+    if (page == null) return;
+    final currentIndex = page.round();
+    if (_tabMemoryEnabled) {
+      _sessionTabIndex = currentIndex;
+      print('🔍 Tab changed to: $currentIndex');
+    }
   }
 }

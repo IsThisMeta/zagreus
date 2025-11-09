@@ -19,11 +19,14 @@ class _State extends State<ServerRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
   int _currentPage = 0;
+  late final bool _tabMemoryEnabled;
 
   @override
   void initState() {
     super.initState();
-    _currentPage = ServerDatabase.NAVIGATION_INDEX.read();
+    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
+    _currentPage =
+        _tabMemoryEnabled ? ServerDatabase.NAVIGATION_INDEX.read() : 0;
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(_handlePageChanged);
@@ -75,9 +78,11 @@ class _State extends State<ServerRoute> {
       _currentPage = newIndex;
     });
 
-    ServerDatabase.NAVIGATION_INDEX.update(newIndex);
-    ZagSessionState.instance
-        .setModuleTabPosition(ZagModule.SERVER.key, newIndex);
+    if (_tabMemoryEnabled) {
+      ServerDatabase.NAVIGATION_INDEX.update(newIndex);
+      ZagSessionState.instance
+          .setModuleTabPosition(ZagModule.SERVER.key, newIndex);
+    }
   }
 
   @override

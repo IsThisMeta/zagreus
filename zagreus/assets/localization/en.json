@@ -641,6 +641,8 @@
     "settings.TLSCertificateValidationDescription": "Validate Certificates in TLS Connections",
     "settings.AdvancedLocalSwitching": "Enable Local Switching",
     "settings.AdvancedLocalSwitchingDescription": "Use local addresses on trusted Wi-Fi",
+    "settings.SlowServerMode": "Slow Server Mode",
+    "settings.SlowServerModeDescription": "Use longer API timeouts for Radarr and Sonarr.",
     "network.SwitchDetected": "Network switched",
     "network.SwitchLocal": "{} now using local connection ({})",
     "network.SwitchRemote": "{} now using remote connection",

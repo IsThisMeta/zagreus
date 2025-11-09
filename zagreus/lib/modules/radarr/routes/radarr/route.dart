@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
 class RadarrRoute extends StatefulWidget {
@@ -17,6 +18,7 @@ class _State extends State<RadarrRoute> {
   final GlobalKey<State<RadarrMissingRoute>> _missingRouteKey = GlobalKey();
   ZagPageController? _pageController;
   int _currentPage = 0;
+  late final bool _tabMemoryEnabled;
 
   // Session-based tab memory (cleared on app restart)
   static int? _sessionTabIndex;
@@ -26,23 +28,17 @@ class _State extends State<RadarrRoute> {
     super.initState();
     print('🔍 RadarrRoute initState() called');
 
+    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
+
     // Read from session first, fallback to database
-    _currentPage = _sessionTabIndex ?? RadarrDatabase.NAVIGATION_INDEX.read();
+    _currentPage = _tabMemoryEnabled
+        ? _sessionTabIndex ?? RadarrDatabase.NAVIGATION_INDEX.read()
+        : 0;
     print('🔍 Reading saved index from session: $_currentPage');
 
     _pageController = ZagPageController(
       initialPage: _currentPage,
-    )..addListener(() {
-        if (_pageController!.page?.round() != _currentPage) {
-          final newPage = _pageController!.page!.round();
-          setState(() {
-            _currentPage = newPage;
-          });
-          // Save immediately when tab changes
-          _sessionTabIndex = newPage;
-          print('🔍 Tab changed to: $newPage');
-        }
-      });
+    )..addListener(_handlePageChanged);
 
     print('🔍 Page controller created with initialPage: $_currentPage');
 
@@ -60,6 +56,7 @@ class _State extends State<RadarrRoute> {
 
   @override
   void dispose() {
+    _pageController?.removeListener(_handlePageChanged);
     _pageController?.dispose();
     super.dispose();
   }
@@ -159,5 +156,18 @@ class _State extends State<RadarrRoute> {
         );
       },
     );
+  }
+
+  void _handlePageChanged() {
+    if (_pageController?.page?.round() != _currentPage) {
+      final newPage = _pageController!.page!.round();
+      setState(() {
+        _currentPage = newPage;
+      });
+      if (_tabMemoryEnabled) {
+        _sessionTabIndex = newPage;
+        print('🔍 Tab changed to: $newPage');
+      }
+    }
   }
 }

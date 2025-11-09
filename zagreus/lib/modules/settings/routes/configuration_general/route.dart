@@ -9,11 +9,10 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/services/biometric_service.dart';
-import 'package:zagreus/services/radarr_service.dart';
-import 'package:zagreus/services/sonarr_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_info.dart';
+import 'package:zagreus/system/session_state.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -91,6 +90,7 @@ class _State extends State<ConfigurationGeneralRoute>
     return [
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
+      _moduleTabMemoryToggle(),
     ];
   }
 
@@ -107,6 +107,29 @@ class _State extends State<ConfigurationGeneralRoute>
         trailing: ZagSwitch(
           value: !db.read(),
           onChanged: (value) => db.update(!value),
+        ),
+      ),
+    );
+  }
+
+  Widget _moduleTabMemoryToggle() {
+    const db = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Remember Module Tabs',
+        body: const [
+          TextSpan(
+            text: 'Return to the last tab when reopening any module.',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: (value) {
+            db.update(value);
+            if (!value) {
+              ZagSessionState.instance.clearAllModuleTabPositions();
+            }
+          },
         ),
       ),
     );
@@ -138,7 +161,8 @@ class _State extends State<ConfigurationGeneralRoute>
           onTap = () {
             showZagInfoSnackBar(
               title: 'Sign in required',
-              message: 'Sign in to your Zagreus account to enable Lock Settings.',
+              message:
+                  'Sign in to your Zagreus account to enable Lock Settings.',
             );
             SettingsRoutes.ACCOUNT.go();
           };
@@ -157,8 +181,7 @@ class _State extends State<ConfigurationGeneralRoute>
                 ? (value) {
                     db.update(value);
                     if (!value) {
-                      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC
-                          .update(false);
+                      ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
                     }
                   }
                 : null,
@@ -323,8 +346,7 @@ class _State extends State<ConfigurationGeneralRoute>
                   }
                 : null,
           ),
-          onTap:
-              isPro ? null : () => _showProUpgradeToast('Local Switching'),
+          onTap: isPro ? null : () => _showProUpgradeToast('Local Switching'),
         );
       },
     );
@@ -344,8 +366,10 @@ class _State extends State<ConfigurationGeneralRoute>
           value: db.read(),
           onChanged: (value) {
             db.update(value);
-            ZagRadarrClient.resetTimeouts();
-            ZagSonarrClient.resetTimeouts();
+            final radarrState = ZagModule.RADARR.state(context);
+            final sonarrState = ZagModule.SONARR.state(context);
+            radarrState?.reset();
+            sonarrState?.reset();
           },
         ),
       ),
@@ -389,5 +413,4 @@ class _State extends State<ConfigurationGeneralRoute>
       message: 'Upgrade to Zagreus Pro to use $featureName.',
     );
   }
-
 }
