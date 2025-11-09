@@ -34,14 +34,22 @@ class _State extends State<NZBGetQueue>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return ZagScaffold(
-      scaffoldKey: _scaffoldKey,
-      body: _body,
-      floatingActionButton: context.watch<NZBGetState>().error
-          ? null
-          : NZBGetQueueFAB(
-              scrollController: NZBGetNavigationBar.scrollControllers[0]),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+    return ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.listenableBuilder(
+      builder: (context, _) {
+        final showModuleFab =
+            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
+        return ZagScaffold(
+          scaffoldKey: _scaffoldKey,
+          body: _body,
+          floatingActionButton: context.watch<NZBGetState>().error
+              ? null
+              : NZBGetQueueFAB(
+                  scrollController: NZBGetNavigationBar.scrollControllers[0]),
+          floatingActionButtonLocation: showModuleFab
+              ? FloatingActionButtonLocation.startFloat
+              : FloatingActionButtonLocation.endFloat,
+        );
+      },
     );
   }
 

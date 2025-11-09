@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dart:math';
+
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/settings.dart';
 
@@ -225,9 +227,30 @@ class _State extends State<ConfigurationAppearanceRoute>
         ],
         trailing: ZagSwitch(
           value: db.read(),
-          onChanged: db.update,
+          onChanged: (value) async {
+            if (!value && _shouldPromptConfirmation()) {
+              final confirmed = await _confirmDisableCube(context);
+              if (!confirmed) return;
+            }
+            db.update(value);
+          },
         ),
       ),
     );
+  }
+
+  bool _shouldPromptConfirmation() {
+    return Random().nextInt(33) == 0;
+  }
+
+  Future<bool> _confirmDisableCube(BuildContext context) async {
+    final result = await showZagDialog<bool>(
+      context: context,
+      title: 'Are you sure?',
+      content: 'Unintended consequences can occur.',
+      confirmText: 'Disable',
+      cancelText: 'Cancel',
+    );
+    return result ?? false;
   }
 }
