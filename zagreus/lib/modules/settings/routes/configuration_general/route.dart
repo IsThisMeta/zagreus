@@ -102,7 +102,7 @@ class _State extends State<ConfigurationGeneralRoute>
         title: 'Swipe Between Tabs',
         body: const [
           TextSpan(
-            text: 'Allow horizontal swiping between module tabs.',
+            text: 'Allow horizontal swiping between tabs.',
           ),
         ],
         trailing: ZagSwitch(
@@ -117,10 +117,10 @@ class _State extends State<ConfigurationGeneralRoute>
     const db = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Remember Module Tabs',
+        title: 'Remember Module Page',
         body: const [
           TextSpan(
-            text: 'Return to the last tab when reopening any module.',
+            text: 'Jump back to the last page you viewed.',
           ),
         ],
         trailing: ZagSwitch(
@@ -140,7 +140,7 @@ class _State extends State<ConfigurationGeneralRoute>
     const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Module Switcher FAB',
+        title: 'Floating Action Cube',
         body: const [
           TextSpan(text: 'Show the floating module switcher button.'),
         ],
