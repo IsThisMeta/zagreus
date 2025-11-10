@@ -68,7 +68,7 @@ class _State extends State<RadarrRoute> {
       module: ZagModule.RADARR,
       drawer: _drawer(),
       endDrawer: ZagGlobalFABManager.instance.getEndDrawer(),
-      endDrawerEnableOpenDragGesture: 10.0,
+      endDrawerEnableOpenDragGesture: 25.0,
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body(),
