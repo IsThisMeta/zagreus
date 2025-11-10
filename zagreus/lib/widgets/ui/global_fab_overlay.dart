@@ -18,7 +18,7 @@ class ZagGlobalFABManager {
   }
 
   Widget? getEndDrawer() {
-    if (!ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()) {
+    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
       return null;
     }
     return const ZagDownloadsDrawer();

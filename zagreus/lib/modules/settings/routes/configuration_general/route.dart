@@ -137,12 +137,13 @@ class _State extends State<ConfigurationGeneralRoute>
   }
 
   Widget _moduleSwitcherFAB() {
-    const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    const db = ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Floating Action Cube',
+        title: 'Downloads Drawer',
         body: const [
-          TextSpan(text: 'Show the floating module switcher button.'),
+          TextSpan(text: 'Show the global downloads drawer on the right edge. '),
+          TextSpan(text: 'Swipe from the right to view SABnzbd and NZBGet queue status with live progress.'),
         ],
         trailing: ZagSwitch(
           value: db.read(),
