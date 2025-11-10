@@ -470,54 +470,65 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.restart_alt_rounded),
-                            tooltip: 'Reset to Defaults',
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 36,
-                              height: 36,
-                            ),
-                            onPressed:
-                                hasChanges && !isSaving ? handleReset : null,
-                          ),
-                          if (isSaving)
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    Colors.blueAccent,
+                          Transform.translate(
+                            offset: const Offset(-5, 0),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.restart_alt_rounded),
+                                  tooltip: 'Reset to Defaults',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints.tightFor(
+                                    width: 36,
+                                    height: 36,
                                   ),
+                                  onPressed: hasChanges && !isSaving
+                                      ? handleReset
+                                      : null,
                                 ),
-                              ),
-                            )
-                          else
-                            IconButton(
-                              icon: const Icon(Icons.save_rounded),
-                              tooltip: 'Save Order',
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints.tightFor(
-                                width: 36,
-                                height: 36,
-                              ),
-                              color: hasChanges
-                                  ? ZagColours.currentAccent
-                                  : Colors.grey,
-                              onPressed: hasChanges ? handleSave : null,
+                                if (isSaving)
+                                  SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          Colors.blueAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  IconButton(
+                                    icon: const Icon(Icons.save_rounded),
+                                    tooltip: 'Save Order',
+                                    padding: EdgeInsets.zero,
+                                    constraints:
+                                        const BoxConstraints.tightFor(
+                                      width: 36,
+                                      height: 36,
+                                    ),
+                                    color: hasChanges
+                                        ? ZagColours.currentAccent
+                                        : Colors.grey,
+                                    onPressed:
+                                        hasChanges ? handleSave : null,
+                                  ),
+                                IconButton(
+                                  icon: const Icon(Icons.close_rounded),
+                                  padding: EdgeInsets.zero,
+                                  constraints:
+                                      const BoxConstraints.tightFor(
+                                    width: 36,
+                                    height: 36,
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.of(sheetContext).pop(false),
+                                ),
+                              ],
                             ),
-                          IconButton(
-                            icon: const Icon(Icons.close_rounded),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints.tightFor(
-                              width: 36,
-                              height: 36,
-                            ),
-                            onPressed: () =>
-                                Navigator.of(sheetContext).pop(false),
                           ),
                         ],
                       ),
