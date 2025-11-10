@@ -198,10 +198,11 @@ class TMDBApi {
     String? region,
   }) async {
     try {
-      // Fetch single page (20 results, UI will display 10)
+      // Fetch multiple pages to create a richer list (approx 100 items)
       List<Map<String, dynamic>> allShows = [];
+      const int maxPages = 5;
 
-      for (int p = 1; p <= 1; p++) {
+      for (int p = 1; p <= maxPages; p++) {
         // Using discover endpoint to get new shows (first_air_date recent)
         final now = DateTime.now();
         final threeMonthsAgo = now.subtract(const Duration(days: 90));
@@ -241,6 +242,10 @@ class TMDBApi {
             };
           }).toList();
           
+          if (shows.isEmpty) {
+            break;
+          }
+
           allShows.addAll(shows);
         }
       }

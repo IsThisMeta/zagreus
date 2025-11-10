@@ -3527,6 +3527,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _recommendedMoviesSection() {
     final previewMovies =
         _recommendedMovies.take(_discoverPreviewLimit).toList();
+    final previewShows =
+        _trendingNewTVShows.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -4287,6 +4289,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _trendingNewTVShowsSection() {
+    final previewShows =
+        _trendingNewTVShows.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -4348,15 +4352,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         ),
         // TV show list or loading placeholder
-        _trendingNewTVShows.isNotEmpty
+        previewShows.isNotEmpty
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _trendingNewTVShows.length,
+                  itemCount: previewShows.length,
                   itemBuilder: (context, index) {
-                    final show = _trendingNewTVShows[index];
+                    final show = previewShows[index];
                     return _trendingNewTVShowCard(show);
                   },
                 ),
