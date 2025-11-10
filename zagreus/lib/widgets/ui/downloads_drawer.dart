@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
 import 'package:zagreus/modules/nzbget.dart';
@@ -10,16 +11,32 @@ class ZagDownloadsDrawer extends StatefulWidget {
   State<ZagDownloadsDrawer> createState() => _ZagDownloadsDrawerState();
 }
 
-class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
+class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
+    with SingleTickerProviderStateMixin {
   String? _selectedService;
+  AnimationController? _playPauseController;
 
   @override
   void initState() {
     super.initState();
+    _setupPlayPauseController();
     // Auto-select first enabled service
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _autoSelectService();
     });
+  }
+
+  void _setupPlayPauseController() {
+    _playPauseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: ZagUI.ANIMATION_SPEED),
+    );
+  }
+
+  @override
+  void dispose() {
+    _playPauseController?.dispose();
+    super.dispose();
   }
 
   void _autoSelectService() {
@@ -45,10 +62,10 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with service switcher
+            // Static Header
             _buildHeader(),
             const Divider(height: 1),
-            // Content
+            // Scrollable Content
             Expanded(
               child: _buildContent(),
             ),
@@ -144,9 +161,9 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
   }
 
   Widget _buildServiceView(Widget queueWidget) {
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      children: [queueWidget],
+      child: queueWidget,
     );
   }
 
@@ -406,10 +423,21 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
     final speed = queue['speed'] as String? ?? '0';
     final timeLeft = queue['timeLeft'] as String? ?? '0:00:00';
 
+    // Update animation controller based on paused state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_playPauseController != null) {
+        if (paused) {
+          _playPauseController!.forward();
+        } else {
+          _playPauseController!.reverse();
+        }
+      }
+    });
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with stats
+        // Header with stats and play/pause button
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -459,6 +487,18 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
                   Expanded(
                     child: _buildStatItem('Time Left', timeLeft),
                   ),
+                  // Play/Pause button
+                  IconButton(
+                    icon: AnimatedIcon(
+                      icon: AnimatedIcons.pause_play,
+                      progress: _playPauseController!,
+                      color: serviceColor,
+                    ),
+                    iconSize: 24,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _togglePlayPause(serviceName, paused),
+                  ),
                 ],
               ),
             ],
@@ -485,6 +525,55 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
           ...slots.map((slot) => _buildQueueItem(slot, serviceColor)).toList(),
       ],
     );
+  }
+
+  Future<void> _togglePlayPause(String serviceName, bool isPaused) async {
+    try {
+      final profile = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read());
+      if (profile == null) return;
+
+      HapticFeedback.lightImpact();
+
+      if (serviceName == 'SABnzbd') {
+        final api = SABnzbdAPI.from(profile);
+        if (isPaused) {
+          await api.resumeQueue();
+          showZagSuccessSnackBar(
+            title: 'SABnzbd Queue',
+            message: 'Resumed',
+          );
+        } else {
+          await api.pauseQueue();
+          showZagSuccessSnackBar(
+            title: 'SABnzbd Queue',
+            message: 'Paused',
+          );
+        }
+      } else if (serviceName == 'NZBGet') {
+        final api = NZBGetAPI.from(profile);
+        if (isPaused) {
+          await api.resumeQueue();
+          showZagSuccessSnackBar(
+            title: 'NZBGet Queue',
+            message: 'Resumed',
+          );
+        } else {
+          await api.pauseQueue();
+          showZagSuccessSnackBar(
+            title: 'NZBGet Queue',
+            message: 'Paused',
+          );
+        }
+      }
+
+      // Refresh the drawer after toggle
+      setState(() {});
+    } catch (e) {
+      showZagErrorSnackBar(
+        title: 'Failed to ${isPaused ? 'Resume' : 'Pause'} Queue',
+        error: e,
+      );
+    }
   }
 
   Widget _buildStatItem(String label, String value) {
