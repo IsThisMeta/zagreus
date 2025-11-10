@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
 
 class ZagScaffold extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -65,14 +66,18 @@ class ZagScaffold extends StatelessWidget {
       builder: (context, _) {
         onProfileChange?.call(context);
 
+        // Auto-add downloads drawer if not explicitly provided
+        final effectiveEndDrawer = endDrawer ?? ZagGlobalFABManager.instance.getEndDrawer();
+        final effectiveEndDrawerDragWidth = endDrawerEnableOpenDragGesture ?? 25.0;
+
         return Scaffold(
           key: scaffoldKey,
           appBar: appBar,
           body: body,
           drawer: drawer,
-          endDrawer: endDrawer,
-          endDrawerEnableOpenDragGesture: endDrawer != null,
-          drawerEdgeDragWidth: endDrawerEnableOpenDragGesture,
+          endDrawer: effectiveEndDrawer,
+          endDrawerEnableOpenDragGesture: effectiveEndDrawer != null,
+          drawerEdgeDragWidth: effectiveEndDrawer != null ? effectiveEndDrawerDragWidth : null,
           bottomNavigationBar: bottomNavigationBar,
           floatingActionButton: floatingActionButton,
           floatingActionButtonLocation: floatingActionButtonLocation,
