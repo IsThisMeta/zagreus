@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -32,25 +30,16 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
     if (widget.initialData?.isNotEmpty == true) {
       _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
-      Future.microtask(() {
-        if (mounted) {
-          _loadRecentlyDownloaded(silent: true);
-        }
-      });
     } else {
       _loadRecentlyDownloaded();
     }
   }
 
-  Future<void> _loadRecentlyDownloaded({bool silent = false}) async {
-    if (!silent) {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-    } else {
+  Future<void> _loadRecentlyDownloaded() async {
+    setState(() {
+      _isLoading = true;
       _error = null;
-    }
+    });
 
     try {
       final radarrState = context.read<RadarrState>();
@@ -117,13 +106,9 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
       setState(() {
         _movies = downloadedMovies;
         _isLoading = false;
-        _error = null;
       });
     } catch (e) {
       if (!mounted) return;
-      if (silent && _movies.isNotEmpty) {
-        return;
-      }
       setState(() {
         _error = e.toString();
         _isLoading = false;

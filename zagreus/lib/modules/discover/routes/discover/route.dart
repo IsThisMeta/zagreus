@@ -62,7 +62,9 @@ const double _heroTitleFontSize = 26;
 const double _posterHeight = 162.0;
 const double _posterAspectRatio = 2 / 3;
 const double _posterWidth = _posterHeight * _posterAspectRatio;
-const double _posterListHeight = _posterHeight + 38.0;
+const double _posterListHeight = _posterHeight + 36.0;
+const int _discoverPreviewLimit = 10;
+const int _discoverFullPageLimit = 60;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -337,7 +339,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       // Filter movies that are in the downloaded history
       final downloadedMovies = <RadarrMovie>[];
-      for (final movieId in movieIds.take(10)) {
+      for (final movieId in movieIds.take(_discoverFullPageLimit)) {
         final movie = allMovies.firstWhere(
           (m) => m.id == movieId,
           orElse: () => RadarrMovie(),
@@ -391,7 +393,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
 
       setState(() {
-        _recommendedMovies = uniqueMovies.take(10).toList();
+        _recommendedMovies =
+            uniqueMovies.take(_discoverFullPageLimit).toList();
       });
     } catch (e) {
       // Silently fail - recommendations are optional
@@ -419,7 +422,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (radarrState.missing != null) {
         final missingMovies = await radarrState.missing!;
         setState(() {
-          _missingMovies = missingMovies.take(10).toList();
+          _missingMovies =
+              missingMovies.take(_discoverFullPageLimit).toList();
         });
       }
     } catch (e) {
@@ -528,7 +532,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       });
 
       setState(() {
-        _downloadingSoon = downloadingSoon.take(10).toList();
+        _downloadingSoon =
+            downloadingSoon.take(_discoverFullPageLimit).toList();
         print(
             '📅 [DOWNLOADING SOON] Set ${_downloadingSoon.length} movies in state');
       });
@@ -3520,6 +3525,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recommendedMoviesSection() {
+    final previewMovies =
+        _recommendedMovies.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3579,15 +3586,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         ),
         // Movie list or placeholder
-        _recommendedMovies.isNotEmpty
+        previewMovies.isNotEmpty
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _recommendedMovies.length,
+                  itemCount: previewMovies.length,
                   itemBuilder: (context, index) {
-                    final movie = _recommendedMovies[index];
+                    final movie = previewMovies[index];
                     return _movieCard(movie);
                   },
                 ),
@@ -3613,6 +3620,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _missingMoviesSection() {
+    final previewMovies =
+        _missingMovies.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3677,9 +3686,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _missingMovies.length,
+            itemCount: previewMovies.length,
             itemBuilder: (context, index) {
-              final movie = _missingMovies[index];
+              final movie = previewMovies[index];
               return _missingMovieCard(movie);
             },
           ),
@@ -3689,6 +3698,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _downloadingSoonSection() {
+    final previewMovies =
+        _downloadingSoon.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3786,9 +3797,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _downloadingSoon.length,
+                  itemCount: previewMovies.length,
                   itemBuilder: (context, index) {
-                    final movie = _downloadingSoon[index];
+                    final movie = previewMovies[index];
                     return _downloadingSoonCard(movie);
                   },
                 ),
@@ -5584,6 +5595,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyDownloadedSection() {
+    final previewMovies =
+        _recentlyDownloaded.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -5642,9 +5655,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _recentlyDownloaded.length,
+            itemCount: previewMovies.length,
             itemBuilder: (context, index) {
-              final item = _recentlyDownloaded[index];
+              final item = previewMovies[index];
               return _movieCard(item);
             },
           ),

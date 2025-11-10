@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -32,25 +30,16 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     if (widget.initialData?.isNotEmpty == true) {
       _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
-      Future.microtask(() {
-        if (mounted) {
-          _loadDownloadingSoon(silent: true);
-        }
-      });
     } else {
       _loadDownloadingSoon();
     }
   }
   
-  Future<void> _loadDownloadingSoon({bool silent = false}) async {
-    if (!silent) {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-    } else {
+  Future<void> _loadDownloadingSoon() async {
+    setState(() {
+      _isLoading = true;
       _error = null;
-    }
+    });
     
     try {
       final radarrState = context.read<RadarrState>();
@@ -130,9 +119,6 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       });
     } catch (e) {
       if (!mounted) return;
-      if (silent && _movies.isNotEmpty) {
-        return;
-      }
       setState(() {
         _error = e.toString();
         _isLoading = false;

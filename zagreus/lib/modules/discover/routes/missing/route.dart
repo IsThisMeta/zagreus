@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -35,25 +33,16 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     if (widget.initialData?.isNotEmpty == true) {
       _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
-      Future.microtask(() {
-        if (mounted) {
-          _loadMissingMovies(silent: true);
-        }
-      });
     } else {
       _loadMissingMovies();
     }
   }
   
-  Future<void> _loadMissingMovies({bool silent = false}) async {
-    if (!silent) {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-    } else {
+  Future<void> _loadMissingMovies() async {
+    setState(() {
+      _isLoading = true;
       _error = null;
-    }
+    });
     
     try {
       final radarrState = context.read<RadarrState>();
@@ -91,9 +80,6 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     } catch (error, stack) {
       ZagLogger().error('Failed to load missing movies', error, stack);
       if (!mounted) return;
-      if (silent && _movies.isNotEmpty) {
-        return;
-      }
       setState(() {
         _error = error.toString();
         _isLoading = false;
