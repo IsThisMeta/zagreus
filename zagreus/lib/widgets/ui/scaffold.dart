@@ -9,6 +9,7 @@ class ZagScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget? body;
   final Widget? drawer;
+  final Widget? endDrawer;
   final Widget? bottomNavigationBar;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
@@ -25,6 +26,7 @@ class ZagScaffold extends StatelessWidget {
     this.appBar,
     this.body,
     this.drawer,
+    this.endDrawer,
     this.bottomNavigationBar,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
@@ -66,12 +68,14 @@ class ZagScaffold extends StatelessWidget {
           appBar: appBar,
           body: body,
           drawer: drawer,
+          endDrawer: endDrawer,
           bottomNavigationBar: bottomNavigationBar,
           floatingActionButton: floatingActionButton,
           floatingActionButtonLocation: floatingActionButtonLocation,
           extendBody: extendBody,
           extendBodyBehindAppBar: extendBodyBehindAppBar,
           onDrawerChanged: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+          onEndDrawerChanged: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         );
       },
     );

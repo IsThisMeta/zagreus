@@ -44,7 +44,7 @@ class _State extends State<RadarrRoute> {
 
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZagGlobalFABManager.instance.injectFAB(context);
+      ZagGlobalFABManager.instance.injectFAB(context, scaffoldKey: _scaffoldKey);
     });
   }
 
@@ -63,10 +63,14 @@ class _State extends State<RadarrRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final moduleKey = ZagModule.RADARR.key;
+    ZagGlobalFABManager.instance.updateModule(moduleKey);
+    
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
       module: ZagModule.RADARR,
       drawer: _drawer(),
+      endDrawer: ZagGlobalFABManager.instance.getEndDrawer(moduleKey),
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body(),

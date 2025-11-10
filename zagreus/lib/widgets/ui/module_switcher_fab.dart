@@ -4,10 +4,12 @@ import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ZagModuleSwitcherFAB extends StatefulWidget {
   final String currentModuleKey;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   const ZagModuleSwitcherFAB({
     Key? key,
     required this.currentModuleKey,
+    required this.scaffoldKey,
   }) : super(key: key);
 
   static void updateModuleTracking(String moduleKey) {
@@ -77,66 +79,54 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB> {
         final previous = ZagModule.fromKey(_previousModuleKey!)!;
         _updateTracking(previous.key);
         await previous.launch();
+        widget.scaffoldKey.currentState?.closeEndDrawer();
       }
       return;
     }
 
     _updateTracking(module.key);
     await module.launch();
+    widget.scaffoldKey.currentState?.closeEndDrawer();
+  }
+
+  Widget _buildModuleDrawer() {
+    final modules = _getActiveModules();
+    final currentKey = widget.currentModuleKey.toLowerCase();
+
+    return Drawer(
+      elevation: ZagUI.ELEVATION,
+      backgroundColor: Theme.of(context).primaryColor,
+      width: 80,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: modules.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                itemBuilder: (context, index) {
+                  final module = modules[index];
+                  final isActive = module.key.toLowerCase() == currentKey;
+                  return _ModuleIconButton(
+                    module: module,
+                    isActive: isActive,
+                    onTap: () => _handleModuleTap(module, isActive),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-
     return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
-      builder: (context, _) {
-        final modules = _getActiveModules();
-        if (modules.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        final currentKey = widget.currentModuleKey.toLowerCase();
-        return RepaintBoundary(
-          child: Container(
-            width: 48,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.black.withOpacity(0.15)
-                  : Colors.white.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black12,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.5 : 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < modules.length; i++) ...[
-                  _ModuleIconButton(
-                    module: modules[i],
-                    isActive: modules[i].key.toLowerCase() == currentKey,
-                    onTap: () => _handleModuleTap(
-                      modules[i],
-                      modules[i].key.toLowerCase() == currentKey,
-                    ),
-                  ),
-                  if (i != modules.length - 1) const SizedBox(height: 6),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (context, _) => _buildModuleDrawer(),
     );
   }
 }
@@ -155,41 +145,34 @@ class _ModuleIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-    final Color iconColor =
-        isActive ? module.color : (isDark ? Colors.white70 : Colors.black54);
-
     return Tooltip(
       message: module.title,
-      waitDuration: const Duration(milliseconds: 400),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: SizedBox(
-          width: 44,
-          height: 38,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (isActive)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    width: 3,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: module.color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              Icon(
-                module.icon,
-                color: iconColor,
-                size: isActive ? 26 : 22,
-              ),
-            ],
+      waitDuration: const Duration(milliseconds: 300),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: 64,
+            height: 56,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? module.color.withOpacity(0.2)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: isActive
+                  ? Border.all(
+                      color: module.color.withOpacity(0.4),
+                      width: 2,
+                    )
+                  : null,
+            ),
+            child: Icon(
+              module.icon,
+              color: module.color.withOpacity(isActive ? 1.0 : 0.5),
+              size: isActive ? 32 : 28,
+            ),
           ),
         ),
       ),

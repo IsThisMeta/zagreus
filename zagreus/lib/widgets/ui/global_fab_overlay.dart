@@ -16,7 +16,10 @@ class ZagGlobalFABManager {
   String _currentRoute = '';
   String _currentModule = '';
 
-  void injectFAB(BuildContext context) {
+  void injectFAB(BuildContext context, {GlobalKey<ScaffoldState>? scaffoldKey}) {
+    // Store scaffold key for drawer access
+    _scaffoldKey = scaffoldKey;
+    
     if (_isInjected) {
       print('🔍 FABManager: FAB already injected, skipping');
       return;
@@ -26,65 +29,27 @@ class ZagGlobalFABManager {
     print(
         '🔍 FABManager: Setting enabled: ${ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()}');
 
-    try {
-      final overlay = Overlay.of(context, rootOverlay: true);
-      print('🔍 FABManager: Overlay found: $overlay');
+    // FAB is now handled by the endDrawer in scaffold
+    _isInjected = true;
+    print('🔍 FABManager: FAB setup complete (using endDrawer)');
+  }
 
-      _overlayEntry = OverlayEntry(
-        builder: (context) {
-          print('🔍 OverlayEntry: Building FAB');
-          return SafeArea(
-            child: IgnorePointer(
-              ignoring: false,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12, bottom: 40),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
-                        .listenableBuilder(
-                      builder: (context, _) {
-                        final enabled =
-                            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
-                        if (!enabled) {
-                          print('🔍 GlobalFAB: Disabled via settings, hiding');
-                          return const SizedBox.shrink();
-                        }
-                        return ValueListenableBuilder<String>(
-                          valueListenable: currentModuleNotifier,
-                          builder: (context, currentModule, __) {
-                            print(
-                                '🔍 GlobalFAB: Building with module: $currentModule');
+  GlobalKey<ScaffoldState>? _scaffoldKey;
 
-                            if (currentModule.isEmpty) {
-                              print('🔍 GlobalFAB: Empty module, hiding');
-                              return const SizedBox.shrink();
-                            }
-
-                            print('🔍 GlobalFAB: Creating FAB widget');
-                            return ZagModuleSwitcherFAB(
-                              currentModuleKey: currentModule,
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-
-      overlay.insert(_overlayEntry!);
-      _isInjected = true;
-      print('🔍 FABManager: FAB overlay injected successfully');
-    } catch (e, stack) {
-      print('🔍 FABManager: ERROR injecting FAB: $e');
-      print('🔍 FABManager: Stack: $stack');
+  Widget? getEndDrawer(String currentModule) {
+    if (!ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()) {
+      return null;
     }
+    if (currentModule.isEmpty) {
+      return null;
+    }
+    if (_scaffoldKey == null) {
+      return null;
+    }
+    return ZagModuleSwitcherFAB(
+      currentModuleKey: currentModule,
+      scaffoldKey: _scaffoldKey!,
+    );
   }
 
   void updateModule(String routeName) {
