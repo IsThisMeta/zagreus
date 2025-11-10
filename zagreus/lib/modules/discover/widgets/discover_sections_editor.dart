@@ -453,7 +453,7 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                       child: Row(
                         children: [
                           Text(
