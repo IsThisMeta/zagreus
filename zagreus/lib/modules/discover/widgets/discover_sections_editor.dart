@@ -211,9 +211,15 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                             IconButton(
                               icon: const Icon(Icons.delete_outline_rounded),
                               tooltip: 'Remove Section',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 36,
+                                height: 36,
+                              ),
                               onPressed: () =>
                                   _removeSection(sections, section),
                             ),
+                            const SizedBox(width: 4),
                             ReorderableDragStartListener(
                               index: index,
                               child: Icon(
@@ -467,6 +473,11 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                           IconButton(
                             icon: const Icon(Icons.restart_alt_rounded),
                             tooltip: 'Reset to Defaults',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
                             onPressed:
                                 hasChanges && !isSaving ? handleReset : null,
                           ),
@@ -488,6 +499,11 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                             IconButton(
                               icon: const Icon(Icons.save_rounded),
                               tooltip: 'Save Order',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 36,
+                                height: 36,
+                              ),
                               color: hasChanges
                                   ? ZagColours.currentAccent
                                   : Colors.grey,
@@ -495,6 +511,11 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                             ),
                           IconButton(
                             icon: const Icon(Icons.close_rounded),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints.tightFor(
+                              width: 36,
+                              height: 36,
+                            ),
                             onPressed: () =>
                                 Navigator.of(sheetContext).pop(false),
                           ),
