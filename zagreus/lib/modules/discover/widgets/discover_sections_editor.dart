@@ -131,8 +131,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           Expanded(
             child: TabBarView(
               children: [
-                _buildSectionList(_movieSections),
-                _buildSectionList(_tvSections),
+                _buildSectionList(
+                  sections: _movieSections,
+                  defaults: _defaultMovieSections,
+                  isMovie: true,
+                ),
+                _buildSectionList(
+                  sections: _tvSections,
+                  defaults: _defaultTVSections,
+                  isMovie: false,
+                ),
               ],
             ),
           ),
@@ -141,57 +149,218 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     );
   }
 
-  Widget _buildSectionList(List<String> sections) {
-    return ReorderableListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: sections.length,
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
-          if (newIndex > oldIndex) newIndex -= 1;
-          final item = sections.removeAt(oldIndex);
-          sections.insert(newIndex, item);
-          _setHasChanges();
-        });
-      },
-      itemBuilder: (context, index) {
-        final section = sections[index];
-        final name = _sectionNames[section] ?? section;
+  Widget _buildSectionList({
+    required List<String> sections,
+    required List<String> defaults,
+    required bool isMovie,
+  }) {
+    final theme = Theme.of(context);
+    final availableSections =
+        defaults.where((section) => !sections.contains(section)).toList();
 
-        return Container(
-          key: ValueKey(section),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? ZagColours.secondary
-                : ZagColours.secondaryLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white10
-                  : Colors.black12,
-              width: 1,
-            ),
+    return Column(
+      children: [
+        Expanded(
+          child: sections.isEmpty
+              ? _emptySectionsPlaceholder(isMovie: isMovie)
+              : ReorderableListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: sections.length,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final item = sections.removeAt(oldIndex);
+                      sections.insert(newIndex, item);
+                      _setHasChanges();
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final section = sections[index];
+                    final name = _sectionNames[section] ?? section;
+
+                    return Container(
+                      key: ValueKey(section),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.brightness == Brightness.dark
+                            ? ZagColours.secondary
+                            : ZagColours.secondaryLight,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.white10
+                              : Colors.black12,
+                          width: 1,
+                        ),
+                      ),
+                      child: ListTile(
+                        leading: Icon(
+                          _getSectionIcon(section),
+                          color: ZagColours.accentColor(context),
+                        ),
+                        title: Text(
+                          name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded),
+                              tooltip: 'Remove Section',
+                              onPressed: () =>
+                                  _removeSection(sections, section),
+                            ),
+                            ReorderableDragStartListener(
+                              index: index,
+                              child: Icon(
+                                Icons.drag_handle_rounded,
+                                color: theme.brightness == Brightness.dark
+                                    ? Colors.white30
+                                    : Colors.black26,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 8),
+          child: ZagButton.text(
+            text: availableSections.isEmpty
+                ? 'All Sections Added'
+                : 'Add Section',
+            icon: availableSections.isEmpty ? null : Icons.add_rounded,
+            color: ZagColours.currentAccent,
+            onTap: availableSections.isEmpty
+                ? null
+                : () => _showAddSectionSheet(
+                      isMovie: isMovie,
+                      defaults: defaults,
+                    ),
           ),
-          child: ListTile(
-            leading: Icon(
-              _getSectionIcon(section),
-              color: ZagColours.accentColor(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _emptySectionsPlaceholder({required bool isMovie}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.grid_view_rounded,
+              size: 48,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white24
+                  : Colors.black26,
             ),
-            title: Text(
-              name,
-              style: const TextStyle(
+            const SizedBox(height: 12),
+            Text(
+              isMovie
+                  ? 'No movie sections are currently shown.'
+                  : 'No TV sections are currently shown.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black54,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            trailing: ReorderableDragStartListener(
-              index: index,
-              child: Icon(
-                Icons.drag_handle_rounded,
+            const SizedBox(height: 4),
+            Text(
+              'Use the button below to add sections back.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white30
-                    : Colors.black26,
+                    ? Colors.white54
+                    : Colors.black45,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _removeSection(List<String> sections, String section) {
+    setState(() {
+      sections.remove(section);
+      _setHasChanges();
+    });
+  }
+
+  void _showAddSectionSheet({
+    required bool isMovie,
+    required List<String> defaults,
+  }) {
+    final sections = isMovie ? _movieSections : _tvSections;
+    final available =
+        defaults.where((section) => !sections.contains(section)).toList();
+
+    if (available.isEmpty) {
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Text(
+                'Add Section',
+                style: Theme.of(sheetContext)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 360),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                  itemBuilder: (context, index) {
+                    final section = available[index];
+                    final name = _sectionNames[section] ?? section;
+                    return ListTile(
+                      leading: Icon(
+                        _getSectionIcon(section),
+                        color: ZagColours.accentColor(context),
+                      ),
+                      title: Text(name),
+                      onTap: () {
+                        Navigator.of(sheetContext).pop();
+                        setState(() {
+                          sections.add(section);
+                          _setHasChanges();
+                        });
+                      },
+                    );
+                  },
+                  separatorBuilder: (_, __) => const Divider(height: 0),
+                  itemCount: available.length,
+                ),
+              ),
+            ],
           ),
         );
       },
