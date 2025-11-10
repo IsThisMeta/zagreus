@@ -488,16 +488,19 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
                     child: _buildStatItem('Time Left', timeLeft),
                   ),
                   // Play/Pause button
-                  IconButton(
-                    icon: AnimatedIcon(
-                      icon: AnimatedIcons.pause_play,
-                      progress: _playPauseController!,
-                      color: serviceColor,
+                  Transform.translate(
+                    offset: const Offset(-12, 0),
+                    child: IconButton(
+                      icon: AnimatedIcon(
+                        icon: AnimatedIcons.pause_play,
+                        progress: _playPauseController!,
+                        color: serviceColor,
+                      ),
+                      iconSize: 34,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _togglePlayPause(serviceName, paused),
                     ),
-                    iconSize: 24,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _togglePlayPause(serviceName, paused),
                   ),
                 ],
               ),
