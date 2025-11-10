@@ -4324,7 +4324,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'Trending New Shows',
+                    'Trending Shows',
                     style: TextStyle(
                       fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,

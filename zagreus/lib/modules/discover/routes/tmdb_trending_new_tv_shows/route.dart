@@ -173,7 +173,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     }
 
     return ZagAppBar(
-      title: 'Trending New TV Shows',
+      title: 'Trending Shows',
       actions: [
         IconButton(
           icon: const Icon(Icons.tune),
