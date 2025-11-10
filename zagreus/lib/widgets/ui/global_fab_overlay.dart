@@ -33,39 +33,44 @@ class ZagGlobalFABManager {
       _overlayEntry = OverlayEntry(
         builder: (context) {
           print('🔍 OverlayEntry: Building FAB');
-          return Positioned(
-            bottom: 85, // Align with SABnzbd FAB (above bottom nav bar)
-            right: 16,
-            child: SafeArea(
-              child: Material(
-                color: Colors.transparent,
-                child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
-                    .listenableBuilder(
-                  builder: (context, _) {
-                    final enabled =
-                        ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
-                    if (!enabled) {
-                      print('🔍 GlobalFAB: Disabled via settings, hiding');
-                      return const SizedBox.shrink();
-                    }
-                    return ValueListenableBuilder<String>(
-                      valueListenable: currentModuleNotifier,
-                      builder: (context, currentModule, __) {
-                        print(
-                            '🔍 GlobalFAB: Building with module: $currentModule');
-
-                        if (currentModule.isEmpty) {
-                          print('🔍 GlobalFAB: Empty module, hiding');
+          return SafeArea(
+            child: IgnorePointer(
+              ignoring: false,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12, bottom: 40),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
+                        .listenableBuilder(
+                      builder: (context, _) {
+                        final enabled =
+                            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
+                        if (!enabled) {
+                          print('🔍 GlobalFAB: Disabled via settings, hiding');
                           return const SizedBox.shrink();
                         }
+                        return ValueListenableBuilder<String>(
+                          valueListenable: currentModuleNotifier,
+                          builder: (context, currentModule, __) {
+                            print(
+                                '🔍 GlobalFAB: Building with module: $currentModule');
 
-                        print('🔍 GlobalFAB: Creating FAB widget');
-                        return ZagModuleSwitcherFAB(
-                          currentModuleKey: currentModule,
+                            if (currentModule.isEmpty) {
+                              print('🔍 GlobalFAB: Empty module, hiding');
+                              return const SizedBox.shrink();
+                            }
+
+                            print('🔍 GlobalFAB: Creating FAB widget');
+                            return ZagModuleSwitcherFAB(
+                              currentModuleKey: currentModule,
+                            );
+                          },
                         );
                       },
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
