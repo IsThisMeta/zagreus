@@ -9,6 +9,30 @@ class ZagDownloadsDrawer extends StatefulWidget {
 }
 
 class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
+  String? _selectedService;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-select first enabled service
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoSelectService();
+    });
+  }
+
+  void _autoSelectService() {
+    final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
+    final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
+
+    if (_selectedService == null) {
+      if (sabnzbdEnabled) {
+        setState(() => _selectedService = 'sabnzbd');
+      } else if (nzbgetEnabled) {
+        setState(() => _selectedService = 'nzbget');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -19,32 +43,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.download_rounded,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Downloads',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Header with service switcher
+            _buildHeader(),
             const Divider(height: 1),
             // Content
             Expanded(
@@ -56,8 +56,70 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
     );
   }
 
+  Widget _buildHeader() {
+    final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
+    final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
+    final bothEnabled = sabnzbdEnabled && nzbgetEnabled;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(
+            Icons.download_rounded,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Downloads',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+            ),
+          ),
+          if (bothEnabled) ...[
+            // Service switcher buttons
+            _buildServiceButton('sabnzbd', ZagIcons.SABNZBD, ZagModule.SABNZBD.color),
+            const SizedBox(width: 8),
+            _buildServiceButton('nzbget', ZagIcons.NZBGET, ZagModule.NZBGET.color),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceButton(String service, IconData icon, Color color) {
+    final isSelected = _selectedService == service;
+    
+    return GestureDetector(
+      onTap: () => setState(() => _selectedService = service),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected
+              ? Border.all(color: color.withOpacity(0.5), width: 2)
+              : Border.all(color: Colors.grey.withOpacity(0.2)),
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? color : Colors.grey,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
   Widget _buildContent() {
-    // Check if SABnzbd or NZBGet are enabled
     final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
     final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
 
@@ -65,13 +127,24 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
       return _buildEmptyState();
     }
 
+    // Show selected service, or first enabled one
+    if (_selectedService == 'sabnzbd' && sabnzbdEnabled) {
+      return _buildServiceView(_buildSabnzbdQueue());
+    } else if (_selectedService == 'nzbget' && nzbgetEnabled) {
+      return _buildServiceView(_buildNzbgetQueue());
+    } else if (sabnzbdEnabled) {
+      return _buildServiceView(_buildSabnzbdQueue());
+    } else if (nzbgetEnabled) {
+      return _buildServiceView(_buildNzbgetQueue());
+    }
+
+    return _buildEmptyState();
+  }
+
+  Widget _buildServiceView(Widget queueWidget) {
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [
-        if (sabnzbdEnabled) _buildSabnzbdSection(),
-        if (sabnzbdEnabled && nzbgetEnabled) const SizedBox(height: 24),
-        if (nzbgetEnabled) _buildNzbgetSection(),
-      ],
+      children: [queueWidget],
     );
   }
 
@@ -120,7 +193,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
     );
   }
 
-  Widget _buildSabnzbdSection() {
+  Widget _buildSabnzbdQueue() {
+    // TODO: Implement actual SABnzbd queue fetching
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -133,7 +207,7 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
             ),
             const SizedBox(width: 8),
             Text(
-              'SABnzbd',
+              'SABnzbd Queue',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -143,12 +217,30 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
           ],
         ),
         const SizedBox(height: 12),
-        _buildSabnzbdQueue(),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              'Queue loading...',
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.5),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildNzbgetSection() {
+  Widget _buildNzbgetQueue() {
+    // TODO: Implement actual NZBGet queue fetching
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -161,7 +253,7 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
             ),
             const SizedBox(width: 8),
             Text(
-              'NZBGet',
+              'NZBGet Queue',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -171,52 +263,25 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer> {
           ],
         ),
         const SizedBox(height: 12),
-        _buildNzbgetQueue(),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              'Queue loading...',
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.5),
+              ),
+            ),
+          ),
+        ),
       ],
-    );
-  }
-
-  Widget _buildSabnzbdQueue() {
-    // TODO: Implement actual SABnzbd queue fetching
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).canvasColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Text(
-          'Queue loading...',
-          style: TextStyle(
-            color: (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black)
-                .withOpacity(0.5),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNzbgetQueue() {
-    // TODO: Implement actual NZBGet queue fetching
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).canvasColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Text(
-          'Queue loading...',
-          style: TextStyle(
-            color: (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black)
-                .withOpacity(0.5),
-          ),
-        ),
-      ),
     );
   }
 }
