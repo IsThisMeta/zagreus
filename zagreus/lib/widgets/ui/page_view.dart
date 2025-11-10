@@ -1,6 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 
+class FastPageScrollPhysics extends PageScrollPhysics {
+  const FastPageScrollPhysics({ScrollPhysics? parent}) : super(parent: parent);
+
+  @override
+  FastPageScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return FastPageScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  SpringDescription get spring => const SpringDescription(
+        mass: 1,
+        stiffness: 700,
+        damping: 60,
+      );
+}
+
 class ZagPageView extends StatelessWidget {
   final PageController? controller;
   final List<Widget> children;
@@ -32,7 +48,9 @@ class ZagPageView extends StatelessWidget {
     return PageView(
       controller: controller,
       children: children,
-      physics: enableSwipe ? null : const NeverScrollableScrollPhysics(),
+      physics: enableSwipe
+          ? const FastPageScrollPhysics(parent: BouncingScrollPhysics())
+          : const NeverScrollableScrollPhysics(),
     );
   }
 }
