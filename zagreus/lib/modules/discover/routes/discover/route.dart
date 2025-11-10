@@ -57,7 +57,7 @@ class _UserOption {
 const double _userListExtraPadding = 32.0;
 const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
-const double _moduleSectionTitleFontSize = 18;
+const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
 const double _posterHeight = 162.0;
 const double _posterAspectRatio = 2 / 3;
