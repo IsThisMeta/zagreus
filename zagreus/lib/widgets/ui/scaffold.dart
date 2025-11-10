@@ -15,6 +15,7 @@ class ZagScaffold extends StatelessWidget {
   final FloatingActionButtonLocation? floatingActionButtonLocation;
   final bool extendBody;
   final bool extendBodyBehindAppBar;
+  final double? endDrawerEnableOpenDragGesture;
 
   /// Called when [ZagreusDatabase.ENABLED_PROFILE] has changed. Triggered within the build function.
   final void Function(BuildContext)? onProfileChange;
@@ -32,6 +33,7 @@ class ZagScaffold extends StatelessWidget {
     this.floatingActionButtonLocation,
     this.extendBody = false,
     this.extendBodyBehindAppBar = false,
+    this.endDrawerEnableOpenDragGesture,
     this.onProfileChange,
   });
 
@@ -69,6 +71,8 @@ class ZagScaffold extends StatelessWidget {
           body: body,
           drawer: drawer,
           endDrawer: endDrawer,
+          endDrawerEnableOpenDragGesture: endDrawer != null,
+          drawerEdgeDragWidth: endDrawerEnableOpenDragGesture,
           bottomNavigationBar: bottomNavigationBar,
           floatingActionButton: floatingActionButton,
           floatingActionButtonLocation: floatingActionButtonLocation,

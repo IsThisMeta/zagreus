@@ -71,6 +71,7 @@ class _State extends State<RadarrRoute> {
       module: ZagModule.RADARR,
       drawer: _drawer(),
       endDrawer: ZagGlobalFABManager.instance.getEndDrawer(moduleKey),
+      endDrawerEnableOpenDragGesture: 10.0, // Half the default size (20px instead of default ~20-40px)
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body(),
