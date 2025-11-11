@@ -59,10 +59,10 @@ const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
-const double _posterHeight = 162.0;
-const double _posterAspectRatio = 2 / 3;
+const double _posterHeight = 210.0;
+const double _posterAspectRatio = 2/3;
 const double _posterWidth = _posterHeight * _posterAspectRatio;
-const double _posterListHeight = _posterHeight + 36.0;
+const double _posterListHeight = _posterHeight + 42.0;
 const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
 
@@ -4178,10 +4178,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           : _tvShowPosterPlaceholder(),
                     ),
                   ),
-                  // Rating badge
+                  // Rating badge - top left
                   if (rating > 0)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -4190,24 +4190,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9.35,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -4217,8 +4206,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       bottom: 8,
                       right: 8,
                       child: Container(
-                        width: 12,
-                        height: 12,
+                        width: 10.2,
+                        height: 10.2,
                         decoration: BoxDecoration(
                           color: const Color(0xFF35C5F4),
                           shape: BoxShape.circle,
