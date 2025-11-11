@@ -489,14 +489,14 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
                   ),
                   // Play/Pause button
                   Transform.translate(
-                    offset: const Offset(-12, 0),
+                    offset: const Offset(-13, 0),
                     child: IconButton(
                       icon: AnimatedIcon(
                         icon: AnimatedIcons.pause_play,
                         progress: _playPauseController!,
                         color: serviceColor,
                       ),
-                      iconSize: 34,
+                      iconSize: 32,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: () => _togglePlayPause(serviceName, paused),
