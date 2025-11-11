@@ -360,11 +360,11 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
               // Library indicator - top right
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
-                  top: 10.5,
-                  right: 10.5,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    width: 11.9,
-                    height: 11.9,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
                       color: const Color(0xFF35C5F4),
                       shape: BoxShape.circle,
