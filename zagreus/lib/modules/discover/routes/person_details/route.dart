@@ -725,14 +725,14 @@ class _State extends State<PersonDetailsRoute>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
-                            color: _ratingColor(credit['rating'].toDouble()),
+                            color: Colors.black.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             credit['rating'].toStringAsFixed(1),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
-                              color: Colors.white,
+                              color: _ratingColor(credit['rating'].toDouble()),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
