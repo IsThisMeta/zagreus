@@ -149,16 +149,6 @@ class _State extends State<CalendarView> {
                   markersMaxCount: 1,
                   isTodayHighlighted: true,
                   outsideDaysVisible: false,
-                  selectedDecoration: BoxDecoration(
-                    color:
-                        ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH),
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: ZagColours.primary
-                        .withOpacity(ZagUI.OPACITY_DISABLED),
-                    shape: BoxShape.circle,
-                  ),
                   weekendTextStyle: dayStyle,
                   defaultTextStyle: dayStyle,
                   disabledTextStyle: unavailableStyle,
@@ -167,8 +157,10 @@ class _State extends State<CalendarView> {
                     color: ZagColours.currentAccent,
                     fontWeight: ZagUI.FONT_WEIGHT_BOLD,
                   ),
-                  markersAlignment: Alignment.bottomCenter,
                   todayTextStyle: dayStyle,
+                  selectedDecoration: const BoxDecoration(color: Colors.transparent),
+                  todayDecoration: const BoxDecoration(color: Colors.transparent),
+                  markersAlignment: Alignment.bottomCenter,
                 ),
                 onFormatChanged: (format) {
                   context.read<DashboardState>().calendarFormat = format;
