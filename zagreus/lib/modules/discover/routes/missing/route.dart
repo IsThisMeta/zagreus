@@ -305,7 +305,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
                       ),
                     ],
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),

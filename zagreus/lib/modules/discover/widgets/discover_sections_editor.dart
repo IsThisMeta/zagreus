@@ -204,7 +204,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Adjust the height of poster images in the Discover home view.',
+            'Adjust the height of poster images in the Discover home view. A restart is required to see changes.',
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).brightness == Brightness.dark
