@@ -126,6 +126,21 @@ class _State extends State<PersonDetailsRoute>
     });
   }
 
+  Color _ratingColor(double rating) {
+    if (rating >= 8.0) {
+      return Colors.blue;
+    } else if (rating >= 6.0) {
+      // Smooth gradient from yellow (6.0) to green (8.0)
+      final progress = (rating - 6.0) / 2.0;
+      final hue = 0.15 + progress * 0.15; // 0.15 (yellow) to 0.30 (green)
+      return HSVColor.fromAHSV(1.0, hue * 360, 0.8, 0.9).toColor();
+    } else if (rating >= 5.0) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -710,7 +725,7 @@ class _State extends State<PersonDetailsRoute>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
+                            color: _ratingColor(credit['rating'].toDouble()),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
