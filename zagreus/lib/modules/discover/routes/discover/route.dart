@@ -1039,6 +1039,84 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _sectionTitleRow({
+    required BuildContext context,
+    required IconData leadingIcon,
+    required Color leadingIconColor,
+    required String moduleLabel,
+    required String title,
+    Color? moduleLabelColor,
+    VoidCallback? onTap,
+    EdgeInsetsGeometry? padding,
+    bool showArrow = false,
+    IconData trailingIcon = Icons.arrow_forward_ios,
+    Color? trailingColor,
+    double trailingSize = 16,
+    TextStyle? titleStyle,
+  }) {
+    final theme = Theme.of(context);
+    final defaultTitleColor = theme.brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+    final effectiveTitleStyle = titleStyle ??
+        TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.bold,
+          color: defaultTitleColor,
+        );
+    final effectiveModuleLabelColor = moduleLabelColor ?? leadingIconColor;
+    final shouldShowArrow = showArrow || onTap != null;
+    final arrowColor = trailingColor ??
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black)
+            .withOpacity(0.5);
+
+    return Padding(
+      padding: padding ?? _moduleSectionTitlePadding,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            width: double.infinity,
+            child: Row(
+              children: [
+                Icon(
+                  leadingIcon,
+                  color: leadingIconColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  moduleLabel,
+                  style: TextStyle(
+                    fontSize: _moduleSectionTitleFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: effectiveModuleLabelColor,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: effectiveTitleStyle,
+                  ),
+                ),
+                if (shouldShowArrow)
+                  Icon(
+                    trailingIcon,
+                    size: trailingSize,
+                    color: arrowColor,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   List<Widget>? _buildAppBarActions() {
     if (_currentPageIndex == 2) {
       return [
@@ -3580,59 +3658,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiscoverRecommendedRoute(
-                    initialData: _recommendedMovies,
-                  ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: ZagIcons.RADARR,
+          leadingIconColor: const Color(0xFFFEC333),
+          moduleLabel: 'Radarr',
+          moduleLabelColor: const Color(0xFFFEC333),
+          title: 'Recommended',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiscoverRecommendedRoute(
+                  initialData: _recommendedMovies,
                 ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  ZagIcons.RADARR,
-                  color: const Color(0xFFFEC333),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Radarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFEC333),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Recommended',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.5),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         // Movie list or placeholder
         previewMovies.isNotEmpty
@@ -3675,59 +3717,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiscoverMissingRoute(
-                    initialData: _missingMovies,
-                  ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: ZagIcons.RADARR,
+          leadingIconColor: const Color(0xFFFEC333),
+          moduleLabel: 'Radarr',
+          moduleLabelColor: const Color(0xFFFEC333),
+          title: 'Missing',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiscoverMissingRoute(
+                  initialData: _missingMovies,
                 ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  ZagIcons.RADARR,
-                  color: const Color(0xFFFEC333),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Radarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFEC333),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Missing',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.5),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         // Movie list
         SizedBox(
@@ -3753,59 +3759,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiscoverDownloadingSoonRoute(
-                    initialData: _downloadingSoon,
-                  ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.schedule_rounded,
+          leadingIconColor: Colors.orange,
+          moduleLabel: 'Radarr',
+          moduleLabelColor: const Color(0xFFFEC333),
+          title: 'Downloading Soon',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiscoverDownloadingSoonRoute(
+                  initialData: _downloadingSoon,
                 ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  Icons.schedule_rounded,
-                  color: Colors.orange,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Radarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFEC333),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Downloading Soon',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.5),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         // Movie list
         SizedBox(
@@ -3862,61 +3832,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.local_fire_department_rounded,
+          leadingIconColor: const Color(0xFF6688FF),
+          moduleLabel: 'TMDB',
+          moduleLabelColor: const Color(0xFF6688FF),
+          title: 'Popular Movies',
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: GestureDetector(
-            onTap: _popularMovies.isNotEmpty
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBPopularMoviesRoute(
-                          initialData: _popularMovies,
-                        ),
+          onTap: _popularMovies.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TMDBPopularMoviesRoute(
+                        initialData: _popularMovies,
                       ),
-                    );
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.local_fire_department_rounded,
-                  color: const Color(0xFF6688FF),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'TMDB',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6688FF),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Popular Movies',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
                     ),
-                  ),
-                ),
-                if (_popularMovies.isNotEmpty)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+                  );
+                }
+              : null,
+          showArrow: _popularMovies.isNotEmpty,
         ),
         // Movie list or loading placeholder
         _popularMovies.isNotEmpty
@@ -4086,61 +4021,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.tv_rounded,
+          leadingIconColor: const Color(0xFF6688FF),
+          moduleLabel: 'TMDB',
+          moduleLabelColor: const Color(0xFF6688FF),
+          title: 'Popular TV Shows',
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: GestureDetector(
-            onTap: _popularTVShows.isNotEmpty
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBPopularTVShowsRoute(
-                          initialData: _popularTVShows,
-                        ),
+          onTap: _popularTVShows.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TMDBPopularTVShowsRoute(
+                        initialData: _popularTVShows,
                       ),
-                    );
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.tv_rounded,
-                  color: const Color(0xFF6688FF),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'TMDB',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6688FF),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Popular TV Shows',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
                     ),
-                  ),
-                ),
-                if (_popularTVShows.isNotEmpty)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+                  );
+                }
+              : null,
+          showArrow: _popularTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
         _popularTVShows.isNotEmpty
@@ -4321,61 +4221,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.trending_up_rounded,
+          leadingIconColor: const Color(0xFF6688FF),
+          moduleLabel: 'TMDB',
+          moduleLabelColor: const Color(0xFF6688FF),
+          title: 'Trending Shows',
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: GestureDetector(
-            onTap: _trendingNewTVShows.isNotEmpty
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBTrendingNewTVShowsRoute(
-                          initialData: _trendingNewTVShows,
-                        ),
+          onTap: _trendingNewTVShows.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TMDBTrendingNewTVShowsRoute(
+                        initialData: _trendingNewTVShows,
                       ),
-                    );
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.trending_up_rounded,
-                  color: const Color(0xFF6688FF),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'TMDB',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6688FF),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Trending Shows',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
                     ),
-                  ),
-                ),
-                if (_trendingNewTVShows.isNotEmpty)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+                  );
+                }
+              : null,
+          showArrow: _trendingNewTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
         previewShows.isNotEmpty
@@ -4732,61 +4597,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.auto_awesome_rounded,
+          leadingIconColor: const Color(0xFFED2224),
+          moduleLabel: 'Trakt',
+          moduleLabelColor: const Color(0xFFED2224),
+          title: 'Most Anticipated Shows',
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: GestureDetector(
-            onTap: _mostAnticipatedShows.isNotEmpty
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TraktMostAnticipatedShowsRoute(
-                          initialData: _mostAnticipatedShows,
-                        ),
+          onTap: _mostAnticipatedShows.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TraktMostAnticipatedShowsRoute(
+                        initialData: _mostAnticipatedShows,
                       ),
-                    );
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  color: const Color(0xFFED2224),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Trakt',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFED2224),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Most Anticipated Shows',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
                     ),
-                  ),
-                ),
-                if (_mostAnticipatedShows.isNotEmpty)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+                  );
+                }
+              : null,
+          showArrow: _mostAnticipatedShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
         _mostAnticipatedShows.isNotEmpty
@@ -4962,61 +4792,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.people_rounded,
+          leadingIconColor: const Color(0xFF6688FF),
+          moduleLabel: 'TMDB',
+          moduleLabelColor: const Color(0xFF6688FF),
+          title: 'Popular People',
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: GestureDetector(
-            onTap: _popularPeople.isNotEmpty
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => TMDBPopularPeopleRoute(
-                          initialData: _popularPeople,
-                        ),
+          onTap: _popularPeople.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TMDBPopularPeopleRoute(
+                        initialData: _popularPeople,
                       ),
-                    );
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.people_rounded,
-                  color: const Color(0xFF6688FF),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'TMDB',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6688FF),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Popular People',
-                    style: TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black87,
                     ),
-                  ),
-                ),
-                if (_popularPeople.isNotEmpty)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: (Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black)
-                        .withOpacity(0.5),
-                    size: 16,
-                  ),
-              ],
-            ),
-          ),
+                  );
+                }
+              : null,
+          showArrow: _popularPeople.isNotEmpty,
         ),
         // People list or loading placeholder
         _popularPeople.isNotEmpty
@@ -5620,53 +5415,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiscoverRecentlyDownloadedRoute(
-                    initialData: _recentlyDownloaded,
-                  ),
-                ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  ZagIcons.RADARR,
-                  color: const Color(0xFFFEC333),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Radarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFFFEC333),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Recently Downloaded',
-                    style: const TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.grey,
-                  size: 24,
-                ),
-              ],
-            ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: ZagIcons.RADARR,
+          leadingIconColor: const Color(0xFFFEC333),
+          moduleLabel: 'Radarr',
+          moduleLabelColor: const Color(0xFFFEC333),
+          title: 'Recently Downloaded',
+          titleStyle: TextStyle(
+            fontSize: _moduleSectionTitleFontSize,
+            fontWeight: FontWeight.w600,
           ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiscoverRecentlyDownloadedRoute(
+                  initialData: _recentlyDownloaded,
+                ),
+              ),
+            );
+          },
+          trailingIcon: Icons.chevron_right_rounded,
+          trailingColor: Colors.grey,
+          trailingSize: 24,
+          showArrow: true,
         ),
         // Movie list
         SizedBox(
@@ -5816,53 +5589,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title with navigation
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SonarrRecentlyDownloadedRoute(
-                    initialData: _recentlyDownloadedShows,
-                  ),
-                ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  ZagIcons.SONARR,
-                  color: ZagColours.blue,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Sonarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: ZagColours.blue,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Recently Downloaded',
-                    style: const TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.withOpacity(0.7),
-                  size: 16,
-                ),
-              ],
-            ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: ZagIcons.SONARR,
+          leadingIconColor: ZagColours.blue,
+          moduleLabel: 'Sonarr',
+          moduleLabelColor: ZagColours.blue,
+          title: 'Recently Downloaded',
+          titleStyle: TextStyle(
+            fontSize: _moduleSectionTitleFontSize,
+            fontWeight: FontWeight.w600,
           ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SonarrRecentlyDownloadedRoute(
+                  initialData: _recentlyDownloadedShows,
+                ),
+              ),
+            );
+          },
+          trailingColor: Colors.grey.withOpacity(0.7),
+          showArrow: true,
         ),
         // TV show list with thin cards (limited to 3)
         Padding(
@@ -5885,53 +5634,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title with navigation
-        Padding(
-          padding: _moduleSectionTitlePadding,
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SonarrAiringNextRoute(
-                    initialData: _airingNextShows,
-                  ),
-                ),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  ZagIcons.SONARR,
-                  color: ZagColours.blue,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Sonarr',
-                  style: TextStyle(
-                    fontSize: _moduleSectionTitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: ZagColours.blue,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    'Airing Next',
-                    style: const TextStyle(
-                      fontSize: _moduleSectionTitleFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.withOpacity(0.7),
-                  size: 16,
-                ),
-              ],
-            ),
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: ZagIcons.SONARR,
+          leadingIconColor: ZagColours.blue,
+          moduleLabel: 'Sonarr',
+          moduleLabelColor: ZagColours.blue,
+          title: 'Airing Next',
+          titleStyle: TextStyle(
+            fontSize: _moduleSectionTitleFontSize,
+            fontWeight: FontWeight.w600,
           ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SonarrAiringNextRoute(
+                  initialData: _airingNextShows,
+                ),
+              ),
+            );
+          },
+          trailingColor: Colors.grey.withOpacity(0.7),
+          showArrow: true,
         ),
         // TV show list with thin cards (limited to 3)
         Padding(
