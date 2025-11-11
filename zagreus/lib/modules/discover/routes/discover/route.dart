@@ -66,7 +66,7 @@ const int _discoverFullPageLimit = 60;
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
-  int _currentPageIndex = 1;
+  int _currentPageIndex = 0;
 
   // Adjustable poster height
   double _posterHeight = 200.0;
@@ -138,7 +138,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   void initState() {
     super.initState();
     _loadSavedSettings();
-    _pageController = ZagPageController(initialPage: 1);
+    _pageController = ZagPageController(initialPage: 0);
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
         setState(() {
@@ -1099,9 +1099,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return ZagPageView(
       controller: _pageController,
       children: [
-        const ZChatPage(),
         _moviesPage(),
         _tvShowsPage(),
+        const ZChatPage(),
         _searchPage(),
       ],
     );
@@ -1185,7 +1185,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
-    if (_currentPageIndex == 0) {
+    if (_currentPageIndex == 2) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1206,7 +1206,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex != 0 && _currentPageIndex != 3) {
+    if (_currentPageIndex != 2 && _currentPageIndex != 3) {
       return [
         Container(
           margin: const EdgeInsets.only(right: 8),
@@ -1221,7 +1221,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == 1 &&
+    if (_currentPageIndex == 0 &&
         ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
       return [
         IconButton(
@@ -6291,16 +6291,16 @@ class _DiscoverNavigationBar extends StatelessWidget {
   );
 
   static const List<IconData> icons = [
-    Icons.smart_toy, // Robot icon for Agent
     Icons.movie_rounded,
     Icons.tv_rounded,
+    Icons.smart_toy, // Robot icon for Agent
     Icons.search_rounded,
   ];
 
   static const List<String> titles = [
-    'Agent',
     'Movies',
     'Shows',
+    'Agent',
     'Search',
   ];
 
