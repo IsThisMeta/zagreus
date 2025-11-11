@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -361,7 +362,7 @@ class _State extends State<DiscoverRecommendedRoute>
                 bottom: 8,
                 left: 8,
                 right: 8,
-                child: Text(
+                child: AutoSizeText(
                   movie.title ?? 'Unknown',
                   style: TextStyle(
                     fontSize: titleFontSize,
@@ -375,6 +376,7 @@ class _State extends State<DiscoverRecommendedRoute>
                     ],
                   ),
                   maxLines: 2,
+                  minFontSize: 10,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
