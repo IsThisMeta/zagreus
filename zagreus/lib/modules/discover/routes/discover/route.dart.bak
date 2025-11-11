@@ -5991,7 +5991,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 // Thumbnail
                 Container(
-                  width: 108,
+                  width: 120,
                   height: 72,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
@@ -6135,7 +6135,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 // Thumbnail
                 Container(
-                  width: 108,
+                  width: 120,
                   height: 72,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
