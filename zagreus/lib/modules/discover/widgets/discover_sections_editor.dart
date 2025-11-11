@@ -51,6 +51,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
+  double _posterHeight = 200.0;
 
   bool get hasChanges => _hasChanges;
 
@@ -72,6 +73,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     _tvSections = savedTVOrder.isNotEmpty
         ? List<String>.from(savedTVOrder)
         : List<String>.from(_defaultTVSections);
+    
+    // Load poster height
+    final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
+    if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
+      _posterHeight = savedHeight;
+    }
   }
 
   Future<void> saveChanges() async {
@@ -80,6 +87,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
     ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(_movieSections);
     ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(_tvSections);
+    ZagreusDatabase.DISCOVER_POSTER_HEIGHT.update(_posterHeight);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
@@ -107,7 +115,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Column(
         children: [
           Container(
@@ -123,7 +131,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                       : Colors.black54,
               tabs: const [
                 Tab(text: 'Movies'),
-                Tab(text: 'TV Shows'),
+                Tab(text: 'Shows'),
+                Tab(text: 'Config'),
               ],
             ),
           ),
@@ -141,7 +150,66 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   defaults: _defaultTVSections,
                   isMovie: false,
                 ),
+                _buildConfigTab(),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfigTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Poster Height',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_posterHeight.round()} pixels',
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
+          ),
+          Slider(
+            value: _posterHeight,
+            min: 150,
+            max: 250,
+            divisions: 20,
+            activeColor: ZagColours.accentColor(context),
+            inactiveColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white24
+                : Colors.black26,
+            onChanged: (value) {
+              setState(() {
+                _posterHeight = value;
+                _hasChanges = true;
+              });
+              widget.onHasChangesChanged?.call(_hasChanges);
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Adjust the height of poster images in the Discover home view.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
             ),
           ),
         ],

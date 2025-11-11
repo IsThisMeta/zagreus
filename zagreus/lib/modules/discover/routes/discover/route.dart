@@ -59,10 +59,7 @@ const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
-const double _posterHeight = 205.0;
 const double _posterAspectRatio = 2/3;
-const double _posterWidth = _posterHeight * _posterAspectRatio;
-const double _posterListHeight = _posterHeight + 42.0;
 const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
 
@@ -70,6 +67,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
   int _currentPageIndex = 0;
+
+  // Adjustable poster height
+  double _posterHeight = 200.0;
+  double get _posterWidth => _posterHeight * _posterAspectRatio;
+  double get _posterListHeight => _posterHeight + 42.0;
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -2142,6 +2144,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
     _sonarrSearchForCutoffUnmet =
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+    
+    // Load poster height preference
+    final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
+    if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
+      _posterHeight = savedHeight;
+    }
   }
 
   Color _ratingColor(double rating) {
