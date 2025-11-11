@@ -458,7 +458,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
                   left: 8,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -467,7 +467,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
                       (show['rating'] ?? 0.0).toStringAsFixed(1),
                       style: TextStyle(
                         color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
-                        fontSize: 10.2,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

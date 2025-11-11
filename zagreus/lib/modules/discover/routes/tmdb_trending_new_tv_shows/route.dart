@@ -419,7 +419,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                       (show['rating'] ?? 0.0).toStringAsFixed(1),
                       style: TextStyle(
                         color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
-                        fontSize: 10.2,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

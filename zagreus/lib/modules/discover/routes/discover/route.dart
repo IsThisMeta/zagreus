@@ -59,7 +59,7 @@ const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
-const double _posterHeight = 210.0;
+const double _posterHeight = 205.0;
 const double _posterAspectRatio = 2/3;
 const double _posterWidth = _posterHeight * _posterAspectRatio;
 const double _posterListHeight = _posterHeight + 42.0;
@@ -3993,7 +3993,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           (movie['rating'] as num).toStringAsFixed(1),
                           style: TextStyle(
                             color: _ratingColor((movie['rating'] as num).toDouble()),
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -4198,7 +4198,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           rating.toStringAsFixed(1),
                           style: TextStyle(
                             color: _ratingColor(rating),
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -4433,7 +4433,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           rating.toStringAsFixed(1),
                           style: TextStyle(
                             color: _ratingColor(rating),
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
