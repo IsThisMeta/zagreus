@@ -1090,10 +1090,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return ZagPageView(
       controller: _pageController,
       children: [
-        _searchPage(),
+        const ZChatPage(),
         _moviesPage(),
         _tvShowsPage(),
-        const ZChatPage(),
+        _searchPage(),
       ],
     );
   }
@@ -1176,7 +1176,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
-    if (_currentPageIndex == 3) {
+    if (_currentPageIndex == 0) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1212,7 +1212,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == 0 &&
+    if (_currentPageIndex == 1 &&
         ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
       return [
         IconButton(
@@ -6275,17 +6275,17 @@ class _DiscoverNavigationBar extends StatelessWidget {
   );
 
   static const List<IconData> icons = [
-    Icons.search_rounded,
+    Icons.smart_toy, // Robot icon for Agent
     Icons.movie_rounded,
     Icons.tv_rounded,
-    Icons.smart_toy, // Robot icon for Agent
+    Icons.search_rounded,
   ];
 
   static const List<String> titles = [
-    'Search',
+    'Agent',
     'Movies',
     'Shows',
-    'Agent',
+    'Search',
   ];
 
   const _DiscoverNavigationBar({
