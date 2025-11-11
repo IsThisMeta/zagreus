@@ -291,7 +291,7 @@ class _State extends State<TMDBPopularPeopleRoute>
                   ? Colors.white
                   : Colors.black87,
             ),
-            maxLines: 2,
+            maxLines: 3,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),

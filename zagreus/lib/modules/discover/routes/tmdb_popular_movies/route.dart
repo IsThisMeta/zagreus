@@ -779,7 +779,7 @@ class _State extends State<TMDBPopularMoviesRoute>
                   fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

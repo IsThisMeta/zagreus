@@ -586,7 +586,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                   fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),

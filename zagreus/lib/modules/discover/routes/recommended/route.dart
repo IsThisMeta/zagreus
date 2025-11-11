@@ -372,7 +372,7 @@ class _State extends State<DiscoverRecommendedRoute>
                       ),
                     ],
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),

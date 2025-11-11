@@ -984,7 +984,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
                   fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
