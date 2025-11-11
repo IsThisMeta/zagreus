@@ -287,7 +287,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: usesThreeColumns ? 3 : 2,
-          childAspectRatio: 2 / 3,
+          childAspectRatio: 0.634,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -320,28 +320,14 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
             fit: StackFit.expand,
             children: [
               _buildPosterImage(show),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    stops: const [0.0, 0.6, 1.0],
-                  ),
-                ),
-              ),
-              // Library indicator - bottom right
+              // Library indicator - top right
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
-                  bottom: 14,
+                  top: 14,
                   right: 14,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 11.9,
+                    height: 11.9,
                     decoration: BoxDecoration(
                       color: const Color(0xFF35C5F4),
                       shape: BoxShape.circle,
@@ -380,39 +366,28 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                         : null,
                   ),
                 ),
-              // Rating badge - bottom left
+              // Rating badge - top left
               if (show['rating'] != null && show['rating'] > 0)
                 Positioned(
-                  bottom: 8,
+                  top: 8,
                   left: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 14,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      (show['rating'] ?? 0.0).toStringAsFixed(1),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.2,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        (show['rating'] ?? 0.0).toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

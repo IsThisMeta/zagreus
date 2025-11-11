@@ -4194,7 +4194,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           rating.toStringAsFixed(1),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 9.35,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -4206,8 +4206,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       top: 8,
                       right: 8,
                       child: Container(
-                        width: 10.2,
-                        height: 10.2,
+                        width: 12,
+                        height: 12,
                         decoration: BoxDecoration(
                           color: const Color(0xFF35C5F4),
                           shape: BoxShape.circle,
@@ -4413,10 +4413,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           : _tvShowPosterPlaceholder(),
                     ),
                   ),
-                  // Rating badge (below NEW badge if present)
+                  // Rating badge - top left
                   if (rating > 0)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -4425,31 +4425,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  // In-library indicator
+                  // In-library indicator - top right
                   if (inLibrary)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       right: 8,
                       child: Container(
                         width: 12,
