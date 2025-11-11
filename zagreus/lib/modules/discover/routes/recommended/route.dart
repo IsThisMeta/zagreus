@@ -54,7 +54,7 @@ class _State extends State<DiscoverRecommendedRoute>
     _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
   }
 
-  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadRecommendedMovies() async {
+  Future<void> _loadRecommendedMovies() async {
     setState(() {
       _isLoading = true;
       _error = null;

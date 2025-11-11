@@ -35,7 +35,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     }
   }
   
-  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadDownloadingSoon() async {
+  Future<void> _loadDownloadingSoon() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -280,8 +280,8 @@ class _MovieGridItem extends StatelessWidget {
   }) : super(key: key);
   
   double get _titleFontSize {
-    if (columns == 2) return 12.0;
-    if (columns == 4) return 16.0;
+    if (columns == 2) return 16.0;
+    if (columns == 4) return 12.0;
     return 14.0;
   }
 

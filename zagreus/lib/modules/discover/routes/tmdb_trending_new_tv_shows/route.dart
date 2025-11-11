@@ -67,7 +67,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
-  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadTrendingShows({bool silent = false}) async {
+  Future<void> _loadTrendingShows({bool silent = false}) async {
     if (!silent) {
       setState(() {
         _isLoading = true;

@@ -75,7 +75,7 @@ class _State extends State<PersonDetailsRoute>
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
-  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadPersonData() async {
+  Future<void> _loadPersonData() async {
     try {
       // Load person details
       final details = await TMDBApi.getPersonDetails(widget.personId);
