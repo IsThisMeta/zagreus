@@ -676,11 +676,11 @@ class _State extends State<PersonDetailsRoute>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    // Year badge - top-left
+                    // Year badge - top-right
                     if (credit['year'] != null)
                       Positioned(
                         top: 6,
-                        left: 6,
+                        right: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 3),
@@ -691,17 +691,19 @@ class _State extends State<PersonDetailsRoute>
                           child: Text(
                             credit['year'],
                             style: TextStyle(
-                              color: ZagColours.currentAccentLight,
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                    // Rating badge - top-left (below year if present)
+                    // Rating badge - top-left
                     if (credit['rating'] != null && credit['rating'] > 0)
                       Positioned(
-                        top: credit['year'] != null ? 32 : 6,
+                        top: 6,
                         left: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
