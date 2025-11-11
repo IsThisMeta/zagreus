@@ -24,6 +24,7 @@ import 'package:zagreus/modules/discover/routes/tmdb_popular_tv_shows/route.dart
 import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_people/route.dart';
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/route.dart';
+import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
@@ -59,14 +60,14 @@ const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
 const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
-const double _posterAspectRatio = 2/3;
+const double _posterAspectRatio = 2 / 3;
 const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
-  int _currentPageIndex = 0;
+  int _currentPageIndex = 1;
 
   // Adjustable poster height
   double _posterHeight = 200.0;
@@ -83,6 +84,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _popularTVShows = [];
   List<Map<String, dynamic>> _trendingNewTVShows = [];
   List<Map<String, dynamic>> _mostAnticipatedShows = [];
+  List<Map<String, dynamic>> _mostAnticipatedMovies = [];
   List<Map<String, dynamic>> _popularPeople = [];
   bool _isLoading = true;
   String? _error;
@@ -127,7 +129,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   void initState() {
     super.initState();
     _loadSavedSettings();
-    _pageController = ZagPageController(initialPage: 0);
+    _pageController = ZagPageController(initialPage: 1);
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
         setState(() {
@@ -157,6 +159,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadPopularTVShows();
     _loadTrendingNewTVShows();
     _loadMostAnticipatedShows();
+    _loadMostAnticipatedMovies();
     _loadPopularPeople();
     _loadSonarrAiringNext();
     _syncDeepCutsIfNeeded();
@@ -395,8 +398,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
 
       setState(() {
-        _recommendedMovies =
-            uniqueMovies.take(_discoverFullPageLimit).toList();
+        _recommendedMovies = uniqueMovies.take(_discoverFullPageLimit).toList();
       });
     } catch (e) {
       // Silently fail - recommendations are optional
@@ -424,8 +426,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (radarrState.missing != null) {
         final missingMovies = await radarrState.missing!;
         setState(() {
-          _missingMovies =
-              missingMovies.take(_discoverFullPageLimit).toList();
+          _missingMovies = missingMovies.take(_discoverFullPageLimit).toList();
         });
       }
     } catch (e) {
@@ -987,6 +988,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _loadMostAnticipatedMovies() async {
+    print('🎯 Loading most anticipated movies from Trakt...');
+    try {
+      final movies = await TraktApi.getAnticipatedMovies(page: 1, limit: 20);
+      final radarrState = context.read<RadarrState>();
+      List<RadarrMovie>? radarrMovies;
+      if (radarrState.enabled) {
+        if (radarrState.movies == null) {
+          radarrState.fetchMovies();
+        }
+        if (radarrState.movies != null) {
+          radarrMovies = await radarrState.movies!;
+        }
+      }
+
+      for (final movie in movies) {
+        final tmdbId = movie['tmdbId'] as int?;
+        if (tmdbId != null) {
+          final details = await TMDBApi.getMovieDetails(tmdbId);
+          if (details != null) {
+            movie['poster'] = TMDBApi.getImageUrl(
+              details['poster_path'],
+              size: 'w500',
+            );
+            movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
+            movie['overview'] ??= details['overview'];
+            movie['releaseDate'] ??= details['release_date'];
+            movie['rating'] ??= (details['vote_average'] ?? 0.0);
+          }
+        }
+
+        movie['inLibrary'] = false;
+        if (radarrMovies != null && radarrMovies.isNotEmpty) {
+          for (final radarrMovie in radarrMovies) {
+            final matchesTmdb = tmdbId != null && radarrMovie.tmdbId == tmdbId;
+            final matchesImdb = radarrMovie.imdbId != null &&
+                radarrMovie.imdbId == (movie['imdbId'] as String?);
+            if (matchesTmdb || matchesImdb) {
+              movie['inLibrary'] = true;
+              movie['serviceItemId'] = radarrMovie.id;
+              break;
+            }
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _mostAnticipatedMovies = movies.take(12).toList();
+        });
+        print(
+            '🎯 Set ${_mostAnticipatedMovies.length} most anticipated movies in state');
+      }
+    } catch (e) {
+      print('❌ Error loading most anticipated movies: $e');
+    }
+  }
+
   Future<void> _loadPopularPeople() async {
     print('👥 Loading popular people...');
     try {
@@ -1031,10 +1090,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return ZagPageView(
       controller: _pageController,
       children: [
+        _searchPage(),
         _moviesPage(),
         _tvShowsPage(),
         const ZChatPage(),
-        _searchPage(),
       ],
     );
   }
@@ -1055,9 +1114,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     TextStyle? titleStyle,
   }) {
     final theme = Theme.of(context);
-    final defaultTitleColor = theme.brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
+    final defaultTitleColor =
+        theme.brightness == Brightness.dark ? Colors.white : Colors.black87;
     final effectiveTitleStyle = titleStyle ??
         TextStyle(
           fontSize: _moduleSectionTitleFontSize,
@@ -1118,7 +1176,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
-    if (_currentPageIndex == 2) {
+    if (_currentPageIndex == 3) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1139,7 +1197,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex != 2 && _currentPageIndex != 3) {
+    if (_currentPageIndex != 0 && _currentPageIndex != 3) {
       return [
         Container(
           margin: const EdgeInsets.only(right: 8),
@@ -1154,7 +1212,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == 3 &&
+    if (_currentPageIndex == 0 &&
         ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
       return [
         IconButton(
@@ -1228,7 +1286,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[0],
+        controller: _DiscoverNavigationBar.scrollControllers[1],
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
@@ -1250,6 +1308,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'missing',
       'downloading_soon',
       'popular_movies',
+      'most_anticipated_movies',
       'popular_people',
       'deep_cuts',
     ];
@@ -1259,6 +1318,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
     final sectionOrder =
         savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
+    if (!sectionOrder.contains('most_anticipated_movies')) {
+      final popularIndex = sectionOrder.indexOf('popular_movies');
+      final insertIndex =
+          popularIndex == -1 ? sectionOrder.length : popularIndex + 1;
+      sectionOrder.insert(insertIndex, 'most_anticipated_movies');
+    }
 
     // Map of section builders
     final sectionBuilders = <String, Widget Function()>{
@@ -1278,6 +1343,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           children: [_downloadingSoonSection(), const SizedBox(height: 4)]),
       'popular_movies': () => Column(
           children: [_popularMoviesSection(), const SizedBox(height: 4)]),
+      'most_anticipated_movies': () =>
+          _mostAnticipatedMoviesSection(), // Works even if empty
       'popular_people': () => Column(
           children: [_popularPeopleSection(), const SizedBox(height: 4)]),
       'deep_cuts': () => ZagreusMega.isEnabled
@@ -1300,7 +1367,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[1],
+        controller: _DiscoverNavigationBar.scrollControllers[2],
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
@@ -1912,8 +1979,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Also trigger watch history sync if needed
         final watchHistoryService = WatchHistorySyncService();
         if (watchHistoryService.needsSync) {
-          ZagLogger().debug(
-              'Triggering background watch history sync...');
+          ZagLogger().debug('Triggering background watch history sync...');
           watchHistoryService.syncIfNeeded();
         }
       });
@@ -1963,19 +2029,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           );
 
           // Also trigger watch history sync if enabled
-          final watchHistoryResult = await WatchHistorySyncService().syncWatchHistory(force: true);
+          final watchHistoryResult =
+              await WatchHistorySyncService().syncWatchHistory(force: true);
           if (watchHistoryResult.success) {
             showZagSnackBar(
               title: 'Watch History Synced',
               message: 'Your Tautulli watch history has been synced',
               type: ZagSnackbarType.SUCCESS,
             );
-          } else if (watchHistoryResult.error != WatchHistorySyncError.cacheDisabled &&
-                     watchHistoryResult.error != WatchHistorySyncError.tautulliNotConfigured) {
+          } else if (watchHistoryResult.error !=
+                  WatchHistorySyncError.cacheDisabled &&
+              watchHistoryResult.error !=
+                  WatchHistorySyncError.tautulliNotConfigured) {
             // Only show error if it's not just disabled/not configured
             showZagSnackBar(
               title: 'Watch History Sync Failed',
-              message: watchHistoryResult.errorMessage ?? 'Could not sync watch history',
+              message: watchHistoryResult.errorMessage ??
+                  'Could not sync watch history',
               type: ZagSnackbarType.ERROR,
             );
           }
@@ -2051,7 +2121,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     try {
       final deviceId = DeviceIdService().deviceId;
-      print('📥 Loading available users for device: ${deviceId.substring(0, 8)}...');
+      print(
+          '📥 Loading available users for device: ${deviceId.substring(0, 8)}...');
 
       final service = ZAssistantService();
       final response = await service.getAvailableUsers(deviceId).timeout(
@@ -2071,7 +2142,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (response.success && response.data != null) {
         final users = _parseUserOptions(response.data!['users']);
-        print('✅ Found ${users.length} available users: ${users.map((u) => u.label).toList()}');
+        print(
+            '✅ Found ${users.length} available users: ${users.map((u) => u.label).toList()}');
 
         if (mounted) {
           setState(() {
@@ -2079,9 +2151,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final serverSelected = response.data!['selected_user_alias'];
             if (serverSelected != null) {
               _selectedUser = serverSelected;
-              ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(serverSelected);
+              ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS
+                  .update(serverSelected);
             } else {
-              _selectedUser = ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.read();
+              _selectedUser =
+                  ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.read();
             }
           });
           _refreshQuickSetupModal();
@@ -2186,7 +2260,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
         showZagSuccessSnackBar(
           title: 'User Selected',
-          message: 'Z Agent will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
+          message:
+              'Z Agent will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
         );
       } else {
         showZagErrorSnackBar(
@@ -2222,7 +2297,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
     _sonarrSearchForCutoffUnmet =
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
-    
+
     // Load poster height preference
     final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
     if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
@@ -2269,222 +2344,246 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Row(
-                      children: [
-                        Icon(Icons.info_outline, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Z Agent setup',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: theme.colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Z Agent setup',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
-                      style: descriptionStyle,
-                    ),
-                    const SizedBox(height: 16),
-                    ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                        .listenableBuilder(
-                      builder: (context, _) {
-                        final enabled = ZagreusDatabase
-                            .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                            .read();
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: ZagBlock(
-                            title: 'Library Cache',
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
+                        style: descriptionStyle,
+                      ),
+                      const SizedBox(height: 16),
+                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                              .read();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: ZagBlock(
+                              title: 'Library Cache',
+                              body: [
+                                TextSpan(
+                                  text: enabled
+                                      ? 'Library is synced to Z Agent'
+                                      : 'Let Z Agent analyze your library',
+                                ),
+                              ],
+                              trailing: ZagSwitch(
+                                value: enabled,
+                                onChanged: (value) {
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                                      .update(value);
+                                  if (value) {
+                                    showZagInfoSnackBar(
+                                      title: 'Library Cache Enabled',
+                                      message:
+                                          'Z Agent will now sync your library periodically',
+                                    );
+                                  } else {
+                                    showZagInfoSnackBar(
+                                      title: 'Library Cache Disabled',
+                                      message:
+                                          'Z Agent will no longer sync your library',
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                              .read();
+                          return ZagBlock(
+                            title: 'Watch History Cache',
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Library is synced to Z Agent'
-                                    : 'Let Z Agent analyze your library',
+                                    ? 'Tautulli watch history synced to Z Agent'
+                                    : 'Sync your Tautulli watch history',
                               ),
                             ],
                             trailing: ZagSwitch(
                               value: enabled,
                               onChanged: (value) {
-                                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                                ZagreusDatabase
+                                    .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
                                     .update(value);
                                 if (value) {
                                   showZagInfoSnackBar(
-                                    title: 'Library Cache Enabled',
+                                    title: 'Watch History Cache Enabled',
                                     message:
-                                        'Z Agent will now sync your library periodically',
+                                        'Z Agent will now sync your Tautulli watch history',
                                   );
+                                  _loadAvailableUsers();
                                 } else {
                                   showZagInfoSnackBar(
-                                    title: 'Library Cache Disabled',
+                                    title: 'Watch History Cache Disabled',
                                     message:
-                                        'Z Agent will no longer sync your library',
+                                        'Z Agent will no longer sync watch history',
                                   );
+                                  setState(() {
+                                    _availableUsers = [];
+                                    _selectedUser = null;
+                                  });
+                                  _refreshQuickSetupModal();
                                 }
                               },
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                        .listenableBuilder(
-                      builder: (context, _) {
-                        final enabled = ZagreusDatabase
-                            .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                            .read();
-                        return ZagBlock(
-                          title: 'Watch History Cache',
-                          body: [
-                            TextSpan(
-                              text: enabled
-                                  ? 'Tautulli watch history synced to Z Agent'
-                                  : 'Sync your Tautulli watch history',
-                            ),
-                          ],
-                          trailing: ZagSwitch(
-                            value: enabled,
-                            onChanged: (value) {
-                              ZagreusDatabase
-                                  .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
-                                  .update(value);
-                              if (value) {
-                                showZagInfoSnackBar(
-                                  title: 'Watch History Cache Enabled',
-                                  message:
-                                      'Z Agent will now sync your Tautulli watch history',
-                                );
-                                _loadAvailableUsers();
-                              } else {
-                                showZagInfoSnackBar(
-                                  title: 'Watch History Cache Disabled',
-                                  message:
-                                      'Z Agent will no longer sync watch history',
-                                );
-                                setState(() {
-                                  _availableUsers = [];
-                                  _selectedUser = null;
-                                });
-                                _refreshQuickSetupModal();
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                        .listenableBuilder(
-                      builder: (context, _) {
-                        final enabled = ZagreusDatabase
-                            .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                            .read();
-                        if (!enabled) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'Enable the library cache to trigger a manual sync.',
-                              style: descriptionStyle,
-                              textAlign: TextAlign.center,
-                            ),
                           );
-                        }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                              .read();
+                          if (!enabled) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Enable the library cache to trigger a manual sync.',
+                                style: descriptionStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
 
-                        if (_isSyncing) {
+                          if (_isSyncing) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      ZagColours.currentAccent,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
                           return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    ZagColours.currentAccent,
-                                  ),
-                                ),
+                            child: TextButton(
+                              onPressed: _forceLibrarySync,
+                              style: TextButton.styleFrom(
+                                foregroundColor: ZagColours.currentAccent,
                               ),
+                              child: const Text('Sync library now'),
                             ),
                           );
-                        }
-
-                        return Center(
-                          child: TextButton(
-                            onPressed: _forceLibrarySync,
-                            style: TextButton.styleFrom(
-                              foregroundColor: ZagColours.currentAccent,
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      // Privacy notice
+                      if (ZagreusDatabase
+                              .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                              .read() &&
+                          (_availableUsers.isNotEmpty || _loadingUsers))
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            'Usernames shown exactly as they appear in Tautulli. Only this device sees them.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
                             ),
-                            child: const Text('Sync library now'),
+                            textAlign: TextAlign.center,
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    // Privacy notice
-                    if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          'Usernames shown exactly as they appear in Tautulli. Only this device sees them.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    // User selection UI
-                    if (ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED.read() && (_availableUsers.isNotEmpty || _loadingUsers))
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: ZagBlock(
-                          title: 'Select Your Tautulli User',
-                          body: [
-                            TextSpan(
-                              text: _selectedUser != null
-                                  ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
-                                  : 'Choose which Tautulli user you are',
-                            ),
-                          ],
-                      bottom: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                              ..._availableUsers.map((userOption) {
-                                final isSelected = _selectedUser == userOption.alias;
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: ZagButton.text(
-                                    text: userOption.label,
-                                    icon: isSelected ? Icons.check_circle : Icons.circle_outlined,
-                                    onTap: () => _selectUser(userOption.alias),
-                                    backgroundColor: isSelected ? ZagColours.currentAccent : null,
-                                  ),
-                                );
-                              }).toList(),
-                              if (_loadingUsers && _availableUsers.isEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8),
-                                  child: Center(child: CircularProgressIndicator()),
-                                ),
-                          if (_availableUsers.isEmpty && !_loadingUsers)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Center(
-                                child: ZagButton.text(
-                                  text: 'Load Users',
-                                  icon: Icons.refresh,
-                                  onTap: _loadAvailableUsers,
-                                ),
+                      // User selection UI
+                      if (ZagreusDatabase
+                              .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
+                              .read() &&
+                          (_availableUsers.isNotEmpty || _loadingUsers))
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: ZagBlock(
+                            title: 'Select Your Tautulli User',
+                            body: [
+                              TextSpan(
+                                text: _selectedUser != null
+                                    ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
+                                    : 'Choose which Tautulli user you are',
                               ),
+                            ],
+                            bottom: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 12),
+                                ..._availableUsers.map((userOption) {
+                                  final isSelected =
+                                      _selectedUser == userOption.alias;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: ZagButton.text(
+                                      text: userOption.label,
+                                      icon: isSelected
+                                          ? Icons.check_circle
+                                          : Icons.circle_outlined,
+                                      onTap: () =>
+                                          _selectUser(userOption.alias),
+                                      backgroundColor: isSelected
+                                          ? ZagColours.currentAccent
+                                          : null,
+                                    ),
+                                  );
+                                }).toList(),
+                                if (_loadingUsers && _availableUsers.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 8),
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
+                                  ),
+                                if (_availableUsers.isEmpty && !_loadingUsers)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Center(
+                                      child: ZagButton.text(
+                                        text: 'Load Users',
+                                        icon: Icons.refresh,
+                                        onTap: _loadAvailableUsers,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(height: 24),
+                              ],
                             ),
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                      bottomHeight: (_availableUsers.length * 54.0) + (_loadingUsers ? 40 : _availableUsers.isEmpty ? 54 : 0) + 12 + _userListExtraPadding + 24,
-                    ),
-                  ),
+                            bottomHeight: (_availableUsers.length * 54.0) +
+                                (_loadingUsers
+                                    ? 40
+                                    : _availableUsers.isEmpty
+                                        ? 54
+                                        : 0) +
+                                12 +
+                                _userListExtraPadding +
+                                24,
+                          ),
+                        ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -3711,8 +3810,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _missingMoviesSection() {
-    final previewMovies =
-        _missingMovies.take(_discoverPreviewLimit).toList();
+    final previewMovies = _missingMovies.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3753,8 +3851,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _downloadingSoonSection() {
-    final previewMovies =
-        _downloadingSoon.take(_discoverPreviewLimit).toList();
+    final previewMovies = _downloadingSoon.take(_discoverPreviewLimit).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3960,7 +4057,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: Text(
                           (movie['rating'] as num).toStringAsFixed(1),
                           style: TextStyle(
-                            color: _ratingColor((movie['rating'] as num).toDouble()),
+                            color: _ratingColor(
+                                (movie['rating'] as num).toDouble()),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -4784,6 +4882,216 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       tmdbId: tmdbId,
       tvdbId: tvdbId,
       title: title,
+    );
+  }
+
+  Widget _mostAnticipatedMoviesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.auto_awesome_rounded,
+          leadingIconColor: const Color(0xFFED2224),
+          moduleLabel: 'Trakt',
+          moduleLabelColor: const Color(0xFFED2224),
+          title: 'Most Anticipated Movies',
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          onTap: _mostAnticipatedMovies.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TraktMostAnticipatedMoviesRoute(
+                        initialData: _mostAnticipatedMovies,
+                      ),
+                    ),
+                  );
+                }
+              : null,
+          showArrow: _mostAnticipatedMovies.isNotEmpty,
+        ),
+        _mostAnticipatedMovies.isNotEmpty
+            ? SizedBox(
+                height: _posterListHeight,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _mostAnticipatedMovies.length,
+                  itemBuilder: (context, index) {
+                    final movie = _mostAnticipatedMovies[index];
+                    return _mostAnticipatedMovieCard(movie);
+                  },
+                ),
+              )
+            : Container(
+                height: _posterHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Center(
+                  child: Text(
+                    'Loading most anticipated movies...',
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black)
+                          .withOpacity(0.5),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget _mostAnticipatedMovieCard(Map<String, dynamic> movie) {
+    final bool inLibrary = movie['inLibrary'] ?? false;
+    final double rating = (movie['rating'] ?? 0.0).toDouble();
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: () {
+          _handleMostAnticipatedMovieTap(movie);
+        },
+        child: Container(
+          width: _posterWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    height: _posterHeight,
+                    width: _posterWidth,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey.shade800,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: movie['poster'] != null && movie['poster'] != ''
+                          ? Image.network(
+                              movie['poster'],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _mostAnticipatedMoviePlaceholder();
+                              },
+                            )
+                          : _mostAnticipatedMoviePlaceholder(),
+                    ),
+                  ),
+                  if (rating > 0)
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (inLibrary)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: ZagColours.red,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                movie['title'] ?? 'Unknown',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _mostAnticipatedMoviePlaceholder() {
+    return Container(
+      color: Colors.grey.shade700,
+      child: Center(
+        child: Icon(
+          Icons.movie_rounded,
+          size: 40,
+          color: Colors.grey.shade500,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleMostAnticipatedMovieTap(
+      Map<String, dynamic> movie) async {
+    final bool inLibrary = movie['inLibrary'] ?? false;
+    final int? serviceItemId = movie['serviceItemId'] as int?;
+    final int? tmdbId = movie['tmdbId'] as int?;
+    final String? title = movie['title'] as String?;
+
+    if (inLibrary && serviceItemId != null) {
+      RadarrRoutes.MOVIE.go(
+        params: {
+          'movie': serviceItemId.toString(),
+        },
+      );
+      return;
+    }
+
+    if (tmdbId != null) {
+      await _openMovieInRadarr(
+        tmdbId: tmdbId,
+        title: title,
+      );
+      return;
+    }
+
+    showZagSnackBar(
+      title: title ?? 'Radarr',
+      message: 'Missing TMDB identifier for this title.',
+      type: ZagSnackbarType.ERROR,
     );
   }
 
@@ -5967,17 +6275,17 @@ class _DiscoverNavigationBar extends StatelessWidget {
   );
 
   static const List<IconData> icons = [
+    Icons.search_rounded,
     Icons.movie_rounded,
     Icons.tv_rounded,
     Icons.smart_toy, // Robot icon for Agent
-    Icons.search_rounded,
   ];
 
   static const List<String> titles = [
+    'Search',
     'Movies',
     'Shows',
     'Agent',
-    'Search',
   ];
 
   const _DiscoverNavigationBar({
