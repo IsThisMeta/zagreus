@@ -624,6 +624,7 @@ class _State extends State<PersonDetailsRoute>
                   ],
                 ),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
