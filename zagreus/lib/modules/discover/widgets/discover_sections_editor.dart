@@ -54,6 +54,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _tvSections;
   bool _hasChanges = false;
   double _posterHeight = 200.0;
+  double _heroHeight = 400.0;
   int _columnsPerRow = 3;
 
   bool get hasChanges => _hasChanges;
@@ -84,6 +85,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _posterHeight = savedHeight;
     }
 
+    final savedHeroHeight = ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
+    if (savedHeroHeight != null &&
+        savedHeroHeight >= 350 &&
+        savedHeroHeight <= 450) {
+      _heroHeight = savedHeroHeight;
+    }
+
     // Load columns per row
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read();
     if (savedColumns != null && savedColumns >= 2 && savedColumns <= 4) {
@@ -98,6 +106,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(_movieSections);
     ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(_tvSections);
     ZagreusDatabase.DISCOVER_POSTER_HEIGHT.update(_posterHeight);
+    ZagreusDatabase.DISCOVER_HERO_HEIGHT.update(_heroHeight);
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -111,6 +120,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     setState(() {
       _movieSections = List<String>.from(_defaultMovieSections);
       _tvSections = List<String>.from(_defaultTVSections);
+      _posterHeight = 200.0;
+      _heroHeight = 400.0;
+      _columnsPerRow = 3;
       _hasChanges = true;
     });
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -216,6 +228,54 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           const SizedBox(height: 8),
           Text(
             'Adjust the height of poster images in the Discover home view. A restart is required to see changes.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Hero Carousel Height',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_heroHeight.round()} pixels',
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
+          ),
+          Slider(
+            value: _heroHeight,
+            min: 350,
+            max: 450,
+            divisions: 10,
+            activeColor: ZagColours.accentColor(context),
+            inactiveColor: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white24
+                : Colors.black26,
+            onChanged: (value) {
+              setState(() {
+                _heroHeight = value;
+                _hasChanges = true;
+              });
+              widget.onHasChangesChanged?.call(_hasChanges);
+            },
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Control the size of the large hero banner at the top of Discover.',
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).brightness == Brightness.dark

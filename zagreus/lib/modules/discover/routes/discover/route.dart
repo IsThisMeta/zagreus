@@ -73,6 +73,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   double _posterHeight = 200.0;
   double get _posterWidth => _posterHeight * _posterAspectRatio;
   double get _posterListHeight => _posterHeight + 42.0;
+  double _heroHeight = 400.0;
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -2303,6 +2304,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
       _posterHeight = savedHeight;
     }
+
+    final savedHeroHeight = ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
+    if (savedHeroHeight != null &&
+        savedHeroHeight >= 350 &&
+        savedHeroHeight <= 450) {
+      _heroHeight = savedHeroHeight;
+    }
   }
 
   Color _ratingColor(double rating) {
@@ -3428,7 +3436,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     });
 
     return SizedBox(
-      height: 420,
+      height: _heroHeight,
       child: Stack(
         children: [
           GestureDetector(
