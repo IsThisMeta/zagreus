@@ -21,6 +21,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'missing',
     'downloading_soon',
     'popular_movies',
+    'most_anticipated_movies',
     'popular_people',
     'deep_cuts',
   ];
@@ -39,6 +40,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'missing': 'Missing',
     'downloading_soon': 'Downloading Soon',
     'popular_movies': 'Popular Movies',
+    'most_anticipated_movies': 'Most Anticipated Movies',
     'popular_people': 'Popular People',
     'deep_cuts': 'Deep Cuts',
     'recently_downloaded_shows': 'Recently Downloaded',
@@ -65,7 +67,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   void _loadSectionOrder() {
     final savedMovieOrder =
         ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
-    final savedTVOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
+    final savedTVOrder =
+        ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
 
     _movieSections = savedMovieOrder.isNotEmpty
         ? List<String>.from(savedMovieOrder)
@@ -74,13 +77,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     _tvSections = savedTVOrder.isNotEmpty
         ? List<String>.from(savedTVOrder)
         : List<String>.from(_defaultTVSections);
-    
+
     // Load poster height
     final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
     if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
       _posterHeight = savedHeight;
     }
-    
+
     // Load columns per row
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read();
     if (savedColumns != null && savedColumns >= 2 && savedColumns <= 4) {
@@ -514,6 +517,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       case 'trending_new_tv_shows':
         return Icons.trending_up_rounded;
       case 'most_anticipated':
+        return Icons.favorite_rounded;
+      case 'most_anticipated_movies':
         return Icons.favorite_rounded;
       default:
         return Icons.view_list_rounded;
