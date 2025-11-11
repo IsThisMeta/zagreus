@@ -235,7 +235,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
-        height: 80,
+        height: 72,
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
@@ -259,7 +259,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                 // Thumbnail
                 Container(
                   width: 120,
-                  height: 80,
+                  height: 72,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
