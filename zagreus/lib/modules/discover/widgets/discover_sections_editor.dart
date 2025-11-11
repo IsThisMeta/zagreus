@@ -322,6 +322,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               widget.onHasChangesChanged?.call(_hasChanges);
             },
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Controls how many posters fit horizontally in the full Discover grids for movies and shows.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -346,6 +356,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               ),
             ],
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );
