@@ -1028,21 +1028,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _body() {
-    return Column(
+    return ZagPageView(
+      controller: _pageController,
       children: [
-        if (_currentPageIndex == 0 || _currentPageIndex == 1)
-          _heroCarousel(),
-        Expanded(
-          child: ZagPageView(
-            controller: _pageController,
-            children: [
-              _moviesPage(),
-              _tvShowsPage(),
-              const ZChatPage(),
-              _searchPage(),
-            ],
-          ),
-        ),
+        _moviesPage(),
+        _tvShowsPage(),
+        const ZChatPage(),
+        _searchPage(),
       ],
     );
   }
@@ -1239,7 +1231,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         controller: _DiscoverNavigationBar.scrollControllers[0],
         padding: EdgeInsets.zero,
         children: [
-          const SizedBox(height: 16),
+          // Hero carousel
+          _heroCarousel(),
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
@@ -1310,7 +1303,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         controller: _DiscoverNavigationBar.scrollControllers[1],
         padding: EdgeInsets.zero,
         children: [
-          const SizedBox(height: 16),
+          // Hero carousel (could be TV shows specific)
+          _heroCarousel(),
           // TV shows sections in custom order
           ..._buildTVSections(),
           const SizedBox(height: 16),
