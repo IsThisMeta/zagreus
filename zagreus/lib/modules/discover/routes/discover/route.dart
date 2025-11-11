@@ -1064,8 +1064,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         _moviesPage(),
         _tvShowsPage(),
-        const ZChatPage(),
         _searchPage(),
+        const ZChatPage(),
       ],
     );
   }
@@ -6229,15 +6229,15 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<IconData> icons = [
     Icons.movie_rounded,
     Icons.tv_rounded,
-    Icons.smart_toy, // Robot icon for Agent
     Icons.search_rounded,
+    Icons.smart_toy, // Robot icon for Agent
   ];
 
   static const List<String> titles = [
     'Movies',
     'Shows',
-    'Agent',
     'Search',
+    'Agent',
   ];
 
   const _DiscoverNavigationBar({

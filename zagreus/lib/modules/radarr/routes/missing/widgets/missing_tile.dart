@@ -35,7 +35,7 @@ class _State extends State<RadarrMissingTile> {
       builder: (context, missing, _) => ZagBlock(
         backgroundUrl:
             context.read<RadarrState>().getFanartURL(widget.movie.id),
-        posterUrl: context.read<RadarrState>().getPosterURL(widget.movie.id),
+        posterUrl: null, // Don't show posters on missing movies
         posterHeaders: context.read<RadarrState>().headers,
         posterPlaceholderIcon: ZagIcons.VIDEO_CAM,
         disabled: !widget.movie.monitored!,
