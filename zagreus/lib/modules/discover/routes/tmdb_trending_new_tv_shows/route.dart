@@ -360,8 +360,8 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
               // Library indicator - top right
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
-                  top: 14,
-                  right: 14,
+                  top: 10.5,
+                  right: 10.5,
                   child: Container(
                     width: 11.9,
                     height: 11.9,
