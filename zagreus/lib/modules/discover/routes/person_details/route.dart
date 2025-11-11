@@ -585,7 +585,7 @@ class _State extends State<PersonDetailsRoute>
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: usesThreeColumns ? 3 : 2,
-          childAspectRatio: 2 / 3,
+          childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),

@@ -376,7 +376,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: usesThreeColumns ? 3 : 2,
-          childAspectRatio: 0.634,
+          childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
