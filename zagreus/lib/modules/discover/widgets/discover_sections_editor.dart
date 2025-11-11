@@ -34,6 +34,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'most_anticipated',
   ];
 
+  static const double _posterHeightMin = 150.0;
+  static const double _posterHeightMax = 250.0;
+  static const double _heroHeightMin = 350.0;
+  static const double _heroHeightMax = 450.0;
+  static const int _columnsPerRowMin = 2;
+  static const int _columnsPerRowMax = 4;
+
   static const Map<String, String> _sectionNames = {
     'recently_downloaded': 'Recently Downloaded',
     'recommended': 'Recommended',
@@ -81,20 +88,24 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
     // Load poster height
     final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
-    if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
+    if (savedHeight != null &&
+        savedHeight >= _posterHeightMin &&
+        savedHeight <= _posterHeightMax) {
       _posterHeight = savedHeight;
     }
 
     final savedHeroHeight = ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
     if (savedHeroHeight != null &&
-        savedHeroHeight >= 350 &&
-        savedHeroHeight <= 450) {
+        savedHeroHeight >= _heroHeightMin &&
+        savedHeroHeight <= _heroHeightMax) {
       _heroHeight = savedHeroHeight;
     }
 
     // Load columns per row
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read();
-    if (savedColumns != null && savedColumns >= 2 && savedColumns <= 4) {
+    if (savedColumns != null &&
+        savedColumns >= _columnsPerRowMin &&
+        savedColumns <= _columnsPerRowMax) {
       _columnsPerRow = savedColumns;
     }
   }
@@ -120,9 +131,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     setState(() {
       _movieSections = List<String>.from(_defaultMovieSections);
       _tvSections = List<String>.from(_defaultTVSections);
-      _posterHeight = 200.0;
-      _heroHeight = 400.0;
-      _columnsPerRow = 3;
+      _posterHeight = (_posterHeightMin + _posterHeightMax) / 2;
+      _heroHeight = (_heroHeightMin + _heroHeightMax) / 2;
+      _columnsPerRow =
+          ((_columnsPerRowMin + _columnsPerRowMax) / 2).round();
       _hasChanges = true;
     });
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -184,7 +196,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
   Widget _buildConfigTab() {
     final theme = Theme.of(context);
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,8 +223,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Slider(
             value: _posterHeight,
-            min: 150,
-            max: 250,
+            min: _posterHeightMin,
+            max: _posterHeightMax,
             divisions: 20,
             activeColor: ZagColours.accentColor(context),
             inactiveColor: theme.brightness == Brightness.dark
@@ -259,8 +271,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Slider(
             value: _heroHeight,
-            min: 350,
-            max: 450,
+            min: _heroHeightMin,
+            max: _heroHeightMax,
             divisions: 10,
             activeColor: ZagColours.accentColor(context),
             inactiveColor: theme.brightness == Brightness.dark
@@ -307,9 +319,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Slider(
             value: _columnsPerRow.toDouble(),
-            min: 2,
-            max: 4,
-            divisions: 2,
+            min: _columnsPerRowMin.toDouble(),
+            max: _columnsPerRowMax.toDouble(),
+            divisions: _columnsPerRowMax - _columnsPerRowMin,
             activeColor: ZagColours.accentColor(context),
             inactiveColor: theme.brightness == Brightness.dark
                 ? Colors.white24
@@ -355,6 +367,24 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          ZagButton(
+            type: ZagButtonType.TEXT,
+            text: 'Reset to Defaults',
+            icon: Icons.restart_alt_rounded,
+            color: ZagColours.currentAccent,
+            onTap: resetToDefaults,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Resets movie & show sections plus all layout sliders back to their defaults.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
           ),
           const SizedBox(height: 24),
         ],
@@ -640,11 +670,6 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
             Navigator.of(sheetContext).pop(true);
           }
 
-          void handleReset() {
-            if (isSaving) return;
-            editorKey.currentState?.resetToDefaults();
-          }
-
           return SafeArea(
             top: false,
             child: Padding(
@@ -680,34 +705,14 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.restart_alt_rounded),
-                            tooltip: 'Reset to Defaults',
+                            icon: const Icon(Icons.save_rounded),
+                            tooltip: 'Save Order',
+                            color: hasChanges
+                                ? ZagColours.currentAccent
+                                : Colors.grey,
                             onPressed:
-                                hasChanges && !isSaving ? handleReset : null,
+                                (!hasChanges || isSaving) ? null : handleSave,
                           ),
-                          if (isSaving)
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(
-                                    Colors.blueAccent,
-                                  ),
-                                ),
-                              ),
-                            )
-                          else
-                            IconButton(
-                              icon: const Icon(Icons.save_rounded),
-                              tooltip: 'Save Order',
-                              color: hasChanges
-                                  ? ZagColours.currentAccent
-                                  : Colors.grey,
-                              onPressed: hasChanges ? handleSave : null,
-                            ),
                           IconButton(
                             icon: const Icon(Icons.close_rounded),
                             onPressed: () =>
