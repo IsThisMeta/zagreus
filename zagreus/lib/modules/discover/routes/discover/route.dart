@@ -1036,7 +1036,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     tooltip: 'Return to Z Assistant Results',
                   ),
               ]
-            : (_currentPageIndex != 2
+            : (_currentPageIndex != 2 && _currentPageIndex != 3
                 ? [
                     Container(
                       margin: const EdgeInsets.only(right: 8),
