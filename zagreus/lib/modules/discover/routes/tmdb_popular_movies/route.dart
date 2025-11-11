@@ -445,23 +445,22 @@ class _State extends State<TMDBPopularMoviesRoute>
                   ),
                 ),
               ),
-              // Library indicator
-              // Library indicator - bottom right
+              // Library indicator dot - top right
               if (inLibrary)
                 Positioned(
-                  bottom: 14,
-                  right: 14,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEC333), // Radarr yellow
+                      color: ZagColours.orange,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.6),
                           blurRadius: 4,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),

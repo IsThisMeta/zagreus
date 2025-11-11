@@ -397,7 +397,7 @@ class _State extends State<SonarrAiringNextRoute>
                                     episode['airDateUtc'], episode['network']),
                                 style: const TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF35C5F4),
+                                  color: ZagColours.blue,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -412,7 +412,7 @@ class _State extends State<SonarrAiringNextRoute>
                             'Downloaded',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF35C5F4),
+                              color: ZagColours.blue,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

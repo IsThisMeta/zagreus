@@ -4246,7 +4246,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         width: 11,
                         height: 11,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF35C5F4),
+                          color: ZagColours.blue,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -4481,7 +4481,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         width: 11,
                         height: 11,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF35C5F4),
+                          color: ZagColours.blue,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -4902,7 +4902,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         width: 11,
                         height: 11,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF35C5F4),
+                          color: ZagColours.blue,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -5833,7 +5833,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 Icon(
                   ZagIcons.SONARR,
-                  color: const Color(0xFF35C5F4),
+                  color: ZagColours.blue,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -5842,7 +5842,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   style: TextStyle(
                     fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF35C5F4),
+                    color: ZagColours.blue,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -5902,7 +5902,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 Icon(
                   ZagIcons.SONARR,
-                  color: const Color(0xFF35C5F4),
+                  color: ZagColours.blue,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -5911,7 +5911,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   style: TextStyle(
                     fontSize: _moduleSectionTitleFontSize,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF35C5F4),
+                    color: ZagColours.blue,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -5945,10 +5945,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF35C5F4).withOpacity(0.05),
+                    color: ZagColours.blue.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF35C5F4).withOpacity(0.2),
+                      color: ZagColours.blue.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
@@ -6072,7 +6072,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     episode['airDateUtc'], episode['network']),
                                 style: const TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF35C5F4),
+                                  color: ZagColours.blue,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -6215,7 +6215,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 networkLabel!,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: const Color(0xFF35C5F4),
+                                  color: ZagColours.blue,
                                 ),
                               ),
                             ],

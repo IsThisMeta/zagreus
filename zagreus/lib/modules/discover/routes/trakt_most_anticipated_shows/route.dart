@@ -342,7 +342,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                     width: 14,
                     height: 14,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF35C5F4),
+                      color: ZagColours.blue,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
