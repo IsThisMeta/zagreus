@@ -183,6 +183,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   }
 
   Widget _buildConfigTab() {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -193,7 +194,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black87,
             ),
@@ -203,7 +204,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             '${_posterHeight.round()} pixels',
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white70
                   : Colors.black54,
             ),
@@ -214,7 +215,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             max: 250,
             divisions: 20,
             activeColor: ZagColours.accentColor(context),
-            inactiveColor: Theme.of(context).brightness == Brightness.dark
+            inactiveColor: theme.brightness == Brightness.dark
                 ? Colors.white24
                 : Colors.black26,
             onChanged: (value) {
@@ -227,10 +228,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Adjust the height of poster images in the Discover home view. A restart is required to see changes.',
+            'Adjust the height of poster images in the Discover home view.',
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white54
                   : Colors.black45,
             ),
@@ -241,7 +242,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black87,
             ),
@@ -251,7 +252,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             '${_heroHeight.round()} pixels',
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white70
                   : Colors.black54,
             ),
@@ -262,7 +263,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             max: 450,
             divisions: 10,
             activeColor: ZagColours.accentColor(context),
-            inactiveColor: Theme.of(context).brightness == Brightness.dark
+            inactiveColor: theme.brightness == Brightness.dark
                 ? Colors.white24
                 : Colors.black26,
             onChanged: (value) {
@@ -278,7 +279,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             'Control the size of the large hero banner at the top of Discover.',
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white54
                   : Colors.black45,
             ),
@@ -289,7 +290,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black87,
             ),
@@ -299,7 +300,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             '$_columnsPerRow columns',
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).brightness == Brightness.dark
+              color: theme.brightness == Brightness.dark
                   ? Colors.white70
                   : Colors.black54,
             ),
@@ -310,7 +311,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             max: 4,
             divisions: 2,
             activeColor: ZagColours.accentColor(context),
-            inactiveColor: Theme.of(context).brightness == Brightness.dark
+            inactiveColor: theme.brightness == Brightness.dark
                 ? Colors.white24
                 : Colors.black26,
             onChanged: (value) {
@@ -321,15 +322,29 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               widget.onHasChangesChanged?.call(_hasChanges);
             },
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Adjust the number of columns in full page grid views. A restart is required to see changes.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 16,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.white54
+                    : Colors.black54,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Changes to these layout settings take effect after restarting the app.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white54
+                        : Colors.black54,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
