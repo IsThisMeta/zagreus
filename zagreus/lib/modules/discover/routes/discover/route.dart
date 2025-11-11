@@ -58,7 +58,6 @@ class _UserOption {
 const double _userListExtraPadding = 32.0;
 const EdgeInsets _moduleSectionTitlePadding =
     EdgeInsets.symmetric(horizontal: 16, vertical: 12);
-const double _moduleSectionTitleFontSize = 16;
 const double _heroTitleFontSize = 26;
 const double _posterAspectRatio = 2 / 3;
 const int _discoverPreviewLimit = 10;
@@ -73,6 +72,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   double _posterHeight = 200.0;
   double get _posterWidth => _posterHeight * _posterAspectRatio;
   double get _posterListHeight => _posterHeight + 42.0;
+  double get _moduleSectionTitleFontSize {
+    if (_posterHeight >= 225) {
+      return 20;
+    }
+    if (_posterHeight <= 175) {
+      return 16;
+    }
+    return 18;
+  }
   double _heroHeight = 400.0;
 
   List<RadarrMovie> _recentlyDownloaded = [];
