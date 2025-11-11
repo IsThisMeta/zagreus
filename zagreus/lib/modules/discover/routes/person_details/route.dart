@@ -128,7 +128,7 @@ class _State extends State<PersonDetailsRoute>
 
   Color _ratingColor(double rating) {
     if (rating >= 8.0) {
-      return Colors.blue;
+      return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
       // Smooth gradient from yellow (6.0) to green (8.0)
       final progress = (rating - 6.0) / 2.0;
@@ -699,7 +699,7 @@ class _State extends State<PersonDetailsRoute>
                         right: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
+                              horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(6),
@@ -723,7 +723,7 @@ class _State extends State<PersonDetailsRoute>
                         left: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
+                              horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(6),

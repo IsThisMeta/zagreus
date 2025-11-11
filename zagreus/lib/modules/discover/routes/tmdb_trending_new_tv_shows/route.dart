@@ -409,8 +409,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -622,7 +621,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
 
   Color _ratingColor(double rating) {
     if (rating >= 8.0) {
-      return Colors.blue;
+      return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
       final progress = (rating - 6.0) / 2.0;
       final hue = 0.15 + progress * 0.15;

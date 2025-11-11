@@ -1036,7 +1036,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     tooltip: 'Return to Z Assistant Results',
                   ),
               ]
-            : (_currentPageIndex != 3
+            : (_currentPageIndex != 2
                 ? [
                     Container(
                       margin: const EdgeInsets.only(right: 8),
@@ -1064,8 +1064,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         _moviesPage(),
         _tvShowsPage(),
-        _searchPage(),
         const ZChatPage(),
+        _searchPage(),
       ],
     );
   }
@@ -2121,7 +2121,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Color _ratingColor(double rating) {
     if (rating >= 8.0) {
-      return Colors.blue;
+      return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
       final progress = (rating - 6.0) / 2.0;
       final hue = 0.15 + progress * 0.15;
@@ -3105,7 +3105,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Color _getMediaTypeColor(String? mediaType) {
     switch (mediaType) {
       case 'movie':
-        return Colors.blue;
+        return const Color(0xFF64B5F6); // Pastel blue
       case 'tv':
         return Colors.green;
       case 'person':
@@ -4189,7 +4189,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
@@ -4424,7 +4424,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
@@ -4834,7 +4834,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
@@ -6211,15 +6211,15 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<IconData> icons = [
     Icons.movie_rounded,
     Icons.tv_rounded,
-    Icons.search_rounded,
     Icons.smart_toy, // Robot icon for Agent
+    Icons.search_rounded,
   ];
 
   static const List<String> titles = [
     'Movies',
     'Shows',
-    'Search',
     'Agent',
+    'Search',
   ];
 
   const _DiscoverNavigationBar({
