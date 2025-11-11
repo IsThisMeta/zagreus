@@ -278,7 +278,7 @@ class _MovieGridItem extends StatelessWidget {
                       ),
                     ],
                   ),
-                  maxLines: 3,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),

@@ -401,7 +401,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 3,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           if (item.reason != null) ...[
@@ -1448,7 +1448,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 3,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           if (item.knownForDepartment != null) ...[
@@ -1474,7 +1474,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   color: ZagColours.currentAccent.withOpacity(0.8),
                   fontStyle: FontStyle.italic,
                 ),
-                maxLines: 3,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
