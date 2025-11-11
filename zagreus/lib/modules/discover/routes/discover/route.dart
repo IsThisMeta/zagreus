@@ -2119,6 +2119,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
+  Color _ratingColor(double rating) {
+    if (rating >= 8.0) {
+      return Colors.blue;
+    } else if (rating >= 6.0) {
+      final progress = (rating - 6.0) / 2.0;
+      final hue = 0.15 + progress * 0.15;
+      return HSVColor.fromAHSV(1.0, hue * 360, 0.8, 0.9).toColor();
+    } else if (rating >= 5.0) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
   void _showZAgentQuickSetup() {
     // Load available users when opening the setup
     _loadAvailableUsers();
@@ -4192,8 +4206,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                         child: Text(
                           rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: _ratingColor(rating),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -4427,8 +4441,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                         child: Text(
                           rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: _ratingColor(rating),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),

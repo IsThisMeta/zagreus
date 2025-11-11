@@ -82,6 +82,20 @@ class _State extends State<TMDBPopularMoviesRoute>
     }
   }
 
+  Color _ratingColor(double rating) {
+    if (rating >= 8.0) {
+      return Colors.blue;
+    } else if (rating >= 6.0) {
+      final progress = (rating - 6.0) / 2.0;
+      final hue = 0.15 + progress * 0.15;
+      return HSVColor.fromAHSV(1.0, hue * 360, 0.8, 0.9).toColor();
+    } else if (rating >= 5.0) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
   Future<void> _loadPopularMovies({bool silent = false}) async {
     if (!silent) {
       setState(() {
@@ -475,7 +489,7 @@ class _State extends State<TMDBPopularMoviesRoute>
                         Text(
                           (movie['rating'] ?? 0.0).toStringAsFixed(1),
                           style: TextStyle(
-                            color: Colors.white,
+                            color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),

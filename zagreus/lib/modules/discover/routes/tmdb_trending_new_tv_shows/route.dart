@@ -417,8 +417,8 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                     ),
                     child: Text(
                       (show['rating'] ?? 0.0).toStringAsFixed(1),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
                         fontSize: 10.2,
                         fontWeight: FontWeight.bold,
                       ),
@@ -618,6 +618,20 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
         _selectedShowIndices.add(index);
       }
     });
+  }
+
+  Color _ratingColor(double rating) {
+    if (rating >= 8.0) {
+      return Colors.blue;
+    } else if (rating >= 6.0) {
+      final progress = (rating - 6.0) / 2.0;
+      final hue = 0.15 + progress * 0.15;
+      return HSVColor.fromAHSV(1.0, hue * 360, 0.8, 0.9).toColor();
+    } else if (rating >= 5.0) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
   }
 
   void _showSonarrConfig() {
