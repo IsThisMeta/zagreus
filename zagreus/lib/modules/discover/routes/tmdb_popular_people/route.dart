@@ -222,7 +222,7 @@ class _State extends State<TMDBPopularPeopleRoute>
         vertical: 16,
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: savedColumns,
+        crossAxisCount: 3,
         childAspectRatio: 0.7,
         crossAxisSpacing: gridSpacing,
         mainAxisSpacing: gridSpacing,

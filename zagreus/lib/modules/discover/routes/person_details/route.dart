@@ -558,7 +558,7 @@ class _State extends State<PersonDetailsRoute>
 
   Widget _creditsSliverGrid() {
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    final titleFontSize = savedColumns == 2 ? 12.0 : (savedColumns == 4 ? 16.0 : 14.0);
+    final titleFontSize = savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 12.0 : 14.0);
     
     if (_filteredCredits.isEmpty) {
       return SliverToBoxAdapter(
