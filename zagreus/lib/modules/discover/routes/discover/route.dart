@@ -3977,10 +3977,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Rating badge
+                  // Rating badge - top left
                   if (movie['rating'] != null && movie['rating'] > 0)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -3989,23 +3989,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              size: 12,
-                              color: Colors.yellow,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              (movie['rating'] as num).toStringAsFixed(1),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          (movie['rating'] as num).toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor((movie['rating'] as num).toDouble()),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

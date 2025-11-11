@@ -466,35 +466,24 @@ class _State extends State<TMDBPopularMoviesRoute>
                     ),
                   ),
                 ),
-              // Rating badge - bottom left
+              // Rating badge - top left
               if (movie['rating'] != null && movie['rating'] > 0)
                 Positioned(
-                  bottom: 8,
+                  top: 8,
                   left: 8,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 14,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          (movie['rating'] ?? 0.0).toStringAsFixed(1),
-                          style: TextStyle(
-                            color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      (movie['rating'] ?? 0.0).toStringAsFixed(1),
+                      style: TextStyle(
+                        color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
