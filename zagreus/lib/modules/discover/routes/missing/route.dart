@@ -38,7 +38,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     }
   }
   
-  Future<void> _loadMissingMovies() async {
+  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadMissingMovies() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -230,7 +230,8 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     }
     
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final usesThreeColumns = screenWidth >= 360;
+    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
     final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
 
@@ -243,19 +244,20 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: usesThreeColumns ? 3 : 2,
+          crossAxisCount: savedColumns,
           childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
         itemCount: _movies.length,
-        itemBuilder: (context, index) => _movieTile(_movies[index], index),
+        itemBuilder: (context, index) => _movieTile(_movies[index], index, savedColumns),
       ),
     );
   }
   
-  Widget _movieTile(RadarrMovie movie, int index) {
+  Widget _movieTile(RadarrMovie movie, int index, int columns) {
     final isSelected = _selectedMovieIndices.contains(index);
+    final titleFontSize = columns == 2 ? 12.0 : (columns == 4 ? 16.0 : 14.0);
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),
@@ -294,18 +296,18 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
                 right: 8,
                 child: Text(
                   movie.title ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: titleFontSize,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    shadows: [
+                    shadows: const [
                       Shadow(
                         color: Colors.black,
                         blurRadius: 4,
                       ),
                     ],
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),

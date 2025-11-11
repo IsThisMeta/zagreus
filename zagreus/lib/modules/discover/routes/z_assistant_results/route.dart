@@ -278,7 +278,8 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final usesThreeColumns = screenWidth >= 360;
+    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
     final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
 
@@ -291,7 +292,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: usesThreeColumns ? 3 : 2,
+          crossAxisCount: savedColumns,
           childAspectRatio: 0.55,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,

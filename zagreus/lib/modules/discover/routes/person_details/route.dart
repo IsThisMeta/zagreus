@@ -75,7 +75,7 @@ class _State extends State<PersonDetailsRoute>
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
-  Future<void> _loadPersonData() async {
+  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadPersonData() async {
     try {
       // Load person details
       final details = await TMDBApi.getPersonDetails(widget.personId);
@@ -557,6 +557,9 @@ class _State extends State<PersonDetailsRoute>
   }
 
   Widget _creditsSliverGrid() {
+    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final titleFontSize = savedColumns == 2 ? 12.0 : (savedColumns == 4 ? 16.0 : 14.0);
+    
     if (_filteredCredits.isEmpty) {
       return SliverToBoxAdapter(
         child: Container(
@@ -586,7 +589,7 @@ class _State extends State<PersonDetailsRoute>
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final usesThreeColumns = screenWidth >= 360;
+    final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 16.0 : 12.0;
     final gridSpacing = usesThreeColumns ? 12.0 : 10.0;
 
@@ -599,7 +602,7 @@ class _State extends State<PersonDetailsRoute>
       ),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: usesThreeColumns ? 3 : 2,
+          crossAxisCount: savedColumns,
           childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
@@ -607,7 +610,7 @@ class _State extends State<PersonDetailsRoute>
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final credit = _filteredCredits[index];
-            return _creditCard(credit, index);
+            return _creditCard(credit, index, titleFontSize);
           },
           childCount: _filteredCredits.length,
         ),
@@ -615,7 +618,7 @@ class _State extends State<PersonDetailsRoute>
     );
   }
 
-  Widget _creditCard(Map<String, dynamic> credit, int index) {
+  Widget _creditCard(Map<String, dynamic> credit, int index, double titleFontSize) {
     final isSelected = _selectedCreditIndices.contains(index);
 
     return GestureDetector(
@@ -676,11 +679,11 @@ class _State extends State<PersonDetailsRoute>
                       right: 8,
                       child: Text(
                         credit['title'] ?? 'Unknown',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: titleFontSize,
                           fontWeight: FontWeight.w600,
-                          shadows: [
+                          shadows: const [
                             Shadow(
                               color: Colors.black,
                               blurRadius: 4,

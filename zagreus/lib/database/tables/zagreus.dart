@@ -106,7 +106,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   Z_ASSISTANT_SONARR_SERIES_TYPE<String?>('standard'),
   Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING<bool>(true),
   Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET<bool>(false),
-  DISCOVER_POSTER_HEIGHT<double>(200.0);
+  DISCOVER_POSTER_HEIGHT<double>(200.0),
+  DISCOVER_COLUMNS_PER_ROW<int>(3);
 
   @override
   ZagTable get table => ZagTable.zagreus;

@@ -35,7 +35,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     }
   }
   
-  Future<void> _loadDownloadingSoon() async {
+  _getTitleFontSize(int columns) { if (columns == 2) return 12.0; if (columns == 4) return 16.0; return 14.0; } Future<void> _loadDownloadingSoon() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -234,7 +234,8 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     }
     
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final usesThreeColumns = screenWidth >= 360;
+    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
     final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
 
@@ -247,7 +248,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: usesThreeColumns ? 3 : 2,
+          crossAxisCount: savedColumns,
           childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
@@ -258,6 +259,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
           return _MovieGridItem(
             movie: movie,
             subtitle: _formatDaysUntil(movie),
+            columns: savedColumns,
           );
         },
       ),
@@ -268,13 +270,21 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
 class _MovieGridItem extends StatelessWidget {
   final RadarrMovie movie;
   final String subtitle;
+  final int columns;
   
   const _MovieGridItem({
     Key? key,
     required this.movie,
     required this.subtitle,
+    required this.columns,
   }) : super(key: key);
   
+  double get _titleFontSize {
+    if (columns == 2) return 12.0;
+    if (columns == 4) return 16.0;
+    return 14.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -339,11 +349,11 @@ class _MovieGridItem extends StatelessWidget {
                 right: 8,
                 child: Text(
                   movie.title ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: _titleFontSize,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    shadows: [
+                    shadows: const [
                       Shadow(
                         color: Colors.black,
                         blurRadius: 4,
