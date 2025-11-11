@@ -649,11 +649,34 @@ class _State extends State<PersonDetailsRoute>
                             Colors.transparent,
                             Colors.black.withOpacity(0.7),
                           ],
-                          stops: [0.6, 1.0],
+                          stops: [0.5, 1.0],
                         ),
                       ),
                     ),
-                    // Year badge
+                    // Title at bottom
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        credit['title'] ?? 'Unknown',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Year badge - top-left
                     if (credit['year'] != null)
                       Positioned(
                         top: 6,
@@ -675,11 +698,11 @@ class _State extends State<PersonDetailsRoute>
                           ),
                         ),
                       ),
-                    // Rating badge
+                    // Rating badge - top-left (below year if present)
                     if (credit['rating'] != null && credit['rating'] > 0)
                       Positioned(
-                        bottom: 6,
-                        right: 6,
+                        top: credit['year'] != null ? 32 : 6,
+                        left: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 3),
@@ -687,23 +710,13 @@ class _State extends State<PersonDetailsRoute>
                             color: Colors.black.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star_rounded,
-                                size: 11,
-                                color: Colors.amber,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                credit['rating'].toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            credit['rating'].toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -736,30 +749,6 @@ class _State extends State<PersonDetailsRoute>
                 ),
               ),
             ),
-            const SizedBox(height: 6),
-            // Title
-            Text(
-              credit['title'] ?? 'Unknown',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            // Role
-            if (credit['role'] != null)
-              Text(
-                credit['role'],
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
           ],
         ),
       ),
