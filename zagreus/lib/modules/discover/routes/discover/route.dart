@@ -1016,40 +1016,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       appBar: ZagAppBar(
         title: 'Discover',
         useDrawer: true,
-        actions: _currentPageIndex == 2
-            ? [
-                // Settings button for Z Assistant
-                IconButton(
-                  icon: const Icon(Icons.tune),
-                  onPressed: _showZAssistantSettings,
-                  tooltip: 'Z Assistant Settings',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.info_outline),
-                  onPressed: _showZAgentQuickSetup,
-                  tooltip: 'Z Agent setup',
-                ),
-                if (_lastZAssistantStageId != null)
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: _navigateToLastZAssistantResults,
-                    tooltip: 'Return to Z Assistant Results',
-                  ),
-              ]
-            : (_currentPageIndex != 2 && _currentPageIndex != 3
-                ? [
-                    Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      child: Row(
-                        children: [
-                          _appBarToggleButton('Today', 'day'),
-                          const SizedBox(width: 8),
-                          _appBarToggleButton('This Week', 'week'),
-                        ],
-                      ),
-                    ),
-                  ]
-                : null),
+        actions: _buildAppBarActions(),
       ),
       body: _body(),
       bottomNavigationBar: _DiscoverNavigationBar(
@@ -1068,6 +1035,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _searchPage(),
       ],
     );
+  }
+
+  List<Widget>? _buildAppBarActions() {
+    if (_currentPageIndex == 2) {
+      return [
+        IconButton(
+          icon: const Icon(Icons.tune),
+          onPressed: _showZAssistantSettings,
+          tooltip: 'Z Assistant Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.info_outline),
+          onPressed: _showZAgentQuickSetup,
+          tooltip: 'Z Agent setup',
+        ),
+        if (_lastZAssistantStageId != null)
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            onPressed: _navigateToLastZAssistantResults,
+            tooltip: 'Return to Z Assistant Results',
+          ),
+      ];
+    }
+
+    if (_currentPageIndex != 2 && _currentPageIndex != 3) {
+      return [
+        Container(
+          margin: const EdgeInsets.only(right: 8),
+          child: Row(
+            children: [
+              _appBarToggleButton('Today', 'day'),
+              const SizedBox(width: 8),
+              _appBarToggleButton('This Week', 'week'),
+            ],
+          ),
+        ),
+      ];
+    }
+
+    if (_currentPageIndex == 3 &&
+        ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
+      return [
+        IconButton(
+          icon: const Icon(Icons.download_rounded),
+          tooltip: 'Downloads',
+          onPressed: _openDownloadsDrawer,
+        ),
+      ];
+    }
+
+    return null;
+  }
+
+  void _openDownloadsDrawer() {
+    final scaffoldState = _scaffoldKey.currentState;
+    if (scaffoldState?.hasEndDrawer ?? false) {
+      scaffoldState?.openEndDrawer();
+    }
   }
 
   Widget _moviesPage() {
