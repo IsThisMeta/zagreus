@@ -4813,7 +4813,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   // Rating badge (below HOT badge to avoid overlap)
                   if (rating > 0)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -4822,24 +4822,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor(rating),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -5005,7 +4994,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ),
                   if (rating > 0)
                     Positioned(
-                      bottom: 8,
+                      top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -5014,24 +5003,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor(rating),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),

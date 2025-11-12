@@ -323,19 +323,20 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
             children: [
               _buildPosterImage(show),
               // Gradient overlay for title
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.7),
-                    ],
-                    stops: const [0.5, 1.0],
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                      stops: const [0.5, 1.0],
+                    ),
                   ),
                 ),
-              ),
               // Title at bottom
               if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
                 Positioned(

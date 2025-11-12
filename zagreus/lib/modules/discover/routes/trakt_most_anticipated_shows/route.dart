@@ -174,7 +174,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     }
 
     return ZagAppBar(
-      title: 'Most Anticipated Shows',
+      title: 'Most Anticipated',
       actions: [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -320,20 +320,21 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
             fit: StackFit.expand,
             children: [
               _buildPosterImage(show),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    stops: const [0.0, 0.6, 1.0],
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                      stops: const [0.0, 0.6, 1.0],
+                    ),
                   ),
                 ),
-              ),
               // Library indicator - top right (Sonarr blue dot)
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
