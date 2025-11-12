@@ -1173,6 +1173,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String title,
     Color? moduleLabelColor,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
     EdgeInsetsGeometry? padding,
     bool showArrow = false,
     IconData trailingIcon = Icons.arrow_forward_ios,
@@ -1201,6 +1202,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(6),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -3865,6 +3867,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadRecommendedMovies(),
         ),
         // Movie list or placeholder
         previewMovies.isNotEmpty
@@ -3923,6 +3926,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadMissingMovies(),
         ),
         // Movie list
         SizedBox(
@@ -3964,6 +3968,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadDownloadingSoon(),
         ),
         // Movie list
         SizedBox(
@@ -4039,6 +4044,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadPopularMovies(),
           showArrow: _popularMovies.isNotEmpty,
         ),
         // Movie list or loading placeholder
@@ -4233,6 +4239,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadPopularTVShows(),
           showArrow: _popularTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4434,6 +4441,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadTrendingNewTVShows(),
           showArrow: _trendingNewTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4811,6 +4819,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadMostAnticipatedShows(),
           showArrow: _mostAnticipatedShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4995,6 +5004,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadMostAnticipatedMovies(),
           showArrow: _mostAnticipatedMovies.isNotEmpty,
         ),
         _mostAnticipatedMovies.isNotEmpty
@@ -5196,6 +5206,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
+          onLongPress: () => _loadPopularPeople(),
           showArrow: _popularPeople.isNotEmpty,
         ),
         // People list or loading placeholder
@@ -5823,6 +5834,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadRecentlyDownloaded(),
           trailingIcon: Icons.chevron_right_rounded,
           trailingColor: Colors.grey,
           trailingSize: 24,
@@ -5998,6 +6010,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadRecentlyDownloadedShows(),
           trailingColor: Colors.grey.withOpacity(0.7),
           showArrow: true,
         ),
@@ -6043,6 +6056,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
+          onLongPress: () => _loadSonarrAiringNext(),
           trailingColor: Colors.grey.withOpacity(0.7),
           showArrow: true,
         ),
