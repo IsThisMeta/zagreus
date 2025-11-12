@@ -95,6 +95,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _mostAnticipatedShows = [];
   List<Map<String, dynamic>> _mostAnticipatedMovies = [];
   List<Map<String, dynamic>> _popularPeople = [];
+  final Map<String, Map<String, dynamic>?> _traktRatingCache = {};
   bool _isLoading = true;
   String? _error;
 
@@ -931,6 +932,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       print('🎯 Got ${shows.length} most anticipated shows from Trakt');
 
       // Enrich with TMDB poster images if we have TMDB IDs
+      int showIndex = 0;
       for (final show in shows) {
         final tmdbId = show['tmdbId'] as int?;
         if (tmdbId != null) {
@@ -948,6 +950,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             }
           }
         }
+        if (showIndex < _discoverPreviewLimit) {
+          await _ensureTraktRating(show, isMovie: false);
+        }
+        showIndex++;
       }
 
       // Check against Sonarr library if available
@@ -1012,6 +1018,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
       }
 
+      int movieIndex = 0;
       for (final movie in movies) {
         final tmdbId = movie['tmdbId'] as int?;
         if (tmdbId != null) {
@@ -1024,9 +1031,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
             movie['overview'] ??= details['overview'];
             movie['releaseDate'] ??= details['release_date'];
-            movie['rating'] ??= (details['vote_average'] ?? 0.0);
           }
         }
+        if (movieIndex < 12) {
+          await _ensureTraktRating(movie, isMovie: true);
+        }
+        movieIndex++;
 
         movie['inLibrary'] = false;
         if (radarrMovies != null && radarrMovies.isNotEmpty) {
@@ -1053,6 +1063,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } catch (e) {
       print('❌ Error loading most anticipated movies: $e');
     }
+  }
+
+  Future<void> _ensureTraktRating(
+    Map<String, dynamic> item, {
+    required bool isMovie,
+  }) async {
+    final currentRating = (item['rating'] as num?)?.toDouble();
+    if (currentRating != null && currentRating > 0) {
+      item['rating'] = currentRating;
+      return;
+    }
+
+    final slug = item['slug'] as String?;
+    final traktId = item['traktId'];
+    final imdbId = item['imdbId'] as String?;
+    final identifier = slug ?? traktId?.toString() ?? imdbId;
+
+    if (identifier == null || identifier.isEmpty) {
+      item['rating'] = currentRating ?? 0.0;
+      return;
+    }
+
+    final cacheKey = '${isMovie ? 'movie' : 'show'}:$identifier';
+    Map<String, dynamic>? ratingData = _traktRatingCache[cacheKey];
+    if (ratingData == null) {
+      ratingData = isMovie
+          ? await TraktApi.getMovieRatings(identifier)
+          : await TraktApi.getShowRatings(identifier);
+      if (ratingData != null) {
+        _traktRatingCache[cacheKey] = ratingData;
+      }
+    }
+
+    if (ratingData != null) {
+      final rating = (ratingData['rating'] as num?)?.toDouble();
+      final votes = (ratingData['votes'] as num?)?.toInt();
+      if (rating != null) {
+        item['rating'] = rating;
+      }
+      if (votes != null) {
+        item['votes'] = votes;
+      }
+    }
+
+    item['rating'] = (item['rating'] as num?)?.toDouble() ?? 0.0;
   }
 
   Future<void> _loadPopularPeople() async {

@@ -26,6 +26,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   List<Map<String, dynamic>> _movies = [];
   bool _isLoading = true;
   String? _error;
+  final Map<String, Map<String, dynamic>?> _ratingsCache = {};
 
   @override
   void initState() {
@@ -78,10 +79,10 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
             movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
             movie['overview'] ??= details['overview'];
             movie['releaseDate'] ??= details['release_date'];
-            movie['rating'] ??= (details['vote_average'] ?? 0.0);
           }
         }
 
+        await _ensureTraktRating(movie);
         movie['inLibrary'] = false;
         if (radarrMovies != null && radarrMovies.isNotEmpty) {
           for (final radarrMovie in radarrMovies) {
@@ -486,5 +487,44 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
         type: ZagSnackbarType.ERROR,
       );
     }
+  }
+
+  Future<void> _ensureTraktRating(Map<String, dynamic> movie) async {
+    final currentRating = (movie['rating'] as num?)?.toDouble();
+    if (currentRating != null && currentRating > 0) {
+      movie['rating'] = currentRating;
+      return;
+    }
+
+    final slug = movie['slug'] as String?;
+    final traktId = movie['traktId'];
+    final imdbId = movie['imdbId'] as String?;
+    final identifier = slug ?? traktId?.toString() ?? imdbId;
+    if (identifier == null || identifier.isEmpty) {
+      movie['rating'] = currentRating ?? 0.0;
+      return;
+    }
+
+    final cacheKey = 'movie:$identifier';
+    Map<String, dynamic>? ratingData = _ratingsCache[cacheKey];
+    if (ratingData == null) {
+      ratingData = await TraktApi.getMovieRatings(identifier);
+      if (ratingData != null) {
+        _ratingsCache[cacheKey] = ratingData;
+      }
+    }
+
+    if (ratingData != null) {
+      final rating = (ratingData['rating'] as num?)?.toDouble();
+      final votes = (ratingData['votes'] as num?)?.toInt();
+      if (rating != null) {
+        movie['rating'] = rating;
+      }
+      if (votes != null) {
+        movie['votes'] = votes;
+      }
+    }
+
+    movie['rating'] = (movie['rating'] as num?)?.toDouble() ?? 0.0;
   }
 }

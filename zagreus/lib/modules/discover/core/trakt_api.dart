@@ -12,7 +12,9 @@ class TraktApi {
     int limit = 40,
   }) async {
     try {
-      final url = Uri.parse('$_baseUrl/shows/anticipated?page=$page&limit=$limit');
+      final url = Uri.parse(
+        '$_baseUrl/shows/anticipated?page=$page&limit=$limit&extended=full',
+      );
       
       final response = await http.get(
         url,
@@ -41,8 +43,8 @@ class TraktApi {
             'traktId': ids['trakt'],
             'slug': ids['slug'],
             'overview': show['overview'] ?? '',
-            'rating': show['rating'] ?? 0.0,
-            'votes': show['votes'] ?? 0,
+            'rating': (show['rating'] as num?)?.toDouble() ?? 0.0,
+            'votes': (show['votes'] as num?)?.toInt() ?? 0,
             'comment_count': show['comment_count'] ?? 0,
             'first_aired': show['first_aired'],
             'airs': show['airs'],
@@ -58,7 +60,7 @@ class TraktApi {
             'genres': show['genres'] ?? [],
             'aired_episodes': show['aired_episodes'],
             // Anticipation specific data
-            'list_count': item['list_count'] ?? 0,
+            'list_count': (item['list_count'] as num?)?.toInt() ?? 0,
             'mediaType': 'tv',
             'isAnticipated': true,
           };
@@ -78,7 +80,9 @@ class TraktApi {
     int limit = 40,
   }) async {
     try {
-      final url = Uri.parse('$_baseUrl/movies/anticipated?page=$page&limit=$limit');
+      final url = Uri.parse(
+        '$_baseUrl/movies/anticipated?page=$page&limit=$limit&extended=full',
+      );
       
       final response = await http.get(
         url,
@@ -106,8 +110,8 @@ class TraktApi {
             'traktId': ids['trakt'],
             'slug': ids['slug'],
             'overview': movie['overview'] ?? '',
-            'rating': movie['rating'] ?? 0.0,
-            'votes': movie['votes'] ?? 0,
+            'rating': (movie['rating'] as num?)?.toDouble() ?? 0.0,
+            'votes': (movie['votes'] as num?)?.toInt() ?? 0,
             'comment_count': movie['comment_count'] ?? 0,
             'released': movie['released'],
             'runtime': movie['runtime'],
@@ -121,7 +125,7 @@ class TraktApi {
             'available_translations': movie['available_translations'] ?? [],
             'genres': movie['genres'] ?? [],
             // Anticipation specific data
-            'list_count': item['list_count'] ?? 0,
+            'list_count': (item['list_count'] as num?)?.toInt() ?? 0,
             'mediaType': 'movie',
             'isAnticipated': true,
           };
@@ -233,6 +237,56 @@ class TraktApi {
     } catch (e) {
       print('Error fetching Trakt popular shows: $e');
       return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getMovieRatings(String idOrSlug) async {
+    final encodedId = Uri.encodeComponent(idOrSlug);
+    final url = Uri.parse('$_baseUrl/movies/$encodedId/ratings');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'trakt-api-version': _apiVersion,
+          'trakt-api-key': _clientId,
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+      print(
+          'Trakt API error (movie ratings): ${response.statusCode} - ${response.body}');
+      return null;
+    } catch (e) {
+      print('Error fetching Trakt movie ratings for $idOrSlug: $e');
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getShowRatings(String idOrSlug) async {
+    final encodedId = Uri.encodeComponent(idOrSlug);
+    final url = Uri.parse('$_baseUrl/shows/$encodedId/ratings');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'trakt-api-version': _apiVersion,
+          'trakt-api-key': _clientId,
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      }
+      print(
+          'Trakt API error (show ratings): ${response.statusCode} - ${response.body}');
+      return null;
+    } catch (e) {
+      print('Error fetching Trakt show ratings for $idOrSlug: $e');
+      return null;
     }
   }
 }
