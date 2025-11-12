@@ -4043,18 +4043,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   // In library badge
                   if (movie['inLibrary'] == true)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 10,
+                      right: 10,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        width: 11,
+                        height: 11,
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Icon(
-                          Icons.check,
-                          size: 16,
-                          color: Colors.white,
+                          color: ZagColours.orange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                       ),
                     ),
