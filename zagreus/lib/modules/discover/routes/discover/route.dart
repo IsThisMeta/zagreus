@@ -71,7 +71,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Adjustable poster height
   double _posterHeight = 200.0;
   double get _posterWidth => _posterHeight * _posterAspectRatio;
-  double get _posterListHeight => _posterHeight + 42.0;
+  double get _posterListHeight => _posterHeight + (_showTitles ? 42.0 : 8.0);
   double get _moduleSectionTitleFontSize {
     if (_posterHeight >= 225) {
       return 20;
@@ -131,6 +131,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool _loadingUsers = false;
   String? _selectedUser;
   StateSetter? _quickSetupModalSetState;
+
+  bool get _showTitles =>
+      ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
@@ -1394,25 +1397,38 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
           ? Column(children: [
               _recentlyDownloadedSection(),
-              const SizedBox(height: 4)
+              if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'recommended': () => Column(
-          children: [_recommendedMoviesSection(), const SizedBox(height: 4)]),
+      'recommended': () => Column(children: [
+            _recommendedMoviesSection(),
+            if (_showTitles) const SizedBox(height: 4)
+          ]),
       'missing': () => _missingMovies.isNotEmpty
-          ? Column(
-              children: [_missingMoviesSection(), const SizedBox(height: 4)])
+          ? Column(children: [
+              _missingMoviesSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
           : const SizedBox.shrink(),
-      'downloading_soon': () => Column(
-          children: [_downloadingSoonSection(), const SizedBox(height: 4)]),
-      'popular_movies': () => Column(
-          children: [_popularMoviesSection(), const SizedBox(height: 4)]),
+      'downloading_soon': () => Column(children: [
+            _downloadingSoonSection(),
+            if (_showTitles) const SizedBox(height: 4)
+          ]),
+      'popular_movies': () => Column(children: [
+            _popularMoviesSection(),
+            if (_showTitles) const SizedBox(height: 4)
+          ]),
       'most_anticipated_movies': () =>
           _mostAnticipatedMoviesSection(), // Works even if empty
-      'popular_people': () => Column(
-          children: [_popularPeopleSection(), const SizedBox(height: 4)]),
+      'popular_people': () => Column(children: [
+            _popularPeopleSection(),
+            if (_showTitles) const SizedBox(height: 4)
+          ]),
       'deep_cuts': () => ZagreusMega.isEnabled
-          ? Column(children: [_deepCutsSection(), const SizedBox(height: 4)])
+          ? Column(children: [
+              _deepCutsSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
           : const SizedBox.shrink(),
     };
 
@@ -1467,10 +1483,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ? _recentlyDownloadedShowsSection()
           : const SizedBox.shrink(),
       'airing_next': () => _airingNextSection(),
-      'popular_tv_shows': () => Column(
-          children: [_popularTVShowsSection(), const SizedBox(height: 12)]),
-      'trending_new_tv_shows': () => Column(
-          children: [_trendingNewTVShowsSection(), const SizedBox(height: 12)]),
+      'popular_tv_shows': () => Column(children: [
+            _popularTVShowsSection(),
+            if (_showTitles) const SizedBox(height: 12)
+          ]),
+      'trending_new_tv_shows': () => Column(children: [
+            _trendingNewTVShowsSection(),
+            if (_showTitles) const SizedBox(height: 12)
+          ]),
       'most_anticipated': () => _mostAnticipatedShowsSection(),
     };
 
