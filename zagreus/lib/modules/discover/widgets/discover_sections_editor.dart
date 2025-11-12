@@ -63,6 +63,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   double _posterHeight = 200.0;
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
+  bool _showTitles = true;
 
   bool get hasChanges => _hasChanges;
 
@@ -108,6 +109,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         savedColumns <= _columnsPerRowMax) {
       _columnsPerRow = savedColumns;
     }
+    
+    // Load show titles setting
+    final savedShowTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read();
+    if (savedShowTitles != null) {
+      _showTitles = savedShowTitles;
+    }
   }
 
   Future<void> saveChanges() async {
@@ -119,6 +126,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_POSTER_HEIGHT.update(_posterHeight);
     ZagreusDatabase.DISCOVER_HERO_HEIGHT.update(_heroHeight);
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
+    ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
@@ -363,6 +371,42 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           const SizedBox(height: 8),
           Text(
             'Controls how many posters fit horizontally in the full Discover grids for movies and shows.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Show Titles on Posters',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Switch(
+                value: _showTitles,
+                activeColor: ZagColours.accentColor(context),
+                onChanged: (value) {
+                  setState(() {
+                    _showTitles = value;
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+            ],
+          ),
+          Text(
+            'Toggle titles on or off for movie and show posters. Restart required.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark

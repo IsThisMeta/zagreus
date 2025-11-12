@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -234,29 +235,32 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
             fit: StackFit.expand,
             children: [
               _buildPoster(movie),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    stops: const [0.0, 0.6, 1.0],
+              // Gradient overlay
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                      stops: const [0.0, 0.6, 1.0],
+                    ),
                   ),
                 ),
-              ),
+              // Library indicator dot - top right
               if (inLibrary)
                 Positioned(
-                  top: 12,
-                  right: 12,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    width: 12,
-                    height: 12,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
-                      color: ZagColours.red,
+                      color: ZagColours.orange,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -268,63 +272,50 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                     ),
                   ),
                 ),
+              // Rating badge - top left
               if (rating > 0)
                 Positioned(
-                  bottom: 8,
+                  top: 8,
                   left: 8,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    child: Text(
+                      rating.toStringAsFixed(1),
+                      style: TextStyle(
+                        color: _ratingColor(rating),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              // Title at bottom
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: AutoSizeText(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              Positioned(
-                bottom: 32,
-                left: 8,
-                right: 8,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (year.isNotEmpty)
-                Positioned(
-                  bottom: 10,
-                  right: 8,
-                  child: Text(
-                    year,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 11,
-                    ),
+                    maxLines: 2,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],
@@ -370,6 +361,24 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
         ),
       ),
     );
+  }
+
+  Color _ratingColor(double rating) {
+    if (rating >= 8.0) {
+      return const Color(0xFF35C5F4); // Blue for high ratings
+    } else if (rating >= 6.0) {
+      // Gradient from yellow (6.0) to green (8.0)
+      final progress = (rating - 6.0) / 2.0;
+      return Color.lerp(
+        const Color(0xFFFEC333), // Yellow
+        const Color(0xFF4CAF50), // Green
+        progress,
+      )!;
+    } else if (rating >= 5.0) {
+      return const Color(0xFFFFA726); // Orange
+    } else {
+      return const Color(0xFFEF5350); // Red for low ratings
+    }
   }
 
   Future<void> _handleMovieTap(Map<String, dynamic> movie) async {

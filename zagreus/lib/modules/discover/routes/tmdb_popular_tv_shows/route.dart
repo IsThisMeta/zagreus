@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
@@ -42,6 +43,11 @@ class _State extends State<TMDBPopularTVShowsRoute>
   // Multi-select mode
   bool _isMultiSelectMode = false;
   Set<int> _selectedShowIndices = {};
+
+  int get _titleMaxLines {
+    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    return savedColumns == 4 ? 3 : 2;
+  }
 
   @override
   void initState() {
@@ -431,6 +437,22 @@ class _State extends State<TMDBPopularTVShowsRoute>
             fit: StackFit.expand,
             children: [
               _buildPosterImage(show),
+              // Gradient overlay
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                      stops: [0.0, 0.6, 1.0],
+                    ),
+                  ),
+                ),
               // Library indicator dot - top right
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
@@ -496,6 +518,31 @@ class _State extends State<TMDBPopularTVShowsRoute>
                             size: 16,
                           )
                         : null,
+                  ),
+                ),
+              // Title at bottom
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: AutoSizeText(
+                    show['title'] ?? 'Unknown',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    maxLines: _titleMaxLines,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],

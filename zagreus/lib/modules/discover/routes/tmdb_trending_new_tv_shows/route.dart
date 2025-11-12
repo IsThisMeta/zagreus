@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -336,28 +337,30 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                 ),
               ),
               // Title at bottom
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: Text(
-                  show['title'] ?? 'Unknown',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black,
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: AutoSizeText(
+                    show['title'] ?? 'Unknown',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
               // Library indicator - top right
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(

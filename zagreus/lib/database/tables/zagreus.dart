@@ -108,7 +108,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET<bool>(false),
   DISCOVER_POSTER_HEIGHT<double>(200.0),
   DISCOVER_COLUMNS_PER_ROW<int>(3),
-  DISCOVER_HERO_HEIGHT<double>(400.0);
+  DISCOVER_HERO_HEIGHT<double>(400.0),
+  DISCOVER_SHOW_TITLES<bool>(true);
 
   @override
   ZagTable get table => ZagTable.zagreus;

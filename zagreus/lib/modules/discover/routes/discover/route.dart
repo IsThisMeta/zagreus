@@ -4088,15 +4088,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // Movie title
-              Text(
-                movie['title'] ?? '',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  movie['title'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -4279,15 +4280,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // TV show title
-              Text(
-                show['title'] ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  show['title'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -4479,15 +4481,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // TV show title
-              Text(
-                show['title'] ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  show['title'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -4865,15 +4868,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // TV show title
-              Text(
-                show['title'] ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  show['title'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -5054,15 +5058,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                movie['title'] ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  movie['title'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -5599,15 +5604,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // Movie title
-              Text(
-                movie.title ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  movie.title ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -5719,15 +5725,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // Movie title
-              Text(
-                movie.title ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  movie.title ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),
@@ -5826,15 +5833,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 8),
               // Movie title
-              Text(
-                movie.title ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Text(
+                  movie.title ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
           ),
         ),

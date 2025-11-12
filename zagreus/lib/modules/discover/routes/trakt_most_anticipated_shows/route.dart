@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -333,16 +334,16 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                   ),
                 ),
               ),
-              // Library indicator - bottom right (Sonarr blue dot)
+              // Library indicator - top right (Sonarr blue dot)
               if (inLibrary && !_isMultiSelectMode)
                 Positioned(
-                  bottom: 14,
-                  right: 14,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
-                      color: ZagColours.blue,
+                      color: const Color(0xFF35C5F4),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -379,10 +380,10 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                         : null,
                   ),
                 ),
-              // Rating badge - bottom left
+              // Rating badge - top left
               if (show['rating'] != null && show['rating'] > 0)
                 Positioned(
-                  bottom: 8,
+                  top: 8,
                   left: 8,
                   child: Container(
                     padding:
@@ -391,25 +392,39 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          (show['rating'] ?? 0.0).toStringAsFixed(1),
-                          style: TextStyle(
-                            color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    child: Text(
+                      (show['rating'] ?? 0.0).toStringAsFixed(1),
+                      style: TextStyle(
+                        color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              // Title at bottom
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: AutoSizeText(
+                    show['title'] ?? 'Unknown',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
                         ),
                       ],
                     ),
+                    maxLines: 2,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
             ],

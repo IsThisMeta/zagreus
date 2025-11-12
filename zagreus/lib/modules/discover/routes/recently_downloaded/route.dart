@@ -271,29 +271,30 @@ class _MovieGridItem extends StatelessWidget {
                 ),
               ),
               // Title
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: AutoSizeText(
-                  movie.title ?? 'Unknown',
-                  style: TextStyle(
-                    fontSize: _titleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black,
-                        blurRadius: 4,
-                      ),
-                    ],
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: AutoSizeText(
+                    movie.title ?? 'Unknown',
+                    style: TextStyle(
+                      fontSize: _titleFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    minFontSize: 10,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                  maxLines: 2,
-                  minFontSize: 10,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
                 ),
-              ),
             ],
           ),
         ),
