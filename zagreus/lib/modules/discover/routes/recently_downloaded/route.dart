@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/modules/radarr/core/dialogs.dart';
 
 class DiscoverRecentlyDownloadedRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
@@ -239,6 +240,8 @@ class _MovieGridItem extends StatelessWidget {
           },
         );
       },
+      onLongPress:
+          movie.id != null ? () => _showMovieActions(context, movie) : null,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -337,5 +340,13 @@ class _MovieGridItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showMovieActions(
+      BuildContext context, RadarrMovie movie) async {
+    final result = await RadarrDialogs().movieSettings(context, movie);
+    if (result.item1 && result.item2 != null) {
+      result.item2!.execute(context, movie);
+    }
   }
 }

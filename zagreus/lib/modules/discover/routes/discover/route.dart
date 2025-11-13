@@ -28,6 +28,7 @@ import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_movies/ro
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
+import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
@@ -4903,6 +4904,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _showRadarrMovieActions(RadarrMovie movie) async {
+    if (!mounted || movie.id == null || movie.id == 0) return;
+    try {
+      final result = await RadarrDialogs().movieSettings(context, movie);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, movie);
+      }
+    } catch (error, stack) {
+      ZagLogger()
+          .error('Failed to open Radarr actions for ${movie.title}', error, stack);
+      showZagSnackBar(
+        title: movie.title ?? 'Radarr',
+        message: 'Unable to open Radarr actions right now.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
   Future<void> _openSeriesInSonarr(
       {int? tmdbId, int? tvdbId, String? title}) async {
     final sonarrState = context.read<SonarrState>();
@@ -6262,6 +6282,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             );
           }
         },
+        onLongPress:
+            movie.id != null ? () => _showRadarrMovieActions(movie) : null,
         child: Container(
           width: _posterWidth,
           child: Column(
