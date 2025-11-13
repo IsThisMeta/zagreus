@@ -6,7 +6,6 @@ import 'package:zagreus/modules/server/routes/server/pages/system.dart';
 import 'package:zagreus/modules/server/routes/server/pages/array.dart';
 import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
 import 'package:zagreus/modules/server/routes/server/pages/vms.dart';
-import 'package:zagreus/system/session_state.dart';
 
 class ServerRoute extends StatefulWidget {
   const ServerRoute({Key? key}) : super(key: key);
@@ -18,15 +17,11 @@ class ServerRoute extends StatefulWidget {
 class _State extends State<ServerRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  int _currentPage = 0;
-  late final bool _tabMemoryEnabled;
+  int _currentPage = ServerDatabase.NAVIGATION_INDEX.read();
 
   @override
   void initState() {
     super.initState();
-    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
-    _currentPage =
-        _tabMemoryEnabled ? ServerDatabase.NAVIGATION_INDEX.read() : 0;
     _pageController = ZagPageController(
       initialPage: _currentPage,
     )..addListener(_handlePageChanged);
@@ -78,11 +73,6 @@ class _State extends State<ServerRoute> {
       _currentPage = newIndex;
     });
 
-    if (_tabMemoryEnabled) {
-      ServerDatabase.NAVIGATION_INDEX.update(newIndex);
-      ZagSessionState.instance
-          .setModuleTabPosition(ZagModule.SERVER.key, newIndex);
-    }
   }
 
   @override

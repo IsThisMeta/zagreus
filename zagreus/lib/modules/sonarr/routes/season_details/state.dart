@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
-import 'package:zagreus/system/cache/memory/memory_cache.dart';
 
 class SonarrSeasonDetailsState extends ChangeNotifier {
   final int seriesId;
@@ -47,28 +46,25 @@ class SonarrSeasonDetailsState extends ChangeNotifier {
     notifyListeners();
   }
 
-  final _episodeHistoryCache = ZagMemoryCache<Future<SonarrHistoryPage>>(
-    maxEntries: 10,
-    module: ZagModule.SONARR,
-    id: 'episode_history_cache',
-  );
+  final Map<int, Future<SonarrHistoryPage>> _episodeHistoryRequests = {};
 
   Future<void> fetchEpisodeHistory(BuildContext context, int? episodeId) async {
+    if (episodeId == null) return;
     if (context.read<SonarrState>().enabled) {
-      _episodeHistoryCache.put(
-        episodeId.toString(),
-        context.read<SonarrState>().api!.history.get(
-              pageSize: 1000,
-              episodeId: episodeId,
-            ),
-      );
+      _episodeHistoryRequests[episodeId] = context
+          .read<SonarrState>()
+          .api!
+          .history
+          .get(
+            pageSize: 1000,
+            episodeId: episodeId,
+          );
     }
     notifyListeners();
   }
 
-  Future<SonarrHistoryPage?> getEpisodeHistory(int episodeId) async {
-    String id = episodeId.toString();
-    return await _episodeHistoryCache.get(id);
+  Future<SonarrHistoryPage?> getEpisodeHistory(int episodeId) {
+    return _episodeHistoryRequests[episodeId] ?? Future.value(null);
   }
 
   Future<Map<int, SonarrEpisode>>? _episodes;

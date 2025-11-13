@@ -12,7 +12,6 @@ import 'package:zagreus/services/biometric_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/widgets/ui/snackbar/snackbar_info.dart';
-import 'package:zagreus/system/session_state.dart';
 
 class ConfigurationGeneralRoute extends StatefulWidget {
   const ConfigurationGeneralRoute({
@@ -90,7 +89,6 @@ class _State extends State<ConfigurationGeneralRoute>
     return [
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
-      _moduleTabMemoryToggle(),
       _moduleSwitcherFAB(),
     ];
   }
@@ -108,29 +106,6 @@ class _State extends State<ConfigurationGeneralRoute>
         trailing: ZagSwitch(
           value: !db.read(),
           onChanged: (value) => db.update(!value),
-        ),
-      ),
-    );
-  }
-
-  Widget _moduleTabMemoryToggle() {
-    const db = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
-    return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Remember Module Page',
-        body: const [
-          TextSpan(
-            text: 'Jump back to the last page you viewed.',
-          ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: (value) {
-            db.update(value);
-            if (!value) {
-              ZagSessionState.instance.clearAllModuleTabPositions();
-            }
-          },
         ),
       ),
     );

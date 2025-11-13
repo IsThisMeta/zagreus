@@ -14,6 +14,7 @@ import 'package:zagreus/modules/discover/core/trakt_api.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/core/dialogs.dart';
 import 'package:zagreus/modules/discover/routes/sonarr_recently_downloaded/route.dart';
 import 'package:zagreus/modules/discover/routes/sonarr_airing_next/route.dart';
 import 'package:zagreus/modules/discover/routes/recently_downloaded/route.dart';
@@ -4925,6 +4926,67 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _showSonarrSeriesActions({
+    required int seriesId,
+    String? seriesTitle,
+  }) async {
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) {
+      showZagSnackBar(
+        title: seriesTitle ?? 'Sonarr',
+        message: 'Connect Sonarr to manage shows from Discover.',
+        type: ZagSnackbarType.INFO,
+      );
+      return;
+    }
+
+    try {
+      SonarrSeries? series;
+      Map<int, SonarrSeries>? cached;
+      if (sonarrState.series != null) {
+        cached = await sonarrState.series!;
+        series = cached[seriesId];
+      }
+
+      if (series == null) {
+        series = await sonarrState.api!.series
+            .get(seriesId: seriesId, includeSeasonImages: true);
+        if (series != null && sonarrState.series != null) {
+          cached ??= await sonarrState.series!;
+          cached[series.id!] = series;
+        }
+      }
+
+      if (series == null) {
+        showZagSnackBar(
+          title: seriesTitle ?? 'Sonarr',
+          message: 'Unable to load this series from Sonarr.',
+          type: ZagSnackbarType.ERROR,
+        );
+        return;
+      }
+
+      HapticFeedback.lightImpact();
+      final result = await SonarrDialogs().seriesSettings(context, series);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, series);
+      }
+    } catch (error, stack) {
+      ZagLogger().error(
+        'Failed to open Sonarr actions for series $seriesId',
+        error,
+        stack,
+      );
+      if (!mounted) return;
+      showZagSnackBar(
+        title: seriesTitle ?? 'Sonarr',
+        message: 'Unable to open Sonarr actions right now.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
   Future<void> _openSeriesInSonarr(
       {int? tmdbId, int? tvdbId, String? title}) async {
     final sonarrState = context.read<SonarrState>();
@@ -6706,6 +6768,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   title: episode['seriesTitle'] ?? 'Sonarr',
                   message: 'Unable to open this show in Sonarr right now.',
                   type: ZagSnackbarType.ERROR,
+                );
+              }
+            },
+            onLongPress: () {
+              final seriesId = episode['seriesId'];
+              if (seriesId is int) {
+                _showSonarrSeriesActions(
+                  seriesId: seriesId,
+                  seriesTitle: episode['seriesTitle'] as String?,
                 );
               }
             },

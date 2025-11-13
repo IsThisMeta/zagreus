@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
-import 'package:zagreus/system/session_state.dart';
 
 class SonarrRoute extends StatefulWidget {
   const SonarrRoute({
@@ -20,35 +19,17 @@ class _State extends State<SonarrRoute> {
   @override
   void initState() {
     super.initState();
-    // Try to get saved position from session state, default to 0 (first tab)
-    final savedIndex =
-        ZagSessionState.instance.getModuleTabPosition('sonarr') ?? 0;
     print('🔍 SonarrRoute initState() called');
-    print('🔍 Reading saved index from session: $savedIndex');
+    final savedIndex = SonarrDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(
       initialPage: savedIndex,
     );
     print('🔍 Page controller created with initialPage: $savedIndex');
 
-    // Listen to page changes and save immediately
-    _pageController!.addListener(_onPageChanged);
-
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
     });
-  }
-
-  void _onPageChanged() {
-    if (_pageController?.hasClients ?? false) {
-      final page = _pageController!.page;
-      if (page != null) {
-        final currentIndex = page.round();
-        print('🔍 Tab changed to: $currentIndex');
-        // Save immediately when tab changes
-        ZagSessionState.instance.setModuleTabPosition('sonarr', currentIndex);
-      }
-    }
   }
 
   @override
@@ -60,7 +41,6 @@ class _State extends State<SonarrRoute> {
   @override
   void dispose() {
     print('🔍 SonarrRoute dispose() called');
-    _pageController?.removeListener(_onPageChanged);
     _pageController?.dispose();
     super.dispose();
   }

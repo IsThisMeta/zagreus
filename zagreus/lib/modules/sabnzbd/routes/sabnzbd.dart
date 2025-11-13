@@ -6,7 +6,6 @@ import 'package:zagreus/modules/sabnzbd.dart';
 import 'package:zagreus/router/routes/sabnzbd.dart';
 import 'package:zagreus/system/filesystem/file.dart';
 import 'package:zagreus/system/filesystem/filesystem.dart';
-import 'package:zagreus/system/session_state.dart';
 
 class SABnzbdRoute extends StatefulWidget {
   final bool showDrawer;
@@ -31,27 +30,15 @@ class _State extends State<SABnzbdRoute> {
     GlobalKey<RefreshIndicatorState>(),
   ];
 
-  // Session-based tab memory (cleared on app restart)
-  static int? _sessionTabIndex;
-  late final bool _tabMemoryEnabled;
-
   @override
   void initState() {
     super.initState();
     print('🔍 SABnzbdRoute initState() called');
 
-    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
-
-    // Read from session first, fallback to database
-    final initialPage = _tabMemoryEnabled
-        ? _sessionTabIndex ?? SABnzbdDatabase.NAVIGATION_INDEX.read()
-        : 0;
-    print('🔍 Reading saved index from session: $initialPage');
+    final initialPage = SABnzbdDatabase.NAVIGATION_INDEX.read();
+    print('🔍 Loaded initial index: $initialPage');
 
     _pageController = ZagPageController(initialPage: initialPage);
-
-    // Listen to page changes and save immediately
-    _pageController!.addListener(_handlePageChanged);
 
     print('🔍 Page controller created with initialPage: $initialPage');
 
@@ -69,7 +56,6 @@ class _State extends State<SABnzbdRoute> {
 
   @override
   void dispose() {
-    _pageController?.removeListener(_handlePageChanged);
     _pageController?.dispose();
     super.dispose();
   }
@@ -303,16 +289,5 @@ class _State extends State<SABnzbdRoute> {
 
   void _refreshAllPages() {
     for (var key in _refreshKeys) key?.currentState?.show();
-  }
-
-  void _handlePageChanged() {
-    if (!(_pageController?.hasClients ?? false)) return;
-    final page = _pageController!.page;
-    if (page == null) return;
-    final currentIndex = page.round();
-    if (_tabMemoryEnabled) {
-      _sessionTabIndex = currentIndex;
-      print('🔍 Tab changed to: $currentIndex');
-    }
   }
 }

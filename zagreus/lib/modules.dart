@@ -18,7 +18,6 @@ import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/server.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
-import 'package:zagreus/system/session_state.dart';
 
 part 'modules.g.dart';
 
@@ -420,22 +419,6 @@ extension ZagModuleMetadataExtension on ZagModule {
   }
 }
 
-const List<String> _radarrNonRestorablePrefixes = <String>[
-  '/radarr/movie/',
-  '/radarr/add_movie/details',
-  '/radarr/manual_import/details',
-];
-
-const List<String> _sonarrNonRestorablePrefixes = <String>[
-  '/sonarr/series/',
-  '/sonarr/add_series/details',
-];
-
-const List<String> _lidarrNonRestorablePrefixes = <String>[
-  '/lidarr/artist/',
-  '/lidarr/add_artist/details',
-];
-
 extension ZagModuleRoutingExtension on ZagModule {
   String? get homeRoute {
     switch (this) {
@@ -510,39 +493,7 @@ extension ZagModuleRoutingExtension on ZagModule {
   Future<void> launch() async {
     final home = homeRoute;
     if (home == null) return;
-
-    final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
-    final shouldRestore =
-        savedRoute != null && canRestoreRoute(savedRoute);
-    final targetRoute = shouldRestore ? savedRoute! : home;
-
-    print('🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)');
-    ZagRouter.router.pushReplacement(targetRoute);
-  }
-
-  bool canRestoreRoute(String route) {
-    final home = homeRoute;
-    if (home == null) return false;
-    if (!route.startsWith(home)) return false;
-
-    final path = Uri.tryParse(route)?.path ?? route;
-    switch (this) {
-      case ZagModule.RADARR:
-        return !_hasPrefix(path, _radarrNonRestorablePrefixes);
-      case ZagModule.SONARR:
-        return !_hasPrefix(path, _sonarrNonRestorablePrefixes);
-      case ZagModule.LIDARR:
-        return !_hasPrefix(path, _lidarrNonRestorablePrefixes);
-      default:
-        return true;
-    }
-  }
-
-  bool _hasPrefix(String route, List<String> disallowedPrefixes) {
-    for (final prefix in disallowedPrefixes) {
-      if (route.startsWith(prefix)) return true;
-    }
-    return false;
+    ZagRouter.router.pushReplacement(home);
   }
 }
 

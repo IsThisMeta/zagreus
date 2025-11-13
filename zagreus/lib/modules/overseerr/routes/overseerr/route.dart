@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/router/routes/settings.dart';
-import 'package:zagreus/system/session_state.dart';
 
 class OverseerrRoute extends StatefulWidget {
   const OverseerrRoute({
@@ -16,28 +15,17 @@ class OverseerrRoute extends StatefulWidget {
 class _State extends State<OverseerrRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  int _currentPage = 0;
-  late final bool _tabMemoryEnabled;
-
-  // Session-based tab memory (cleared on app restart)
-  static int? _sessionTabIndex;
 
   @override
   void initState() {
     super.initState();
     print('🔍 OverseerrRoute initState() called');
 
-    _tabMemoryEnabled = ZagSessionState.instance.tabMemoryEnabled;
-
-    // Read from session first, fallback to 0 (no database default for Overseerr)
-    _currentPage = _tabMemoryEnabled ? _sessionTabIndex ?? 0 : 0;
-    print('🔍 Reading saved index from session: $_currentPage');
-
     _pageController = ZagPageController(
-      initialPage: _currentPage,
-    )..addListener(_handlePageChanged);
+      initialPage: 0,
+    );
 
-    print('🔍 Page controller created with initialPage: $_currentPage');
+    print('🔍 Page controller created with initialPage: 0');
 
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,7 +41,6 @@ class _State extends State<OverseerrRoute> {
 
   @override
   void dispose() {
-    _pageController?.removeListener(_handlePageChanged);
     _pageController?.dispose();
     super.dispose();
   }
@@ -135,18 +122,5 @@ class _State extends State<OverseerrRoute> {
         OverseerrIssuesRoute(),
       ],
     );
-  }
-
-  void _handlePageChanged() {
-    if (_pageController?.page?.round() != _currentPage) {
-      final newPage = _pageController!.page!.round();
-      setState(() {
-        _currentPage = newPage;
-      });
-      if (_tabMemoryEnabled) {
-        _sessionTabIndex = newPage;
-        print('🔍 Tab changed to: $newPage');
-      }
-    }
   }
 }
