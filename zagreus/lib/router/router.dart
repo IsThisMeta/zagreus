@@ -109,6 +109,8 @@ class _RouteLocationTracker {
     if (!(path == home || path.startsWith('$home/'))) return;
 
     final normalizedLocation = uri.replace(fragment: null).toString();
+    if (!module.canRestoreRoute(normalizedLocation)) return;
+
     final last = ZagSessionState.instance.getModuleLastRoute(module.key);
     if (last == normalizedLocation) return;
 

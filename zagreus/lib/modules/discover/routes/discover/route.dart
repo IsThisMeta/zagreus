@@ -64,6 +64,43 @@ const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
+  // Page storage + controller keys for scroll preservation
+  static const _scrollIdRecentlyDownloaded = 'recently_downloaded_section';
+  static const _scrollIdRecommended = 'recommended_movies_section';
+  static const _scrollIdMissing = 'missing_movies_section';
+  static const _scrollIdDownloadingSoon = 'downloading_soon_section';
+  static const _scrollIdPopularMovies = 'popular_movies_section';
+  static const _scrollIdPopularTv = 'popular_tv_shows_section';
+  static const _scrollIdTrendingTv = 'trending_tv_shows_section';
+  static const _scrollIdMostAnticipatedShows =
+      'most_anticipated_shows_section';
+  static const _scrollIdMostAnticipatedMovies =
+      'most_anticipated_movies_section';
+  static const _scrollIdPopularPeople = 'popular_people_section';
+  static const _scrollIdDeepCuts = 'deep_cuts_recommendations';
+
+  static const _recentlyDownloadedListKey =
+      PageStorageKey<String>('discover_recently_downloaded_movies');
+  static const _recommendedMoviesListKey =
+      PageStorageKey<String>('discover_recommended_movies');
+  static const _missingMoviesListKey =
+      PageStorageKey<String>('discover_missing_movies');
+  static const _downloadingSoonListKey =
+      PageStorageKey<String>('discover_downloading_soon');
+  static const _popularMoviesListKey =
+      PageStorageKey<String>('discover_popular_movies');
+  static const _popularTvShowsListKey =
+      PageStorageKey<String>('discover_popular_tv_shows');
+  static const _trendingTvShowsListKey =
+      PageStorageKey<String>('discover_trending_tv_shows');
+  static const _mostAnticipatedShowsListKey =
+      PageStorageKey<String>('discover_most_anticipated_shows');
+  static const _mostAnticipatedMoviesListKey =
+      PageStorageKey<String>('discover_most_anticipated_movies');
+  static const _popularPeopleListKey =
+      PageStorageKey<String>('discover_popular_people');
+  static const _deepCutsListKey =
+      PageStorageKey<String>('discover_deep_cuts');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
   int _currentPageIndex = 0;
@@ -106,6 +143,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _trendingItems = [];
   Timer? _autoScrollTimer;
   final Set<String> _precachedHeroBackdrops = {};
+  final Map<String, ScrollController> _sectionScrollControllers = {};
 
   // Z Assistant navigation history
   String? _lastZAssistantStageId;
@@ -198,9 +236,49 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
+    for (final controller in _sectionScrollControllers.values) {
+      controller.dispose();
+    }
     _heroPageController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  ScrollController _sectionScrollController(String key) {
+    return _sectionScrollControllers.putIfAbsent(
+      key,
+      () => ScrollController(),
+    );
+  }
+
+  Future<void> _refreshSection({
+    required String scrollKey,
+    required Future<void> Function() loader,
+    String? sectionLabel,
+  }) async {
+    if (sectionLabel != null) {
+      showZagSnackBar(
+        title: 'Refreshing',
+        message: 'Updating $sectionLabel…',
+        type: ZagSnackbarType.INFO,
+        duration: const Duration(milliseconds: 1500),
+      );
+    }
+
+    final controller = _sectionScrollControllers[scrollKey];
+    final previousOffset =
+        (controller != null && controller.hasClients) ? controller.offset : null;
+
+    await loader();
+
+    if (previousOffset == null || controller == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !controller.hasClients) return;
+      final maxExtent = controller.position.maxScrollExtent;
+      final maxAllowed = maxExtent.isFinite ? maxExtent : previousOffset;
+      final clampedOffset = previousOffset.clamp(0.0, maxAllowed).toDouble();
+      controller.jumpTo(clampedOffset);
+    });
   }
 
   void _startAutoScroll() {
@@ -298,11 +376,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     precacheImage(NetworkImage(url), context);
   }
 
-  Future<void> _loadRecentlyDownloaded() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _loadRecentlyDownloaded({bool showGlobalLoader = true}) async {
+    if (showGlobalLoader) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    } else {
+      setState(() {
+        _error = null;
+      });
+    }
 
     try {
       // Check if Radarr is enabled first
@@ -311,7 +395,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // If Radarr is not enabled, just use empty list
         setState(() {
           _recentlyDownloaded = [];
-          _isLoading = false;
+          if (showGlobalLoader) _isLoading = false;
         });
         return;
       }
@@ -321,7 +405,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // If API not configured, use empty list
         setState(() {
           _recentlyDownloaded = [];
-          _isLoading = false;
+          if (showGlobalLoader) _isLoading = false;
         });
         return;
       }
@@ -369,12 +453,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       setState(() {
         _recentlyDownloaded = downloadedMovies;
-        _isLoading = false;
+        if (showGlobalLoader) _isLoading = false;
       });
     } catch (e) {
       setState(() {
         _error = e.toString();
-        _isLoading = false;
+        if (showGlobalLoader) _isLoading = false;
       });
     }
   }
@@ -3872,13 +3956,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
-          onLongPress: () => _loadRecommendedMovies(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdRecommended,
+            loader: _loadRecommendedMovies,
+            sectionLabel: 'Recommended',
+          ),
         ),
         // Movie list or placeholder
         previewMovies.isNotEmpty
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _recommendedMoviesListKey,
+                  controller: _sectionScrollController(_scrollIdRecommended),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: previewMovies.length,
@@ -3931,12 +4021,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
-          onLongPress: () => _loadMissingMovies(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdMissing,
+            loader: _loadMissingMovies,
+            sectionLabel: 'Missing',
+          ),
         ),
         // Movie list
         SizedBox(
           height: _posterListHeight,
           child: ListView.builder(
+            key: _missingMoviesListKey,
+            controller: _sectionScrollController(_scrollIdMissing),
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: previewMovies.length,
@@ -3973,7 +4069,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
-          onLongPress: () => _loadDownloadingSoon(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdDownloadingSoon,
+            loader: _loadDownloadingSoon,
+            sectionLabel: 'Downloading Soon',
+          ),
         ),
         // Movie list
         SizedBox(
@@ -4013,6 +4113,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 )
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
+                  key: _downloadingSoonListKey,
+                  controller: _sectionScrollController(_scrollIdDownloadingSoon),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: previewMovies.length,
                   itemBuilder: (context, index) {
@@ -4049,7 +4151,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadPopularMovies(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdPopularMovies,
+            loader: _loadPopularMovies,
+            sectionLabel: 'Popular Movies',
+          ),
           showArrow: _popularMovies.isNotEmpty,
         ),
         // Movie list or loading placeholder
@@ -4057,6 +4163,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _popularMoviesListKey,
+                  controller:
+                      _sectionScrollController(_scrollIdPopularMovies),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _popularMovies.length,
@@ -4276,7 +4385,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadPopularTVShows(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdPopularTv,
+            loader: _loadPopularTVShows,
+            sectionLabel: 'Popular TV Shows',
+          ),
           showArrow: _popularTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4284,6 +4397,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _popularTvShowsListKey,
+                  controller: _sectionScrollController(_scrollIdPopularTv),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _popularTVShows.length,
@@ -4510,7 +4625,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadTrendingNewTVShows(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdTrendingTv,
+            loader: _loadTrendingNewTVShows,
+            sectionLabel: 'Trending Shows',
+          ),
           showArrow: _trendingNewTVShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4518,6 +4637,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _trendingTvShowsListKey,
+                  controller: _sectionScrollController(_scrollIdTrendingTv),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: previewShows.length,
@@ -4920,7 +5041,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadMostAnticipatedShows(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdMostAnticipatedShows,
+            loader: _loadMostAnticipatedShows,
+            sectionLabel: 'Most Anticipated Shows',
+          ),
           showArrow: _mostAnticipatedShows.isNotEmpty,
         ),
         // TV show list or loading placeholder
@@ -4928,6 +5053,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _mostAnticipatedShowsListKey,
+                  controller: _sectionScrollController(
+                      _scrollIdMostAnticipatedShows),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _mostAnticipatedShows.length,
@@ -5137,13 +5265,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadMostAnticipatedMovies(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdMostAnticipatedMovies,
+            loader: _loadMostAnticipatedMovies,
+            sectionLabel: 'Most Anticipated Movies',
+          ),
           showArrow: _mostAnticipatedMovies.isNotEmpty,
         ),
         _mostAnticipatedMovies.isNotEmpty
             ? SizedBox(
                 height: _posterListHeight,
                 child: ListView.builder(
+                  key: _mostAnticipatedMoviesListKey,
+                  controller:
+                      _sectionScrollController(_scrollIdMostAnticipatedMovies),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _mostAnticipatedMovies.length,
@@ -5372,7 +5507,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   );
                 }
               : null,
-          onLongPress: () => _loadPopularPeople(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdPopularPeople,
+            loader: _loadPopularPeople,
+            sectionLabel: 'Popular People',
+          ),
           showArrow: _popularPeople.isNotEmpty,
         ),
         // People list or loading placeholder
@@ -5380,6 +5519,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? SizedBox(
                 height: 150,
                 child: ListView.builder(
+                  key: _popularPeopleListKey,
+                  controller:
+                      _sectionScrollController(_scrollIdPopularPeople),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _popularPeople.length,
@@ -5505,6 +5647,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   height: 300,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
+                    key: _deepCutsListKey,
+                    controller:
+                        _sectionScrollController(_scrollIdDeepCuts),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
                     itemBuilder: (context, index) {
@@ -6067,7 +6212,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             );
           },
-          onLongPress: () => _loadRecentlyDownloaded(),
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdRecentlyDownloaded,
+            loader: () => _loadRecentlyDownloaded(showGlobalLoader: false),
+            sectionLabel: 'Recently Downloaded',
+          ),
           trailingIcon: Icons.chevron_right_rounded,
           trailingColor: Colors.grey,
           trailingSize: 24,
@@ -6077,6 +6226,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         SizedBox(
           height: _posterListHeight,
           child: ListView.builder(
+            key: _recentlyDownloadedListKey,
+            controller: _sectionScrollController(_scrollIdRecentlyDownloaded),
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: previewMovies.length,
