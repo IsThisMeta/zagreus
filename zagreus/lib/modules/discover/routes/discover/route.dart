@@ -6647,6 +6647,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _airingNextCard(Map<String, dynamic> episode) {
+    final secondaryTextColor = Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.color
+            ?.withOpacity(0.65) ??
+        Colors.grey.shade700;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -6734,7 +6740,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')} • ${episode['episodeTitle']}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade700,
+                            color: secondaryTextColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -6782,6 +6788,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _tvShowCard(Map<String, dynamic> episode) {
     final sizeGb = episode['sizeGb'] is num ? episode['sizeGb'] as num : null;
+    final secondaryTextColor = Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.color
+            ?.withOpacity(0.65) ??
+        Colors.grey.shade700;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -6878,7 +6890,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           episode['episodeTitle'],
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade700,
+                            color: secondaryTextColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -6891,7 +6903,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade700,
+                                  color: secondaryTextColor,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
