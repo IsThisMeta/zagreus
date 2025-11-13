@@ -6,6 +6,9 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/modules/sonarr/core/dialogs.dart';
 
+const double _recentlyDownloadedEpisodeThumbWidth = 90;
+const double _recentlyDownloadedEpisodeThumbHeight = 53;
+
 class SonarrRecentlyDownloadedRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
 
@@ -237,7 +240,9 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
-        height: 72,
+        constraints: const BoxConstraints(
+          minHeight: _recentlyDownloadedEpisodeThumbHeight,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
@@ -266,8 +271,8 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
               children: [
                 // Thumbnail
                 Container(
-                  width: 120,
-                  height: 72,
+                  width: _recentlyDownloadedEpisodeThumbWidth,
+                  height: _recentlyDownloadedEpisodeThumbHeight,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -319,29 +324,36 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          seasonEpisode,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color
-                                    ?.withOpacity(0.55) ??
-                                Colors.grey.shade700,
-                          ),
-                        ),
-                        if (sizeGb != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '${sizeGb.toStringAsFixed(2)} GB',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: ZagColours.currentAccent,
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                seasonEpisode,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color
+                                          ?.withOpacity(0.55) ??
+                                      Colors.grey.shade700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                            if (sizeGb != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '${sizeGb.toStringAsFixed(2)} GB',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: ZagColours.currentAccent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                   ),
