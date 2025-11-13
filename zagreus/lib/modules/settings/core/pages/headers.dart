@@ -124,6 +124,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return ZagProfile.current.serverHeaders;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a headers page');
+      case ZagModule.PROWLARR:
+        throw Exception('Prowlarr does not have a headers page');
     }
   }
 
@@ -157,6 +159,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a global state');
+      case ZagModule.PROWLARR:
+        throw Exception('Prowlarr does not have a global state');
     }
   }
 }

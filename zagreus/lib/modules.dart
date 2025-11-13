@@ -36,6 +36,7 @@ const MODULE_TAUTULLI_KEY = 'tautulli';
 const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
 const MODULE_SERVER_KEY = 'server';
+const MODULE_PROWLARR_KEY = 'prowlarr';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -66,7 +67,9 @@ enum ZagModule {
   @HiveField(12)
   DISCOVER(MODULE_DISCOVER_KEY),
   @HiveField(13)
-  SERVER(MODULE_SERVER_KEY);
+  SERVER(MODULE_SERVER_KEY),
+  @HiveField(14)
+  PROWLARR(MODULE_PROWLARR_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -101,6 +104,8 @@ enum ZagModule {
         return ZagModule.DISCOVER;
       case MODULE_SERVER_KEY:
         return ZagModule.SERVER;
+      case MODULE_PROWLARR_KEY:
+        return ZagModule.PROWLARR;
     }
     return null;
   }
@@ -124,6 +129,8 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.DISCOVER:
         return true;
       case ZagModule.SERVER:
+        return true;
+      case ZagModule.PROWLARR:
         return true;
       default:
         return true;
@@ -160,6 +167,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return true;
       case ZagModule.SERVER:
         return ZagProfile.current.serverEnabled;
+      case ZagModule.PROWLARR:
+        return !ZagBox.indexers.isEmpty;
     }
   }
 }
@@ -195,6 +204,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Discover';
       case ZagModule.SERVER:
         return 'Server';
+      case ZagModule.PROWLARR:
+        return 'Prowlarr';
     }
   }
 
@@ -228,6 +239,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.explore_rounded;
       case ZagModule.SERVER:
         return Icons.dns_rounded;
+      case ZagModule.PROWLARR:
+        return Icons.travel_explore_rounded;
     }
   }
 
@@ -261,6 +274,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFF6688FF); // RGB(0.4, 0.533, 1.0) = #6688FF
       case ZagModule.SERVER:
         return const Color(0xFFFF8C2F); // Unraid orange
+      case ZagModule.PROWLARR:
+        return const Color(0xFF0087FF); // Prowlarr blue
     }
   }
 
@@ -294,6 +309,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.SERVER:
         return 'https://unraid.net';
+      case ZagModule.PROWLARR:
+        return 'https://prowlarr.com';
     }
   }
 
@@ -327,6 +344,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.SERVER:
         return null;
+      case ZagModule.PROWLARR:
+        return 'https://github.com/Prowlarr/Prowlarr';
     }
   }
 
@@ -360,6 +379,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Browse and Discover Content';
       case ZagModule.SERVER:
         return 'Manage Your Unraid Server';
+      case ZagModule.PROWLARR:
+        return 'Search Indexers and Manage Downloads';
     }
   }
 
@@ -393,6 +414,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Discover new movies and TV shows, browse what\'s trending, see what\'s coming soon, and explore your recently downloaded content.';
       case ZagModule.SERVER:
         return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
+      case ZagModule.PROWLARR:
+        return 'Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. It supports management of both Torrent Trackers and Usenet Indexers, providing a unified search interface and download capabilities.';
     }
   }
 }
@@ -428,6 +451,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.discover.root.path;
       case ZagModule.SERVER:
         return ZagRoutes.server.root.path;
+      case ZagModule.PROWLARR:
+        return ZagRoutes.search.root.path; // Use search route for now
     }
   }
 
@@ -461,6 +486,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS;
       case ZagModule.SERVER:
         return SettingsRoutes.CONFIGURATION_SERVER;
+      case ZagModule.PROWLARR:
+        return SettingsRoutes.CONFIGURATION_SEARCH; // Use search settings for now
     }
   }
 
@@ -568,6 +595,8 @@ extension ZagModuleExtension on ZagModule {
         return null;
       case ZagModule.SERVER:
         return context.read<ServerState>();
+      case ZagModule.PROWLARR:
+        return null;
     }
   }
 
