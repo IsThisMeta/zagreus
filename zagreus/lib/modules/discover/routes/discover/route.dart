@@ -5038,20 +5038,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
+                  // Gradient overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: _posterHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        show['title'] ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 8),
-              // TV show title
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Text(
-                  show['title'] ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
             ],
           ),
         ),
@@ -5219,19 +5251,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
+                  // Gradient overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: _posterHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        movie['title'] ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 8),
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Text(
-                  movie['title'] ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
             ],
           ),
         ),
@@ -5758,27 +5823,63 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Movie poster
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  height: _posterHeight,
-                  width: _posterWidth,
-                  color: Colors.grey.shade800,
-                  child: _buildPosterImage(context, movie),
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Movie title
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Text(
-                  movie.title ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      height: _posterHeight,
+                      width: _posterWidth,
+                      color: Colors.grey.shade800,
+                      child: _buildPosterImage(context, movie),
+                    ),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  // Gradient overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: _posterHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        movie.title ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -5886,20 +5987,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
+                  // Title gradient overlay (on top of orange gradient)
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        movie.title ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 8),
-              // Movie title
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Text(
-                  movie.title ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
             ],
           ),
         ),
