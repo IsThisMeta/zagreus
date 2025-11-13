@@ -74,8 +74,10 @@ Future<void> bootstrap() async {
   // Initialize command processor for zero-knowledge backend requests
   CommandProcessorService().startPolling();
   // Bitcoin miner started
-  // Initialize RevenueCat for in-app purchases
-  if (ZagPlatform.isIOS) await RevenueCatService().initialize();
+  // Initialize RevenueCat for in-app purchases (iOS & macOS support)
+  if (ZagPlatform.isIOS || ZagPlatform.isMacOS) {
+    await RevenueCatService().initialize();
+  }
   // Initialize home screen widget
   if (ZagPlatform.isIOS) await UpcomingWidgetService.initialize();
 }
