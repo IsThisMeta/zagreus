@@ -334,9 +334,10 @@ class ZagBlock extends StatelessWidget {
     }
 
     Widget _wrapper(List<Widget> children) {
-      return Expanded(
+      return SizedBox(
+        width: double.infinity,
         child: Column(
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: children,
