@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -4907,6 +4908,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showRadarrMovieActions(RadarrMovie movie) async {
     if (!mounted || movie.id == null || movie.id == 0) return;
     try {
+      HapticFeedback.lightImpact();
       final result = await RadarrDialogs().movieSettings(context, movie);
       if (!mounted) return;
       if (result.item1 && result.item2 != null) {

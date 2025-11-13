@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -344,6 +345,7 @@ class _MovieGridItem extends StatelessWidget {
 
   Future<void> _showMovieActions(
       BuildContext context, RadarrMovie movie) async {
+    HapticFeedback.lightImpact();
     final result = await RadarrDialogs().movieSettings(context, movie);
     if (result.item1 && result.item2 != null) {
       result.item2!.execute(context, movie);
