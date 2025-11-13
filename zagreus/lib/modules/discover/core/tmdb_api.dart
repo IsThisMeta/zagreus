@@ -181,43 +181,37 @@ class TMDBApi {
     String? region,
   }) async {
     try {
-      // Fetch single page (20 results, UI will display 10)
-      List<Map<String, dynamic>> allShows = [];
-
-      for (int p = 1; p <= 1; p++) {
-        String url = '$_baseUrl/tv/popular?api_key=$_apiKey&page=$p';
-        if (region != null) {
-          url += '&region=$region';
-        }
-
-        final response = await http.get(Uri.parse(url));
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          final results = data['results'] as List;
-
-          // Transform the data to match our UI needs
-          final shows = results.map((item) {
-            return {
-              'id': item['id'],
-              'title': item['name'] ?? 'Unknown',
-              'backdrop': getImageUrl(item['backdrop_path']),
-              'poster': getImageUrl(item['poster_path'], size: 'w500'),
-              'rating': (item['vote_average'] ?? 0).toDouble(),
-              'overview': item['overview'] ?? '',
-              'firstAirDate': item['first_air_date'],
-              'mediaType': 'tv',
-              'tmdbId': item['id'],
-              'popularity': item['popularity'] ?? 0,
-              'inLibrary': false,
-            };
-          }).toList();
-
-          allShows.addAll(shows);
-        }
+      String url = '$_baseUrl/tv/popular?api_key=$_apiKey&page=$page';
+      if (region != null) {
+        url += '&region=$region';
       }
 
-      return allShows;
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        print(
+            'TMDB API Error (Popular TV Shows): ${response.statusCode} ${response.body}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final results = data['results'] as List? ?? [];
+
+      return results.map<Map<String, dynamic>>((item) {
+        return {
+          'id': item['id'],
+          'title': item['name'] ?? 'Unknown',
+          'backdrop': getImageUrl(item['backdrop_path']),
+          'poster': getImageUrl(item['poster_path'], size: 'w500'),
+          'rating': (item['vote_average'] ?? 0).toDouble(),
+          'overview': item['overview'] ?? '',
+          'firstAirDate': item['first_air_date'],
+          'mediaType': 'tv',
+          'tmdbId': item['id'],
+          'popularity': item['popularity'] ?? 0,
+          'inLibrary': false,
+        };
+      }).toList();
     } catch (e) {
       print('TMDB API Error (Popular TV Shows): $e');
       return [];
