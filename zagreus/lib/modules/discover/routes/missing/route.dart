@@ -258,7 +258,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   
   Widget _movieTile(RadarrMovie movie, int index, int columns) {
     final isSelected = _selectedMovieIndices.contains(index);
-    final titleFontSize = columns == 2 ? 12.0 : (columns == 4 ? 16.0 : 14.0);
+    final titleFontSize = columns == 2 ? 16.0 : (columns == 4 ? 12.0 : 14.0);
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),

@@ -339,24 +339,21 @@ class _State extends State<DiscoverRecommendedRoute>
               // Poster
               _buildPosterImage(context, movie),
               // Gradient for text readability
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 80,
+              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
+                        Colors.transparent,
                         Colors.black.withOpacity(0.8),
                       ],
+                      stops: [0.0, 0.5, 1.0],
                     ),
                   ),
                 ),
-              ),
               // Title
               if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
                 Positioned(
@@ -376,7 +373,7 @@ class _State extends State<DiscoverRecommendedRoute>
                         ),
                       ],
                     ),
-                    maxLines: 2,
+                    maxLines: 3,
                     minFontSize: 11,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

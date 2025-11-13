@@ -457,7 +457,7 @@ class _State extends State<TMDBPopularMoviesRoute>
                         Colors.transparent,
                         Colors.black.withOpacity(0.8),
                       ],
-                      stops: [0.0, 0.6, 1.0],
+                      stops: [0.0, 0.5, 1.0],
                     ),
                   ),
                 ),

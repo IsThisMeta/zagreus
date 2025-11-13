@@ -696,7 +696,7 @@ class _State extends State<PersonDetailsRoute>
                             ),
                           ],
                         ),
-                        maxLines: 2,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
