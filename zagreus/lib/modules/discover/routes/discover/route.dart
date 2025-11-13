@@ -140,7 +140,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String? _error;
 
   // Hero carousel state
-  PageController _heroPageController = PageController();
+  final PageController _moviesHeroPageController = PageController();
+  final PageController _tvHeroPageController = PageController();
+  Iterable<PageController> get _heroPageControllers =>
+      [_moviesHeroPageController, _tvHeroPageController];
   int _currentHeroIndex = 0;
   String _trendingTimeWindow = 'day'; // 'day' or 'week'
   List<Map<String, dynamic>> _trendingItems = [];
@@ -242,7 +245,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     for (final controller in _sectionScrollControllers.values) {
       controller.dispose();
     }
-    _heroPageController.dispose();
+    _moviesHeroPageController.dispose();
+    _tvHeroPageController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -252,6 +256,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       key,
       () => ScrollController(),
     );
+  }
+
+  void _withHeroControllers(
+    void Function(PageController controller) action,
+  ) {
+    for (final controller in _heroPageControllers) {
+      if (controller.hasClients) {
+        action(controller);
+      }
+    }
   }
 
   Future<void> _refreshSection({
@@ -285,15 +299,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_trendingItems.isNotEmpty) {
-        final nextIndex = (_currentHeroIndex + 1) % _trendingItems.length;
-        _heroPageController.animateToPage(
+      if (_trendingItems.isEmpty) return;
+      final nextIndex = (_currentHeroIndex + 1) % _trendingItems.length;
+      _withHeroControllers((controller) {
+        controller.animateToPage(
           nextIndex,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
-      }
+      });
     });
   }
 
@@ -1446,7 +1462,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
-          _heroCarousel(),
+          _heroCarousel(
+            controller: _moviesHeroPageController,
+            storageKey: 'discoverHeroCarouselMovies',
+          ),
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
@@ -1540,7 +1559,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
-          _heroCarousel(),
+          _heroCarousel(
+            controller: _tvHeroPageController,
+            storageKey: 'discoverHeroCarouselTv',
+          ),
           // TV shows sections in custom order
           ..._buildTVSections(),
           const SizedBox(height: 16),
@@ -3600,14 +3622,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _heroCarousel() {
+  Widget _heroCarousel({
+    required PageController controller,
+    required String storageKey,
+  }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_heroPageController.hasClients) {
-        final currentPage = _heroPageController.page?.round() ??
-            _heroPageController.initialPage;
+      if (controller.hasClients) {
+        final currentPage =
+            controller.page?.round() ?? controller.initialPage;
         if (currentPage != _currentHeroIndex) {
-          _heroPageController.jumpToPage(_currentHeroIndex);
+          controller.jumpToPage(_currentHeroIndex);
         }
       }
     });
@@ -3621,8 +3646,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             onPanCancel: () => _restartAutoScroll(),
             onPanEnd: (_) => _restartAutoScroll(),
             child: PageView.builder(
-              key: const PageStorageKey('discoverHeroCarousel'),
-              controller: _heroPageController,
+              key: PageStorageKey<String>(storageKey),
+              controller: controller,
               onPageChanged: (index) {
                 setState(() {
                   _currentHeroIndex = index;
@@ -3859,7 +3884,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _trendingTimeWindow = value;
           _currentHeroIndex = 0;
         });
-        _heroPageController.jumpToPage(0);
+        _withHeroControllers((controller) => controller.jumpToPage(0));
         _loadTrendingData();
         _restartAutoScroll();
       },
@@ -3899,7 +3924,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _trendingTimeWindow = value;
           _currentHeroIndex = 0;
         });
-        _heroPageController.jumpToPage(0);
+        _withHeroControllers((controller) => controller.jumpToPage(0));
         _loadTrendingData();
         _restartAutoScroll();
       },
