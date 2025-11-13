@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
+import 'package:zagreus/modules/discover/core/trakt_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 
@@ -79,10 +80,25 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     }
 
     try {
-      final locale = Localizations.localeOf(context);
-      final region = locale.countryCode ?? 'US';
+      final shows =
+          await TraktApi.getAnticipatedShows(page: 1, limit: 40);
 
-      final shows = await TMDBApi.getMostAnticipatedShows(region: region);
+      for (final show in shows) {
+        final tmdbId = show['tmdbId'] as int?;
+        if (tmdbId == null) continue;
+
+        final tmdbDetails = await TMDBApi.getTVShowDetails(tmdbId);
+        if (tmdbDetails == null) continue;
+
+        show['poster'] =
+            TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w500');
+        show['backdrop'] = TMDBApi.getImageUrl(tmdbDetails['backdrop_path']);
+
+        final overview = show['overview'] as String?;
+        if (overview == null || overview.trim().isEmpty) {
+          show['overview'] = tmdbDetails['overview'];
+        }
+      }
 
       final sonarrState = context.read<SonarrState>();
       if (sonarrState.enabled && sonarrState.api != null) {
