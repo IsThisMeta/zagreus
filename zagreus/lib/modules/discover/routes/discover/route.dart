@@ -65,6 +65,8 @@ const double _heroTitleFontSize = 26;
 const double _posterAspectRatio = 2 / 3;
 const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
+const double _recentlyDownloadedEpisodeThumbWidth = 100;
+const double _recentlyDownloadedEpisodeThumbHeight = 53;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Page storage + controller keys for scroll preservation
@@ -757,6 +759,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             }
           }
 
+          double? sizeGb;
+          final dynamic rawSize = record.data?['size'];
+          if (rawSize != null) {
+            if (rawSize is num) {
+              sizeGb = rawSize / (1024 * 1024 * 1024);
+            } else if (rawSize is String) {
+              final parsed = num.tryParse(rawSize);
+              if (parsed != null) {
+                sizeGb = parsed / (1024 * 1024 * 1024);
+              }
+            }
+          }
+
           shows.add({
             'seriesTitle': series.title ?? 'Unknown Series',
             'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
@@ -767,6 +782,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
             'episodeId': episode.id,
+            'sizeGb': sizeGb,
           });
         }
       }
@@ -6634,7 +6650,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
-        height: 72,
+        constraints: const BoxConstraints(
+          minHeight: _recentlyDownloadedEpisodeThumbHeight,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
@@ -6657,8 +6675,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 // Thumbnail
                 Container(
-                  width: 108,
-                  height: 72,
+                  width: _recentlyDownloadedEpisodeThumbWidth,
+                  height: _recentlyDownloadedEpisodeThumbHeight,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -6763,15 +6781,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _tvShowCard(Map<String, dynamic> episode) {
-    final networkLabel = (episode['network'] as String?)?.trim();
-    final showNetworkLabel = networkLabel != null &&
-        networkLabel.isNotEmpty &&
-        networkLabel.toLowerCase() != 'downloaded';
+    final sizeGb = episode['sizeGb'] is num ? episode['sizeGb'] as num : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
-        height: 72,
+        constraints: const BoxConstraints(
+          minHeight: _recentlyDownloadedEpisodeThumbHeight,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
@@ -6810,8 +6827,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               children: [
                 // Thumbnail
                 Container(
-                  width: 108,
-                  height: 72,
+                  width: _recentlyDownloadedEpisodeThumbWidth,
+                  height: _recentlyDownloadedEpisodeThumbHeight,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -6869,20 +6886,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Text(
-                              '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                            if (showNetworkLabel) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                networkLabel!,
+                            Flexible(
+                              child: Text(
+                                '${episode['seasonNumber']}x${episode['episodeNumber'].toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: ZagColours.blue,
+                                  color: Colors.grey.shade700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (sizeGb != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '${sizeGb.toStringAsFixed(2)} GB',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: ZagColours.currentAccent,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
