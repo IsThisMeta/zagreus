@@ -25,9 +25,13 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  static const int _pageSize = 40;
   List<Map<String, dynamic>> _shows = [];
   bool _isLoading = true;
   String? _error;
+  int _currentPage = 1;
+  bool _hasMorePages = true;
+  bool _isLoadingMore = false;
 
   // Sonarr multi-add settings
   int? _sonarrQualityProfileId;
@@ -57,6 +61,14 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     } else {
       _loadAnticipatedShows();
     }
+
+    scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    super.dispose();
   }
 
   void _loadSavedSettings() {
@@ -69,74 +81,40 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
+  void _onScroll() {
+    if (!scrollController.hasClients || _isLoadingMore || !_hasMorePages) {
+      return;
+    }
+
+    final threshold =
+        scrollController.position.maxScrollExtent - 200;
+    if (scrollController.position.pixels >= threshold) {
+      _loadMoreShows();
+    }
+  }
+
   Future<void> _loadAnticipatedShows({bool silent = false}) async {
     if (!silent) {
       setState(() {
         _isLoading = true;
         _error = null;
+        _selectedShowIndices.clear();
+        _isMultiSelectMode = false;
       });
     } else {
       _error = null;
     }
 
     try {
-      final shows =
-          await TraktApi.getAnticipatedShows(page: 1, limit: 40);
-
-      for (final show in shows) {
-        final tmdbId = show['tmdbId'] as int?;
-        if (tmdbId == null) continue;
-
-        final tmdbDetails = await TMDBApi.getTVShowDetails(tmdbId);
-        if (tmdbDetails == null) continue;
-
-        show['poster'] =
-            TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w500');
-        show['backdrop'] = TMDBApi.getImageUrl(tmdbDetails['backdrop_path']);
-
-        final overview = show['overview'] as String?;
-        if (overview == null || overview.trim().isEmpty) {
-          show['overview'] = tmdbDetails['overview'];
-        }
-      }
-
-      final sonarrState = context.read<SonarrState>();
-      if (sonarrState.enabled && sonarrState.api != null) {
-        try {
-          sonarrState.fetchAllSeries();
-          final sonarrSeriesMap = await sonarrState.series!;
-          final sonarrSeries = sonarrSeriesMap.values.toList();
-
-          for (final show in shows) {
-            final tvdbId = show['tvdbId'] as int?;
-            final title = show['title'] as String;
-
-            final inLibrary = sonarrSeries.any((series) {
-              if (tvdbId != null && series.tvdbId == tvdbId) {
-                return true;
-              }
-              return series.title?.toLowerCase() == title.toLowerCase();
-            });
-            show['inLibrary'] = inLibrary;
-
-            if (inLibrary) {
-              final sonarrShow = sonarrSeries.firstWhere(
-                (series) =>
-                    (tvdbId != null && series.tvdbId == tvdbId) ||
-                    series.title?.toLowerCase() == title.toLowerCase(),
-              );
-              show['serviceItemId'] = sonarrShow.id;
-            }
-          }
-        } catch (_) {
-          // Best-effort enrichment only.
-        }
-      }
+      final shows = await _fetchAnticipatedPage(page: 1);
 
       if (!mounted) return;
       setState(() {
         _shows = shows;
         _isLoading = false;
+        _currentPage = 1;
+        _hasMorePages = shows.length >= _pageSize;
+        _isLoadingMore = false;
         _error = null;
       });
     } catch (error, stack) {
@@ -149,6 +127,114 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
         _error = error.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadMoreShows() async {
+    if (_isLoadingMore || !_hasMorePages) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final nextPage = _currentPage + 1;
+      final shows = await _fetchAnticipatedPage(page: nextPage);
+
+      if (!mounted) return;
+
+      final existingKeys = _shows
+          .map(_showIdentity)
+          .whereType<String>()
+          .toSet();
+
+      final newShows = shows.where((show) {
+        final key = _showIdentity(show);
+        if (key == null) return true;
+        if (existingKeys.contains(key)) {
+          return false;
+        }
+        existingKeys.add(key);
+        return true;
+      }).toList();
+
+      setState(() {
+        _shows.addAll(newShows);
+        _currentPage = nextPage;
+        _hasMorePages = shows.length >= _pageSize;
+        _isLoadingMore = false;
+      });
+    } catch (error, stack) {
+      ZagLogger().error('Failed to load more anticipated shows', error, stack);
+      if (!mounted) return;
+      setState(() {
+        _isLoadingMore = false;
+        _hasMorePages = false;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchAnticipatedPage({
+    required int page,
+  }) async {
+    final shows =
+        await TraktApi.getAnticipatedShows(page: page, limit: _pageSize);
+    await _hydrateWithTmdb(shows);
+    await _markShowsInSonarr(shows);
+    return shows;
+  }
+
+  Future<void> _hydrateWithTmdb(List<Map<String, dynamic>> shows) async {
+    for (final show in shows) {
+      final tmdbId = show['tmdbId'] as int?;
+      if (tmdbId == null) continue;
+
+      final tmdbDetails = await TMDBApi.getTVShowDetails(tmdbId);
+      if (tmdbDetails == null) continue;
+
+      show['poster'] =
+          TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w500');
+      show['backdrop'] = TMDBApi.getImageUrl(tmdbDetails['backdrop_path']);
+
+      final overview = show['overview'] as String?;
+      if (overview == null || overview.trim().isEmpty) {
+        show['overview'] = tmdbDetails['overview'];
+      }
+    }
+  }
+
+  Future<void> _markShowsInSonarr(List<Map<String, dynamic>> shows) async {
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) return;
+
+    try {
+      sonarrState.fetchAllSeries();
+      final sonarrSeriesMap = await sonarrState.series!;
+      final sonarrSeries = sonarrSeriesMap.values.toList();
+
+      for (final show in shows) {
+        final tvdbId = show['tvdbId'] as int?;
+        final title = show['title'] as String;
+
+        final inLibrary = sonarrSeries.any((series) {
+          if (tvdbId != null && series.tvdbId == tvdbId) {
+            return true;
+          }
+          return series.title?.toLowerCase() == title.toLowerCase();
+        });
+        show['inLibrary'] = inLibrary;
+
+        if (inLibrary) {
+          final sonarrShow = sonarrSeries.firstWhere(
+            (series) =>
+                (tvdbId != null && series.tvdbId == tvdbId) ||
+                series.title?.toLowerCase() == title.toLowerCase(),
+          );
+          show['serviceItemId'] = sonarrShow.id;
+        }
+      }
+    } catch (_) {
+      // Best-effort enrichment only.
     }
   }
 
@@ -289,7 +375,6 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
       );
     }
 
-    final screenWidth = MediaQuery.sizeOf(context).width;
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
@@ -309,8 +394,16 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
-        itemCount: _shows.length,
+        itemCount: _shows.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index >= _shows.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
           return _showTile(_shows[index]);
         },
       ),
@@ -318,7 +411,6 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
   }
 
   Widget _showTile(Map<String, dynamic> show) {
-    final bool isAnticipated = show['isAnticipated'] == true;
     final bool inLibrary = show['inLibrary'] ?? false;
     final int index = _shows.indexOf(show);
     final bool isSelected = _selectedShowIndices.contains(index);
@@ -627,6 +719,14 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
         ),
       ),
     );
+  }
+
+  String? _showIdentity(Map<String, dynamic> show) {
+    final dynamic traktId = show['traktId'];
+    final dynamic tmdbId = show['tmdbId'];
+    final dynamic id = show['id'];
+    final dynamic identity = traktId ?? tmdbId ?? id;
+    return identity?.toString();
   }
 
   void _toggleSelection(int index) {
