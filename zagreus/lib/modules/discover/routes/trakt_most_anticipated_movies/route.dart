@@ -23,9 +23,14 @@ class TraktMostAnticipatedMoviesRoute extends StatefulWidget {
 class _State extends State<TraktMostAnticipatedMoviesRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  static const int _pageSize = 40;
+
   List<Map<String, dynamic>> _movies = [];
   bool _isLoading = true;
   String? _error;
+  int _currentPage = 1;
+  bool _hasMorePages = true;
+  bool _isLoadingMore = false;
   final Map<String, Map<String, dynamic>?> _ratingsCache = {};
 
   @override
@@ -42,6 +47,25 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     } else {
       _loadAnticipatedMovies();
     }
+
+    scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    scrollController.removeListener(_onScroll);
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!scrollController.hasClients || _isLoadingMore || !_hasMorePages) {
+      return;
+    }
+
+    final threshold = scrollController.position.maxScrollExtent - 200;
+    if (scrollController.position.pixels >= threshold) {
+      _loadMoreMovies();
+    }
   }
 
   Future<void> _loadAnticipatedMovies({bool silent = false}) async {
@@ -55,53 +79,15 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     }
 
     try {
-      final movies = await TraktApi.getAnticipatedMovies(page: 1, limit: 40);
-      final radarrState = context.read<RadarrState>();
-      List<RadarrMovie>? radarrMovies;
-      if (radarrState.enabled) {
-        if (radarrState.movies == null) {
-          radarrState.fetchMovies();
-        }
-        if (radarrState.movies != null) {
-          radarrMovies = await radarrState.movies!;
-        }
-      }
-
-      for (final movie in movies) {
-        final tmdbId = movie['tmdbId'] as int?;
-        if (tmdbId != null) {
-          final details = await TMDBApi.getMovieDetails(tmdbId);
-          if (details != null) {
-            movie['poster'] = TMDBApi.getImageUrl(
-              details['poster_path'],
-              size: 'w500',
-            );
-            movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
-            movie['overview'] ??= details['overview'];
-            movie['releaseDate'] ??= details['release_date'];
-          }
-        }
-
-        await _ensureTraktRating(movie);
-        movie['inLibrary'] = false;
-        if (radarrMovies != null && radarrMovies.isNotEmpty) {
-          for (final radarrMovie in radarrMovies) {
-            final matchesTmdb = tmdbId != null && radarrMovie.tmdbId == tmdbId;
-            final matchesImdb = radarrMovie.imdbId != null &&
-                radarrMovie.imdbId == (movie['imdbId'] as String?);
-            if (matchesTmdb || matchesImdb) {
-              movie['inLibrary'] = true;
-              movie['serviceItemId'] = radarrMovie.id;
-              break;
-            }
-          }
-        }
-      }
+      final movies = await _fetchAnticipatedMoviesPage(page: 1);
 
       if (!mounted) return;
       setState(() {
         _movies = movies;
         _isLoading = false;
+        _currentPage = 1;
+        _hasMorePages = movies.length >= _pageSize;
+        _isLoadingMore = false;
         _error = null;
       });
     } catch (error, stack) {
@@ -115,6 +101,57 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _loadMoreMovies() async {
+    if (_isLoadingMore || !_hasMorePages) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    try {
+      final nextPage = _currentPage + 1;
+      final movies = await _fetchAnticipatedMoviesPage(page: nextPage);
+
+      if (!mounted) return;
+
+      final existingKeys = _movies.map(_movieIdentity).whereType<String>().toSet();
+      final newMovies = movies.where((movie) {
+        final key = _movieIdentity(movie);
+        if (key == null) return true;
+        if (existingKeys.contains(key)) {
+          return false;
+        }
+        existingKeys.add(key);
+        return true;
+      }).toList();
+
+      setState(() {
+        _movies.addAll(newMovies);
+        _currentPage = nextPage;
+        _hasMorePages = movies.length >= _pageSize;
+        _isLoadingMore = false;
+      });
+    } catch (error, stack) {
+      ZagLogger().error('Failed to load more anticipated movies', error, stack);
+      if (!mounted) return;
+      setState(() {
+        _isLoadingMore = false;
+        _hasMorePages = false;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchAnticipatedMoviesPage({
+    required int page,
+  }) async {
+    final movies =
+        await TraktApi.getAnticipatedMovies(page: page, limit: _pageSize);
+    await _hydrateMoviesWithTmdb(movies);
+    await _ensureMovieRatings(movies);
+    await _markMoviesInRadarr(movies);
+    return movies;
   }
 
   @override
@@ -206,8 +243,16 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
-        itemCount: _movies.length,
+        itemCount: _movies.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index >= _movies.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
           return _movieTile(_movies[index]);
         },
       ),
@@ -531,5 +576,81 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     }
 
     movie['rating'] = (movie['rating'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  Future<void> _hydrateMoviesWithTmdb(List<Map<String, dynamic>> movies) async {
+    for (final movie in movies) {
+      final tmdbId = movie['tmdbId'] as int?;
+      if (tmdbId == null) continue;
+
+      final details = await TMDBApi.getMovieDetails(tmdbId);
+      if (details == null) continue;
+
+      movie['poster'] = TMDBApi.getImageUrl(
+        details['poster_path'],
+        size: 'w500',
+      );
+      movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
+      movie['overview'] ??= details['overview'];
+      movie['releaseDate'] ??= details['release_date'];
+    }
+  }
+
+  Future<void> _ensureMovieRatings(List<Map<String, dynamic>> movies) async {
+    for (final movie in movies) {
+      await _ensureTraktRating(movie);
+    }
+  }
+
+  Future<void> _markMoviesInRadarr(List<Map<String, dynamic>> movies) async {
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled) {
+      for (final movie in movies) {
+        movie['inLibrary'] = false;
+      }
+      return;
+    }
+
+    if (radarrState.movies == null) {
+      radarrState.fetchMovies();
+    }
+
+    final radarrMoviesFuture = radarrState.movies;
+    if (radarrMoviesFuture == null) {
+      for (final movie in movies) {
+        movie['inLibrary'] = false;
+      }
+      return;
+    }
+
+    final radarrMovies = await radarrMoviesFuture;
+    for (final movie in movies) {
+      final tmdbId = movie['tmdbId'] as int?;
+      final imdbId = movie['imdbId'] as String?;
+
+      movie['inLibrary'] = false;
+      if (radarrMovies.isEmpty) continue;
+
+      for (final radarrMovie in radarrMovies) {
+        final matchesTmdb =
+            tmdbId != null && radarrMovie.tmdbId == tmdbId;
+        final matchesImdb =
+            imdbId != null && radarrMovie.imdbId == imdbId;
+
+        if (matchesTmdb || matchesImdb) {
+          movie['inLibrary'] = true;
+          movie['serviceItemId'] = radarrMovie.id;
+          break;
+        }
+      }
+    }
+  }
+
+  String? _movieIdentity(Map<String, dynamic> movie) {
+    final dynamic traktId = movie['traktId'];
+    final dynamic tmdbId = movie['tmdbId'];
+    final dynamic id = movie['id'];
+    final dynamic identity = traktId ?? tmdbId ?? id;
+    return identity?.toString();
   }
 }
