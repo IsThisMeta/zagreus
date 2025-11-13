@@ -6,6 +6,9 @@ import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 
+const double _airingNextEpisodeThumbWidth = 100;
+const double _airingNextEpisodeThumbHeight = 53;
+
 class SonarrAiringNextRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
 
@@ -313,7 +316,9 @@ class _State extends State<SonarrAiringNextRoute>
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
-        height: 72,
+        constraints: const BoxConstraints(
+          minHeight: _airingNextEpisodeThumbHeight,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(12),
@@ -336,8 +341,8 @@ class _State extends State<SonarrAiringNextRoute>
               children: [
                 // Thumbnail
                 Container(
-                  width: 120,
-                  height: 72,
+                  width: _airingNextEpisodeThumbWidth,
+                  height: _airingNextEpisodeThumbHeight,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -404,19 +409,19 @@ class _State extends State<SonarrAiringNextRoute>
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (episode['hasFile'] == true) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                'Downloaded',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: ZagColours.currentAccent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
-                        if (episode['hasFile'] == true) ...[
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Downloaded',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: ZagColours.blue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
