@@ -64,6 +64,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
+  bool _monochromeRatings = false;
 
   bool get hasChanges => _hasChanges;
 
@@ -115,6 +116,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     if (savedShowTitles != null) {
       _showTitles = savedShowTitles;
     }
+
+    // Load monochrome ratings setting
+    final savedMonochromeRatings = ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.read();
+    if (savedMonochromeRatings != null) {
+      _monochromeRatings = savedMonochromeRatings;
+    }
   }
 
   Future<void> saveChanges() async {
@@ -127,6 +134,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_HERO_HEIGHT.update(_heroHeight);
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
+    ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
@@ -407,6 +415,42 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Text(
             'Toggle titles on or off for movie and show posters. Restart required.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Monochrome Ratings',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Switch(
+                value: _monochromeRatings,
+                activeColor: ZagColours.accentColor(context),
+                onChanged: (value) {
+                  setState(() {
+                    _monochromeRatings = value;
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+            ],
+          ),
+          Text(
+            'Display rating badges in white instead of colored. Restart required.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark

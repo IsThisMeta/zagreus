@@ -365,6 +365,11 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   }
 
   Color _ratingColor(double rating) {
+    final monochrome = ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.read();
+    if (monochrome) {
+      return Colors.white;
+    }
+    
     if (rating >= 8.0) {
       return const Color(0xFF35C5F4); // Blue for high ratings
     } else if (rating >= 6.0) {
