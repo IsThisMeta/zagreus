@@ -358,7 +358,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
                       ],
                     ),
                     maxLines: 2,
-                    minFontSize: 10,
+                    minFontSize: 11,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

@@ -42,8 +42,12 @@ class _State extends State<TMDBPopularMoviesRoute>
   Set<int> _selectedMovieIndices = {};
 
   int get _titleMaxLines {
+    return 3;
+  }
+
+  double get _titleFontSize {
     final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    return savedColumns == 4 ? 3 : 2;
+    return savedColumns == 2 ? 12.0 : (savedColumns == 4 ? 16.0 : 14.0);
   }
 
   @override
@@ -532,21 +536,21 @@ class _State extends State<TMDBPopularMoviesRoute>
                   right: 8,
                   child: AutoSizeText(
                     movie['title'] ?? 'Unknown',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      shadows: [
+                      fontSize: _titleFontSize,
+                      fontWeight: FontWeight.bold,
+                      shadows: const [
                         Shadow(
                           color: Colors.black,
                           blurRadius: 4,
-                          offset: Offset(0, 1),
                         ),
                       ],
                     ),
                     maxLines: _titleMaxLines,
-                    minFontSize: 10,
+                    minFontSize: 11,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
                 ),
             ],
