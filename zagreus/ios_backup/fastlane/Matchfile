@@ -1,4 +1,0 @@
-git_url("git@github.com:YourUsername/fastlane-match-storage.git")
-storage_mode("git")
-app_identifier(["app.zagreus.zagreus"])
-platform("ios")

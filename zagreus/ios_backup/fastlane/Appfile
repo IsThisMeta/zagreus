@@ -1,4 +1,0 @@
-app_identifier("app.zagreus.zagreus")
-apple_id(ENV["APPLE_ID"])
-itc_team_id(ENV["APPLE_ITC_TEAM_ID"])
-team_id(ENV["APPLE_TEAM_ID"])
