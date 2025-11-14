@@ -7,11 +7,9 @@ import 'package:zagreus/modules/dashboard/core/state.dart';
 
 class SwitchViewAction extends StatefulWidget {
   final PageController? pageController;
-  final int calendarPageIndex;
   const SwitchViewAction({
     Key? key,
     required this.pageController,
-    this.calendarPageIndex = 1,
   }) : super(key: key);
 
   @override
@@ -40,7 +38,7 @@ class _State extends State<SwitchViewAction> with ZagLoadCallbackMixin {
 
   void _pageControllerListener() {
     int? page = widget.pageController?.page?.round();
-    setState(() => _showButton = page == widget.calendarPageIndex);
+    setState(() => _showButton = page == 1);
   }
 
   @override

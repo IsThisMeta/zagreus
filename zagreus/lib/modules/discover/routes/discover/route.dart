@@ -3,13 +3,18 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/router/routes/discover.dart';
+import 'package:zagreus/router/routes/search.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/core/trakt_api.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
+import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/core/dialogs.dart';
 import 'package:zagreus/modules/discover/routes/sonarr_recently_downloaded/route.dart';
 import 'package:zagreus/modules/discover/routes/sonarr_airing_next/route.dart';
 import 'package:zagreus/modules/discover/routes/recently_downloaded/route.dart';
@@ -33,27 +38,17 @@ import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/services/watch_history_sync_service.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
 
-enum DiscoverEmbeddedTab { movies, shows, agent }
-
 class DiscoverHomeRoute extends StatefulWidget {
-  final DiscoverEmbeddedTab? embeddedTab;
-  final ValueChanged<bool>? onSearchStateChanged;
-
-  const DiscoverHomeRoute({
-    Key? key,
-    this.embeddedTab,
-    this.onSearchStateChanged,
-  }) : super(key: key);
-
-  bool get isEmbedded => embeddedTab != null;
+  const DiscoverHomeRoute({Key? key}) : super(key: key);
 
   @override
-  DiscoverHomeRouteState createState() => DiscoverHomeRouteState();
+  State<DiscoverHomeRoute> createState() => _State();
 }
 
 class _UserOption {
@@ -73,8 +68,7 @@ const int _discoverFullPageLimit = 60;
 const double _recentlyDownloadedEpisodeThumbWidth = 100;
 const double _recentlyDownloadedEpisodeThumbHeight = 53;
 
-class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
-    with ZagScrollControllerMixin {
+class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Page storage + controller keys for scroll preservation
   static const _scrollIdRecentlyDownloaded = 'recently_downloaded_section';
   static const _scrollIdRecommended = 'recommended_movies_section';
@@ -1274,10 +1268,6 @@ class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isEmbedded) {
-      return _wrapWithSearchOverlay(_embeddedContent());
-    }
-
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
       module: ZagModule.DISCOVER,
@@ -1287,7 +1277,7 @@ class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
         useDrawer: true,
         actions: _buildAppBarActions(),
       ),
-      body: _wrapWithSearchOverlay(_buildTabbedContent()),
+      body: _body(),
       bottomNavigationBar: _isSearchActive
           ? null
           : _DiscoverNavigationBar(
@@ -1296,12 +1286,22 @@ class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
     );
   }
 
-  Widget _wrapWithSearchOverlay(Widget child) {
-    if (!_isSearchActive) return child;
+  Widget _body() {
+    final tabs = ZagPageView(
+      key: const ValueKey('discover_tabs'),
+      controller: _pageController,
+      children: [
+        _moviesPage(),
+        _tvShowsPage(),
+        const ZChatPage(),
+      ],
+    );
+
+    if (!_isSearchActive) return tabs;
 
     return Stack(
       children: [
-        child,
+        tabs,
         Positioned.fill(
           child: Container(
             color: Theme.of(context).scaffoldBackgroundColor,
@@ -1313,31 +1313,6 @@ class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
         ),
       ],
     );
-  }
-
-  Widget _buildTabbedContent() {
-    return ZagPageView(
-      key: const ValueKey('discover_tabs'),
-      controller: _pageController,
-      children: [
-        _moviesPage(),
-        _tvShowsPage(),
-        const ZChatPage(),
-      ],
-    );
-  }
-
-  Widget _embeddedContent() {
-    switch (widget.embeddedTab) {
-      case DiscoverEmbeddedTab.movies:
-        return _moviesPage();
-      case DiscoverEmbeddedTab.shows:
-        return _tvShowsPage();
-      case DiscoverEmbeddedTab.agent:
-        return const ZChatPage();
-      case null:
-        return _buildTabbedContent();
-    }
   }
 
   Widget _sectionTitleRow({
@@ -1705,38 +1680,20 @@ class DiscoverHomeRouteState extends State<DiscoverHomeRoute>
     }
   }
 
-  bool get isSearchActive => _isSearchActive;
-
-  void openSearchOverlayExternally() => _openSearchOverlay();
-
-  void closeSearchOverlayExternally() => _closeSearchOverlay();
-
-  void _notifySearchStateChanged() {
-    widget.onSearchStateChanged?.call(_isSearchActive);
-  }
-
-  void _setSearchActive(bool active) {
-    if (_isSearchActive == active) return;
-    setState(() {
-      _isSearchActive = active;
-    });
-    _notifySearchStateChanged();
-  }
-
   void _openSearchOverlay() {
     if (_isSearchActive) return;
     setState(() {
+      _isSearchActive = true;
       _lastNonSearchPageIndex = _currentPageIndex;
     });
-    _setSearchActive(true);
   }
 
   void _closeSearchOverlay() {
     if (!_isSearchActive) return;
     setState(() {
+      _isSearchActive = false;
       _currentPageIndex = _lastNonSearchPageIndex;
     });
-    _setSearchActive(false);
     FocusScope.of(context).unfocus();
   }
 
