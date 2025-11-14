@@ -1427,17 +1427,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     final actions = <Widget>[];
-    if (_currentPageIndex == 0 &&
-        ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
-      actions.add(
-        IconButton(
-          icon: const Icon(Icons.download_rounded),
-          tooltip: 'Downloads',
-          onPressed: _openDownloadsDrawer,
-        ),
-      );
-    }
-
     if (_currentPageIndex == 0 || _currentPageIndex == 1) {
       actions.add(
         IconButton(
@@ -1449,13 +1438,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     return actions.isEmpty ? null : actions;
-  }
-
-  void _openDownloadsDrawer() {
-    final scaffoldState = _scaffoldKey.currentState;
-    if (scaffoldState?.hasEndDrawer ?? false) {
-      scaffoldState?.openEndDrawer();
-    }
   }
 
   Widget _moviesPage() {
