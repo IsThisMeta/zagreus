@@ -597,7 +597,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
         title: title ?? 'Sonarr',
-        message: 'Connect Sonarr to manage shows from Discover.',
+        message: 'Connect Sonarr to manage shows from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;

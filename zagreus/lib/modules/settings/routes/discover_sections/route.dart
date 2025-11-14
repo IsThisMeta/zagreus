@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
 
-class DiscoverSectionsRoute extends StatefulWidget {
-  const DiscoverSectionsRoute({Key? key}) : super(key: key);
+class DashboardSectionsRoute extends StatefulWidget {
+  const DashboardSectionsRoute({Key? key}) : super(key: key);
 
   @override
-  State<DiscoverSectionsRoute> createState() => _State();
+  State<DashboardSectionsRoute> createState() => _State();
 }
 
-class _State extends State<DiscoverSectionsRoute> {
+class _State extends State<DashboardSectionsRoute> {
   final _editorKey = GlobalKey<DiscoverSectionsEditorState>();
   bool _hasChanges = false;
 
@@ -19,7 +19,7 @@ class _State extends State<DiscoverSectionsRoute> {
     return ZagScaffold(
       scaffoldKey: GlobalKey<ScaffoldState>(),
       appBar: ZagAppBar(
-        title: 'Discover Sections',
+        title: 'Dashboard Sections',
         actions: [
           if (_hasChanges)
             IconButton(

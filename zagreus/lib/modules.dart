@@ -482,7 +482,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES;
       case ZagModule.DISCOVER:
-        return SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS;
+        return SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS;
       case ZagModule.SERVER:
         return SettingsRoutes.CONFIGURATION_SERVER;
       case ZagModule.PROWLARR:

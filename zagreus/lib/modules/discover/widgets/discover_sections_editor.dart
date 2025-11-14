@@ -149,7 +149,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
       title: 'Section Order Saved',
-      message: 'Discover sections have been reordered',
+      message: 'Dashboard sections have been reordered',
     );
   }
 
@@ -295,7 +295,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Adjust the height of poster images in the Discover home view.',
+            'Adjust the height of poster images in the Dashboard view.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -343,7 +343,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Control the size of the large hero banner at the top of Discover.',
+            'Control the size of the large hero banner at the top of Dashboard.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -391,7 +391,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Controls how many posters fit horizontally in the full Discover grids for movies and shows.',
+            'Controls how many posters fit horizontally in the full Dashboard grids for movies and shows.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -514,7 +514,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Select the default timeframe for trending Discover recommendations.',
+            'Select the default timeframe for trending Dashboard recommendations.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -796,7 +796,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   }
 }
 
-Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
+Future<bool?> showDashboardSectionsEditorSheet(BuildContext context) {
   final editorKey = GlobalKey<DiscoverSectionsEditorState>();
   bool hasChanges = false;
   bool isSaving = false;
@@ -851,7 +851,7 @@ Future<bool?> showDiscoverSectionsEditorSheet(BuildContext context) {
                       child: Row(
                         children: [
                           Text(
-                            'Discover Sections',
+                            'Dashboard Sections',
                             style: Theme.of(sheetContext)
                                 .textTheme
                                 .titleMedium

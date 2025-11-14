@@ -106,13 +106,13 @@ class ZagreusPro {
         ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
       }
 
-      // Set boot module to Discover
+      // Set boot module to Dashboard
       BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
 
       // Mark first activation as complete so we don't do this again
       ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.update(true);
 
-      print('Premium tier first activation: Setting boot module to Discover');
+      print('Premium tier first activation: Setting boot module to Dashboard');
     } catch (e) {
       print('Error setting premium boot module: $e');
     }

@@ -147,7 +147,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
       body: [
         TextSpan(
           text: isDiscoverModule && isPro
-              ? 'Customize the order of sections in Discover'
+              ? 'Customize the order of sections in Dashboard'
               : 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
@@ -167,7 +167,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Zagreus Pro unlocks Discover with limited Ask Z access.\n\n'
+              'Zagreus Pro unlocks Dashboard with limited Ask Z access.\n\n'
               '• Beautiful movie & TV discovery\n'
               '• Trending & popular content\n'
               '• Recommended based on your library\n'

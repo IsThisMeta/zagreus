@@ -13,8 +13,8 @@ import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
 
-/// Simple stateless Z chat page for Discover module
-/// Resets conversation when you leave Discover
+/// Simple stateless Z chat page for the Dashboard module
+/// Resets conversation when you leave Dashboard
 class ZChatPage extends StatefulWidget {
   const ZChatPage({Key? key}) : super(key: key);
 
@@ -1048,7 +1048,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
         title: title,
-        message: 'Connect Radarr to manage movies from Discover.',
+        message: 'Connect Radarr to manage movies from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -1124,7 +1124,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
         title: title,
-        message: 'Connect Sonarr to manage shows from Discover.',
+        message: 'Connect Sonarr to manage shows from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;

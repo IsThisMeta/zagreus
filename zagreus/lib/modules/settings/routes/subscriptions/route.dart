@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                  : 'Unlock Discover module and more',
+                  : 'Unlock Dashboard module and more',
             )
           ],
           trailing: GestureDetector(
@@ -186,9 +186,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Discover, the Server module, Z Assistant access with GPT-5 mini, and more!"
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard, the Server module, Z Assistant access with GPT-5 mini, and more!"
                   : 'Zagreus Pro unlocks:\n'
-                      '• Discover module\n'
+                      '• Dashboard module\n'
                       '• Server module\n'
                       '• Limited Z Assistant access with GPT-5 mini\n'
                       '• And more!\n\n'
@@ -376,9 +376,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy AI Discover recommendations and higher GPT-5 mini Ask Z limits (15 messages every 12 hours)."
+                  ? "You have an active Mega subscription.\n\nEnjoy AI Dashboard recommendations and higher GPT-5 mini Ask Z limits (15 messages every 12 hours)."
                   : 'Zagreus Mega unlocks:\n'
-                      '• AI Discover recommendations powered by GPT-5 mini\n'
+                      '• AI Dashboard recommendations powered by GPT-5 mini\n'
                       '• Higher GPT-5 mini Ask Z limits\n'
                       '• All Pro features',
               style: const TextStyle(
@@ -582,7 +582,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     // Restore user's previous boot module before revoking Pro
     final currentModule = BIOSDatabase.BOOT_MODULE.read();
     if (currentModule == ZagModule.DISCOVER) {
-      // User is currently on Discover, restore their previous choice
+      // User is currently on Dashboard, restore their previous choice
       final previousModule = ZagreusDatabase.USER_BOOT_MODULE.read();
       if (previousModule.isNotEmpty && previousModule != 'discover') {
         final module = ZagModule.fromKey(previousModule) ?? ZagModule.DASHBOARD;
@@ -641,9 +641,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 Discover results, and every Mega perk."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 Dashboard results, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
-                      '• GPT-5 responses for Ask Z and Discover\n'
+                      '• GPT-5 responses for Ask Z and Dashboard\n'
                       '• Highest Ask Z usage limits\n'
                       '• All Pro and Mega features',
               style: const TextStyle(

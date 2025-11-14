@@ -470,7 +470,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
         title: title ?? 'Radarr',
-        message: 'Connect Radarr to manage movies from Discover.',
+        message: 'Connect Radarr to manage movies from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;

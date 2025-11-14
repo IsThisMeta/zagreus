@@ -76,7 +76,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_GENERAL('general'),
   CONFIGURATION_APPEARANCE('appearance'),
   CONFIGURATION_DASHBOARD('dashboard'),
-  CONFIGURATION_DISCOVER_SECTIONS('discover_sections'),
+  CONFIGURATION_DASHBOARD_SECTIONS('dashboard_sections'),
   CONFIGURATION_DASHBOARD_CALENDAR('calendar'),
   CONFIGURATION_DASHBOARD_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_DRAWER('drawer'),
@@ -160,8 +160,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationAppearanceRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
         return route(widget: const ConfigurationDashboardRoute());
-      case SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS:
-        return route(widget: const DiscoverSectionsRoute());
+      case SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS:
+        return route(widget: const DashboardSectionsRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD_CALENDAR:
         return route(widget: const ConfigurationDashboardCalendarRoute());
       case SettingsRoutes.CONFIGURATION_DASHBOARD_DEFAULT_PAGES:
@@ -323,7 +323,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_GENERAL.routes,
           SettingsRoutes.CONFIGURATION_APPEARANCE.routes,
           SettingsRoutes.CONFIGURATION_DASHBOARD.routes,
-          SettingsRoutes.CONFIGURATION_DISCOVER_SECTIONS.routes,
+          SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS.routes,
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,

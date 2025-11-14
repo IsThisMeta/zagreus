@@ -1274,7 +1274,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       module: ZagModule.DISCOVER,
       drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
       appBar: ZagAppBar(
-        title: _isSearchActive ? 'Search' : 'Discover',
+        title: _isSearchActive ? 'Search' : ZagModule.DISCOVER.title,
         useDrawer: true,
         actions: _buildAppBarActions(),
       ),
@@ -1670,7 +1670,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _openDiscoverSectionsEditor() async {
-    final updated = await showDiscoverSectionsEditorSheet(context);
+    final updated = await showDashboardSectionsEditorSheet(context);
     if (updated == true && mounted) {
       setState(() {
         _loadTrendingTimeWindowSetting();
@@ -3632,7 +3632,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           const SizedBox(height: 20),
           Text(
-            'Discover',
+            ZagModule.DISCOVER.title,
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -4796,7 +4796,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
         title: title ?? 'Radarr',
-        message: 'Connect Radarr to manage movies from Discover.',
+        message: 'Connect Radarr to manage movies from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -4893,7 +4893,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
         title: seriesTitle ?? 'Sonarr',
-        message: 'Connect Sonarr to manage shows from Discover.',
+        message: 'Connect Sonarr to manage shows from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -4952,7 +4952,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
         title: title ?? 'Sonarr',
-        message: 'Connect Sonarr to manage shows from Discover.',
+        message: 'Connect Sonarr to manage shows from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;

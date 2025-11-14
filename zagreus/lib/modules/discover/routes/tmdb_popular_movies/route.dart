@@ -858,7 +858,7 @@ class _State extends State<TMDBPopularMoviesRoute>
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
         title: 'Radarr Unavailable',
-        message: 'Connect Radarr to add movies from Discover.',
+        message: 'Connect Radarr to add movies from Dashboard.',
         type: ZagSnackbarType.INFO,
       );
       return;
