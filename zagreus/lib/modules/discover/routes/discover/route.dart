@@ -109,6 +109,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ZagPageController _pageController;
   int _currentPageIndex = 0;
+  bool _isSearchActive = false;
+  int _lastNonSearchPageIndex = 0;
 
   // Adjustable poster height
   double _posterHeight = 200.0;
@@ -1271,25 +1273,44 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       module: ZagModule.DISCOVER,
       drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
       appBar: ZagAppBar(
-        title: 'Discover',
+        title: _isSearchActive ? 'Search' : 'Discover',
         useDrawer: true,
         actions: _buildAppBarActions(),
       ),
       body: _body(),
-      bottomNavigationBar: _DiscoverNavigationBar(
-        pageController: _pageController,
-      ),
+      bottomNavigationBar: _isSearchActive
+          ? null
+          : _DiscoverNavigationBar(
+              pageController: _pageController,
+            ),
     );
   }
 
   Widget _body() {
-    return ZagPageView(
+    final tabs = ZagPageView(
+      key: const ValueKey('discover_tabs'),
       controller: _pageController,
       children: [
         _moviesPage(),
         _tvShowsPage(),
         const ZChatPage(),
-        _searchPage(),
+      ],
+    );
+
+    if (!_isSearchActive) return tabs;
+
+    return Stack(
+      children: [
+        tabs,
+        Positioned.fill(
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: KeyedSubtree(
+              key: const ValueKey('discover_search'),
+              child: _searchPage(),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1374,6 +1395,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
+    if (_isSearchActive) {
+      return [
+        IconButton(
+          icon: const Icon(Icons.close_rounded),
+          tooltip: 'Close Search',
+          onPressed: _closeSearchOverlay,
+        ),
+      ];
+    }
+
     if (_currentPageIndex == 2) {
       return [
         IconButton(
@@ -1395,18 +1426,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
+    final actions = <Widget>[];
     if (_currentPageIndex == 0 &&
         ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
-      return [
+      actions.add(
         IconButton(
           icon: const Icon(Icons.download_rounded),
           tooltip: 'Downloads',
           onPressed: _openDownloadsDrawer,
         ),
-      ];
+      );
     }
 
-    return null;
+    if (_currentPageIndex == 0 || _currentPageIndex == 1) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.search_rounded),
+          tooltip: 'Search',
+          onPressed: _openSearchOverlay,
+        ),
+      );
+    }
+
+    return actions.isEmpty ? null : actions;
   }
 
   void _openDownloadsDrawer() {
@@ -1469,7 +1511,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[1],
+        controller: _DiscoverNavigationBar.scrollControllers[0],
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
@@ -1566,7 +1608,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[2],
+        controller: _DiscoverNavigationBar.scrollControllers[1],
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
@@ -1654,6 +1696,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       _loadTrendingData();
       _restartAutoScroll();
     }
+  }
+
+  void _openSearchOverlay() {
+    if (_isSearchActive) return;
+    setState(() {
+      _isSearchActive = true;
+      _lastNonSearchPageIndex = _currentPageIndex;
+    });
+  }
+
+  void _closeSearchOverlay() {
+    if (!_isSearchActive) return;
+    setState(() {
+      _isSearchActive = false;
+      _currentPageIndex = _lastNonSearchPageIndex;
+    });
+    FocusScope.of(context).unfocus();
   }
 
   /*
@@ -6850,14 +6909,12 @@ class _DiscoverNavigationBar extends StatelessWidget {
     Icons.movie_rounded,
     Icons.tv_rounded,
     Icons.smart_toy, // Robot icon for Agent
-    Icons.search_rounded,
   ];
 
   static const List<String> titles = [
     'Movies',
     'Shows',
     'Agent',
-    'Search',
   ];
 
   const _DiscoverNavigationBar({
