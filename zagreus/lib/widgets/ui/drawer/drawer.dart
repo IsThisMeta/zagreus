@@ -92,18 +92,29 @@ class ZagDrawer extends StatelessWidget {
   }
 
   List<Widget> _sharedHeader(BuildContext context) {
-    return [
-      _buildEntry(
-        context: context,
-        module: ZagModule.DASHBOARD,
-      ),
-    ];
+    final modules = <ZagModule>[];
+    if (ZagreusPro.isEnabled) {
+      modules.add(ZagModule.DISCOVER);
+    }
+    modules.add(ZagModule.DASHBOARD);
+
+    return modules
+        .map(
+          (module) => _buildEntry(
+            context: context,
+            module: module,
+          ),
+        )
+        .toList();
   }
 
   List<Widget> _moduleList(BuildContext context, List<ZagModule> modules) {
     return <Widget>[
       ..._sharedHeader(context),
       ...modules.map((module) {
+        if (ZagreusPro.isEnabled && module == ZagModule.DISCOVER) {
+          return const SizedBox(height: 0.0);
+        }
         // Hide premium modules when the user is not Pro
         if ((module == ZagModule.DISCOVER ||
                 module == ZagModule.OVERSEERR ||

@@ -108,56 +108,8 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
         ),
         ZagDivider(),
         _buildSubscriptionsButton(),
-        _buildBootModuleToggle(),
       ],
     );
-  }
-
-  Widget _buildBootModuleToggle() {
-    final bool isPro = ZagreusPro.isEnabled;
-
-    // Show if user has Pro
-    if (!isPro) return const SizedBox.shrink();
-
-    return BIOSDatabase.BOOT_MODULE.listenableBuilder(builder: (context, _) {
-      final currentModule = BIOSDatabase.BOOT_MODULE.read();
-      final isDiscoverMode = currentModule == ZagModule.DISCOVER;
-      final userModule = _getUserBootModule();
-
-      return ZagBlock(
-        title: 'Start with Discover',
-        body: [
-          TextSpan(
-              text: isDiscoverMode
-                  ? 'Opens Discover on launch'
-                  : 'Opens ${userModule.title} on launch')
-        ],
-        trailing: ZagSwitch(
-          value: isDiscoverMode,
-          onChanged: (value) {
-            if (value) {
-              // Save current module as user preference if not already Discover
-              if (currentModule != ZagModule.DISCOVER) {
-                ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
-              }
-              // Set to Discover
-              BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
-            } else {
-              // Restore user's previous module
-              final userModuleKey = ZagreusDatabase.USER_BOOT_MODULE.read();
-              final userModule =
-                  ZagModule.fromKey(userModuleKey) ?? ZagModule.DASHBOARD;
-              BIOSDatabase.BOOT_MODULE.update(userModule);
-            }
-          },
-        ),
-      );
-    });
-  }
-
-  ZagModule _getUserBootModule() {
-    final userModuleKey = ZagreusDatabase.USER_BOOT_MODULE.read();
-    return ZagModule.fromKey(userModuleKey) ?? ZagModule.DASHBOARD;
   }
 
   Widget _buildSubscriptionsButton() {

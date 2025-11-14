@@ -176,7 +176,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   String get title {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return 'zagreus.Dashboard'.tr();
+        return 'Home';
       case ZagModule.LIDARR:
         return 'Lidarr';
       case ZagModule.NZBGET:
@@ -200,7 +200,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return 'zagreus.ExternalModules'.tr();
       case ZagModule.DISCOVER:
-        return 'Discover';
+        return 'zagreus.Dashboard'.tr();
       case ZagModule.SERVER:
         return 'Server';
       case ZagModule.PROWLARR:
@@ -351,7 +351,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   String get description {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return 'zagreus.Dashboard'.tr();
+        return 'Manage modules and your calendar';
       case ZagModule.LIDARR:
         return 'Manage Music';
       case ZagModule.NZBGET:
@@ -375,7 +375,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return 'Access External Modules';
       case ZagModule.DISCOVER:
-        return 'Browse and Discover Content';
+        return 'Browse movies, shows, and calendar views';
       case ZagModule.SERVER:
         return 'Manage Your Unraid Server';
       case ZagModule.PROWLARR:
@@ -386,7 +386,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   String? get information {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return null;
+        return 'Quickly launch modules, wake devices, and review upcoming events.';
       case ZagModule.LIDARR:
         return 'Lidarr is a music collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new tracks from your favorite artists and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.';
       case ZagModule.NZBGET:

@@ -43,6 +43,7 @@ import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -1293,6 +1294,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       children: [
         _moviesPage(),
         _tvShowsPage(),
+        _calendarTab(),
         const ZChatPage(),
       ],
     );
@@ -1405,7 +1407,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == 2) {
+    if (_currentPageIndex == 3) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1697,45 +1699,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     FocusScope.of(context).unfocus();
   }
 
-  /*
-  Widget _calendarPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 80,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withOpacity(0.3)
-                : Colors.black.withOpacity(0.3),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Coming Soon',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Release calendar will be available here',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.5)
-                  : Colors.black.withOpacity(0.5),
-            ),
-          ),
-        ],
+  Widget _calendarTab() {
+    return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
+      builder: (context, _) => CalendarPage(
+        key: ValueKey(
+          'discover_calendar_${ZagreusDatabase.ENABLED_PROFILE.read()}',
+        ),
       ),
     );
   }
-  */
 
   // Search state
   final TextEditingController _searchController = TextEditingController();
@@ -6890,12 +6862,14 @@ class _DiscoverNavigationBar extends StatelessWidget {
   static const List<IconData> icons = [
     Icons.movie_rounded,
     Icons.tv_rounded,
+    Icons.calendar_today_rounded,
     Icons.smart_toy, // Robot icon for Agent
   ];
 
   static const List<String> titles = [
     'Movies',
     'Shows',
+    'Calendar',
     'Agent',
   ];
 
