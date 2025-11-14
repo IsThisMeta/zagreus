@@ -188,6 +188,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   void initState() {
     super.initState();
     _loadSavedSettings();
+    _loadTrendingTimeWindowSetting();
     _pageController = ZagPageController(initialPage: 0);
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
@@ -322,6 +323,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   void _restartAutoScroll() {
     _stopAutoScroll();
     _startAutoScroll();
+  }
+
+  void _loadTrendingTimeWindowSetting() {
+    final saved = ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.read();
+    if (saved == 'week' || saved == 'day') {
+      _trendingTimeWindow = saved;
+    } else {
+      _trendingTimeWindow = 'day';
+    }
   }
 
   void _loadMockTrendingData() {
@@ -1385,21 +1395,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex != 2 && _currentPageIndex != 3) {
-      return [
-        Container(
-          margin: const EdgeInsets.only(right: 8),
-          child: Row(
-            children: [
-              _appBarToggleButton('Today', 'day'),
-              const SizedBox(width: 8),
-              _appBarToggleButton('This Week', 'week'),
-            ],
-          ),
-        ),
-      ];
-    }
-
     if (_currentPageIndex == 0 &&
         ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
       return [
@@ -1651,7 +1646,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _openDiscoverSectionsEditor() async {
     final updated = await showDiscoverSectionsEditorSheet(context);
     if (updated == true && mounted) {
-      setState(() {});
+      setState(() {
+        _loadTrendingTimeWindowSetting();
+        _currentHeroIndex = 0;
+      });
+      _withHeroControllers((controller) => controller.jumpToPage(0));
+      _loadTrendingData();
+      _restartAutoScroll();
     }
   }
 
@@ -3819,19 +3820,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _timeWindowToggle() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        children: [
-          _toggleButton('Today', 'day'),
-          const SizedBox(width: 12),
-          _toggleButton('This Week', 'week'),
-        ],
-      ),
-    );
-  }
-
   Future<void> _handleHeroTap(Map<String, dynamic> item) async {
     final mediaType = item['mediaType'] as String;
     final tmdbId = item['tmdbId'] as int;
@@ -3889,89 +3877,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         title: item['title'] as String?,
       );
     }
-  }
-
-  Widget _appBarToggleButton(String label, String value) {
-    final isSelected = _trendingTimeWindow == value;
-
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          _trendingTimeWindow = value;
-          _currentHeroIndex = 0;
-        });
-        _withHeroControllers((controller) => controller.jumpToPage(0));
-        _loadTrendingData();
-        _restartAutoScroll();
-      },
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        minimumSize: Size.zero,
-        backgroundColor: isSelected
-            ? (Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05))
-            : Colors.transparent,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected
-              ? (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87)
-              : (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black54),
-          fontSize: 14,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  Widget _toggleButton(String label, String value) {
-    final isSelected = _trendingTimeWindow == value;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _trendingTimeWindow = value;
-          _currentHeroIndex = 0;
-        });
-        _withHeroControllers((controller) => controller.jumpToPage(0));
-        _loadTrendingData();
-        _restartAutoScroll();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.1))
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? (isDark ? Colors.white : Colors.black87)
-                : (isDark ? Colors.grey : Colors.grey.shade600),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? (isDark ? Colors.white : Colors.black87)
-                : (isDark ? Colors.grey : Colors.grey.shade600),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _recommendedMoviesSection() {

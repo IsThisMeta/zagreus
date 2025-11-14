@@ -65,6 +65,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   int _columnsPerRow = 3;
   bool _showTitles = true;
   bool _monochromeRatings = false;
+  String _trendingTimeWindow = 'day';
 
   bool get hasChanges => _hasChanges;
 
@@ -118,9 +119,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
 
     // Load monochrome ratings setting
-    final savedMonochromeRatings = ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.read();
+    final savedMonochromeRatings =
+        ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.read();
     if (savedMonochromeRatings != null) {
       _monochromeRatings = savedMonochromeRatings;
+    }
+
+    final savedTimeWindow =
+        ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.read();
+    if (savedTimeWindow == 'day' || savedTimeWindow == 'week') {
+      _trendingTimeWindow = savedTimeWindow;
     }
   }
 
@@ -135,6 +143,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
+    ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW
+        .update(_trendingTimeWindow);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
@@ -151,6 +161,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _heroHeight = (_heroHeightMin + _heroHeightMax) / 2;
       _columnsPerRow =
           ((_columnsPerRowMin + _columnsPerRowMax) / 2).round();
+      _showTitles = true;
+      _monochromeRatings = false;
+      _trendingTimeWindow = 'day';
       _hasChanges = true;
     });
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -451,6 +464,57 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Text(
             'Display rating badges in white instead of colored. Restart required.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Trending Timeframe',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            children: [
+              ChoiceChip(
+                label: const Text('Today'),
+                selected: _trendingTimeWindow == 'day',
+                onSelected: (selected) {
+                  if (!selected) return;
+                  setState(() {
+                    _trendingTimeWindow = 'day';
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+              ChoiceChip(
+                label: const Text('This Week'),
+                selected: _trendingTimeWindow == 'week',
+                onSelected: (selected) {
+                  if (!selected) return;
+                  setState(() {
+                    _trendingTimeWindow = 'week';
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Select the default timeframe for trending Discover recommendations.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
