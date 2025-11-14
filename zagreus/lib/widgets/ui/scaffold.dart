@@ -69,10 +69,17 @@ class ZagScaffold extends StatelessWidget {
         final routeName = ModalRoute.of(context)?.settings.name ?? '';
         final isSettingsRoute =
             routeName.startsWith('${ZagModule.SETTINGS.key}:');
+        final isDownloadsModule = routeName.startsWith('${ZagModule.SABNZBD.key}:') ||
+            routeName.startsWith('${ZagModule.NZBGET.key}:');
+        final isExternalModulesRoute =
+            routeName.startsWith('${ZagModule.EXTERNAL_MODULES.key}:');
 
         // Auto-add downloads drawer if not explicitly provided and not in Settings
         final shouldAttachGlobalEndDrawer =
-            !isSettingsRoute && endDrawer == null;
+            !isSettingsRoute &&
+            !isDownloadsModule &&
+            !isExternalModulesRoute &&
+            endDrawer == null;
         final globalEndDrawer = shouldAttachGlobalEndDrawer
             ? ZagGlobalFABManager.instance.getEndDrawer()
             : null;
