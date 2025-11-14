@@ -21,6 +21,7 @@ class LunaColours {
   static const Color orange = Color(0xFFFF9000);
   static const Color purple = Color(0xFF9649CB);
   static const Color red = Color(0xFFF71735);
+  static const Color search = Color(0xFFDF5D02);
 
   /// Shades of White
   static const Color white = Color(0xFFFFFFFF);
@@ -74,6 +75,7 @@ class ZagColours {
   static const Color orange = Color(0xFFFF9000);
   static const Color purple = Color(0xFF9649CB);
   static const Color red = Color(0xFFF71735);
+  static const Color search = Color(0xFFDF5D02);
 
   /// Shades of White
   static const Color white = Color(0xFFFFFFFF);

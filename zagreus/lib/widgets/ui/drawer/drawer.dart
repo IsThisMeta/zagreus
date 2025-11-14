@@ -13,26 +13,36 @@ class ZagDrawer extends StatelessWidget {
     required this.page,
   }) : super(key: key);
 
+  static bool _shouldDisplayModule(ZagModule module) =>
+      module != ZagModule.PROWLARR;
+
   static List<ZagModule> moduleAlphabeticalList() {
-    return ZagModule.active
-      ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    final modules =
+        ZagModule.active.where(_shouldDisplayModule).toList()
+          ..sort((a, b) =>
+              a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    return modules;
   }
 
   static List<ZagModule> moduleOrderedList() {
     try {
       const db = ZagreusDatabase.DRAWER_MANUAL_ORDER;
-      final storedModules = db.read();
+      final storedModules = db.read() as List?;
       print('[DEBUG] moduleOrderedList - stored modules: $storedModules');
-      final modules = List.from(storedModules);
-      final missing = ZagModule.active;
+      final modules = (storedModules ?? const [])
+          .whereType<ZagModule>()
+          .where(_shouldDisplayModule)
+          .toList();
+      final missing =
+          ZagModule.active.where(_shouldDisplayModule).toList();
 
       missing.retainWhere((m) => !modules.contains(m));
       modules.addAll(missing);
-      modules.retainWhere((m) => (m as ZagModule).featureFlag);
+      modules.retainWhere((m) => m.featureFlag);
 
       print(
-          '[DEBUG] moduleOrderedList - final modules: ${modules.map((m) => (m as ZagModule).key).toList()}');
-      return modules.cast<ZagModule>();
+          '[DEBUG] moduleOrderedList - final modules: ${modules.map((m) => m.key).toList()}');
+      return modules;
     } catch (error, stack) {
       ZagLogger().error('Failed to create ordered module list', error, stack);
       return moduleAlphabeticalList();

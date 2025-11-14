@@ -66,8 +66,17 @@ class ZagScaffold extends StatelessWidget {
       builder: (context, _) {
         onProfileChange?.call(context);
 
-        // Auto-add downloads drawer if not explicitly provided
-        final effectiveEndDrawer = endDrawer ?? ZagGlobalFABManager.instance.getEndDrawer();
+        final routeName = ModalRoute.of(context)?.settings.name ?? '';
+        final isSettingsRoute =
+            routeName.startsWith('${ZagModule.SETTINGS.key}:');
+
+        // Auto-add downloads drawer if not explicitly provided and not in Settings
+        final shouldAttachGlobalEndDrawer =
+            !isSettingsRoute && endDrawer == null;
+        final globalEndDrawer = shouldAttachGlobalEndDrawer
+            ? ZagGlobalFABManager.instance.getEndDrawer()
+            : null;
+        final effectiveEndDrawer = endDrawer ?? globalEndDrawer;
         final effectiveEndDrawerDragWidth = endDrawerEnableOpenDragGesture ?? 25.0;
 
         return Scaffold(

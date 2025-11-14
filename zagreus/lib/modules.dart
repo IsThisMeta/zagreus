@@ -256,7 +256,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.SABNZBD:
         return const Color(0xFFFECC2B);
       case ZagModule.SEARCH:
-        return ZagColours.currentAccent;
+        return ZagColours.search;
       case ZagModule.SETTINGS:
         return ZagColours.currentAccent;
       case ZagModule.SONARR:

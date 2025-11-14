@@ -81,6 +81,7 @@ class _State extends State<OverseerrRoute> {
     return ZagAppBar.dropdown(
       title: ZagModule.OVERSEERR.title,
       useDrawer: true,
+      actions: _buildAppBarActions(),
       profiles: profiles,
       pageController: _pageController,
       scrollControllers: OverseerrNavigationBar.scrollControllers,
@@ -112,6 +113,24 @@ class _State extends State<OverseerrRoute> {
         return _pages();
       },
     );
+  }
+
+  List<Widget>? _buildAppBarActions() {
+    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return null;
+    return [
+      IconButton(
+        icon: const Icon(Icons.download_rounded),
+        tooltip: 'Downloads',
+        onPressed: _openDownloadsDrawer,
+      ),
+    ];
+  }
+
+  void _openDownloadsDrawer() {
+    final scaffoldState = _scaffoldKey.currentState;
+    if (scaffoldState?.hasEndDrawer ?? false) {
+      scaffoldState?.openEndDrawer();
+    }
   }
 
   Widget _pages() {
