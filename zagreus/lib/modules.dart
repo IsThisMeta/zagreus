@@ -235,7 +235,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return Icons.settings_ethernet_rounded;
       case ZagModule.DISCOVER:
-        return Icons.explore_rounded;
+        return Icons.home_rounded;
       case ZagModule.SERVER:
         return Icons.dns_rounded;
       case ZagModule.PROWLARR:
@@ -270,7 +270,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.EXTERNAL_MODULES:
         return ZagColours.currentAccent;
       case ZagModule.DISCOVER:
-        return const Color(0xFF6688FF); // RGB(0.4, 0.533, 1.0) = #6688FF
+        return ZagColours.currentAccent;
       case ZagModule.SERVER:
         return const Color(0xFFFF8C2F); // Unraid orange
       case ZagModule.PROWLARR:

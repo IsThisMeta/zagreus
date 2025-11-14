@@ -95,8 +95,9 @@ class ZagDrawer extends StatelessWidget {
     final modules = <ZagModule>[];
     if (ZagreusPro.isEnabled) {
       modules.add(ZagModule.DISCOVER);
+    } else {
+      modules.add(ZagModule.DASHBOARD);
     }
-    modules.add(ZagModule.DASHBOARD);
 
     return modules
         .map(
@@ -113,6 +114,9 @@ class ZagDrawer extends StatelessWidget {
       ..._sharedHeader(context),
       ...modules.map((module) {
         if (ZagreusPro.isEnabled && module == ZagModule.DISCOVER) {
+          return const SizedBox(height: 0.0);
+        }
+        if (ZagreusPro.isEnabled && module == ZagModule.DASHBOARD) {
           return const SizedBox(height: 0.0);
         }
         // Hide premium modules when the user is not Pro

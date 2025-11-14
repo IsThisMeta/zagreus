@@ -117,8 +117,10 @@ class _State extends State<ConfigurationGeneralRoute>
       builder: (context, _) => ZagBlock(
         title: 'Downloads Drawer',
         body: const [
-          TextSpan(text: 'Show the global downloads drawer on the right edge. '),
-          TextSpan(text: 'Swipe from the right to view SABnzbd and NZBGet queue status with live progress.'),
+          TextSpan(
+            text:
+                'Access SABnzbd & NZBGet queues from the right edge.',
+          ),
         ],
         trailing: ZagSwitch(
           value: db.read(),
