@@ -90,6 +90,7 @@ class _State extends State<ConfigurationGeneralRoute>
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
       _moduleSwitcherFAB(),
+      _legacyModulesTabToggle(),
     ];
   }
 
@@ -120,6 +121,25 @@ class _State extends State<ConfigurationGeneralRoute>
           TextSpan(
             text:
                 'Access SABnzbd & NZBGet queues from the right edge.',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _legacyModulesTabToggle() {
+    if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
+    const db = ZagreusDatabase.SHOW_LEGACY_MODULES_TAB;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Show Modules Tab',
+        body: const [
+          TextSpan(
+            text: 'Restore the Modules list as the first tab inside Dashboard.',
           ),
         ],
         trailing: ZagSwitch(

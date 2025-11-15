@@ -11,8 +11,10 @@ import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/services/settings_lock_service.dart';
 
 class ModulesPage extends StatefulWidget {
+  final ScrollController? controller;
   const ModulesPage({
     Key? key,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -38,7 +40,7 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       );
     }
     return ZagListView(
-      controller: HomeNavigationBar.scrollControllers[0],
+      controller: widget.controller ?? HomeNavigationBar.scrollControllers[0],
       itemExtent: ZagBlock.calculateItemExtent(1),
       children: ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE.read()
           ? _buildAlphabeticalList()

@@ -44,6 +44,8 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -1269,29 +1271,36 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ZagScaffold(
-      scaffoldKey: _scaffoldKey,
-      module: ZagModule.DISCOVER,
-      drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
-      appBar: ZagAppBar(
-        title: _isSearchActive ? 'Search' : ZagModule.DISCOVER.title,
-        useDrawer: true,
-        actions: _buildAppBarActions(),
+    return ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+      builder: (context, _) => ZagScaffold(
+        scaffoldKey: _scaffoldKey,
+        module: ZagModule.DISCOVER,
+        drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
+        appBar: ZagAppBar(
+          title: _isSearchActive ? 'Search' : ZagModule.DISCOVER.title,
+          useDrawer: true,
+          actions: _buildAppBarActions(),
+        ),
+        body: _body(),
+        bottomNavigationBar: _isSearchActive
+            ? null
+            : _DiscoverNavigationBar(
+                pageController: _pageController,
+                showLegacyModules:
+                    ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false,
+              ),
       ),
-      body: _body(),
-      bottomNavigationBar: _isSearchActive
-          ? null
-          : _DiscoverNavigationBar(
-              pageController: _pageController,
-            ),
     );
   }
 
   Widget _body() {
+    final enableLegacyModules =
+        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false;
     final tabs = ZagPageView(
-      key: const ValueKey('discover_tabs'),
+      key: ValueKey('discover_tabs_$enableLegacyModules'),
       controller: _pageController,
       children: [
+        if (enableLegacyModules) _modulesPage(),
         _moviesPage(),
         _tvShowsPage(),
         _calendarTab(),
@@ -1397,6 +1406,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
+    final enableLegacyModules =
+        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false;
+    final moviesTabIndex = enableLegacyModules ? 1 : 0;
+    final showsTabIndex = enableLegacyModules ? 2 : 1;
+    final calendarIndex = enableLegacyModules ? 3 : 2;
+    final agentIndex = enableLegacyModules ? 4 : 3;
+
     if (_isSearchActive) {
       return [
         IconButton(
@@ -1407,7 +1423,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == 3) {
+    if (_currentPageIndex == agentIndex) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1428,8 +1444,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
+    if (_currentPageIndex == calendarIndex) {
+      return [
+        SwitchViewAction(
+          pageController: _pageController,
+          calendarPageIndex: calendarIndex,
+        ),
+      ];
+    }
+
     final actions = <Widget>[];
-    if (_currentPageIndex == 0 || _currentPageIndex == 1) {
+    if (_currentPageIndex == moviesTabIndex ||
+        _currentPageIndex == showsTabIndex) {
       actions.add(
         IconButton(
           icon: const Icon(Icons.search_rounded),
@@ -1495,7 +1521,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[0],
+      controller: _DiscoverNavigationBar.moviesScrollController,
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
@@ -1588,11 +1614,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return sections;
   }
 
+  Widget _modulesPage() {
+    return ModulesPage(
+      key: ValueKey(
+        'dashboard_modules_${ZagreusDatabase.ENABLED_PROFILE.read()}',
+      ),
+      controller: _DiscoverNavigationBar.modulesScrollController,
+    );
+  }
+
   Widget _tvShowsPage() {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView(
-        controller: _DiscoverNavigationBar.scrollControllers[1],
+      controller: _DiscoverNavigationBar.showsScrollController,
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
@@ -6854,35 +6889,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
 class _DiscoverNavigationBar extends StatelessWidget {
   final PageController? pageController;
-  static List<ScrollController> scrollControllers = List.generate(
-    icons.length,
-    (_) => ScrollController(),
-  );
+  final bool showLegacyModules;
 
-  static const List<IconData> icons = [
-    Icons.movie_rounded,
-    Icons.tv_rounded,
-    Icons.calendar_today_rounded,
-    Icons.smart_toy, // Robot icon for Agent
-  ];
-
-  static const List<String> titles = [
-    'Movies',
-    'Shows',
-    'Calendar',
-    'Agent',
-  ];
+  static final ScrollController modulesScrollController =
+      ScrollController();
+  static final ScrollController moviesScrollController = ScrollController();
+  static final ScrollController showsScrollController = ScrollController();
+  static final ScrollController calendarScrollController =
+      ScrollController();
+  static final ScrollController agentScrollController = ScrollController();
 
   const _DiscoverNavigationBar({
     Key? key,
     required this.pageController,
+    required this.showLegacyModules,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final icons = <IconData>[
+      if (showLegacyModules) Icons.workspaces_rounded,
+      Icons.movie_rounded,
+      Icons.tv_rounded,
+      Icons.calendar_today_rounded,
+      Icons.smart_toy,
+    ];
+
+    final titles = <String>[
+      if (showLegacyModules) 'Modules',
+      'Movies',
+      'Shows',
+      'Calendar',
+      'Agent',
+    ];
+
+    final controllers = <ScrollController>[
+      if (showLegacyModules) modulesScrollController,
+      moviesScrollController,
+      showsScrollController,
+      calendarScrollController,
+      agentScrollController,
+    ];
+
     return ZagBottomNavigationBar(
       pageController: pageController,
-      scrollControllers: scrollControllers,
+      scrollControllers: controllers,
       icons: icons,
       titles: titles,
       onTabChange: (index) {

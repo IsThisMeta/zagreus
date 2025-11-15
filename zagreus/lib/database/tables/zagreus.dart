@@ -110,7 +110,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_HERO_HEIGHT<double>(400.0),
   DISCOVER_SHOW_TITLES<bool>(true),
   DISCOVER_MONOCHROME_RATINGS<bool>(false),
-  DISCOVER_TRENDING_TIME_WINDOW<String>('day');
+  DISCOVER_TRENDING_TIME_WINDOW<String>('day'),
+  SHOW_LEGACY_MODULES_TAB<bool>(false);
 
   @override
   ZagTable get table => ZagTable.zagreus;
