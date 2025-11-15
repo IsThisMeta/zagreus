@@ -1269,9 +1269,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  bool get _showLegacyModules =>
+      ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
+  bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
+
   @override
   Widget build(BuildContext context) {
-    return ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+    return ZagBox.zagreus.listenableBuilder(
+      selectItems: const [
+        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
+        ZagreusDatabase.SHOW_AGENT_TAB,
+      ],
       builder: (context, _) => ZagScaffold(
         scaffoldKey: _scaffoldKey,
         module: ZagModule.DISCOVER,
@@ -1286,25 +1294,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? null
             : _DiscoverNavigationBar(
                 pageController: _pageController,
-                showLegacyModules:
-                    ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false,
+                showLegacyModules: _showLegacyModules,
+                showAgentTab: _showAgentTab,
               ),
       ),
     );
   }
 
   Widget _body() {
-    final enableLegacyModules =
-        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false;
+    final enableLegacyModules = _showLegacyModules;
+    final showAgentTab = _showAgentTab;
     final tabs = ZagPageView(
-      key: ValueKey('discover_tabs_$enableLegacyModules'),
+      key: ValueKey('discover_tabs_${enableLegacyModules}_$showAgentTab'),
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
         _moviesPage(),
         _tvShowsPage(),
         _calendarTab(),
-        const ZChatPage(),
+        if (showAgentTab) const ZChatPage(),
       ],
     );
 
@@ -1406,12 +1414,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget>? _buildAppBarActions() {
-    final enableLegacyModules =
-        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ?? false;
+    final enableLegacyModules = _showLegacyModules;
+    final showAgentTab = _showAgentTab;
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
-    final agentIndex = enableLegacyModules ? 4 : 3;
+    final agentIndex = showAgentTab ? (enableLegacyModules ? 4 : 3) : null;
 
     if (_isSearchActive) {
       return [
@@ -1423,7 +1431,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == agentIndex) {
+    if (agentIndex != null && _currentPageIndex == agentIndex) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -6890,6 +6898,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 class _DiscoverNavigationBar extends StatelessWidget {
   final PageController? pageController;
   final bool showLegacyModules;
+  final bool showAgentTab;
 
   static final ScrollController modulesScrollController =
       ScrollController();
@@ -6903,6 +6912,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
     Key? key,
     required this.pageController,
     required this.showLegacyModules,
+    required this.showAgentTab,
   }) : super(key: key);
 
   @override
@@ -6912,7 +6922,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       Icons.movie_rounded,
       Icons.tv_rounded,
       Icons.calendar_today_rounded,
-      Icons.smart_toy,
+      if (showAgentTab) Icons.smart_toy,
     ];
 
     final titles = <String>[
@@ -6920,7 +6930,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       'Movies',
       'Shows',
       'Calendar',
-      'Agent',
+      if (showAgentTab) 'Agent',
     ];
 
     final controllers = <ScrollController>[
@@ -6928,7 +6938,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       moviesScrollController,
       showsScrollController,
       calendarScrollController,
-      agentScrollController,
+      if (showAgentTab) agentScrollController,
     ];
 
     return ZagBottomNavigationBar(

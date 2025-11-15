@@ -91,6 +91,7 @@ class _State extends State<ConfigurationGeneralRoute>
       _horizontalSwipeToggle(),
       _moduleSwitcherFAB(),
       _legacyModulesTabToggle(),
+      _agentTabToggle(),
     ];
   }
 
@@ -140,6 +141,25 @@ class _State extends State<ConfigurationGeneralRoute>
         body: const [
           TextSpan(
             text: 'Restore the Modules list as the first tab inside Dashboard.',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _agentTabToggle() {
+    if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
+    const db = ZagreusDatabase.SHOW_AGENT_TAB;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Show Agent Tab',
+        body: const [
+          TextSpan(
+            text: 'Hide the Z Agent tab.',
           ),
         ],
         trailing: ZagSwitch(
