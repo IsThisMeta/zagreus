@@ -40,7 +40,7 @@ class ZagGlobalFABManager {
               child: Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 12, bottom: 40),
+                  padding: const EdgeInsets.only(right: 12, bottom: 88),
                   child: Material(
                     color: Colors.transparent,
                     child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
