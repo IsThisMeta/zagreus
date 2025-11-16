@@ -113,6 +113,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   late ZagPageController _pageController;
   int _currentPageIndex = 0;
   bool _isSearchActive = false;
+  bool _isAgentActive = false;
   int _lastNonSearchPageIndex = 0;
 
   // Adjustable poster height
@@ -1285,12 +1286,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         module: ZagModule.DISCOVER,
         drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
         appBar: ZagAppBar(
-          title: _isSearchActive ? 'Search' : ZagModule.DISCOVER.title,
+          title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
           useDrawer: true,
           actions: _buildAppBarActions(),
         ),
         body: _body(),
-        bottomNavigationBar: _isSearchActive
+        bottomNavigationBar: (_isSearchActive || _isAgentActive)
             ? null
             : _DiscoverNavigationBar(
                 pageController: _pageController,
@@ -1312,24 +1313,34 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _moviesPage(),
         _tvShowsPage(),
         _calendarTab(),
-        if (showAgentTab) const ZChatPage(),
       ],
     );
 
-    if (!_isSearchActive) return tabs;
+    if (!_isSearchActive && !_isAgentActive) return tabs;
 
     return Stack(
       children: [
         tabs,
-        Positioned.fill(
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: KeyedSubtree(
-              key: const ValueKey('discover_search'),
-              child: _searchPage(),
+        if (_isSearchActive)
+          Positioned.fill(
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: KeyedSubtree(
+                key: const ValueKey('discover_search'),
+                child: _searchPage(),
+              ),
             ),
           ),
-        ),
+        if (_isAgentActive)
+          Positioned.fill(
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: KeyedSubtree(
+                key: const ValueKey('discover_agent'),
+                child: const ZChatPage(),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1419,7 +1430,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
-    final agentIndex = showAgentTab ? (enableLegacyModules ? 4 : 3) : null;
 
     if (_isSearchActive) {
       return [
@@ -1431,7 +1441,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (agentIndex != null && _currentPageIndex == agentIndex) {
+    if (_isAgentActive) {
       return [
         IconButton(
           icon: const Icon(Icons.tune),
@@ -1449,6 +1459,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             onPressed: _navigateToLastZAssistantResults,
             tooltip: 'Return to Z Assistant Results',
           ),
+        IconButton(
+          icon: const Icon(Icons.close_rounded),
+          tooltip: 'Close Agent',
+          onPressed: _closeAgentOverlay,
+        ),
       ];
     }
 
@@ -1471,6 +1486,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onPressed: _openSearchOverlay,
         ),
       );
+      if (showAgentTab) {
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.smart_toy),
+            tooltip: 'Z Agent',
+            onPressed: _openAgentOverlay,
+          ),
+        );
+      }
     }
 
     return actions.isEmpty ? null : actions;
@@ -1738,6 +1762,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     setState(() {
       _isSearchActive = false;
       _currentPageIndex = _lastNonSearchPageIndex;
+    });
+    FocusScope.of(context).unfocus();
+  }
+
+  void _openAgentOverlay() {
+    if (_isAgentActive) return;
+    setState(() {
+      _isAgentActive = true;
+    });
+  }
+
+  void _closeAgentOverlay() {
+    if (!_isAgentActive) return;
+    setState(() {
+      _isAgentActive = false;
     });
     FocusScope.of(context).unfocus();
   }
@@ -6922,7 +6961,6 @@ class _DiscoverNavigationBar extends StatelessWidget {
       Icons.movie_rounded,
       Icons.tv_rounded,
       Icons.calendar_today_rounded,
-      if (showAgentTab) Icons.smart_toy,
     ];
 
     final titles = <String>[
@@ -6930,7 +6968,6 @@ class _DiscoverNavigationBar extends StatelessWidget {
       'Movies',
       'Shows',
       'Calendar',
-      if (showAgentTab) 'Agent',
     ];
 
     final controllers = <ScrollController>[
@@ -6938,7 +6975,6 @@ class _DiscoverNavigationBar extends StatelessWidget {
       moviesScrollController,
       showsScrollController,
       calendarScrollController,
-      if (showAgentTab) agentScrollController,
     ];
 
     return ZagBottomNavigationBar(
