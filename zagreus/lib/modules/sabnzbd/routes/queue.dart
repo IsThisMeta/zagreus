@@ -34,10 +34,10 @@ class _State extends State<SABnzbdQueue>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.listenableBuilder(
+    return ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.listenableBuilder(
       builder: (context, _) {
-        final showModuleFab =
-            ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read();
+        final cubeEnabled =
+            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
         return ZagScaffold(
           scaffoldKey: _scaffoldKey,
           body: _body,
@@ -45,8 +45,9 @@ class _State extends State<SABnzbdQueue>
               ? null
               : SABnzbdQueueFAB(
                   scrollController: SABnzbdNavigationBar.scrollControllers[0]),
-          floatingActionButtonLocation:
-              showModuleFab ? FloatingActionButtonLocation.startFloat : null,
+          floatingActionButtonLocation: cubeEnabled
+              ? FloatingActionButtonLocation.startFloat
+              : FloatingActionButtonLocation.endFloat,
         );
       },
     );
