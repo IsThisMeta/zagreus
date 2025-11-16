@@ -31,8 +31,10 @@ import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_movies/ro
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
+import 'package:zagreus/modules/discover/widgets/server_sections_editor.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/database/tables/server.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
@@ -7352,173 +7354,225 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       );
     }
 
+    // Get section order from database
+    final sectionOrder = ServerDatabase.SECTION_ORDER.read() as List;
+    final orderedSections = sectionOrder.isNotEmpty
+        ? List<String>.from(sectionOrder)
+        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history'];
+
+    // Build section widgets (conditionally include based on settings)
+    final sectionWidgets = <String, List<Widget>>{
+      'server_issues': _buildServerIssuesSection(),
+      if (_shouldShowOverseerrSection) 'overseerr_requests': _buildOverseerrSection(),
+      'disk_space': _buildDiskSpaceSection(),
+      if (ZagProfile.current.sabnzbdEnabled) 'download_history': _buildDownloadHistorySection(),
+    };
+
     return RefreshIndicator(
       onRefresh: _loadData,
       color: ZagColours.currentAccent,
       child: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          // Server Issues Card
-          if (_serverIssues.isNotEmpty || ZagProfile.current.radarrEnabled || ZagProfile.current.sonarrEnabled) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Text(
-                'Server Issues',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _serverIssues.isEmpty ? Colors.green : Colors.orange,
-                ),
-              ),
-            ),
-            if (_serverIssues.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ZagBlock(
-                  title: 'No Server Issues',
-                  body: const [
-                    TextSpan(text: 'All systems are healthy! 🎉'),
-                  ],
-                  trailing: Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.green,
-                    size: 24,
-                  ),
-                ),
-              )
-            else
-              ..._serverIssues.map((issue) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: ZagBlock(
-                  title: issue.message,
-                  titleMaxLines: 5,
-                  leading: Icon(
-                    issue.icon,
-                    color: issue.color,
-                    size: 28,
-                  ),
-                ),
-              )),
-            const SizedBox(height: 24),
-          ],
-          if (_shouldShowOverseerrSection) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Text(
-                'Overseerr Requests',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: _overseerrEnabled
-                      ? ZagModule.OVERSEERR.color
-                      : Colors.grey,
-                ),
-              ),
-            ),
-            if (_overseerrLoading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: ZagLoader(),
-                ),
-              )
-            else if (!_overseerrEnabled)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ZagBlock(
-                  title: 'Enable Overseerr',
-                  body: const [
-                    TextSpan(
-                      text:
-                          'Turn on Overseerr in Settings to see requests here.',
-                    ),
-                  ],
-                  trailing: const Icon(Icons.settings_rounded),
-                  onTap: SettingsRoutes.CONFIGURATION_OVERSEERR.go,
-                ),
-              )
-            else if (_overseerrError != null)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ZagBlock(
-                  title: 'Unable to load requests',
-                  body: const [
-                    TextSpan(
-                      text: 'Tap to retry. We could not reach Overseerr.',
-                    ),
-                  ],
-                  trailing: const Icon(Icons.refresh_rounded),
-                  onTap: _loadOverseerrRequests,
-                ),
-              )
-            else if (_overseerrRequests.isEmpty)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: ZagBlock(
-                  title: 'No pending requests',
-                  body: const [
-                    TextSpan(text: 'All caught up for now.'),
-                  ],
-                  trailing: const Icon(Icons.inbox_outlined),
-                  onTap: () => ZagModule.OVERSEERR.launch(),
-                ),
-              )
-            else
-              ..._overseerrRequests
-                  .take(_overseerrPreviewLimit)
-                  .map(
-                    (request) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: OverseerrRequestTile(
-                        request: request,
-                      ),
-                    ),
-                  ),
-            const SizedBox(height: 24),
-          ],
-          // Disk Space Card
+          // Render sections in order
+          for (final sectionId in orderedSections)
+            if (sectionWidgets.containsKey(sectionId))
+              ...sectionWidgets[sectionId]!,
+          // Edit Sections Button
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: Text(
-              'Disk Space',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: ZagColours.currentAccent,
-              ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+              vertical: 8,
+            ),
+            child: ZagButton(
+              type: ZagButtonType.TEXT,
+              text: 'Edit Sections',
+              icon: Icons.tune_rounded,
+              color: ZagColours.currentAccent,
+              onTap: _openServerSectionsEditor,
             ),
           ),
-          // Disk space tiles
-          ..._diskSpaces.map((diskSpace) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: RadarrDiskSpaceTile(diskSpace: diskSpace),
-          )),
-          // Download History Card
-          if (ZagProfile.current.sabnzbdEnabled) ...[
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Text(
-                'Download History',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: ZagColours.currentAccent,
-                ),
-              ),
-            ),
-            DownloadHistoryCard(
-              chartData: _downloadHistoryChartData,
-              totalGB: _downloadHistoryTotalGB,
-              periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
-            ),
-          ],
         ],
       ),
     );
+  }
+
+  List<Widget> _buildServerIssuesSection() {
+    if (_serverIssues.isEmpty && !ZagProfile.current.radarrEnabled && !ZagProfile.current.sonarrEnabled) {
+      return [];
+    }
+
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Text(
+          'Server Issues',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: _serverIssues.isEmpty ? Colors.green : Colors.orange,
+          ),
+        ),
+      ),
+      if (_serverIssues.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'No Server Issues',
+            body: const [
+              TextSpan(text: 'All systems are healthy! 🎉'),
+            ],
+            trailing: Icon(
+              Icons.check_circle_rounded,
+              color: Colors.green,
+              size: 24,
+            ),
+          ),
+        )
+      else
+        ..._serverIssues.map((issue) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: ZagBlock(
+            title: issue.message,
+            titleMaxLines: 5,
+            leading: Icon(
+              issue.icon,
+              color: issue.color,
+              size: 28,
+            ),
+          ),
+        )),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildDiskSpaceSection() {
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Text(
+          'Disk Space',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: ZagColours.currentAccent,
+          ),
+        ),
+      ),
+      ..._diskSpaces.map((diskSpace) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: RadarrDiskSpaceTile(diskSpace: diskSpace),
+      )),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildOverseerrSection() {
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Text(
+          'Overseerr Requests',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: _overseerrEnabled
+                ? ZagModule.OVERSEERR.color
+                : Colors.grey,
+          ),
+        ),
+      ),
+      if (_overseerrLoading)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: ZagLoader(),
+          ),
+        )
+      else if (!_overseerrEnabled)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'Enable Overseerr',
+            body: const [
+              TextSpan(
+                text: 'Turn on Overseerr in Settings to see requests here.',
+              ),
+            ],
+            trailing: const Icon(Icons.settings_rounded),
+            onTap: SettingsRoutes.CONFIGURATION_OVERSEERR.go,
+          ),
+        )
+      else if (_overseerrError != null)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'Unable to load requests',
+            body: const [
+              TextSpan(
+                text: 'Tap to retry. We could not reach Overseerr.',
+              ),
+            ],
+            trailing: const Icon(Icons.refresh_rounded),
+            onTap: _loadOverseerrRequests,
+          ),
+        )
+      else if (_overseerrRequests.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'No pending requests',
+            body: const [
+              TextSpan(text: 'All caught up for now.'),
+            ],
+            trailing: const Icon(Icons.inbox_outlined),
+            onTap: () => ZagModule.OVERSEERR.launch(),
+          ),
+        )
+      else
+        ..._overseerrRequests
+            .take(_overseerrPreviewLimit)
+            .map(
+              (request) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: OverseerrRequestTile(
+                  request: request,
+                ),
+              ),
+            ),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildDownloadHistorySection() {
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Text(
+          'Download History',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: ZagColours.currentAccent,
+          ),
+        ),
+      ),
+      DownloadHistoryCard(
+        chartData: _downloadHistoryChartData,
+        totalGB: _downloadHistoryTotalGB,
+        periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
+      ),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  Future<void> _openServerSectionsEditor() async {
+    final updated = await showServerSectionsEditorSheet(context);
+    if (updated == true && mounted) {
+      setState(() {
+        _loadData();
+      });
+    }
   }
 }
 
