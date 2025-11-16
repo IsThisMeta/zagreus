@@ -7247,22 +7247,13 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           if (_serverIssues.isNotEmpty || ZagProfile.current.radarrEnabled || ZagProfile.current.sonarrEnabled) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_rounded,
-                    color: _serverIssues.isEmpty ? Colors.green : Colors.orange,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Server Issues',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Server Issues',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: _serverIssues.isEmpty ? Colors.green : Colors.orange,
+                ),
               ),
             ),
             if (_serverIssues.isEmpty)
@@ -7298,22 +7289,13 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           // Disk Space Card
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.storage_rounded,
-                  color: ZagColours.currentAccent,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Disk Space',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+            child: Text(
+              'Disk Space',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: ZagColours.currentAccent,
+              ),
             ),
           ),
           // Disk space tiles
