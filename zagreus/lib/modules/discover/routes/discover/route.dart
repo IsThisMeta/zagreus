@@ -7023,6 +7023,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   List<OverseerrRequest> _overseerrRequests = [];
   Map<String, double> _downloadHistoryChartData = {};
   double _downloadHistoryTotalGB = 0;
+  int _downloadHistoryWeeks = 2; // Default to 2 weeks for better overview
   bool _overseerrEnabled = false;
   bool _overseerrLoading = false;
   String? _overseerrError;
@@ -7263,7 +7264,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         final sabnzbdApi = SABnzbdAPI.from(ZagProfile.current);
         final historyData = await DownloadHistoryFetcher.fetchSabnzbdDownloadStats(
           api: sabnzbdApi,
-          weeksLookBack: 1, // Default to 1 week
+          weeksLookBack: _downloadHistoryWeeks, // Use 2 weeks
         );
         
         print('🔍 Download history loaded: ${historyData.chartData.length} days, ${historyData.totalGB} GB');
@@ -7512,7 +7513,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             DownloadHistoryCard(
               chartData: _downloadHistoryChartData,
               totalGB: _downloadHistoryTotalGB,
-              periodLabel: 'week',
+              periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
             ),
           ],
         ],

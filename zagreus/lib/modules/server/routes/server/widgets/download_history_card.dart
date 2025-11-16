@@ -37,7 +37,7 @@ class DownloadHistoryCard extends StatelessWidget {
         right: ZagUI.DEFAULT_MARGIN_SIZE,
         bottom: ZagUI.DEFAULT_MARGIN_SIZE,
       ),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12), // More compact padding
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(8),
@@ -50,7 +50,7 @@ class DownloadHistoryCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.history,
-                size: 20,
+                size: 18, // Slightly smaller icon
                 color: _sectionIconColor(context),
               ),
               const SizedBox(width: 8),
@@ -58,7 +58,7 @@ class DownloadHistoryCard extends StatelessWidget {
                 child: Text(
                   'Download History',
                   style: (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
-                    fontSize: 16,
+                    fontSize: 15, // Slightly smaller
                     fontWeight: FontWeight.w600,
                     color: theme.textTheme.titleMedium?.color,
                   ),
@@ -66,27 +66,27 @@ class DownloadHistoryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8), // Tighter spacing
           Text(
             '${_formatSize(totalGB)} in last $periodLabel',
             style: (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(
-              fontSize: 18,
+              fontSize: 16, // Slightly smaller
               fontWeight: FontWeight.w600,
               color: theme.textTheme.bodyLarge?.color,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12), // Tighter spacing
           if (chartData.isNotEmpty)
             _buildChart(context)
           else
             SizedBox(
-              height: 150,
+              height: 100, // Smaller empty state
               child: Center(
                 child: Text(
                   'No download history available',
                   style: TextStyle(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
-                    fontSize: 14,
+                    fontSize: 13,
                   ),
                 ),
               ),
@@ -102,13 +102,13 @@ class DownloadHistoryCard extends StatelessWidget {
     final entries = chartData.entries.toList();
     
     if (entries.isEmpty) {
-      return const SizedBox(height: 150, child: Center(child: Text('No data')));
+      return const SizedBox(height: 100, child: Center(child: Text('No data')));
     }
 
     final maxValue = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
     
     return SizedBox(
-      height: 200,
+      height: 140, // More compact height
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
@@ -124,14 +124,14 @@ class DownloadHistoryCard extends StatelessWidget {
                   TextStyle(
                     color: theme.textTheme.bodyMedium?.color,
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontSize: 11, // Smaller
                   ),
                   children: [
                     TextSpan(
                       text: _formatSize(entry.value),
                       style: const TextStyle(
                         fontWeight: FontWeight.w400,
-                        fontSize: 11,
+                        fontSize: 10, // Smaller
                       ),
                     ),
                   ],
@@ -144,19 +144,20 @@ class DownloadHistoryCard extends StatelessWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 30,
+                reservedSize: 20, // Less space
                 getTitlesWidget: (value, meta) {
                   if (value.toInt() >= 0 && value.toInt() < entries.length) {
                     final date = entries[value.toInt()].key;
-                    // Extract day abbreviation (e.g., "Mon" from "Mon (2024-11-16)")
-                    final parts = date.split(' ');
+                    // Extract just the day letter (M, T, W, etc.)
+                    final dayLetter = date.split(' ').isNotEmpty ? date.split(' ')[0][0] : '';
                     return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        parts.isNotEmpty ? parts[0] : date,
+                        dayLetter,
                         style: TextStyle(
                           color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                          fontSize: 10,
+                          fontSize: 9, // Smaller
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     );
@@ -168,14 +169,14 @@ class DownloadHistoryCard extends StatelessWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 45,
+                reservedSize: 36, // Less space
                 getTitlesWidget: (value, meta) {
                   if (value == 0) return const Text('');
                   return Text(
                     _formatSize(value),
                     style: TextStyle(
                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                      fontSize: 10,
+                      fontSize: 9, // Smaller
                     ),
                   );
                 },
@@ -191,11 +192,11 @@ class DownloadHistoryCard extends StatelessWidget {
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: maxValue > 0 ? maxValue / 4 : 1,
+            horizontalInterval: maxValue > 0 ? maxValue / 3 : 1, // Fewer grid lines
             getDrawingHorizontalLine: (value) {
               return FlLine(
                 color: (isLightTheme ? Colors.black12 : Colors.white12),
-                strokeWidth: 1,
+                strokeWidth: 0.5, // Thinner lines
               );
             },
           ),
@@ -207,10 +208,10 @@ class DownloadHistoryCard extends StatelessWidget {
                 BarChartRodData(
                   toY: entry.value.value,
                   color: ZagColours.orange,
-                  width: 16,
+                  width: 12, // Thinner bars for 2 weeks
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    topRight: Radius.circular(4),
+                    topLeft: Radius.circular(3),
+                    topRight: Radius.circular(3),
                   ),
                 ),
               ],
