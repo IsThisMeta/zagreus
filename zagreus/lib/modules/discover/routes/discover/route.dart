@@ -1479,13 +1479,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final actions = <Widget>[];
     if (_currentPageIndex == moviesTabIndex ||
         _currentPageIndex == showsTabIndex) {
-      actions.add(
-        IconButton(
-          icon: const Icon(Icons.search_rounded),
-          tooltip: 'Search',
-          onPressed: _openSearchOverlay,
-        ),
-      );
       if (showAgentTab) {
         actions.add(
           IconButton(
@@ -1495,6 +1488,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         );
       }
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.search_rounded),
+          tooltip: 'Search',
+          onPressed: _openSearchOverlay,
+        ),
+      );
     }
 
     return actions.isEmpty ? null : actions;
