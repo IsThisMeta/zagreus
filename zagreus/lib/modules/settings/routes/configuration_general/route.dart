@@ -5,6 +5,7 @@ import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/system/network/network.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/router/routes/settings.dart';
@@ -90,6 +91,7 @@ class _State extends State<ConfigurationGeneralRoute>
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
       _moduleSwitcherFAB(),
+      _moduleTabMemoryToggle(),
       _downloadsDrawer(),
       _legacyModulesTabToggle(),
       _agentTabToggle(),
@@ -146,6 +148,38 @@ class _State extends State<ConfigurationGeneralRoute>
           onChanged: db.update,
         ),
       ),
+    );
+  }
+
+  Widget _moduleTabMemoryToggle() {
+    const cubeDb = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    const memoryDb = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
+
+    return cubeDb.listenableBuilder(
+      builder: (context, _) {
+        final cubeEnabled = cubeDb.read();
+        return memoryDb.listenableBuilder(
+          builder: (context, _) => ZagBlock(
+            title: 'Remember Module Page',
+            body: const [
+              TextSpan(
+                text: 'Jump back to the last page you viewed. Requires Floating Action Cube.',
+              ),
+            ],
+            trailing: ZagSwitch(
+              value: cubeEnabled ? memoryDb.read() : false,
+              onChanged: cubeEnabled
+                  ? (value) {
+                      memoryDb.update(value);
+                      if (!value) {
+                        ZagSessionState.instance.clearAllModuleTabPositions();
+                      }
+                    }
+                  : null,
+            ),
+          ),
+        );
+      },
     );
   }
 

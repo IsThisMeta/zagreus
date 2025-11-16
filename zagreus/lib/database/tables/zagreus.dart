@@ -17,6 +17,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   ENABLED_PROFILE<String>(ZagProfile.DEFAULT_PROFILE),
   DOWNLOADS_DRAWER_ENABLED<bool>(true),
   MODULE_SWITCHER_FAB_ENABLED<bool>(true),
+  MODULE_TAB_MEMORY_ENABLED<bool>(true),
   NETWORKING_TLS_VALIDATION<bool>(false),
   NETWORKING_LOCAL_SWITCHING_ENABLED<bool>(false),
   NAVIGATION_DISABLE_HORIZONTAL_SWIPE<bool>(false),

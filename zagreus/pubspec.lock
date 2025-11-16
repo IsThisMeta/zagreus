@@ -1445,6 +1445,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  stash:
+    dependency: transitive
+    description:
+      name: stash
+      sha256: c1482f64dcaa9b2d9eb112106ef018aad49adb284e1ba371c892c2ad9f99fc12
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.0"
+  stash_memory:
+    dependency: "direct main"
+    description:
+      name: stash_memory
+      sha256: "84ffcc108d345909dc40bd11d43e3fe87a115c30b157ca2bfa8e84c0e313d5c4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.0"
   storage_client:
     dependency: transitive
     description:

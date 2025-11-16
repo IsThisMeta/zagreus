@@ -6,6 +6,7 @@ import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/router/router.dart';
 import 'package:zagreus/router/routes.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/lidarr.dart';
@@ -493,9 +494,54 @@ extension ZagModuleRoutingExtension on ZagModule {
   Future<void> launch() async {
     final home = homeRoute;
     if (home == null) return;
-    ZagRouter.router.pushReplacement(home);
+
+    final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
+    final shouldRestore =
+        savedRoute != null && canRestoreRoute(savedRoute);
+    final targetRoute = shouldRestore ? savedRoute! : home;
+
+    print('🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)');
+    ZagRouter.router.pushReplacement(targetRoute);
+  }
+
+  bool canRestoreRoute(String route) {
+    final home = homeRoute;
+    if (home == null) return false;
+    if (!route.startsWith(home)) return false;
+
+    final path = Uri.tryParse(route)?.path ?? route;
+    switch (this) {
+      case ZagModule.RADARR:
+        return !_hasPrefix(path, _radarrNonRestorablePrefixes);
+      case ZagModule.SONARR:
+        return !_hasPrefix(path, _sonarrNonRestorablePrefixes);
+      case ZagModule.LIDARR:
+        return !_hasPrefix(path, _lidarrNonRestorablePrefixes);
+      default:
+        return true;
+    }
+  }
+
+  bool _hasPrefix(String route, List<String> disallowedPrefixes) {
+    for (final prefix in disallowedPrefixes) {
+      if (route.startsWith(prefix)) return true;
+    }
+    return false;
   }
 }
+
+const List<String> _radarrNonRestorablePrefixes = <String>[
+  '/radarr/add_movie/details',
+  '/radarr/manual_import/details',
+];
+
+const List<String> _sonarrNonRestorablePrefixes = <String>[
+  '/sonarr/add_series/details',
+];
+
+const List<String> _lidarrNonRestorablePrefixes = <String>[
+  '/lidarr/add_artist/details',
+];
 
 extension ZagModuleWebhookExtension on ZagModule {
   bool get hasWebhooks {

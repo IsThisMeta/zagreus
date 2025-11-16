@@ -13,6 +13,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/router.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
+import 'package:zagreus/system/cache/memory/memory_store.dart';
 import 'package:zagreus/system/network/network.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/system/recovery_mode/main.dart';
@@ -67,6 +68,7 @@ Future<void> bootstrap() async {
     // SK2 provides expiry dates directly, so server validation is optional
   }
   ZagRouter().initialize();
+  await ZagMemoryStore().initialize();
   // Initialize webhook sync service for 24-hour checks
   WebhookSyncService.initialize();
   // Initialize command processor for zero-knowledge backend requests
