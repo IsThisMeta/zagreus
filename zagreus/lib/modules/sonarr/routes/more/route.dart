@@ -85,66 +85,6 @@ class _State extends State<SonarrMoreRoute> with AutomaticKeepAliveClientMixin {
           ),
           onTap: SonarrRoutes.TAGS.go,
         ),
-        ZagBlock(
-          title: 'Test Webhook',
-          body: [TextSpan(text: 'Test Zagreus webhook integration')],
-          trailing: ZagIconButton(
-            icon: Icons.webhook_rounded,
-            color: ZagColours().byListIndex(3),
-          ),
-          onTap: () async {
-            final sonarrState = context.read<SonarrState>();
-            if (sonarrState.api == null) {
-              showZagErrorSnackBar(
-                title: 'Error',
-                message: 'Sonarr is not configured',
-              );
-              return;
-            }
-            
-            // Show loading
-            showZagSnackBar(
-              title: 'Testing Webhook',
-              message: 'Please wait...',
-              type: ZagSnackbarType.INFO,
-            );
-            
-            try {
-              // First sync the webhook to ensure it exists
-              await SonarrWebhookManager.syncWebhook(sonarrState.api!);
-              
-              // Get the webhook
-              final webhook = await SonarrWebhookManager.getZagreusWebhook(sonarrState.api!);
-              if (webhook == null) {
-                showZagErrorSnackBar(
-                  title: 'Error',
-                  message: 'Failed to create webhook',
-                );
-                return;
-              }
-              
-              // Test the webhook
-              final success = await sonarrState.api!.notification.test(notification: webhook);
-              
-              if (success) {
-                showZagSuccessSnackBar(
-                  title: 'Success',
-                  message: 'Webhook test successful!',
-                );
-              } else {
-                showZagErrorSnackBar(
-                  title: 'Error', 
-                  message: 'Webhook test failed',
-                );
-              }
-            } catch (e) {
-              showZagErrorSnackBar(
-                title: 'Error',
-                message: e.toString(),
-              );
-            }
-          },
-        ),
       ],
     );
   }
