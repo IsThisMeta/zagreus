@@ -37,6 +37,12 @@ part 'controllers/episode/get_episodes.dart';
 part 'controllers/episode/set_monitored.dart';
 part 'controllers/episode/update_episode.dart';
 
+// Filesystem
+part 'controllers/filesystem.dart';
+
+// Health Check
+part 'controllers/health_check.dart';
+
 // History
 part 'controllers/history.dart';
 part 'controllers/history/get_history.dart';

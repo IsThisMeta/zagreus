@@ -11,6 +11,8 @@ class SonarrAPI {
     required this.command,
     required this.episode,
     required this.episodeFile,
+    required this.filesystem,
+    required this.healthCheck,
     required this.history,
     required this.importList,
     required this.notification,
@@ -57,6 +59,8 @@ class SonarrAPI {
       command: SonarrControllerCommand(_dio),
       episode: SonarrControllerEpisode(_dio),
       episodeFile: SonarrControllerEpisodeFile(_dio),
+      filesystem: SonarrControllerFilesystem(_dio),
+      healthCheck: SonarrControllerHealthCheck(_dio),
       history: SonarrControllerHistory(_dio),
       importList: SonarrControllerImportList(_dio),
       notification: SonarrControllerNotification(_dio),
@@ -81,6 +85,8 @@ class SonarrAPI {
       command: SonarrControllerCommand(client),
       episode: SonarrControllerEpisode(client),
       episodeFile: SonarrControllerEpisodeFile(client),
+      filesystem: SonarrControllerFilesystem(client),
+      healthCheck: SonarrControllerHealthCheck(client),
       history: SonarrControllerHistory(client),
       importList: SonarrControllerImportList(client),
       notification: SonarrControllerNotification(client),
@@ -102,6 +108,8 @@ class SonarrAPI {
   final SonarrControllerCommand command;
   final SonarrControllerEpisode episode;
   final SonarrControllerEpisodeFile episodeFile;
+  final SonarrControllerFilesystem filesystem;
+  final SonarrControllerHealthCheck healthCheck;
   final SonarrControllerHistory history;
   final SonarrControllerImportList importList;
   final SonarrControllerNotification notification;

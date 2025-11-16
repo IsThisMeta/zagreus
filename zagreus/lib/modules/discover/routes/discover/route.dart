@@ -1313,6 +1313,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _moviesPage(),
         _tvShowsPage(),
         _calendarTab(),
+        _serverTab(),
       ],
     );
 
@@ -1789,6 +1790,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
+  }
+
+  Widget _serverTab() {
+    return _ServerPage();
   }
 
   // Search state
@@ -6961,6 +6966,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       Icons.movie_rounded,
       Icons.tv_rounded,
       Icons.calendar_today_rounded,
+      Icons.dns_rounded,
     ];
 
     final titles = <String>[
@@ -6968,6 +6974,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       'Movies',
       'Shows',
       'Calendar',
+      'Server',
     ];
 
     final controllers = <ScrollController>[
@@ -6975,6 +6982,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       moviesScrollController,
       showsScrollController,
       calendarScrollController,
+      ScrollController(),
     ];
 
     return ZagBottomNavigationBar(
@@ -6987,4 +6995,357 @@ class _DiscoverNavigationBar extends StatelessWidget {
       },
     );
   }
+}
+
+class _ServerPage extends StatefulWidget {
+  const _ServerPage({Key? key}) : super(key: key);
+
+  @override
+  State<_ServerPage> createState() => _ServerPageState();
+}
+
+class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  List<RadarrDiskSpace> _diskSpaces = [];
+  List<_ServerIssue> _serverIssues = [];
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadDiskSpaces(),
+      _loadServerIssues(),
+    ]);
+  }
+
+  Future<void> _loadDiskSpaces() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final allDiskSpaces = <RadarrDiskSpace>[];
+
+      // Fetch from Radarr if enabled
+      if (ZagProfile.current.radarrEnabled) {
+        try {
+          final radarrAPI = RadarrAPI(
+            host: ZagProfile.current.radarrHost,
+            apiKey: ZagProfile.current.radarrKey,
+            headers: ZagProfile.current.radarrHeaders.isNotEmpty
+                ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
+                : null,
+          );
+          final radarrSpaces = await radarrAPI.fileSystem.getDiskSpace();
+          allDiskSpaces.addAll(radarrSpaces);
+        } catch (e) {
+          ZagLogger().warning('Failed to fetch disk spaces from Radarr: $e');
+        }
+      }
+
+      // Fetch from Sonarr if enabled
+      if (ZagProfile.current.sonarrEnabled) {
+        try {
+          final sonarrAPI = SonarrAPI(
+            host: ZagProfile.current.sonarrHost,
+            apiKey: ZagProfile.current.sonarrKey,
+            headers: ZagProfile.current.sonarrHeaders.isNotEmpty
+                ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
+                : null,
+          );
+          final sonarrSpaces = await sonarrAPI.filesystem.getAllDiskSpaces();
+          // Convert SonarrDiskSpace to RadarrDiskSpace format
+          allDiskSpaces.addAll(sonarrSpaces.map((s) => RadarrDiskSpace(
+            path: s.path,
+            label: s.label,
+            freeSpace: s.freeSpace,
+            totalSpace: s.totalSpace,
+          )));
+        } catch (e) {
+          ZagLogger().warning('Failed to fetch disk spaces from Sonarr: $e');
+        }
+      }
+
+      // Remove duplicates by path (case-insensitive)
+      final seen = <String>{};
+      final uniqueSpaces = <RadarrDiskSpace>[];
+      for (final space in allDiskSpaces) {
+        final pathLower = space.path?.toLowerCase() ?? '';
+        if (pathLower.isNotEmpty && !seen.contains(pathLower)) {
+          seen.add(pathLower);
+          uniqueSpaces.add(space);
+        }
+      }
+
+      // Sort by path
+      uniqueSpaces.sort((a, b) =>
+        (a.path ?? '').toLowerCase().compareTo((b.path ?? '').toLowerCase())
+      );
+
+      if (mounted) {
+        setState(() {
+          _diskSpaces = uniqueSpaces;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadServerIssues() async {
+    if (!mounted) return;
+
+    try {
+      final allIssues = <_ServerIssue>[];
+
+      // Fetch from Radarr if enabled
+      if (ZagProfile.current.radarrEnabled) {
+        try {
+          final radarrAPI = RadarrAPI(
+            host: ZagProfile.current.radarrHost,
+            apiKey: ZagProfile.current.radarrKey,
+            headers: ZagProfile.current.radarrHeaders.isNotEmpty
+                ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
+                : null,
+          );
+          final radarrIssues = await radarrAPI.healthCheck.get();
+          allIssues.addAll(radarrIssues.map((issue) => _ServerIssue(
+            message: issue.message ?? 'Unknown issue',
+            serviceType: 'Radarr',
+            icon: ZagIcons.RADARR,
+            color: const Color(0xFFFEC333),
+          )));
+        } catch (e) {
+          ZagLogger().warning('Failed to fetch health checks from Radarr: $e');
+        }
+      }
+
+      // Fetch from Sonarr if enabled
+      if (ZagProfile.current.sonarrEnabled) {
+        try {
+          final sonarrAPI = SonarrAPI(
+            host: ZagProfile.current.sonarrHost,
+            apiKey: ZagProfile.current.sonarrKey,
+            headers: ZagProfile.current.sonarrHeaders.isNotEmpty
+                ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
+                : null,
+          );
+          final sonarrIssues = await sonarrAPI.healthCheck.get();
+          allIssues.addAll(sonarrIssues.map((issue) => _ServerIssue(
+            message: issue.message ?? 'Unknown issue',
+            serviceType: 'Sonarr',
+            icon: ZagIcons.SONARR,
+            color: const Color(0xFF3FC6F4),
+          )));
+        } catch (e) {
+          ZagLogger().warning('Failed to fetch health checks from Sonarr: $e');
+        }
+      }
+
+      // Fetch from Lidarr if enabled (when we add it)
+      if (ZagProfile.current.lidarrEnabled) {
+        // TODO: Add Lidarr health check support
+      }
+
+      if (mounted) {
+        setState(() {
+          _serverIssues = allIssues;
+        });
+      }
+    } catch (e) {
+      ZagLogger().warning('Failed to load server issues: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(ZagColours.currentAccent),
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 60,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load server data',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_diskSpaces.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.dns_rounded,
+              size: 60,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No disk space data available',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Enable Radarr or Sonarr to view disk spaces',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      color: ZagColours.currentAccent,
+      child: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          // Server Issues Card
+          if (_serverIssues.isNotEmpty || ZagProfile.current.radarrEnabled || ZagProfile.current.sonarrEnabled) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_rounded,
+                    color: _serverIssues.isEmpty ? Colors.green : Colors.orange,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Server Issues',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_serverIssues.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: ZagBlock(
+                  title: 'No Server Issues',
+                  body: const [
+                    TextSpan(text: 'All systems are healthy! 🎉'),
+                  ],
+                  trailing: Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.green,
+                    size: 24,
+                  ),
+                ),
+              )
+            else
+              ..._serverIssues.map((issue) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ZagBlock(
+                  title: issue.message,
+                  body: [
+                    TextSpan(
+                      text: 'From ${issue.serviceType}',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: issue.color.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                  trailing: Icon(
+                    issue.icon,
+                    color: issue.color,
+                    size: 24,
+                  ),
+                ),
+              )),
+            const SizedBox(height: 24),
+          ],
+          // Disk Space Card
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.storage_rounded,
+                  color: ZagColours.currentAccent,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Disk Space',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Disk space tiles
+          ..._diskSpaces.map((diskSpace) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: RadarrDiskSpaceTile(diskSpace: diskSpace),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+/// Simple class to hold server issue data with service metadata
+class _ServerIssue {
+  final String message;
+  final String serviceType;
+  final IconData icon;
+  final Color color;
+
+  _ServerIssue({
+    required this.message,
+    required this.serviceType,
+    required this.icon,
+    required this.color,
+  });
 }

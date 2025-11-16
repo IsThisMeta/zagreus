@@ -155,10 +155,10 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.SHOW_AGENT_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Agent Tab',
+        title: 'Show Agent Button',
         body: const [
           TextSpan(
-            text: 'Hide the Z Agent tab.',
+            text: 'Show the Z Agent button in the app bar.',
           ),
         ],
         trailing: ZagSwitch(

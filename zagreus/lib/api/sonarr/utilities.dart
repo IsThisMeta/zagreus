@@ -66,4 +66,9 @@ class SonarrUtilities {
   static String? queueTrackedDownloadStatusToJson(
           SonarrTrackedDownloadStatus? status) =>
       status?.value;
+
+  static SonarrHealthCheckType? healthCheckTypeFromJson(String? type) =>
+      SonarrHealthCheckType.NOTICE.from(type);
+  static String? healthCheckTypeToJson(SonarrHealthCheckType? type) =>
+      type?.value;
 }

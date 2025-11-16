@@ -19,6 +19,12 @@ export 'models/episode_file/episode_file_quality.dart';
 export 'models/episode_file/episode_file_quality_quality.dart';
 export 'models/episode_file/episode_file_quality_revision.dart';
 
+/// Filesystem
+export 'models/filesystem/disk_space.dart';
+
+/// Health Check
+export 'models/health_check/health_check.dart';
+
 /// History
 export 'models/history/history.dart';
 export 'models/history/history_record.dart';
