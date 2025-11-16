@@ -21,6 +21,7 @@ class ZagRouter {
       routes: ZagRoutes.values.map((r) => r.root.routes).toList(),
       observers: [
         _FABRouteObserver(), // Track routes for global FAB
+        _RouteMemoryObserver(), // Track routes for module memory
       ],
     );
     _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
@@ -75,6 +76,78 @@ class _FABRouteObserver extends NavigatorObserver {
   void _updateFAB(Route route) {
     final name = route.settings.name ?? '';
     ZagGlobalFABManager.instance.updateModule(name);
+  }
+}
+
+/// Observer that tracks route changes for module memory persistence
+class _RouteMemoryObserver extends NavigatorObserver {
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    _saveRouteIfNeeded(route);
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    // When popping, save the previous route (the one we're returning to)
+    if (previousRoute != null) {
+      _saveRouteIfNeeded(previousRoute);
+    }
+  }
+
+  @override
+  void didReplace({Route? newRoute, Route? oldRoute}) {
+    if (newRoute != null) {
+      _saveRouteIfNeeded(newRoute);
+    }
+  }
+
+  void _saveRouteIfNeeded(Route route) {
+    final routeName = route.settings.name;
+    if (routeName == null || routeName.isEmpty) return;
+
+    // Parse the route to get the path
+    final uri = Uri.tryParse(routeName);
+    if (uri == null) return;
+
+    var path = uri.path.isEmpty ? '/' : uri.path;
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
+
+    // Find which module this route belongs to
+    final module = _moduleForPath(path);
+    if (module == null) return;
+
+    final home = module.homeRoute;
+    if (home == null) return;
+
+    // Only save if the route is within the module's routes
+    if (!(path == home || path.startsWith('$home/'))) return;
+
+    // Normalize the location (remove fragment)
+    final normalizedLocation = uri.replace(fragment: null).toString();
+
+    // Check if this route can be restored
+    if (!module.canRestoreRoute(normalizedLocation)) return;
+
+    // Don't save if it's already the saved route
+    final last = ZagSessionState.instance.getModuleLastRoute(module.key);
+    if (last == normalizedLocation) return;
+
+    // Save the route
+    ZagSessionState.instance.setModuleLastRoute(module.key, normalizedLocation);
+    print('🔍 RouteMemoryObserver: Saved route for ${module.key}: $normalizedLocation');
+  }
+
+  ZagModule? _moduleForPath(String path) {
+    for (final module in ZagModule.values) {
+      final home = module.homeRoute;
+      if (home == null) continue;
+      if (path == home || path.startsWith('$home/')) {
+        return module;
+      }
+    }
+    return null;
   }
 }
 
