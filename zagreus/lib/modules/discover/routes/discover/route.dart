@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
+import 'package:zagreus/api/overseerr/commands.dart';
+import 'package:zagreus/api/overseerr/models.dart';
+import 'package:zagreus/api/overseerr/overseerr.dart';
+import 'package:zagreus/api/overseerr/types.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
@@ -40,12 +45,14 @@ import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
+import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
+import 'package:zagreus/extensions/string/string.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -70,6 +77,7 @@ const int _discoverPreviewLimit = 10;
 const int _discoverFullPageLimit = 60;
 const double _recentlyDownloadedEpisodeThumbWidth = 100;
 const double _recentlyDownloadedEpisodeThumbHeight = 53;
+const int _overseerrPreviewLimit = 4;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Page storage + controller keys for scroll preservation
@@ -7010,6 +7018,10 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
 
   List<RadarrDiskSpace> _diskSpaces = [];
   List<_ServerIssue> _serverIssues = [];
+  List<OverseerrRequest> _overseerrRequests = [];
+  bool _overseerrEnabled = false;
+  bool _overseerrLoading = false;
+  String? _overseerrError;
   bool _isLoading = false;
   String? _error;
 
@@ -7023,6 +7035,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     await Future.wait([
       _loadDiskSpaces(),
       _loadServerIssues(),
+      _loadOverseerrRequests(),
     ]);
   }
 
@@ -7174,6 +7187,178 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     }
   }
 
+  Future<void> _loadOverseerrRequests() async {
+    if (!mounted) return;
+
+    final profile = ZagProfile.current;
+    final isConfigured = profile.overseerrEnabled &&
+        profile.overseerrHost.isNotEmpty &&
+        profile.overseerrKey.isNotEmpty;
+
+    if (!isConfigured) {
+      if (!mounted) return;
+      setState(() {
+        _overseerrEnabled = false;
+        _overseerrLoading = false;
+        _overseerrError = null;
+        _overseerrRequests = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _overseerrEnabled = true;
+      _overseerrLoading = true;
+      _overseerrError = null;
+    });
+
+    try {
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: profile.overseerrHost,
+          headers: {
+            'X-Api-Key': profile.overseerrKey,
+            ...profile.overseerrHeaders,
+          },
+          connectTimeout: const Duration(seconds: 45),
+          receiveTimeout: const Duration(seconds: 45),
+          sendTimeout: const Duration(seconds: 45),
+        ),
+      );
+
+      final api = OverseerrAPI(dio, baseUrl: profile.overseerrHost);
+      final response = await GetOverseerrRequests(api, Dio())(
+        take: 10,
+        filter: 'pending',
+        sort: 'added',
+      );
+
+      final sorted = List<OverseerrRequest>.from(response.results)
+        ..sort((a, b) {
+          final aDate = DateTime.tryParse(a.createdAt) ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bDate = DateTime.tryParse(b.createdAt) ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bDate.compareTo(aDate);
+        });
+
+      if (!mounted) return;
+      setState(() {
+        _overseerrRequests = sorted;
+        _overseerrLoading = false;
+      });
+    } catch (e) {
+      ZagLogger().warning('Failed to fetch Overseerr requests: $e');
+      if (!mounted) return;
+      setState(() {
+        _overseerrError = e.toString();
+        _overseerrLoading = false;
+        _overseerrRequests = [];
+      });
+    }
+  }
+
+  bool get _shouldShowOverseerrSection =>
+      _overseerrEnabled ||
+      _overseerrLoading ||
+      _overseerrError != null ||
+      _overseerrRequests.isNotEmpty;
+
+  Color _overseerrStatusColor(OverseerrRequest request) {
+    final status = OverseerrRequestStatus.fromValue(request.status);
+    switch (status) {
+      case OverseerrRequestStatus.PENDING:
+        return ZagColours.orange;
+      case OverseerrRequestStatus.APPROVED:
+        switch (OverseerrMediaStatus.fromValue(request.media.status)) {
+          case OverseerrMediaStatus.AVAILABLE:
+            return Colors.green;
+          case OverseerrMediaStatus.PARTIALLY_AVAILABLE:
+            return ZagColours.blue;
+          case OverseerrMediaStatus.PROCESSING:
+            return ZagColours.purple;
+          default:
+            return ZagColours.currentAccent;
+        }
+      case OverseerrRequestStatus.DECLINED:
+        return ZagColours.red;
+      default:
+        return Theme.of(context).textTheme.bodyMedium?.color ??
+            Colors.white;
+    }
+  }
+
+  Widget _buildOverseerrRequestCard(OverseerrRequest request) {
+    final media = request.media;
+    final title = media.getTitle();
+    final year = media.getYear();
+    final status = request.getDisplayStatus();
+    final relativeTime = request.getRelativeTime();
+    final statusColor = _overseerrStatusColor(request);
+    final icon =
+        request.type == 'movie' ? ZagIcons.VIDEO_CAM : Icons.tv_rounded;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ZagBlock(
+        title: title,
+        titleMaxLines: 2,
+        leading: Icon(
+          icon,
+          color: statusColor,
+          size: 28,
+        ),
+        body: [
+          TextSpan(
+            children: [
+              if (year.isNotEmpty) ...[
+                TextSpan(text: year),
+                TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+              ],
+              TextSpan(
+                text: status,
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+                ),
+              ),
+              if (request.is4k) ...[
+                TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+                TextSpan(
+                  text: '4K',
+                  style: TextStyle(
+                    color: ZagColours.purple,
+                    fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          TextSpan(
+            children: [
+              const TextSpan(text: 'Requested by '),
+              TextSpan(
+                text: request.requestedBy.displayName,
+                style: TextStyle(
+                  fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+                ),
+              ),
+              if (relativeTime.isNotEmpty) ...[
+                TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+                TextSpan(text: relativeTime),
+              ],
+            ],
+          ),
+        ],
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          color: Theme.of(context).iconTheme.color,
+        ),
+        onTap: () => ZagModule.OVERSEERR.launch(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -7284,6 +7469,77 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                   ),
                 ),
               )),
+            const SizedBox(height: 24),
+          ],
+          if (_shouldShowOverseerrSection) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Text(
+                'Overseerr Requests',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: _overseerrEnabled
+                      ? ZagModule.OVERSEERR.color
+                      : Colors.grey,
+                ),
+              ),
+            ),
+            if (_overseerrLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: ZagLoader(),
+                ),
+              )
+            else if (!_overseerrEnabled)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: ZagBlock(
+                  title: 'Enable Overseerr',
+                  body: const [
+                    TextSpan(
+                      text:
+                          'Turn on Overseerr in Settings to see requests here.',
+                    ),
+                  ],
+                  trailing: const Icon(Icons.settings_rounded),
+                  onTap: SettingsRoutes.CONFIGURATION_OVERSEERR.go,
+                ),
+              )
+            else if (_overseerrError != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: ZagBlock(
+                  title: 'Unable to load requests',
+                  body: const [
+                    TextSpan(
+                      text: 'Tap to retry. We could not reach Overseerr.',
+                    ),
+                  ],
+                  trailing: const Icon(Icons.refresh_rounded),
+                  onTap: _loadOverseerrRequests,
+                ),
+              )
+            else if (_overseerrRequests.isEmpty)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: ZagBlock(
+                  title: 'No pending requests',
+                  body: const [
+                    TextSpan(text: 'All caught up for now.'),
+                  ],
+                  trailing: const Icon(Icons.inbox_outlined),
+                  onTap: () => ZagModule.OVERSEERR.launch(),
+                ),
+              )
+            else
+              ..._overseerrRequests
+                  .take(_overseerrPreviewLimit)
+                  .map(_buildOverseerrRequestCard),
             const SizedBox(height: 24),
           ],
           // Disk Space Card
