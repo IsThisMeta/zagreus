@@ -102,20 +102,33 @@ class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
       }
     }
 
+    final isPro = ZagreusPro.isEnabled;
+
     // Filter out premium modules if not Pro
     modules = modules.where((module) {
       if ((module == ZagModule.DISCOVER ||
               module == ZagModule.OVERSEERR ||
               module == ZagModule.SERVER) &&
-          !ZagreusPro.isEnabled) {
+          !isPro) {
         return false;
       }
       return module.isEnabled;
     }).toList();
 
-    // Add Dashboard at the beginning if not there
-    if (!modules.contains(ZagModule.DASHBOARD)) {
-      modules.insert(0, ZagModule.DASHBOARD);
+    // For free users: show Dashboard (titled "Home")
+    // For pro users: show Discover (titled "Dashboard")
+    if (isPro) {
+      // Remove Dashboard, keep Discover
+      modules.removeWhere((m) => m == ZagModule.DASHBOARD);
+      if (!modules.contains(ZagModule.DISCOVER)) {
+        modules.insert(0, ZagModule.DISCOVER);
+      }
+    } else {
+      // Remove Discover, keep Dashboard
+      modules.removeWhere((m) => m == ZagModule.DISCOVER);
+      if (!modules.contains(ZagModule.DASHBOARD)) {
+        modules.insert(0, ZagModule.DASHBOARD);
+      }
     }
 
     return modules;
