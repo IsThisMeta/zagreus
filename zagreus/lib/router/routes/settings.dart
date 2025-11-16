@@ -13,6 +13,7 @@ import 'package:zagreus/modules/settings/routes/configuration_dashboard/pages/de
 import 'package:zagreus/modules/settings/routes/configuration_dashboard/route.dart';
 import 'package:zagreus/modules/settings/routes/discover_sections/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_drawer/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_navigation/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_external_modules/pages/add_module.dart';
 import 'package:zagreus/modules/settings/routes/configuration_external_modules/pages/edit_module.dart';
 import 'package:zagreus/modules/settings/routes/configuration_external_modules/route.dart';
@@ -80,6 +81,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_DASHBOARD_CALENDAR('calendar'),
   CONFIGURATION_DASHBOARD_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_DRAWER('drawer'),
+  CONFIGURATION_NAVIGATION('navigation'),
   CONFIGURATION_EXTERNAL_MODULES('external_modules'),
   CONFIGURATION_EXTERNAL_MODULES_ADD('add'),
   CONFIGURATION_EXTERNAL_MODULES_EDIT('edit/:id'),
@@ -168,6 +170,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationDashboardDefaultPagesRoute());
       case SettingsRoutes.CONFIGURATION_DRAWER:
         return route(widget: const ConfigurationDrawerRoute());
+      case SettingsRoutes.CONFIGURATION_NAVIGATION:
+        return route(widget: const ConfigurationNavigationRoute());
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return route(widget: const ConfigurationExternalModulesRoute());
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES_ADD:
@@ -325,6 +329,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_DASHBOARD.routes,
           SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS.routes,
           SettingsRoutes.CONFIGURATION_DRAWER.routes,
+          SettingsRoutes.CONFIGURATION_NAVIGATION.routes,
           SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES.routes,
           SettingsRoutes.CONFIGURATION_LIDARR.routes,
           SettingsRoutes.CONFIGURATION_NZBGET.routes,

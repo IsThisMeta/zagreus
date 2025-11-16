@@ -90,6 +90,14 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           onTap: SettingsRoutes.CONFIGURATION_APPEARANCE.go,
         ),
         ZagBlock(
+          title: 'Navigation',
+          body: const [
+            TextSpan(text: 'Configure navigation settings'),
+          ],
+          trailing: const ZagIconButton(icon: Icons.navigation_rounded),
+          onTap: SettingsRoutes.CONFIGURATION_NAVIGATION.go,
+        ),
+        ZagBlock(
           title: 'settings.Drawer'.tr(),
           body: [TextSpan(text: 'settings.DrawerDescription'.tr())],
           trailing: const ZagIconButton(icon: Icons.menu_rounded),
