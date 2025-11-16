@@ -90,6 +90,7 @@ class _State extends State<ConfigurationGeneralRoute>
       const ZagHeader(text: 'Navigation'),
       _horizontalSwipeToggle(),
       _moduleSwitcherFAB(),
+      _downloadsDrawer(),
       _legacyModulesTabToggle(),
       _agentTabToggle(),
     ];
@@ -114,6 +115,22 @@ class _State extends State<ConfigurationGeneralRoute>
   }
 
   Widget _moduleSwitcherFAB() {
+    const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Floating Action Cube',
+        body: const [
+          TextSpan(text: 'Show the floating module switcher button.'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _downloadsDrawer() {
     const db = ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(

@@ -70,6 +70,7 @@ class _FABRouteObserver extends NavigatorObserver {
   }
 
   void _updateFAB(Route route) {
-    // No longer needed - downloads drawer is always available
+    final name = route.settings.name ?? '';
+    ZagGlobalFABManager.instance.updateModule(name);
   }
 }
