@@ -17,11 +17,15 @@ class SABnzbdServer {
   @JsonKey(name: 'total')
   int totalUsage;
 
+  @JsonKey(name: 'daily')
+  Map<String, int>? daily;
+
   SABnzbdServer({
     required this.dailyUsage,
     required this.weeklyUsage,
     required this.monthlyUsage,
     required this.totalUsage,
+    this.daily,
   });
 
   @override

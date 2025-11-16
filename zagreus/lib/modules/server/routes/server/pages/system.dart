@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
+import 'package:zagreus/modules/server/core/download_history_fetcher.dart';
+import 'package:zagreus/modules/server/routes/server/widgets/download_history_card.dart';
 
 class ServerSystemPage extends StatefulWidget {
   const ServerSystemPage({Key? key}) : super(key: key);
@@ -17,12 +20,15 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   UnraidArrayInfo? _arrayInfo;
   UnraidMetricsInfo? _metricsInfo;
   UnraidUpsInfo? _upsInfo;
+  DownloadHistoryData? _downloadHistory;
   bool _loading = true;
   String? _error;
+  int _downloadHistoryWeeks = 1;
 
   @override
   void initState() {
     super.initState();
+    print('🔍 ServerSystemPage initialized - download history feature loaded!');
     _loadData();
   }
 
@@ -33,6 +39,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
       _loading = true;
       _error = null;
       _metricsInfo = null;
+      _downloadHistory = null;
     });
 
     try {
@@ -66,6 +73,25 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         upsInfo = null;
       }
 
+      // Fetch download history from SABnzbd if enabled
+      DownloadHistoryData? downloadHistory;
+      try {
+        final profile = ZagProfile.current;
+        ZagLogger().debug('SABnzbd enabled: ${profile.sabnzbdEnabled}');
+        if (profile.sabnzbdEnabled) {
+          ZagLogger().debug('Fetching download history...');
+          final sabnzbdApi = SABnzbdAPI.from(profile);
+          downloadHistory = await DownloadHistoryFetcher.fetchSabnzbdDownloadStats(
+            api: sabnzbdApi,
+            weeksLookBack: _downloadHistoryWeeks,
+          );
+          ZagLogger().debug('Download history fetched: ${downloadHistory.chartData.length} days, ${downloadHistory.totalGB} GB');
+        }
+      } catch (e, stackTrace) {
+        ZagLogger().error('Download history error', e, stackTrace);
+        downloadHistory = null;
+      }
+
       if (!mounted) return;
 
       setState(() {
@@ -73,6 +99,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         _arrayInfo = arrayInfo;
         _metricsInfo = metricsInfo;
         _upsInfo = upsInfo;
+        _downloadHistory = downloadHistory;
         _loading = false;
       });
     } catch (e, stackTrace) {
@@ -113,6 +140,12 @@ class _ServerSystemPageState extends State<ServerSystemPage>
         controller: scrollController,
         children: [
           if (_systemInfo != null) _buildServerInfoCard(),
+          if (_downloadHistory != null)
+            DownloadHistoryCard(
+              chartData: _downloadHistory!.chartData,
+              totalGB: _downloadHistory!.totalGB,
+              periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
+            ),
           if (_arrayInfo?.capacity != null) _buildArrayCapacityCard(),
           if (_systemInfo?.memory != null || _metricsInfo != null)
             _buildMemoryCard(),

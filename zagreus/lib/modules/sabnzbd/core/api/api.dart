@@ -44,12 +44,22 @@ class SABnzbdAPI {
       //Parse individual servers
       List<SABnzbdServerStatisticsData> _servers = [];
       for (var server in statistics.data['servers'].keys) {
+        Map<String, int>? daily;
+        if (statistics.data['servers'][server]['daily'] != null) {
+          daily = Map<String, int>.from(
+            (statistics.data['servers'][server]['daily'] as Map).map(
+              (key, value) => MapEntry(key.toString(), value as int),
+            ),
+          );
+        }
+        
         _servers.add(SABnzbdServerStatisticsData(
           name: server.toString(),
           dailyUsage: statistics.data['servers'][server]['day'],
           weeklyUsage: statistics.data['servers'][server]['week'],
           monthlyUsage: statistics.data['servers'][server]['month'],
           totalUsage: statistics.data['servers'][server]['total'],
+          daily: daily,
         ));
       }
       //Assemble final stats object

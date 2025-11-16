@@ -43,6 +43,9 @@ import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
+import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
+import 'package:zagreus/modules/server/core/download_history_fetcher.dart';
+import 'package:zagreus/modules/server/routes/server/widgets/download_history_card.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
@@ -134,7 +137,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
     return 18;
   }
-  double _heroHeight = 400.0;
+  double _heroHeight = 370.0;
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -2625,8 +2628,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     final savedHeroHeight = ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
     if (savedHeroHeight != null &&
-        savedHeroHeight >= 350 &&
-        savedHeroHeight <= 450) {
+        savedHeroHeight >= 320 &&
+        savedHeroHeight <= 420) {
       _heroHeight = savedHeroHeight;
     }
   }
@@ -7018,6 +7021,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   List<RadarrDiskSpace> _diskSpaces = [];
   List<_ServerIssue> _serverIssues = [];
   List<OverseerrRequest> _overseerrRequests = [];
+  Map<String, double> _downloadHistoryChartData = {};
+  double _downloadHistoryTotalGB = 0;
   bool _overseerrEnabled = false;
   bool _overseerrLoading = false;
   String? _overseerrError;
@@ -7035,6 +7040,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       _loadDiskSpaces(),
       _loadServerIssues(),
       _loadOverseerrRequests(),
+      _loadDownloadHistory(),
     ]);
   }
 
@@ -7248,6 +7254,39 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       _overseerrError != null ||
       _overseerrRequests.isNotEmpty;
 
+  Future<void> _loadDownloadHistory() async {
+    if (!mounted) return;
+
+    try {
+      print('🔍 Loading download history - SABnzbd enabled: ${ZagProfile.current.sabnzbdEnabled}');
+      if (ZagProfile.current.sabnzbdEnabled) {
+        final sabnzbdApi = SABnzbdAPI.from(ZagProfile.current);
+        final historyData = await DownloadHistoryFetcher.fetchSabnzbdDownloadStats(
+          api: sabnzbdApi,
+          weeksLookBack: 1, // Default to 1 week
+        );
+        
+        print('🔍 Download history loaded: ${historyData.chartData.length} days, ${historyData.totalGB} GB');
+        print('🔍 Chart data: ${historyData.chartData}');
+        
+        if (!mounted) return;
+        setState(() {
+          _downloadHistoryChartData = historyData.chartData;
+          _downloadHistoryTotalGB = historyData.totalGB;
+        });
+        
+        print('🔍 State updated with download history');
+      } else {
+        print('🔍 SABnzbd not enabled, skipping download history');
+      }
+    } catch (e, stackTrace) {
+      print('❌ Failed to load download history: $e');
+      print('❌ Stack trace: $stackTrace');
+      ZagLogger().debug('Failed to load download history: $e');
+      // Fail silently - this is optional data
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -7456,6 +7495,26 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             padding: const EdgeInsets.only(bottom: 12),
             child: RadarrDiskSpaceTile(diskSpace: diskSpace),
           )),
+          // Download History Card
+          if (ZagProfile.current.sabnzbdEnabled) ...[
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Text(
+                'Download History',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: ZagColours.currentAccent,
+                ),
+              ),
+            ),
+            DownloadHistoryCard(
+              chartData: _downloadHistoryChartData,
+              totalGB: _downloadHistoryTotalGB,
+              periodLabel: 'week',
+            ),
+          ],
         ],
       ),
     );

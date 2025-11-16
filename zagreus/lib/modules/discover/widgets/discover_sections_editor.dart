@@ -36,8 +36,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
   static const double _posterHeightMin = 150.0;
   static const double _posterHeightMax = 250.0;
-  static const double _heroHeightMin = 350.0;
-  static const double _heroHeightMax = 450.0;
+  static const double _heroHeightMin = 320.0;
+  static const double _heroHeightMax = 420.0;
   static const int _columnsPerRowMin = 2;
   static const int _columnsPerRowMax = 4;
 
@@ -61,7 +61,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _tvSections;
   bool _hasChanges = false;
   double _posterHeight = 200.0;
-  double _heroHeight = 400.0;
+  double _heroHeight = 370.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
   bool _monochromeRatings = false;

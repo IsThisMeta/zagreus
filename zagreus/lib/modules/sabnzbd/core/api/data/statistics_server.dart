@@ -4,6 +4,7 @@ class SABnzbdServerStatisticsData {
   int? weeklyUsage;
   int? monthlyUsage;
   int? totalUsage;
+  Map<String, int>? daily;
 
   SABnzbdServerStatisticsData({
     required this.name,
@@ -11,5 +12,6 @@ class SABnzbdServerStatisticsData {
     required this.weeklyUsage,
     required this.monthlyUsage,
     required this.totalUsage,
+    this.daily,
   });
 }
