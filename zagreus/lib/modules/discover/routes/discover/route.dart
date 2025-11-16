@@ -1436,6 +1436,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
+    final serverIndex = enableLegacyModules ? 4 : 3;
 
     if (_isSearchActive) {
       return [
@@ -1484,7 +1485,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     final actions = <Widget>[];
     if (_currentPageIndex == moviesTabIndex ||
-        _currentPageIndex == showsTabIndex) {
+        _currentPageIndex == showsTabIndex ||
+        _currentPageIndex == serverIndex) {
       if (showAgentTab) {
         actions.add(
           IconButton(
