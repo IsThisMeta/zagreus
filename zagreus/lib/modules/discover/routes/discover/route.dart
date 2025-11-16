@@ -7285,19 +7285,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 padding: const EdgeInsets.only(bottom: 12),
                 child: ZagBlock(
                   title: issue.message,
-                  body: [
-                    TextSpan(
-                      text: 'From ${issue.serviceType}',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: issue.color.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                  trailing: Icon(
+                  titleMaxLines: 5,
+                  leading: Icon(
                     issue.icon,
                     color: issue.color,
-                    size: 24,
+                    size: 28,
                   ),
                 ),
               )),
