@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/widgets/ui/downloads_drawer.dart';
-import 'package:zagreus/widgets/ui/module_switcher_fab.dart';
+import 'package:zagreus/widgets/ui/speed_cube.dart';
 
 /// Manager to track current module globally, inject FAB overlay, and provide downloads drawer
 class ZagGlobalFABManager {
@@ -25,7 +25,7 @@ class ZagGlobalFABManager {
 
     print('🔍 FABManager: Injecting FAB overlay');
     print(
-        '🔍 FABManager: Setting enabled: ${ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read()}');
+        '🔍 FABManager: Setting enabled: ${ZagreusDatabase.SPEED_CUBE_ENABLED.read()}');
 
     try {
       final overlay = Overlay.of(context, rootOverlay: true);
@@ -43,11 +43,11 @@ class ZagGlobalFABManager {
                   padding: const EdgeInsets.only(right: 12, bottom: 88),
                   child: Material(
                     color: Colors.transparent,
-                    child: ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED
+                    child: ZagreusDatabase.SPEED_CUBE_ENABLED
                         .listenableBuilder(
                       builder: (context, _) {
                         final enabled =
-                            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
+                            ZagreusDatabase.SPEED_CUBE_ENABLED.read();
                         if (!enabled) {
                           print('🔍 GlobalFAB: Disabled via settings, hiding');
                           return const SizedBox.shrink();
@@ -64,7 +64,7 @@ class ZagGlobalFABManager {
                             }
 
                             print('🔍 GlobalFAB: Creating FAB widget');
-                            return ZagModuleSwitcherFAB(
+                            return ZagSpeedCube(
                               currentModuleKey: currentModule,
                             );
                           },
@@ -104,7 +104,7 @@ class ZagGlobalFABManager {
   void trackModuleLaunch(String targetModuleKey) {
     print('🔍 FABManager: trackModuleLaunch called for: $targetModuleKey');
     // Forward to the FAB's static tracking method
-    ZagModuleSwitcherFAB.updateModuleTracking(targetModuleKey);
+    ZagSpeedCube.updateModuleTracking(targetModuleKey);
   }
 
   String _extractModuleFromRoute(String route) {

@@ -37,7 +37,7 @@ class _State extends State<ConfigurationNavigationRoute>
       children: [
         const ZagHeader(text: 'Navigation'),
         _horizontalSwipeToggle(),
-        _moduleSwitcherFAB(),
+        _speedCube(),
         _moduleTabMemoryToggle(),
         _downloadsDrawer(),
         _legacyModulesTabToggle(),
@@ -64,11 +64,11 @@ class _State extends State<ConfigurationNavigationRoute>
     );
   }
 
-  Widget _moduleSwitcherFAB() {
-    const db = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+  Widget _speedCube() {
+    const db = ZagreusDatabase.SPEED_CUBE_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Floating Action Cube',
+        title: 'Speed Cube',
         body: const [
           TextSpan(text: 'Show the floating module switcher button.'),
         ],
@@ -81,7 +81,7 @@ class _State extends State<ConfigurationNavigationRoute>
   }
 
   Widget _moduleTabMemoryToggle() {
-    const cubeDb = ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED;
+    const cubeDb = ZagreusDatabase.SPEED_CUBE_ENABLED;
     const memoryDb = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
 
     return cubeDb.listenableBuilder(
@@ -92,7 +92,7 @@ class _State extends State<ConfigurationNavigationRoute>
             title: 'Remember Module Page',
             body: const [
               TextSpan(
-                text: 'Jump back to the last page you viewed. Requires Floating Action Cube.',
+                text: 'Jump back to the last page you viewed. Requires Speed Cube.',
               ),
             ],
             trailing: ZagSwitch(

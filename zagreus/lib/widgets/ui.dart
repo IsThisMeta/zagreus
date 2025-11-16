@@ -30,7 +30,7 @@ export 'ui/loader.dart';
 export 'ui/message.dart';
 export 'ui/mixins.dart';
 export 'ui/images.dart';
-export 'ui/module_switcher_fab.dart';
+export 'ui/speed_cube.dart';
 export 'ui/page_view.dart';
 export 'ui/popup_menu_button.dart';
 export 'ui/refresh_indicator.dart';

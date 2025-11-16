@@ -34,10 +34,10 @@ class _State extends State<SABnzbdQueue>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.listenableBuilder(
+    return ZagreusDatabase.SPEED_CUBE_ENABLED.listenableBuilder(
       builder: (context, _) {
         final cubeEnabled =
-            ZagreusDatabase.MODULE_SWITCHER_FAB_ENABLED.read();
+            ZagreusDatabase.SPEED_CUBE_ENABLED.read();
         return ZagScaffold(
           scaffoldKey: _scaffoldKey,
           body: _body,

@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
-class ZagModuleSwitcherFAB extends StatefulWidget {
+class ZagSpeedCube extends StatefulWidget {
   final String currentModuleKey;
 
-  const ZagModuleSwitcherFAB({
+  const ZagSpeedCube({
     Key? key,
     required this.currentModuleKey,
   }) : super(key: key);
 
   // Public static method accessible from outside
   static void updateModuleTracking(String moduleKey) {
-    _ZagModuleSwitcherFABState._updateTracking(moduleKey);
+    _ZagSpeedCubeState._updateTracking(moduleKey);
   }
 
   @override
-  State<ZagModuleSwitcherFAB> createState() => _ZagModuleSwitcherFABState();
+  State<ZagSpeedCube> createState() => _ZagSpeedCubeState();
 }
 
-class _ZagModuleSwitcherFABState extends State<ZagModuleSwitcherFAB>
+class _ZagSpeedCubeState extends State<ZagSpeedCube>
     with SingleTickerProviderStateMixin {
   bool _isOpen = false;
   late AnimationController _animationController;
