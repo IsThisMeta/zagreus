@@ -9,6 +9,15 @@ class ReadarrBookData {
   bool grabbed;
   int? authorID;
 
+  // Enhanced fields for book details page
+  String? overview;
+  int? pageCount;
+  double? rating;
+  String? authorName;
+  List<dynamic>? images;
+  List<dynamic>? links;
+  List<dynamic>? editions;
+
   ReadarrBookData({
     required this.bookID,
     required this.title,
@@ -17,6 +26,13 @@ class ReadarrBookData {
     required this.editionCount,
     required this.grabbed,
     this.authorID,
+    this.overview,
+    this.pageCount,
+    this.rating,
+    this.authorName,
+    this.images,
+    this.links,
+    this.editions,
   });
 
   DateTime? get releaseDateObject => DateTime.tryParse(releaseDate)?.toLocal();

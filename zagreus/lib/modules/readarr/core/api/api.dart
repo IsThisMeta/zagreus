@@ -280,22 +280,77 @@ class ReadarrAPI {
   Future<ReadarrBookData> getBook(int bookID) async {
     try {
       Response response = await _dio.get('book/$bookID');
+      final data = response.data;
+
+      // Extract edition data (use first edition if available)
+      final editions = data['editions'] as List?;
+      final firstEdition = editions?.isNotEmpty == true ? editions!.first : null;
+
+      // Get overview from book or first edition
+      String? overview = data['overview'];
+      if ((overview == null || overview.isEmpty) && firstEdition != null) {
+        overview = firstEdition['overview'];
+      }
+
+      // Get pageCount from first edition
+      int? pageCount = firstEdition?['pageCount'];
+
+      // Get rating value
+      double? rating = data['ratings']?['value']?.toDouble();
+
+      // Get author name
+      String? authorName = data['author']?['authorName'];
+
       return ReadarrBookData(
-        bookID: response.data['id'] ?? -1,
-        title: response.data['title'] ?? 'Unknown Book Title',
-        monitored: response.data['monitored'] ?? false,
-        releaseDate: response.data['releaseDate'] ?? '',
-        editionCount: response.data['editions'] != null
-            ? (response.data['editions'] as List).length
-            : 0,
-        grabbed: response.data['grabbed'] ?? false,
-        authorID: response.data['authorId'],
+        bookID: data['id'] ?? -1,
+        title: data['title'] ?? 'Unknown Book Title',
+        monitored: data['monitored'] ?? false,
+        releaseDate: data['releaseDate'] ?? '',
+        editionCount: editions?.length ?? 0,
+        grabbed: data['grabbed'] ?? false,
+        authorID: data['authorId'],
+        overview: overview,
+        pageCount: pageCount,
+        rating: rating,
+        authorName: authorName,
+        images: data['images'] as List?,
+        links: data['links'] as List?,
+        editions: editions,
       );
     } on DioException catch (error, stack) {
       logError('Failed to fetch book ($bookID)', error, stack);
       return Future.error(error);
     } catch (error, stack) {
       logError('Failed to fetch book ($bookID)', error, stack);
+      return Future.error(error);
+    }
+  }
+
+  Future<List<ReadarrBookFileData>> getBookFilesForAuthor(int authorID) async {
+    try {
+      Response response = await _dio.get('bookfile', queryParameters: {
+        'authorId': authorID,
+      });
+      List<ReadarrBookFileData> entries = [];
+      for (var entry in response.data) {
+        entries.add(ReadarrBookFileData(
+          id: entry['id'] ?? -1,
+          bookID: entry['bookId'],
+          authorID: entry['authorId'],
+          path: entry['path'],
+          size: entry['size'],
+          dateAdded: entry['dateAdded'] != null
+              ? DateTime.tryParse(entry['dateAdded'])
+              : null,
+          quality: entry['quality']?['quality']?['name'],
+        ));
+      }
+      return entries;
+    } on DioException catch (error, stack) {
+      logError('Failed to fetch book files for author ($authorID)', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to fetch book files for author ($authorID)', error, stack);
       return Future.error(error);
     }
   }
@@ -462,6 +517,25 @@ class ReadarrAPI {
       return Future.error(error);
     } catch (error, stack) {
       logError('Failed to fetch missing books', error, stack);
+      return Future.error(error);
+    }
+  }
+
+  Future<bool> setBookMonitored(List<int> bookIds, bool monitored) async {
+    try {
+      await _dio.put(
+        'book/monitor',
+        data: json.encode({
+          'bookIds': bookIds,
+          'monitored': monitored,
+        }),
+      );
+      return true;
+    } on DioException catch (error, stack) {
+      logError('Failed to set book monitoring (${bookIds.toString()})', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to set book monitoring (${bookIds.toString()})', error, stack);
       return Future.error(error);
     }
   }
