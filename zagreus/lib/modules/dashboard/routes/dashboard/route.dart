@@ -9,6 +9,7 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
+import 'package:zagreus/router/routes/discover.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
@@ -92,7 +93,32 @@ class _State extends State<DashboardRoute> {
       useDrawer: true,
       scrollControllers: HomeNavigationBar.scrollControllers,
       pageController: _pageController,
-      actions: [SwitchViewAction(pageController: _pageController)],
+      actions: [
+        Builder(
+          builder: (context) {
+            final controller = _pageController;
+            if (controller == null) return const SizedBox();
+            final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
+            if (currentPage == 0) {
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.smart_toy),
+                    tooltip: 'Z Agent',
+                    onPressed: () => DiscoverRoutes.HOME.push(queryParams: {'agent': 'true'}),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.search_rounded),
+                    tooltip: 'Search',
+                    onPressed: () => DiscoverRoutes.HOME.push(queryParams: {'search': 'true'}),
+                  ),
+                ],
+              );
+            }
+            return SwitchViewAction(pageController: _pageController);
+          },
+        ),
+      ],
     );
   }
 
