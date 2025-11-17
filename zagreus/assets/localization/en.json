@@ -645,11 +645,11 @@
     "settings.SlowServerModeDescription": "Use longer API timeouts for Radarr and Sonarr.",
     "network.SwitchDetected": "Network switched",
     "network.SwitchLocal": "{} now using local connection ({})",
-    "network.SwitchRemote": "{} now using remote connection",
+    "network.SwitchRemote": "{} now using primary connection",
     "network.LocationPermissionRequiredTitle": "Allow Location Access",
     "network.LocationPermissionRequiredMessage": "Enable Location access in Settings so Zagreus can detect trusted Wi-Fi networks.",
     "network.UnknownSsid": "this network",
-    "settings.RemoteConnection": "Remote Connection",
+    "settings.RemoteConnection": "Primary Connection",
     "settings.LocalConnection": "Local Connection",
     "settings.LocalHost": "Local Host",
     "settings.TrustedSsids": "Trusted Wi-Fi Networks",
@@ -972,6 +972,6 @@
     "wake_on_lan.MagicPacketFailedToSend": "Failed to Send Magic Packet",
     "settings.ConnectionStatus": "Connection Status",
     "settings.ConnectionStatusLocal": "Local • {}",
-    "settings.ConnectionStatusRemote": "Remote • {}",
-    "settings.ConnectionStatusRemoteOnly": "Remote • Local connection not configured"
+    "settings.ConnectionStatusRemote": "Primary • {}",
+    "settings.ConnectionStatusRemoteOnly": "Primary • Local connection not configured"
 }
