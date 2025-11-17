@@ -15,6 +15,8 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class DashboardRoute extends StatefulWidget {
   const DashboardRoute({
@@ -100,20 +102,25 @@ class _State extends State<DashboardRoute> {
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
             if (currentPage == 0) {
-              return Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.smart_toy),
-                    tooltip: 'Z Agent',
-                    onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'agent': 'true'}),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.search_rounded),
-                    tooltip: 'Search',
-                    onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
-                  ),
-                ],
-              );
+              // Only show search and agent buttons for premium users
+              final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+              if (isPremium) {
+                return Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.smart_toy),
+                      tooltip: 'Z Agent',
+                      onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'agent': 'true'}),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.search_rounded),
+                      tooltip: 'Search',
+                      onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox();
             }
             return SwitchViewAction(pageController: _pageController);
           },
