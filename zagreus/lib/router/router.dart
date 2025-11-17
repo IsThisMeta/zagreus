@@ -49,13 +49,29 @@ class _FABRouteObserver extends NavigatorObserver {
     if (!_hasInjectedFAB && navigator?.context != null) {
       _hasInjectedFAB = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (navigator?.context != null) {
-          print('🔍 FABRouteObserver: Injecting FAB on first route');
-          ZagGlobalFABManager.instance.injectFAB(navigator!.context);
-        }
+        _tryInjectFAB();
       });
     }
     _updateFAB(route);
+  }
+
+  void _tryInjectFAB({int attempt = 0}) {
+    if (navigator?.context == null) return;
+
+    // Check if Overlay is available
+    final overlay = Overlay.maybeOf(navigator!.context, rootOverlay: true);
+    if (overlay != null) {
+      print('🔍 FABRouteObserver: Injecting FAB on first route');
+      ZagGlobalFABManager.instance.injectFAB(navigator!.context);
+    } else if (attempt < 3) {
+      // Retry up to 3 times with increasing delays
+      print('🔍 FABRouteObserver: Overlay not ready, retrying (attempt ${attempt + 1}/3)');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _tryInjectFAB(attempt: attempt + 1);
+      });
+    } else {
+      print('🔍 FABRouteObserver: Failed to inject FAB after 3 attempts');
+    }
   }
 
   @override

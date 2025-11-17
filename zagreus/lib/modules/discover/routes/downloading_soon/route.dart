@@ -128,12 +128,12 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
   
   String _formatDaysUntil(RadarrMovie movie) {
     DateTime? releaseDate = movie.digitalRelease ?? movie.physicalRelease;
-    
+
     // If no digital/physical release, try to estimate from cinema date
     if (releaseDate == null && movie.inCinemas != null) {
       releaseDate = movie.inCinemas!.add(const Duration(days: 90));
     }
-    
+
     if (releaseDate == null) {
       if (movie.status == 'announced') {
         return 'Announced';
@@ -143,9 +143,17 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         return 'TBA';
       }
     }
-    
+
+    // Use UTC date calculation to match filtering logic
     final now = DateTime.now();
-    final daysUntil = releaseDate.difference(now).inDays;
+    final nowUtc = now.toUtc();
+    final releaseDateUtc = releaseDate.toUtc();
+
+    // Compare start of days in UTC
+    final startOfTodayUtc = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+    final startOfReleaseUtc = DateTime.utc(releaseDateUtc.year, releaseDateUtc.month, releaseDateUtc.day);
+
+    final daysUntil = startOfReleaseUtc.difference(startOfTodayUtc).inDays;
     
     if (daysUntil < 0) {
       return 'TBA';

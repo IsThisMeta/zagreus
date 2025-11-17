@@ -68,6 +68,8 @@ class _State extends State<ConfigurationDrawerRoute>
               _modules!.remove(module);
               _modules!.insert(nIndex, module);
               ZagreusDatabase.DRAWER_MANUAL_ORDER.update(_modules!);
+              // Clear cache so next read gets fresh data
+              ZagDrawer.clearModuleOrderCache();
             },
           ),
         ),

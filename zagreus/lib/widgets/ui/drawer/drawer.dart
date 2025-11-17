@@ -24,10 +24,20 @@ class ZagDrawer extends StatelessWidget {
     return modules;
   }
 
+  // Cache for module ordered list
+  static List<ZagModule>? _cachedOrderedList;
+  static List? _lastStoredModules;
+
   static List<ZagModule> moduleOrderedList() {
     try {
       const db = ZagreusDatabase.DRAWER_MANUAL_ORDER;
       final storedModules = db.read() as List?;
+
+      // Return cached result if the stored modules haven't changed
+      if (_cachedOrderedList != null && _lastStoredModules == storedModules) {
+        return _cachedOrderedList!;
+      }
+
       print('[DEBUG] moduleOrderedList - stored modules: $storedModules');
       final modules = (storedModules ?? const [])
           .whereType<ZagModule>()
@@ -42,11 +52,22 @@ class ZagDrawer extends StatelessWidget {
 
       print(
           '[DEBUG] moduleOrderedList - final modules: ${modules.map((m) => m.key).toList()}');
+
+      // Cache the result
+      _cachedOrderedList = modules;
+      _lastStoredModules = storedModules;
+
       return modules;
     } catch (error, stack) {
       ZagLogger().error('Failed to create ordered module list', error, stack);
       return moduleAlphabeticalList();
     }
+  }
+
+  // Clear cache when order changes
+  static void clearModuleOrderCache() {
+    _cachedOrderedList = null;
+    _lastStoredModules = null;
   }
 
   @override
