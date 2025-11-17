@@ -52,11 +52,10 @@ class _State extends State<ReadarrCatalogue>
   }
 
   Widget _appBar() {
-    return ZagAppBar.empty(
-      child: ReadarrCatalogueSearchBar(
-        scrollController: ReadarrNavigationBar.scrollControllers[0],
+    return Consumer<ReadarrState>(
+      builder: (context, state, _) => ZagAppBar(
+        title: 'Authors (${_results?.length ?? 0})',
       ),
-      height: ZagTextInputBar.defaultAppBarHeight,
     );
   }
 
@@ -102,7 +101,7 @@ class _State extends State<ReadarrCatalogue>
         List<ReadarrCatalogueData> _filtered = _filter(_results!, model);
         _sort(_filtered, model);
         return Scrollbar(
-          child: ZagListViewBuilder(
+          child: ListView.builder(
             controller: ReadarrNavigationBar.scrollControllers[0],
             itemCount: _filtered.length,
             itemBuilder: (context, index) {
@@ -110,20 +109,6 @@ class _State extends State<ReadarrCatalogue>
                 data: _filtered[index],
               );
             },
-            padBottom: true,
-            customHeader: ZagListViewCustomHeaderState<ReadarrCatalogueSorting>(
-              searchFilter: model.searchCatalogueFilter,
-              sortType: model.sortCatalogueType,
-              sortAscending: model.sortCatalogueAscending,
-              onChangedSearchFilter: (value) =>
-                  model.searchCatalogueFilter = value ?? '',
-              hideFilterButton: ReadarrCatalogueHideButton(
-                callback: _refreshState,
-              ),
-              sortButton: ReadarrCatalogueSortingButton(
-                controller: ReadarrNavigationBar.scrollControllers[0],
-              ),
-            ),
           ),
         );
       },
@@ -159,12 +144,12 @@ class _State extends State<ReadarrCatalogue>
               : b.sortTitle.toLowerCase().compareTo(a.sortTitle.toLowerCase());
         case ReadarrCatalogueSorting.quality:
           return _ascending
-              ? a.quality.compareTo(b.quality)
-              : b.quality.compareTo(a.quality);
+              ? (a.quality ?? '').compareTo(b.quality ?? '')
+              : (b.quality ?? '').compareTo(a.quality ?? '');
         case ReadarrCatalogueSorting.metadata:
           return _ascending
-              ? a.metadata.compareTo(b.metadata)
-              : b.metadata.compareTo(a.metadata);
+              ? (a.metadata ?? '').compareTo(b.metadata ?? '')
+              : (b.metadata ?? '').compareTo(a.metadata ?? '');
         case ReadarrCatalogueSorting.books:
           {
             int aBooks = a.statistics['bookCount'] ?? 0;

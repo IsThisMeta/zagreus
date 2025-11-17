@@ -14,9 +14,10 @@ class ReadarrCatalogueTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ZagCard(
+      context: context,
       child: InkWell(
         borderRadius: BorderRadius.circular(ZagUI.BORDER_RADIUS),
-        onTap: () => ReadarrRoutes.AUTHOR_DETAILS.go(params: {
+        onTap: () => ReadarrRoutes.AUTHOR.go(params: {
           'author': data.authorID.toString(),
         }),
         child: Row(
@@ -31,6 +32,7 @@ class ReadarrCatalogueTile extends StatelessWidget {
 
   Widget _poster(BuildContext context) {
     return ZagNetworkImage(
+      context: context,
       url: data.posterURI(),
       height: 90.0,
       width: 60.0,
@@ -45,15 +47,28 @@ class ReadarrCatalogueTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Author name
-          ZagTitle(text: data.title, maxLines: 1),
+          Text(
+            data.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4.0),
           // Subtitle based on sort type
           Consumer<ReadarrState>(
             builder: (context, state, _) {
               String? subtitle = data.subtitle(state.sortCatalogueType);
-              return ZagSubtitle(
-                text: subtitle ?? '',
+              return Text(
+                subtitle ?? '',
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13.0,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
               );
             },
           ),
@@ -68,9 +83,14 @@ class ReadarrCatalogueTile extends StatelessWidget {
               ),
               const SizedBox(width: 4.0),
               Expanded(
-                child: ZagSubtitle(
-                  text: data.bookStats,
+                child: Text(
+                  data.bookStats,
                   maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.0,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
                 ),
               ),
               // Monitored indicator
