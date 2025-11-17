@@ -6,8 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/router/routes/readarr.dart';
-import 'package:zagreus/api/readarr/readarr.dart' as ReadarrAPILib;
-import 'package:zagreus/api/readarr/models.dart';
 
 class AuthorBookDetailsRoute extends StatefulWidget {
   final int authorId;
@@ -30,28 +28,16 @@ class _State extends State<AuthorBookDetailsRoute>
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _refreshKey = GlobalKey<RefreshIndicatorState>();
 
-  ReadarrBook? _book;
-  List<ReadarrBookFile> _bookFiles = [];
+  ReadarrBookData? _book;
+  List<ReadarrBookFileData> _bookFiles = [];
   bool _isLoading = true;
-  bool _showFullDescription = false;
 
-  late ReadarrAPILib.ReadarrAPI _api;
+  late ReadarrAPI _api;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the full API library
-    final profile = ZagProfile.current;
-    final baseUrl = profile.effectiveReadarrHost().endsWith('/')
-        ? '${profile.effectiveReadarrHost()}api/v1/'
-        : '${profile.effectiveReadarrHost()}/api/v1/';
-
-    _api = ReadarrAPILib.ReadarrAPI(
-      host: baseUrl,
-      apiKey: profile.readarrKey,
-      headers: profile.readarrHeaders,
-    );
-
+    _api = ReadarrAPI.from(ZagProfile.current);
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -62,13 +48,13 @@ class _State extends State<AuthorBookDetailsRoute>
 
     try {
       // Fetch book details
-      final book = await _api.book.get(bookId: widget.bookId);
+      final book = await _api.getBook(widget.bookId);
 
       // Fetch book files for this author
-      final allFiles = await _api.bookFile.getByAuthor(authorId: widget.authorId);
+      final allFiles = await _api.getBookFilesForAuthor(widget.authorId);
 
       // Filter files for this specific book
-      final bookFiles = allFiles.where((f) => f.bookId == widget.bookId).toList();
+      final bookFiles = allFiles.where((f) => f.bookID == widget.bookId).toList();
 
       setState(() {
         _book = book;
@@ -134,11 +120,15 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Widget _buildHeroSection() {
     final book = _book!;
-    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
     final imageUrl = _getBookCoverUrl();
 
     // Get headers for image requests
     final headers = ZagProfile.current.readarrHeaders;
+
+    // Get first edition data if available
+    final firstEdition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
+    final pageCount = firstEdition?['pageCount'] as int?;
+    final releaseDate = firstEdition?['releaseDate'] as String?;
 
     return Stack(
       children: [
@@ -187,7 +177,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
               // Book title
               Text(
-                book.title ?? 'Unknown Title',
+                book.title,
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -199,11 +189,11 @@ class _State extends State<AuthorBookDetailsRoute>
               const SizedBox(height: 8),
 
               // Author name button
-              if (book.author?.authorName != null)
+              if (book.authorName != null)
                 TextButton(
                   onPressed: () => _navigateToAuthor(),
                   child: Text(
-                    book.author!.authorName!,
+                    book.authorName!,
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
@@ -217,25 +207,25 @@ class _State extends State<AuthorBookDetailsRoute>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (edition?.pageCount != null) ...[
+                  if (pageCount != null) ...[
                     Text(
-                      '${edition!.pageCount} Pages',
+                      '$pageCount Pages',
                       style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                     const Text(' • ', style: TextStyle(color: Colors.white70)),
                   ],
-                  if (edition?.releaseDate != null) ...[
+                  if (releaseDate != null) ...[
                     Text(
-                      DateFormat('MMM dd, yyyy').format(edition!.releaseDate!),
+                      _formatDate(releaseDate),
                       style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
-                  if (edition?.ratings?.value != null) ...[
+                  if (book.rating != null) ...[
                     const Text(' • ', style: TextStyle(color: Colors.white70)),
                     const Icon(Icons.favorite, color: Colors.red, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      edition!.ratings!.value!.toStringAsFixed(1),
+                      book.rating!.toStringAsFixed(1),
                       style: const TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
@@ -266,8 +256,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Widget _buildOverviewSection() {
     final book = _book!;
-    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
-    final overview = edition?.overview;
+    final overview = book.overview;
 
     if (overview == null || overview.isEmpty) {
       return Padding(
@@ -297,7 +286,7 @@ class _State extends State<AuthorBookDetailsRoute>
           'Overview',
           overview,
         ),
-        customBodyMaxLines: _showFullDescription ? null : 5,
+        customBodyMaxLines: 5,
       ),
     );
   }
@@ -318,7 +307,7 @@ class _State extends State<AuthorBookDetailsRoute>
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Icon(
-                book.monitored ?? false
+                book.monitored
                     ? Icons.bookmark_rounded
                     : Icons.bookmark_outline_rounded,
               ),
@@ -375,7 +364,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
     final file = _bookFiles.first;
     final fileName = file.path?.split('/').last ?? 'Unknown File';
-    final quality = file.quality?.quality?.name ?? 'Unknown Quality';
+    final quality = file.quality ?? 'Unknown Quality';
     final size = _formatFileSize(file.size ?? 0);
     final dateAdded = file.dateAdded != null
         ? DateFormat('MMM dd, yyyy').format(file.dateAdded!)
@@ -399,7 +388,7 @@ class _State extends State<AuthorBookDetailsRoute>
   }
 
   String? _getBookCoverUrl() {
-    if (_book?.id == null) return null;
+    if (_book?.bookID == null) return null;
 
     // Construct cover URL directly as per nzb360 implementation
     final profile = ZagProfile.current;
@@ -407,7 +396,7 @@ class _State extends State<AuthorBookDetailsRoute>
         ? profile.effectiveReadarrHost()
         : '${profile.effectiveReadarrHost()}/';
 
-    return '${baseUrl}api/v1/mediacover/book/${_book!.id}/cover.jpg';
+    return '${baseUrl}api/v1/mediacover/book/${_book!.bookID}/cover.jpg';
   }
 
   String _formatFileSize(int bytes) {
@@ -419,6 +408,15 @@ class _State extends State<AuthorBookDetailsRoute>
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('MMM dd, yyyy').format(date);
+    } catch (e) {
+      return dateString;
+    }
+  }
+
   void _navigateToAuthor() {
     ReadarrRoutes.AUTHOR.go(params: {
       'author': widget.authorId.toString(),
@@ -426,14 +424,11 @@ class _State extends State<AuthorBookDetailsRoute>
   }
 
   Future<void> _toggleMonitoring() async {
-    final currentStatus = _book!.monitored ?? false;
+    final currentStatus = _book!.monitored;
     final newStatus = !currentStatus;
 
     try {
-      await _api.book.setMonitored(
-        bookIds: [widget.bookId],
-        monitored: newStatus,
-      );
+      await _api.setBookMonitored([widget.bookId], newStatus);
 
       setState(() {
         _book!.monitored = newStatus;
@@ -456,7 +451,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Future<void> _automaticSearch() async {
     try {
-      await _api.command.bookSearch(bookIds: [widget.bookId]);
+      await _api.searchBooks([widget.bookId]);
       showZagSuccessSnackBar(
         title: 'Searching...',
         message: 'Automatic search started',
@@ -479,24 +474,16 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Future<void> _openGoodreads() async {
     final book = _book!;
-    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
 
     // Try to find Goodreads link
     String? goodreadsUrl;
 
-    if (edition?.links != null) {
-      for (var link in edition!.links!) {
-        if (link.name?.toLowerCase().contains('goodreads') ?? false) {
-          goodreadsUrl = link.url;
-          break;
-        }
-      }
-    }
-
     if (book.links != null) {
       for (var link in book.links!) {
-        if (link.name?.toLowerCase().contains('goodreads') ?? false) {
-          goodreadsUrl = link.url;
+        final linkName = link['name'] as String?;
+        final linkUrl = link['url'] as String?;
+        if (linkName?.toLowerCase().contains('goodreads') ?? false) {
+          goodreadsUrl = linkUrl;
           break;
         }
       }
@@ -520,7 +507,7 @@ class _State extends State<AuthorBookDetailsRoute>
     }
   }
 
-  Future<void> _deleteFile(ReadarrBookFile file) async {
+  Future<void> _deleteFile(ReadarrBookFileData file) async {
     // TODO: Implement file deletion with confirmation dialog
     // For now, just show a message that it's not implemented
     showZagInfoSnackBar(
@@ -530,7 +517,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
     // Future implementation:
     // 1. Show confirmation dialog
-    // 2. Call: await _api.bookFile.delete(fileId: file.id!);
+    // 2. Call delete API
     // 3. Refresh data: await _loadData();
     // 4. Show success message
   }

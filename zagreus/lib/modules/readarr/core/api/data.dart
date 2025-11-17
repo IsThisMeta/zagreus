@@ -1,4 +1,5 @@
 export 'data/book.dart';
+export 'data/book_file.dart';
 export 'data/catalogue.dart';
 export 'data/history.dart';
 export 'data/metadata.dart';
