@@ -20,7 +20,7 @@ class AuthorDetailsRoute extends StatefulWidget {
 
 class _State extends State<AuthorDetailsRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _pageController = ZagPageController(initialPage: 1);
+  final _pageController = ZagPageController(initialPage: 0);
 
   ReadarrCatalogueData? data;
   bool _error = false;
