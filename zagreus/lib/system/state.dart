@@ -5,6 +5,7 @@ import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/modules/lidarr/core/state.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/radarr/core/state.dart';
+import 'package:zagreus/modules/readarr/core/state.dart';
 import 'package:zagreus/modules/search/core/state.dart';
 import 'package:zagreus/modules/settings/core/state.dart';
 import 'package:zagreus/modules/sonarr/core/state.dart';
@@ -35,6 +36,7 @@ class ZagState {
         ChangeNotifierProvider(create: (_) => LidarrState()),
         ChangeNotifierProvider(create: (_) => OverseerrState()),
         ChangeNotifierProvider(create: (_) => RadarrState()),
+        ChangeNotifierProvider(create: (_) => ReadarrState()),
         ChangeNotifierProvider(create: (_) => SonarrState()),
         ChangeNotifierProvider(create: (_) => NZBGetState()),
         ChangeNotifierProvider(create: (_) => SABnzbdState()),

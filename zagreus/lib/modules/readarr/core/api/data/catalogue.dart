@@ -73,9 +73,11 @@ class ReadarrCatalogueData {
   }
 
   String get bookStats {
-    String percentage =
-        '(${(statistics['percentOfBooks'] as double).floor()}%)';
-    return '${statistics['bookFileCount']}/${statistics['bookCount']} $percentage';
+    final percentValue = statistics['percentOfBooks'];
+    final percentage = percentValue is int
+        ? percentValue
+        : (percentValue as double).floor();
+    return '${statistics['bookFileCount']}/${statistics['bookCount']} ($percentage%)';
   }
 
   String get books {
