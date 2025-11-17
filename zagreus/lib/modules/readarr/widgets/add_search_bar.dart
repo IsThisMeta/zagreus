@@ -22,12 +22,16 @@ class ReadarrAddSearchBar extends StatefulWidget implements PreferredSizeWidget 
 
 class _State extends State<ReadarrAddSearchBar> {
   final TextEditingController _controller = TextEditingController();
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    final model = Provider.of<ReadarrState>(context, listen: false);
-    _controller.text = model.addSearchQuery;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final model = Provider.of<ReadarrState>(context, listen: false);
+      _controller.text = model.addSearchQuery;
+      _initialized = true;
+    }
   }
 
   @override
