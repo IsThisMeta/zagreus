@@ -6,11 +6,12 @@ class LidarrAPI {
 
   LidarrAPI._internal(this._dio);
   factory LidarrAPI.from(ZagProfile profile) {
+    final effectiveHost = profile.effectiveLidarrHost();
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: profile.lidarrHost.endsWith('/')
-            ? '${profile.lidarrHost}api/v1/'
-            : '${profile.lidarrHost}/api/v1/',
+        baseUrl: effectiveHost.endsWith('/')
+            ? '${effectiveHost}api/v1/'
+            : '${effectiveHost}/api/v1/',
         queryParameters: {
           if (profile.lidarrKey != '') 'apikey': profile.lidarrKey,
         },
