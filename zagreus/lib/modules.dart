@@ -248,11 +248,11 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.DISCOVER:
         return Icons.home_rounded;
       case ZagModule.SERVER:
-        return Icons.dns_rounded;
+        return ZagIcons.UNRAID;
       case ZagModule.PROWLARR:
         return Icons.travel_explore_rounded;
       case ZagModule.READARR:
-        return Icons.book_rounded;
+        return ZagIcons.READARR;
     }
   }
 
@@ -285,11 +285,11 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.DISCOVER:
         return ZagColours.currentAccent;
       case ZagModule.SERVER:
-        return const Color(0xFFFF8C2F); // Unraid orange
+        return const Color(0xFFF0542C); // Unraid orange (240, 84, 44)
       case ZagModule.PROWLARR:
         return const Color(0xFF0087FF); // Prowlarr blue
       case ZagModule.READARR:
-        return const Color(0xFF8B714F); // Readarr brown
+        return const Color(0xFF8E2222); // Readarr red (142, 34, 34)
     }
   }
 
