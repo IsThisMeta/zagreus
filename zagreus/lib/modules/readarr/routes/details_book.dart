@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/router/routes/readarr.dart';
+import 'package:zagreus/api/readarr/readarr.dart' as ReadarrAPILib;
+import 'package:zagreus/api/readarr/models.dart';
 
 class AuthorBookDetailsRoute extends StatefulWidget {
   final int authorId;
@@ -33,12 +35,23 @@ class _State extends State<AuthorBookDetailsRoute>
   bool _isLoading = true;
   bool _showFullDescription = false;
 
-  late ReadarrAPI _api;
+  late ReadarrAPILib.ReadarrAPI _api;
 
   @override
   void initState() {
     super.initState();
-    _api = ReadarrAPI.from(ZagProfile.current);
+    // Initialize the full API library
+    final profile = ZagProfile.current;
+    final baseUrl = profile.effectiveReadarrHost().endsWith('/')
+        ? '${profile.effectiveReadarrHost()}api/v1/'
+        : '${profile.effectiveReadarrHost()}/api/v1/';
+
+    _api = ReadarrAPILib.ReadarrAPI(
+      host: baseUrl,
+      apiKey: profile.readarrKey,
+      headers: profile.readarrHeaders,
+    );
+
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -121,8 +134,11 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Widget _buildHeroSection() {
     final book = _book!;
-    final edition = book.editions?.firstOrNull;
-    final imageUrl = _getBookCoverUrl(edition);
+    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
+    final imageUrl = _getBookCoverUrl();
+
+    // Get headers for image requests
+    final headers = ZagProfile.current.readarrHeaders;
 
     return Stack(
       children: [
@@ -132,7 +148,7 @@ class _State extends State<AuthorBookDetailsRoute>
             height: 350,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(imageUrl, headers: _api.httpClient.options.headers.map((k, v) => MapEntry(k, v.toString()))),
+                image: NetworkImage(imageUrl, headers: headers),
                 fit: BoxFit.cover,
               ),
             ),
@@ -157,7 +173,7 @@ class _State extends State<AuthorBookDetailsRoute>
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
                     imageUrl,
-                    headers: _api.httpClient.options.headers.map((k, v) => MapEntry(k, v.toString())),
+                    headers: headers,
                     width: 170,
                     height: 264,
                     fit: BoxFit.cover,
@@ -250,7 +266,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Widget _buildOverviewSection() {
     final book = _book!;
-    final edition = book.editions?.firstOrNull;
+    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
     final overview = edition?.overview;
 
     if (overview == null || overview.isEmpty) {
@@ -382,15 +398,16 @@ class _State extends State<AuthorBookDetailsRoute>
     );
   }
 
-  String? _getBookCoverUrl(ReadarrEdition? edition) {
-    if (edition?.images == null || edition!.images!.isEmpty) return null;
+  String? _getBookCoverUrl() {
+    if (_book?.id == null) return null;
 
-    final coverImage = edition.images!.firstWhere(
-      (img) => img.coverType == 'cover',
-      orElse: () => edition.images!.first,
-    );
+    // Construct cover URL directly as per nzb360 implementation
+    final profile = ZagProfile.current;
+    final baseUrl = profile.effectiveReadarrHost().endsWith('/')
+        ? profile.effectiveReadarrHost()
+        : '${profile.effectiveReadarrHost()}/';
 
-    return coverImage.url;
+    return '${baseUrl}api/v1/mediacover/book/${_book!.id}/cover.jpg';
   }
 
   String _formatFileSize(int bytes) {
@@ -462,7 +479,7 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Future<void> _openGoodreads() async {
     final book = _book!;
-    final edition = book.editions?.firstOrNull;
+    final edition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
 
     // Try to find Goodreads link
     String? goodreadsUrl;
@@ -504,35 +521,17 @@ class _State extends State<AuthorBookDetailsRoute>
   }
 
   Future<void> _deleteFile(ReadarrBookFile file) async {
-    final confirmed = await ZagDialogs().yesNoDialog(
-      context,
-      'Delete File',
-      'Are you sure you want to delete this file?',
+    // TODO: Implement file deletion with confirmation dialog
+    // For now, just show a message that it's not implemented
+    showZagInfoSnackBar(
+      title: 'Delete Not Implemented',
+      message: 'File deletion API not yet implemented',
     );
 
-    if (confirmed != true) return;
-
-    try {
-      // Note: You'll need to add the delete method to the API controller
-      // For now, we'll show a message
-      showZagInfoSnackBar(
-        title: 'Delete Not Implemented',
-        message: 'File deletion API not yet implemented',
-      );
-
-      // TODO: Implement file deletion
-      // await _api.bookFile.delete(fileId: file.id!);
-      // await _loadData();
-      // showZagSuccessSnackBar(
-      //   title: 'File Deleted',
-      //   message: '',
-      // );
-    } catch (error, stack) {
-      ZagLogger().error('Failed to delete file', error, stack);
-      showZagErrorSnackBar(
-        title: 'Failed to Delete',
-        error: error,
-      );
-    }
+    // Future implementation:
+    // 1. Show confirmation dialog
+    // 2. Call: await _api.bookFile.delete(fileId: file.id!);
+    // 3. Refresh data: await _loadData();
+    // 4. Show success message
   }
 }
