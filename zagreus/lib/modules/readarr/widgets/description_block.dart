@@ -1,29 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/core.dart';
 
-class ReadarrDescriptionBlock extends StatelessWidget {
-  final String description;
+class ReadarrDescriptionBlock extends StatefulWidget {
+  final String? description;
+  final String title;
+  final String uri;
+  final bool squareImage;
+  final Map? headers;
+  final Function? onLongPress;
 
   const ReadarrDescriptionBlock({
     Key? key,
     required this.description,
+    required this.title,
+    required this.uri,
+    required this.headers,
+    this.squareImage = false,
+    this.onLongPress,
   }) : super(key: key);
 
   @override
+  State<StatefulWidget> createState() => _State();
+}
+
+class _State extends State<ReadarrDescriptionBlock> {
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Description',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(description),
-        ],
+    return ZagBlock(
+      title: widget.title,
+      body: [
+        ZagTextSpan.extended(
+          text: widget.description?.isNotEmpty ?? false
+              ? widget.description
+              : 'No Summary Available',
+        ),
+      ],
+      onTap: () async => ZagDialogs().textPreview(
+        context,
+        widget.title,
+        widget.description?.trim() ?? 'No Summary Available',
       ),
+      onLongPress: widget.onLongPress,
+      customBodyMaxLines: 3,
+      posterPlaceholderIcon: ZagIcons.USER,
+      posterHeaders: widget.headers,
+      posterIsSquare: widget.squareImage,
+      posterUrl: widget.uri,
     );
   }
 }
