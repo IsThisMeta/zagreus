@@ -17,6 +17,7 @@ import 'package:zagreus/modules/sabnzbd.dart';
 import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 
@@ -37,6 +38,7 @@ const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
 const MODULE_SERVER_KEY = 'server';
 const MODULE_PROWLARR_KEY = 'prowlarr';
+const MODULE_READARR_KEY = 'readarr';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -69,7 +71,9 @@ enum ZagModule {
   @HiveField(13)
   SERVER(MODULE_SERVER_KEY),
   @HiveField(14)
-  PROWLARR(MODULE_PROWLARR_KEY);
+  PROWLARR(MODULE_PROWLARR_KEY),
+  @HiveField(15)
+  READARR(MODULE_READARR_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -106,6 +110,8 @@ enum ZagModule {
         return ZagModule.SERVER;
       case MODULE_PROWLARR_KEY:
         return ZagModule.PROWLARR;
+      case MODULE_READARR_KEY:
+        return ZagModule.READARR;
     }
     return null;
   }
@@ -169,6 +175,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagProfile.current.serverEnabled;
       case ZagModule.PROWLARR:
         return !ZagBox.indexers.isEmpty;
+      case ZagModule.READARR:
+        return ZagProfile.current.readarrEnabled;
     }
   }
 }
@@ -206,6 +214,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Server';
       case ZagModule.PROWLARR:
         return 'Prowlarr';
+      case ZagModule.READARR:
+        return 'Readarr';
     }
   }
 
@@ -241,6 +251,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.dns_rounded;
       case ZagModule.PROWLARR:
         return Icons.travel_explore_rounded;
+      case ZagModule.READARR:
+        return Icons.book_rounded;
     }
   }
 
@@ -276,6 +288,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFFFF8C2F); // Unraid orange
       case ZagModule.PROWLARR:
         return const Color(0xFF0087FF); // Prowlarr blue
+      case ZagModule.READARR:
+        return const Color(0xFF8B714F); // Readarr brown
     }
   }
 
@@ -311,6 +325,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://unraid.net';
       case ZagModule.PROWLARR:
         return 'https://prowlarr.com';
+      case ZagModule.READARR:
+        return 'https://readarr.com';
     }
   }
 
@@ -346,6 +362,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.PROWLARR:
         return 'https://github.com/Prowlarr/Prowlarr';
+      case ZagModule.READARR:
+        return 'https://github.com/Readarr/Readarr';
     }
   }
 
@@ -381,6 +399,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Manage Your Unraid Server';
       case ZagModule.PROWLARR:
         return 'Search Indexers and Manage Downloads';
+      case ZagModule.READARR:
+        return 'Manage Books and Audiobooks';
     }
   }
 
@@ -416,6 +436,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
       case ZagModule.PROWLARR:
         return 'Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. It supports management of both Torrent Trackers and Usenet Indexers, providing a unified search interface and download capabilities.';
+      case ZagModule.READARR:
+        return 'Readarr is an ebook and audiobook collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new books from your favorite authors and will grab, sort, and organize them. It can also be configured to automatically upgrade the quality of existing files in your library when a better quality format becomes available.';
     }
   }
 }
@@ -453,6 +475,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.server.root.path;
       case ZagModule.PROWLARR:
         return ZagRoutes.search.root.path; // Use search route for now
+      case ZagModule.READARR:
+        return ZagRoutes.readarr.root.path;
     }
   }
 
@@ -488,6 +512,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_SERVER;
       case ZagModule.PROWLARR:
         return SettingsRoutes.CONFIGURATION_SEARCH; // Use search settings for now
+      case ZagModule.READARR:
+        return SettingsRoutes.CONFIGURATION_READARR;
     }
   }
 
@@ -498,9 +524,11 @@ extension ZagModuleRoutingExtension on ZagModule {
     final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
     final shouldRestore =
         savedRoute != null && canRestoreRoute(savedRoute);
-    final targetRoute = shouldRestore ? savedRoute! : home;
+    final String targetRoute = shouldRestore ? savedRoute : home;
 
-    print('🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)');
+    ZagLogger().debug(
+      '🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)',
+    );
     ZagRouter.router.pushReplacement(targetRoute);
   }
 
@@ -634,6 +662,8 @@ extension ZagModuleExtension on ZagModule {
         return context.read<ServerState>();
       case ZagModule.PROWLARR:
         return null;
+      case ZagModule.READARR:
+        return context.read<ReadarrState>();
     }
   }
 

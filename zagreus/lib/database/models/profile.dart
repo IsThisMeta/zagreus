@@ -222,6 +222,30 @@ class ZagProfile extends HiveObject {
   @HiveField(61, defaultValue: '')
   String serverLocalSsids;
 
+  @JsonKey()
+  @HiveField(62, defaultValue: false)
+  bool readarrEnabled;
+
+  @JsonKey()
+  @HiveField(63, defaultValue: '')
+  String readarrHost;
+
+  @JsonKey()
+  @HiveField(64, defaultValue: '')
+  String readarrKey;
+
+  @JsonKey()
+  @HiveField(65, defaultValue: <String, String>{})
+  Map<String, String> readarrHeaders;
+
+  @JsonKey()
+  @HiveField(66, defaultValue: '')
+  String readarrLocalHost;
+
+  @JsonKey()
+  @HiveField(67, defaultValue: '')
+  String readarrLocalSsids;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -282,6 +306,13 @@ class ZagProfile extends HiveObject {
     required this.serverHeaders,
     required this.serverLocalHost,
     required this.serverLocalSsids,
+    //Readarr
+    required this.readarrEnabled,
+    required this.readarrHost,
+    required this.readarrKey,
+    required this.readarrHeaders,
+    required this.readarrLocalHost,
+    required this.readarrLocalSsids,
   });
 
   factory ZagProfile({
@@ -344,6 +375,13 @@ class ZagProfile extends HiveObject {
     Map<String, String>? serverHeaders,
     String? serverLocalHost,
     String? serverLocalSsids,
+    //Readarr
+    bool? readarrEnabled,
+    String? readarrHost,
+    String? readarrKey,
+    Map<String, String>? readarrHeaders,
+    String? readarrLocalHost,
+    String? readarrLocalSsids,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -405,6 +443,13 @@ class ZagProfile extends HiveObject {
       serverHeaders: serverHeaders ?? {},
       serverLocalHost: serverLocalHost ?? '',
       serverLocalSsids: serverLocalSsids ?? '',
+      // Readarr
+      readarrEnabled: readarrEnabled ?? false,
+      readarrHost: readarrHost ?? '',
+      readarrKey: readarrKey ?? '',
+      readarrHeaders: readarrHeaders ?? {},
+      readarrLocalHost: readarrLocalHost ?? '',
+      readarrLocalSsids: readarrLocalSsids ?? '',
     );
   }
 
@@ -476,5 +521,11 @@ class ZagProfile extends HiveObject {
         remoteHost: serverHost,
         localHost: serverLocalHost,
         ssidList: serverLocalSsids,
+      );
+
+  String effectiveReadarrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: readarrHost,
+        localHost: readarrLocalHost,
+        ssidList: readarrLocalSsids,
       );
 }

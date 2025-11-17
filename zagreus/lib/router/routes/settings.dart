@@ -33,6 +33,10 @@ import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/defau
 import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_radarr/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_readarr/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_readarr/pages/default_pages.dart';
+import 'package:zagreus/modules/settings/routes/configuration_readarr/pages/headers.dart';
+import 'package:zagreus/modules/settings/routes/configuration_readarr/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_sabnzbd/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/routes/configuration_sabnzbd/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_sabnzbd/pages/headers.dart';
@@ -101,6 +105,10 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_RADARR_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_RADARR_DEFAULT_OPTIONS('default_options'),
   CONFIGURATION_RADARR_DEFAULT_PAGES('default_pages'),
+  CONFIGURATION_READARR('readarr'),
+  CONFIGURATION_READARR_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_READARR_CONNECTION_DETAILS_HEADERS('headers'),
+  CONFIGURATION_READARR_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_SABNZBD('sabnzbd'),
   CONFIGURATION_SABNZBD_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_SABNZBD_CONNECTION_DETAILS_HEADERS('headers'),
@@ -219,6 +227,18 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationRadarrDefaultOptionsRoute());
       case SettingsRoutes.CONFIGURATION_RADARR_DEFAULT_PAGES:
         return route(widget: const ConfigurationRadarrDefaultPagesRoute());
+      case SettingsRoutes.CONFIGURATION_READARR:
+        return route(widget: const ConfigurationReadarrRoute());
+      case SettingsRoutes.CONFIGURATION_READARR_CONNECTION_DETAILS:
+        return route(
+          widget: const ConfigurationReadarrConnectionDetailsRoute(),
+        );
+      case SettingsRoutes.CONFIGURATION_READARR_CONNECTION_DETAILS_HEADERS:
+        return route(
+          widget: const ConfigurationReadarrConnectionDetailsHeadersRoute(),
+        );
+      case SettingsRoutes.CONFIGURATION_READARR_DEFAULT_PAGES:
+        return route(widget: const ConfigurationReadarrDefaultPagesRoute());
       case SettingsRoutes.CONFIGURATION_SABNZBD:
         return route(widget: const ConfigurationSABnzbdRoute());
       case SettingsRoutes.CONFIGURATION_SABNZBD_CONNECTION_DETAILS:
@@ -336,6 +356,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_OVERSEERR.routes,
           SettingsRoutes.CONFIGURATION_QUICK_ACTIONS.routes,
           SettingsRoutes.CONFIGURATION_RADARR.routes,
+          SettingsRoutes.CONFIGURATION_READARR.routes,
           SettingsRoutes.CONFIGURATION_SABNZBD.routes,
           SettingsRoutes.CONFIGURATION_SEARCH.routes,
           SettingsRoutes.CONFIGURATION_SONARR.routes,
@@ -380,6 +401,16 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION_RADARR_CONNECTION_DETAILS:
         return [
           SettingsRoutes.CONFIGURATION_RADARR_CONNECTION_DETAILS_HEADERS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_READARR:
+        return [
+          SettingsRoutes.CONFIGURATION_READARR_CONNECTION_DETAILS.routes,
+          SettingsRoutes.CONFIGURATION_READARR_DEFAULT_PAGES.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_READARR_CONNECTION_DETAILS:
+        return [
+          SettingsRoutes
+              .CONFIGURATION_READARR_CONNECTION_DETAILS_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_SABNZBD:
         return [

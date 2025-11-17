@@ -1,0 +1,10 @@
+export 'routes/add_details.dart';
+export 'routes/add_search.dart';
+export 'routes/catalogue.dart';
+export 'routes/details_book.dart';
+export 'routes/details_author.dart';
+export 'routes/edit_author.dart';
+export 'routes/history.dart';
+export 'routes/readarr.dart';
+export 'routes/missing.dart';
+export 'routes/search_results.dart';

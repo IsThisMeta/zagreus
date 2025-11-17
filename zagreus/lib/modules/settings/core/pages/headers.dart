@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/tautulli.dart';
@@ -11,9 +12,9 @@ class SettingsHeaderRoute extends StatefulWidget {
   final ZagModule module;
 
   const SettingsHeaderRoute({
-    Key? key,
+    super.key,
     required this.module,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() => _State();
@@ -126,6 +127,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Discover does not have a headers page');
       case ZagModule.PROWLARR:
         throw Exception('Prowlarr does not have a headers page');
+      case ZagModule.READARR:
+        return ZagProfile.current.readarrHeaders;
     }
   }
 
@@ -161,6 +164,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Discover does not have a global state');
       case ZagModule.PROWLARR:
         throw Exception('Prowlarr does not have a global state');
+      case ZagModule.READARR:
+        return context.read<ReadarrState>().reset();
     }
   }
 }
