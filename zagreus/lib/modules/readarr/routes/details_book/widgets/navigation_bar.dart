@@ -64,15 +64,11 @@ class _State extends State<ReadarrBookDetailsNavigationBar> {
 
   Future<void> _automatic() async {
     setState(() => _automaticLoadingState = ZagLoadingState.ACTIVE);
-    try {
-      await widget.onAutomaticSearch();
-      if (mounted) {
-        setState(() => _automaticLoadingState = ZagLoadingState.INACTIVE);
-      }
-    } catch (error) {
-      if (mounted) {
-        setState(() => _automaticLoadingState = ZagLoadingState.ERROR);
-      }
+    widget.onAutomaticSearch();
+    // Reset loading state after a brief delay
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) {
+      setState(() => _automaticLoadingState = ZagLoadingState.INACTIVE);
     }
   }
 }
