@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/database/tables/server.dart';
+import 'package:zagreus/database/tables/unraid.dart';
 
 class ServerSectionsEditor extends StatefulWidget {
   const ServerSectionsEditor({
@@ -41,7 +41,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
   }
 
   void _loadSectionOrder() {
-    final savedOrder = ServerDatabase.SECTION_ORDER.read() as List;
+    final savedOrder = UnraidDatabase.SECTION_ORDER.read() as List;
     _sections = savedOrder.isNotEmpty
         ? List<String>.from(savedOrder)
         : List<String>.from(_defaultSections);
@@ -51,7 +51,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     if (!_hasChanges) {
       return;
     }
-    ServerDatabase.SECTION_ORDER.update(_sections);
+    UnraidDatabase.SECTION_ORDER.update(_sections);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(

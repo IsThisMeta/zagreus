@@ -4,7 +4,7 @@ import 'package:zagreus/api/unraid/models.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
-import 'package:zagreus/modules/server/core/state.dart';
+import 'package:zagreus/modules/unraid/core/state.dart';
 
 class DockerContainerDetailPage extends StatefulWidget {
   final UnraidDockerContainer container;
@@ -328,7 +328,7 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
       }
     });
 
-    final serverState = context.read<ServerState>();
+    final serverState = context.read<UnraidState>();
     if (!serverState.isConfigured) {
       if (mounted) {
         setState(() {

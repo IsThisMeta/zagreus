@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 
-class ServerNavigationBar extends StatelessWidget {
+class UnraidNavigationBar extends StatelessWidget {
   final PageController? pageController;
 
   static List<ScrollController> scrollControllers = List.generate(
@@ -23,7 +23,7 @@ class ServerNavigationBar extends StatelessWidget {
     'VMs',
   ];
 
-  const ServerNavigationBar({
+  const UnraidNavigationBar({
     Key? key,
     required this.pageController,
   }) : super(key: key);

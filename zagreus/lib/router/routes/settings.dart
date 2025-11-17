@@ -55,8 +55,8 @@ import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/con
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/default_pages.dart';
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/route.dart';
-import 'package:zagreus/modules/settings/routes/configuration_server/route.dart';
-import 'package:zagreus/modules/settings/routes/configuration_server/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_unraid/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_unraid/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/core/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:zagreus/modules/settings/routes/z_agent/route.dart';
@@ -127,9 +127,9 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_TAUTULLI_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_TAUTULLI_DEFAULT_PAGES('default_pages'),
-  CONFIGURATION_SERVER('server'),
-  CONFIGURATION_SERVER_CONNECTION_DETAILS('connection_details'),
-  CONFIGURATION_SERVER_CONNECTION_DETAILS_HEADERS('headers'),
+  CONFIGURATION_UNRAID('server'),
+  CONFIGURATION_UNRAID_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_WAKE_ON_LAN('wake_on_lan'),
   Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
@@ -294,12 +294,12 @@ enum SettingsRoutes with ZagRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_TAUTULLI_DEFAULT_PAGES:
         return route(widget: const ConfigurationTautulliDefaultPagesRoute());
-      case SettingsRoutes.CONFIGURATION_SERVER:
-        return route(widget: const ConfigurationServerRoute());
-      case SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS:
-        return route(widget: const ConfigurationServerConnectionDetailsRoute());
-      case SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS_HEADERS:
-        return route(widget: SettingsHeaderRoute(module: ZagModule.SERVER));
+      case SettingsRoutes.CONFIGURATION_UNRAID:
+        return route(widget: const ConfigurationUnraidRoute());
+      case SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS:
+        return route(widget: const ConfigurationUnraidConnectionDetailsRoute());
+      case SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS:
+        return route(widget: SettingsHeaderRoute(module: ZagModule.UNRAID));
       case SettingsRoutes.CONFIGURATION_WAKE_ON_LAN:
         return route(widget: const ConfigurationWakeOnLANRoute());
       case SettingsRoutes.Z_AGENT:
@@ -361,7 +361,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_SEARCH.routes,
           SettingsRoutes.CONFIGURATION_SONARR.routes,
           SettingsRoutes.CONFIGURATION_TAUTULLI.routes,
-          SettingsRoutes.CONFIGURATION_SERVER.routes,
+          SettingsRoutes.CONFIGURATION_UNRAID.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
           SettingsRoutes.Z_AGENT.routes,
         ];
@@ -455,13 +455,13 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes
               .CONFIGURATION_TAUTULLI_CONNECTION_DETAILS_HEADERS.routes,
         ];
-      case SettingsRoutes.CONFIGURATION_SERVER:
+      case SettingsRoutes.CONFIGURATION_UNRAID:
         return [
-          SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS.routes,
+          SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS.routes,
         ];
-      case SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS:
+      case SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS:
         return [
-          SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS_HEADERS.routes,
+          SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return [

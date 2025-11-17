@@ -46,8 +46,8 @@ import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
-import 'package:zagreus/modules/server/core/download_history_fetcher.dart';
-import 'package:zagreus/modules/server/routes/server/widgets/download_history_card.dart';
+import 'package:zagreus/modules/unraid/core/download_history_fetcher.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/widgets/download_history_card.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
@@ -7355,7 +7355,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     }
 
     // Get section order from database
-    final sectionOrder = ServerDatabase.SECTION_ORDER.read() as List;
+    final sectionOrder = UnraidDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
         : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history'];
