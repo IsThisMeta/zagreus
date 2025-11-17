@@ -126,7 +126,7 @@ class _State extends State<AuthorBookDetailsRoute>
     final headers = ZagProfile.current.readarrHeaders;
 
     // Get first edition data if available
-    final firstEdition = book.editions?.isNotEmpty == true ? book.editions!.first : null;
+    final firstEdition = book.editionsData?.isNotEmpty == true ? book.editionsData!.first : null;
     final pageCount = firstEdition?['pageCount'] as int?;
     final releaseDate = firstEdition?['releaseDate'] as String?;
 

@@ -16,7 +16,7 @@ class ReadarrBookData {
   String? authorName;
   List<dynamic>? images;
   List<dynamic>? links;
-  List<dynamic>? editions;
+  List<dynamic>? editionsData;
 
   ReadarrBookData({
     required this.bookID,
@@ -32,7 +32,7 @@ class ReadarrBookData {
     this.authorName,
     this.images,
     this.links,
-    this.editions,
+    this.editionsData,
   });
 
   DateTime? get releaseDateObject => DateTime.tryParse(releaseDate)?.toLocal();
