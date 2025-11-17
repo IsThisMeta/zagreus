@@ -34,7 +34,7 @@ import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
 import 'package:zagreus/modules/discover/widgets/server_sections_editor.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/database/tables/server.dart';
+import 'package:zagreus/database/tables/unraid.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';

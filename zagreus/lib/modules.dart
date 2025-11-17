@@ -472,7 +472,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.DISCOVER:
         return ZagRoutes.discover.root.path;
       case ZagModule.UNRAID:
-        return ZagRoutes.server.root.path;
+        return ZagRoutes.unraid.root.path;
       case ZagModule.PROWLARR:
         return ZagRoutes.search.root.path; // Use search route for now
       case ZagModule.READARR:
@@ -509,7 +509,7 @@ extension ZagModuleRoutingExtension on ZagModule {
       case ZagModule.DISCOVER:
         return SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS;
       case ZagModule.UNRAID:
-        return SettingsRoutes.CONFIGURATION_SERVER;
+        return SettingsRoutes.CONFIGURATION_UNRAID;
       case ZagModule.PROWLARR:
         return SettingsRoutes.CONFIGURATION_SEARCH; // Use search settings for now
       case ZagModule.READARR:
@@ -659,7 +659,7 @@ extension ZagModuleExtension on ZagModule {
       case ZagModule.DISCOVER:
         return null;
       case ZagModule.UNRAID:
-        return context.read<ServerState>();
+        return context.read<UnraidState>();
       case ZagModule.PROWLARR:
         return null;
       case ZagModule.READARR:

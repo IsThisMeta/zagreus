@@ -66,13 +66,16 @@ class ZagIcons {
   static const IconData YOUTUBE = SimpleIcons.youtube;
 
   // Brands - Custom
-  static const IconData LIDARR = IconData(0xe903, fontFamily: _fontFamily);
-  static const IconData NZBGET = IconData(0xe901, fontFamily: _fontFamily);
-  static const IconData OVERSEERR = IconData(0xe902, fontFamily: _fontFamily);
-  static const IconData RADARR = IconData(0xe904, fontFamily: _fontFamily);
-  static const IconData READARR = IconData(0xe900, fontFamily: _fontFamily);
-  static const IconData SABNZBD = IconData(0xe906, fontFamily: _fontFamily);
-  static const IconData SONARR = IconData(0xe905, fontFamily: _fontFamily);
-  static const IconData TAUTULLI = IconData(0xe907, fontFamily: _fontFamily);
-  static const IconData UNRAID = IconData(0xe908, fontFamily: _fontFamily);
+  static const IconData LIDARR = IconData(0xe902, fontFamily: _fontFamily);
+  static const IconData MUSICBRAINZ = IconData(0xe904, fontFamily: _fontFamily);
+  static const IconData NZBGET = IconData(0xe905, fontFamily: _fontFamily);
+  static const IconData OVERSEERR = IconData(0xe906, fontFamily: _fontFamily);
+  static const IconData RADARR = IconData(0xe907, fontFamily: _fontFamily);
+  static const IconData READARR = IconData(0xe901, fontFamily: _fontFamily);
+  static const IconData SABNZBD = IconData(0xe908, fontFamily: _fontFamily);
+  static const IconData SONARR = IconData(0xe909, fontFamily: _fontFamily);
+  static const IconData TAUTULLI = IconData(0xe90a, fontFamily: _fontFamily);
+  static const IconData THETVDB = IconData(0xe90b, fontFamily: _fontFamily);
+  static const IconData TVMAZE = IconData(0xe903, fontFamily: _fontFamily);
+  static const IconData UNRAID = IconData(0xe900, fontFamily: _fontFamily);
 }

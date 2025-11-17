@@ -12,7 +12,7 @@ import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/modules/sabnzbd/core/state.dart';
 import 'package:zagreus/modules/nzbget/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
-import 'package:zagreus/modules/server/core/state.dart';
+import 'package:zagreus/modules/unraid/core/state.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/router/router.dart';
 
@@ -41,7 +41,7 @@ class ZagState {
         ChangeNotifierProvider(create: (_) => NZBGetState()),
         ChangeNotifierProvider(create: (_) => SABnzbdState()),
         ChangeNotifierProvider(create: (_) => TautulliState()),
-        ChangeNotifierProvider(create: (_) => ServerState()),
+        ChangeNotifierProvider(create: (_) => UnraidState()),
       ],
       child: child,
     );
