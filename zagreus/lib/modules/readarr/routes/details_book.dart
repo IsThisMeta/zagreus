@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
@@ -120,9 +119,6 @@ class _State extends State<AuthorBookDetailsRoute>
 
   Widget _buildHeroSection() {
     final book = _book!;
-    final imageUrl = _getBookCoverUrl();
-
-    // Get headers for image requests
     final headers = ZagProfile.current.readarrHeaders;
 
     // Get first edition data if available
@@ -130,129 +126,98 @@ class _State extends State<AuthorBookDetailsRoute>
     final pageCount = firstEdition?['pageCount'] as int?;
     final releaseDate = firstEdition?['releaseDate'] as String?;
 
-    return Stack(
-      children: [
-        // Blurred background
-        if (imageUrl != null)
-          Container(
-            height: 350,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(imageUrl, headers: headers),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                ),
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Book cover image
+          ZagNetworkImage(
+            context: context,
+            url: book.bookCoverURI(),
+            height: 180,
+            width: 120,
+            headers: headers,
           ),
 
-        // Content
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Book cover image
-              if (imageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrl,
-                    headers: headers,
-                    width: 170,
-                    height: 264,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholderCover(),
+          const SizedBox(width: 16),
+
+          // Book details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Book title
+                Text(
+                  book.title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                )
-              else
-                _buildPlaceholderCover(),
-
-              const SizedBox(height: 16),
-
-              // Book title
-              Text(
-                book.title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
-                textAlign: TextAlign.center,
-              ),
 
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-              // Author name button
-              if (book.authorName != null)
-                TextButton(
-                  onPressed: () => _navigateToAuthor(),
-                  child: Text(
-                    book.authorName!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
+                // Author name
+                if (book.authorName != null)
+                  GestureDetector(
+                    onTap: () => _navigateToAuthor(),
+                    child: Text(
+                      book.authorName!,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
-                ),
 
-              const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
-              // Metadata row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (pageCount != null) ...[
-                    Text(
+                // Metadata
+                if (pageCount != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
                       '$pageCount Pages',
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
-                    const Text(' • ', style: TextStyle(color: Colors.white70)),
-                  ],
-                  if (releaseDate != null) ...[
-                    Text(
+                  ),
+                if (releaseDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
                       _formatDate(releaseDate),
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
-                  ],
-                  if (book.rating != null) ...[
-                    const Text(' • ', style: TextStyle(color: Colors.white70)),
-                    const Icon(Icons.favorite, color: Colors.red, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      book.rating!.toStringAsFixed(1),
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ],
-              ),
-            ],
+                  ),
+                if (book.rating != null)
+                  Row(
+                    children: [
+                      const Icon(Icons.favorite, color: Colors.red, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        book.rating!.toStringAsFixed(1),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildPlaceholderCover() {
-    return Container(
-      width: 170,
-      height: 264,
-      decoration: BoxDecoration(
-        color: Colors.grey[800],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(
-        Icons.menu_book_rounded,
-        size: 80,
-        color: Colors.white30,
-      ),
-    );
-  }
 
   Widget _buildOverviewSection() {
     final book = _book!;
@@ -387,16 +352,13 @@ class _State extends State<AuthorBookDetailsRoute>
     );
   }
 
-  String? _getBookCoverUrl() {
-    if (_book?.bookID == null) return null;
-
-    // Construct cover URL directly as per nzb360 implementation
-    final profile = ZagProfile.current;
-    final baseUrl = profile.effectiveReadarrHost().endsWith('/')
-        ? profile.effectiveReadarrHost()
-        : '${profile.effectiveReadarrHost()}/';
-
-    return '${baseUrl}api/v1/mediacover/book/${_book!.bookID}/cover.jpg';
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('MMM dd, yyyy').format(date);
+    } catch (e) {
+      return dateString;
+    }
   }
 
   String _formatFileSize(int bytes) {
@@ -406,15 +368,6 @@ class _State extends State<AuthorBookDetailsRoute>
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
-  }
-
-  String _formatDate(String dateString) {
-    try {
-      final date = DateTime.parse(dateString);
-      return DateFormat('MMM dd, yyyy').format(date);
-    } catch (e) {
-      return dateString;
-    }
   }
 
   void _navigateToAuthor() {
