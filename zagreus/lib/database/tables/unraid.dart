@@ -1,7 +1,7 @@
 import 'package:zagreus/database/table.dart';
 import 'package:zagreus/vendor.dart';
 
-enum ServerDatabase<T> with ZagTableMixin<T> {
+enum UnraidDatabase<T> with ZagTableMixin<T> {
   NAVIGATION_INDEX<int>(0),
   SECTION_ORDER<List>(const ['server_issues', 'overseerr_requests', 'disk_space', 'download_history']);
 
@@ -11,10 +11,10 @@ enum ServerDatabase<T> with ZagTableMixin<T> {
   }
 
   @override
-  ZagTable get table => ZagTable.server;
+  ZagTable get table => ZagTable.unraid;
 
   @override
   final T fallback;
 
-  const ServerDatabase(this.fallback);
+  const UnraidDatabase(this.fallback);
 }

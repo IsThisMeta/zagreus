@@ -6,7 +6,7 @@ import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/tautulli.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 
 class SettingsHeaderRoute extends StatefulWidget {
   final ZagModule module;
@@ -121,7 +121,7 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Overseerr does not have a headers page');
       case ZagModule.TAUTULLI:
         return ZagProfile.current.tautulliHeaders;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return ZagProfile.current.serverHeaders;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a headers page');
@@ -156,8 +156,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Wake on LAN does not have a global state');
       case ZagModule.TAUTULLI:
         return context.read<TautulliState>().reset();
-      case ZagModule.SERVER:
-        return context.read<ServerState>().reset();
+      case ZagModule.UNRAID:
+        return context.read<UnraidState>().reset();
       case ZagModule.OVERSEERR:
         return;
       case ZagModule.DISCOVER:

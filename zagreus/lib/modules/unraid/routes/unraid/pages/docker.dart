@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
-import 'package:zagreus/modules/server/routes/server/pages/docker_detail.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/pages/docker_detail.dart';
 
-class ServerDockerPage extends StatefulWidget {
-  const ServerDockerPage({Key? key}) : super(key: key);
+class UnraidDockerPage extends StatefulWidget {
+  const UnraidDockerPage({Key? key}) : super(key: key);
 
   @override
-  State<ServerDockerPage> createState() => _ServerDockerPageState();
+  State<UnraidDockerPage> createState() => _UnraidDockerPageState();
 }
 
-class _ServerDockerPageState extends State<ServerDockerPage>
+class _UnraidDockerPageState extends State<UnraidDockerPage>
     with ZagScrollControllerMixin {
   UnraidDockerInfo? _dockerInfo;
   bool _loading = true;
@@ -35,7 +35,7 @@ class _ServerDockerPageState extends State<ServerDockerPage>
     });
 
     try {
-      final serverState = context.read<ServerState>();
+      final serverState = context.read<UnraidState>();
 
       // Create API client
       final api = UnraidAPI(
@@ -330,7 +330,7 @@ class _ServerDockerPageState extends State<ServerDockerPage>
       _processingContainers[container.id] = true;
     });
 
-    final serverState = context.read<ServerState>();
+    final serverState = context.read<UnraidState>();
     if (!serverState.isConfigured) {
       if (mounted) {
         setState(() {
