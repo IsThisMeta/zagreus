@@ -56,9 +56,9 @@ class ProwlarrAPI {
         maxRedirects: maxRedirects,
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        connectTimeout: Duration(seconds: useSlowMode ? 120 : 60),
-        receiveTimeout: Duration(seconds: useSlowMode ? 120 : 60),
-        sendTimeout: Duration(seconds: useSlowMode ? 120 : 60),
+        connectTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+        receiveTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+        sendTimeout: Duration(seconds: useSlowMode ? 300 : 60),
       ),
     );
 
