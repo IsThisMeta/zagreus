@@ -47,13 +47,6 @@ class _State extends State<ReadarrCatalogue>
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
       body: _body(),
-      appBar: _appBar() as PreferredSizeWidget?,
-    );
-  }
-
-  Widget _appBar() {
-    return ZagAppBar(
-      title: 'Authors (${_results?.length ?? 0})',
     );
   }
 
