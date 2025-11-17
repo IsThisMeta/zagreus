@@ -315,7 +315,7 @@ class ReadarrAPI {
         authorName: authorName,
         images: data['images'] as List?,
         links: data['links'] as List?,
-        editions: editions,
+        editionsData: editions,
       );
     } on DioException catch (error, stack) {
       logError('Failed to fetch book ($bookID)', error, stack);
