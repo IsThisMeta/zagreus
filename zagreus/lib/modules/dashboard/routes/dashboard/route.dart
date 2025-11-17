@@ -8,6 +8,8 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/appbar_agent_action.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/appbar_search_action.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
@@ -92,7 +94,11 @@ class _State extends State<DashboardRoute> {
       useDrawer: true,
       scrollControllers: HomeNavigationBar.scrollControllers,
       pageController: _pageController,
-      actions: [SwitchViewAction(pageController: _pageController)],
+      actions: [
+        const DashboardAppBarAgentAction(),
+        const DashboardAppBarSearchAction(),
+        SwitchViewAction(pageController: _pageController),
+      ],
     );
   }
 
