@@ -269,11 +269,13 @@ abstract class ZagDialog {
     List<Widget>? buttons,
     List<Widget>? content,
     Widget? customContent,
+    bool barrierDismissible = true,
   }) async {
     if (customContent == null)
       assert(content != null, 'customContent and content both cannot be null');
     await showDialog(
       context: context,
+      barrierDismissible: barrierDismissible,
       builder: (context) => AlertDialog(
         actions: <Widget>[
           if (showCancelButton)

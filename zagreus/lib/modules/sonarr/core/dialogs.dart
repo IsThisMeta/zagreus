@@ -30,6 +30,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -60,6 +61,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -93,6 +95,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -125,6 +128,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -159,6 +163,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -190,6 +195,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
 
     return [_flag, _index];
@@ -448,6 +454,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, profile);
   }
@@ -476,6 +483,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, profile);
   }
@@ -504,6 +512,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, profile);
   }
@@ -540,6 +549,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _folder);
   }
@@ -568,6 +578,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _type);
   }
@@ -596,6 +607,7 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
+      barrierDismissible: false,
     );
     return Tuple2(_flag, _type);
   }
