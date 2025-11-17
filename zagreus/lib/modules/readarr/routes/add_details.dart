@@ -23,9 +23,9 @@ class _State extends State<AddAuthorDetailsRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<void>? _future;
-  Map<int, ReadarrRootFolder> _rootFolders = {};
-  Map<int, ReadarrQualityProfile> _qualityProfiles = {};
-  Map<int, ReadarrMetadataProfile> _metadataProfiles = {};
+  List<ReadarrRootFolder> _rootFolders = [];
+  Map<int?, ReadarrQualityProfile> _qualityProfiles = {};
+  Map<int?, ReadarrMetadataProfile> _metadataProfiles = {};
 
   @override
   void initState() {
@@ -53,10 +53,11 @@ class _State extends State<AddAuthorDetailsRoute>
       _rootFolders = values;
       final savedId = ReadarrDatabase.ADD_AUTHOR_DEFAULT_ROOT_FOLDER_ID.read();
       // If saved ID is valid, keep it; otherwise use first folder
-      if (savedId == null || !_rootFolders.containsKey(savedId)) {
+      final hasValidFolder = _rootFolders.any((f) => f.id == savedId);
+      if (savedId == null || !hasValidFolder) {
         if (_rootFolders.isNotEmpty) {
           ReadarrDatabase.ADD_AUTHOR_DEFAULT_ROOT_FOLDER_ID
-              .update(_rootFolders.keys.first);
+              .update(_rootFolders.first.id);
         }
       }
     }).catchError((error) {
@@ -159,7 +160,7 @@ class _State extends State<AddAuthorDetailsRoute>
     return ZagListView(
       controller: scrollController,
       children: <Widget>[
-        ZagDescriptionBlock(
+        ReadarrDescriptionBlock(
           title: widget.data?.title ?? 'zagreus.Unknown'.tr(),
           description: (widget.data?.overview ?? '').isEmpty
               ? 'No Summary Available'
@@ -181,7 +182,10 @@ class _State extends State<AddAuthorDetailsRoute>
           builder: (context, _) {
             final folderId =
                 ReadarrDatabase.ADD_AUTHOR_DEFAULT_ROOT_FOLDER_ID.read();
-            final folder = _rootFolders[folderId];
+            final folder = _rootFolders.cast<ReadarrRootFolder?>().firstWhere(
+              (f) => f?.id == folderId,
+              orElse: () => null,
+            );
             return ZagBlock(
               title: 'Root Folder',
               body: [
@@ -228,7 +232,7 @@ class _State extends State<AddAuthorDetailsRoute>
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
                 List _values = await ReadarrDialogs.editQualityProfile(
-                    context, _qualityProfiles);
+                    context, _qualityProfiles.values.toList());
                 if (_values[0])
                   ReadarrDatabase.ADD_AUTHOR_DEFAULT_QUALITY_PROFILE_ID
                       .update(_values[1].id);
@@ -250,7 +254,7 @@ class _State extends State<AddAuthorDetailsRoute>
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
                 List _values = await ReadarrDialogs.editMetadataProfile(
-                    context, _metadataProfiles);
+                    context, _metadataProfiles.values.toList());
                 if (_values[0])
                   ReadarrDatabase.ADD_AUTHOR_DEFAULT_METADATA_PROFILE_ID
                       .update(_values[1].id);
@@ -274,7 +278,10 @@ class _State extends State<AddAuthorDetailsRoute>
     final metadataProfileId =
         ReadarrDatabase.ADD_AUTHOR_DEFAULT_METADATA_PROFILE_ID.read();
 
-    final rootFolder = _rootFolders[rootFolderId];
+    final rootFolder = _rootFolders.cast<ReadarrRootFolder?>().firstWhere(
+      (f) => f?.id == rootFolderId,
+      orElse: () => null,
+    );
     final qualityProfile = _qualityProfiles[qualityProfileId];
     final metadataProfile = _metadataProfiles[metadataProfileId];
 

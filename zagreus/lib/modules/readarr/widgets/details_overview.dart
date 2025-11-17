@@ -26,7 +26,7 @@ class _State extends State<ReadarrDetailsOverview>
     return ZagListView(
       controller: ReadarrAuthorNavigationBar.scrollControllers[0],
       children: <Widget>[
-        ZagDescriptionBlock(
+        ReadarrDescriptionBlock(
           title: widget.data.title,
           description: widget.data.overview == ''
               ? 'No Summary Available'

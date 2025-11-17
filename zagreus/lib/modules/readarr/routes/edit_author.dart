@@ -22,8 +22,8 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<bool>? _future;
 
-  Map<int, ReadarrQualityProfile> _qualityProfiles = {};
-  Map<int, ReadarrMetadataProfile> _metadataProfiles = {};
+  Map<int?, ReadarrQualityProfile> _qualityProfiles = {};
+  Map<int?, ReadarrMetadataProfile> _metadataProfiles = {};
   ReadarrQualityProfile? _qualityProfile;
   ReadarrMetadataProfile? _metadataProfile;
   String? _path;
@@ -155,13 +155,13 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
 
   Future<void> _changeProfile() async {
     List<dynamic> _values =
-        await ReadarrDialogs.editQualityProfile(context, _qualityProfiles);
+        await ReadarrDialogs.editQualityProfile(context, _qualityProfiles.values.toList());
     if (_values[0] && mounted) setState(() => _qualityProfile = _values[1]);
   }
 
   Future<void> _changeMetadata() async {
     List<dynamic> _values =
-        await ReadarrDialogs.editMetadataProfile(context, _metadataProfiles);
+        await ReadarrDialogs.editMetadataProfile(context, _metadataProfiles.values.toList());
     if (_values[0] && mounted) setState(() => _metadataProfile = _values[1]);
   }
 
