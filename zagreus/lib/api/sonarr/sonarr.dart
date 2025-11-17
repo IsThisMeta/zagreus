@@ -48,9 +48,9 @@ class SonarrAPI {
         headers: headers,
         followRedirects: followRedirects,
         maxRedirects: maxRedirects,
-        connectTimeout: Duration(seconds: useSlowMode ? 40 : 20),
-        receiveTimeout: Duration(seconds: useSlowMode ? 60 : 30),
-        sendTimeout: Duration(seconds: useSlowMode ? 40 : 20),
+        connectTimeout: Duration(seconds: useSlowMode ? 300 : 20),
+        receiveTimeout: Duration(seconds: useSlowMode ? 300 : 30),
+        sendTimeout: Duration(seconds: useSlowMode ? 300 : 20),
       ),
     );
     return SonarrAPI._internal(
