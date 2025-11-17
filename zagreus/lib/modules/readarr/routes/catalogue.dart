@@ -52,10 +52,8 @@ class _State extends State<ReadarrCatalogue>
   }
 
   Widget _appBar() {
-    return Consumer<ReadarrState>(
-      builder: (context, state, _) => ZagAppBar(
-        title: 'Authors (${_results?.length ?? 0})',
-      ),
+    return ZagAppBar(
+      title: 'Authors (${_results?.length ?? 0})',
     );
   }
 

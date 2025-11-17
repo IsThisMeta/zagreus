@@ -15,9 +15,9 @@ class ReadarrNavigationBar extends StatelessWidget {
   ];
 
   static List<String> get titles => [
-        'readarr.Catalogue'.tr(),
-        'readarr.Missing'.tr(),
-        'readarr.History'.tr(),
+        'Catalogue',
+        'Missing',
+        'History',
       ];
 
   const ReadarrNavigationBar({
