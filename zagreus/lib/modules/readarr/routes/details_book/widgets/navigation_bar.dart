@@ -6,12 +6,10 @@ class ReadarrBookDetailsNavigationBar extends StatefulWidget {
   static const List<IconData> icons = [
     Icons.subject_rounded,
     Icons.insert_drive_file_outlined,
-    Icons.history_rounded,
   ];
   static const List<String> titles = [
     'Overview',
     'Files',
-    'History',
   ];
   static List<ScrollController> scrollControllers =
       List.generate(icons.length, (_) => ScrollController());
