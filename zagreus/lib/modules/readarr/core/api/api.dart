@@ -339,7 +339,7 @@ class ReadarrAPI {
               _entries.add(ReadarrHistoryDataGrabbed(
                 title: entry['sourceTitle'] ?? 'Unknown Title',
                 timestamp: entry['date'] ?? '',
-                indexer: entry['data']?['indexer'] ?? 'Unknown Indexer',
+                indexer: entry['data']['indexer'] ?? 'Unknown Indexer',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -384,7 +384,7 @@ class ReadarrAPI {
               _entries.add(ReadarrHistoryDataBookFileDeleted(
                 title: entry['sourceTitle'] ?? 'Unknown Title',
                 timestamp: entry['date'] ?? '',
-                reason: entry['data']?['reason'] ?? 'Unknown Reason',
+                reason: 'File Deleted',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
