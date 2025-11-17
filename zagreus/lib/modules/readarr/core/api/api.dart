@@ -351,7 +351,7 @@ class ReadarrAPI {
                 title: entry['sourceTitle'] ?? 'Unknown Title',
                 timestamp: entry['date'] ?? '',
                 quality:
-                    entry['quality']['quality']['name'] ?? 'Unknown Quality',
+                    entry['quality']?['quality']?['name'] ?? 'Unknown Quality',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -373,7 +373,7 @@ class ReadarrAPI {
                 title: entry['sourceTitle'] ?? 'Unknown Title',
                 timestamp: entry['date'] ?? '',
                 quality:
-                    entry['quality']['quality']['name'] ?? 'Unknown Quality',
+                    entry['quality']?['quality']?['name'] ?? 'Unknown Quality',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -384,7 +384,7 @@ class ReadarrAPI {
               _entries.add(ReadarrHistoryDataBookFileDeleted(
                 title: entry['sourceTitle'] ?? 'Unknown Title',
                 timestamp: entry['date'] ?? '',
-                reason: entry['data']['reason'] ?? 'Unknown Reason',
+                reason: 'File Deleted',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -449,7 +449,7 @@ class ReadarrAPI {
       for (var entry in response.data['records']) {
         entries.add(ReadarrMissingData(
           title: entry['title'] ?? 'Unknown Title',
-          authorTitle: entry['author']['authorName'] ?? 'Unknown Author',
+          authorTitle: entry['author']?['authorName'] ?? 'Unknown Author',
           authorID: entry['authorId'] ?? -1,
           bookID: entry['id'] ?? -1,
           releaseDate: entry['releaseDate'] ?? '',
