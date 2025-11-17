@@ -100,7 +100,6 @@ class _State extends State<AuthorBookDetailsRoute> {
       pageController: _pageController,
       book: _book!,
       authorId: widget.authorId,
-      onAutomaticSearch: _automaticSearch,
       onManualSearch: _manualSearch,
     );
   }
@@ -133,23 +132,6 @@ class _State extends State<AuthorBookDetailsRoute> {
         ),
       ],
     );
-  }
-
-
-  Future<void> _automaticSearch() async {
-    try {
-      await _api.searchBooks([widget.bookId]);
-      showZagSuccessSnackBar(
-        title: 'Searching...',
-        message: 'Automatic search started',
-      );
-    } catch (error, stack) {
-      ZagLogger().error('Failed to search for book', error, stack);
-      showZagErrorSnackBar(
-        title: 'Failed to Search',
-        error: error,
-      );
-    }
   }
 
   void _manualSearch() {
