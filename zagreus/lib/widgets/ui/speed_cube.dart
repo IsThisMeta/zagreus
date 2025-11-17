@@ -108,7 +108,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
     modules = modules.where((module) {
       if ((module == ZagModule.DISCOVER ||
               module == ZagModule.OVERSEERR ||
-              module == ZagModule.SERVER) &&
+              module == ZagModule.UNRAID) &&
           !isPro) {
         return false;
       }

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
-import 'package:zagreus/modules/server/core/download_history_fetcher.dart';
-import 'package:zagreus/modules/server/routes/server/widgets/download_history_card.dart';
+import 'package:zagreus/modules/unraid/core/download_history_fetcher.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/widgets/download_history_card.dart';
 
-class ServerSystemPage extends StatefulWidget {
-  const ServerSystemPage({Key? key}) : super(key: key);
+class UnraidSystemPage extends StatefulWidget {
+  const UnraidSystemPage({Key? key}) : super(key: key);
 
   @override
-  State<ServerSystemPage> createState() => _ServerSystemPageState();
+  State<UnraidSystemPage> createState() => _UnraidSystemPageState();
 }
 
-class _ServerSystemPageState extends State<ServerSystemPage>
+class _UnraidSystemPageState extends State<UnraidSystemPage>
     with ZagScrollControllerMixin {
   UnraidSystemInfo? _systemInfo;
   UnraidArrayInfo? _arrayInfo;
@@ -28,7 +28,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
   @override
   void initState() {
     super.initState();
-    print('🔍 ServerSystemPage initialized - download history feature loaded!');
+    print('🔍 UnraidSystemPage initialized - download history feature loaded!');
     _loadData();
   }
 
@@ -43,7 +43,7 @@ class _ServerSystemPageState extends State<ServerSystemPage>
     });
 
     try {
-      final serverState = context.read<ServerState>();
+      final serverState = context.read<UnraidState>();
 
       // Create API client
       final api = UnraidAPI(

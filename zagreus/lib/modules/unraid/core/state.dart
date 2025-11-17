@@ -1,8 +1,8 @@
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 
-class ServerState extends ZagModuleState {
-  ServerState() {
+class UnraidState extends ZagModuleState {
+  UnraidState() {
     reset();
   }
 
@@ -33,12 +33,12 @@ class ServerState extends ZagModuleState {
   Map<String, String> _headers = const {};
   Map<String, String> get headers => _headers;
 
-  /// Check if Server is properly configured
+  /// Check if Unraid is properly configured
   bool get isConfigured => _enabled && _host.isNotEmpty;
 
   /// Reset the profile data
   void resetProfile() {
-    ZagLogger().debug('ServerState.resetProfile called');
+    ZagLogger().debug('UnraidState.resetProfile called');
     ZagProfile profile = ZagProfile.current;
     // Copy profile into state
     _enabled = profile.serverEnabled;

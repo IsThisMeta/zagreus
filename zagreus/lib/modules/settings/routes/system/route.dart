@@ -287,7 +287,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     // Set manual order without Dashboard
     final orderedModules = [
       ZagModule.DISCOVER,
-      ZagModule.SERVER,
+      ZagModule.UNRAID,
       ZagModule.RADARR,
       ZagModule.SONARR,
       ZagModule.LIDARR,

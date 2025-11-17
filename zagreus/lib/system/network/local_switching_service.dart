@@ -245,7 +245,7 @@ class ZagLocalConnectionService {
         ssids: profile.tautulliLocalSsids,
       ),
       _LocalSwitchConfig(
-        module: ZagModule.SERVER,
+        module: ZagModule.UNRAID,
         enabled: profile.serverEnabled,
         localHost: profile.serverLocalHost,
         ssids: profile.serverLocalSsids,

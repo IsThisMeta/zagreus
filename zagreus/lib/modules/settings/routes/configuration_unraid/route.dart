@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
-class ConfigurationServerRoute extends StatefulWidget {
-  const ConfigurationServerRoute({
+class ConfigurationUnraidRoute extends StatefulWidget {
+  const ConfigurationUnraidRoute({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<ConfigurationServerRoute> createState() => _State();
+  State<ConfigurationUnraidRoute> createState() => _State();
 }
 
-class _State extends State<ConfigurationServerRoute>
+class _State extends State<ConfigurationUnraidRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -27,7 +27,7 @@ class _State extends State<ConfigurationServerRoute>
 
   Widget _appBar() {
     return ZagAppBar(
-      title: ZagModule.SERVER.title,
+      title: ZagModule.UNRAID.title,
       scrollControllers: [scrollController],
     );
   }
@@ -36,7 +36,7 @@ class _State extends State<ConfigurationServerRoute>
     return ZagListView(
       controller: scrollController,
       children: [
-        ZagModule.SERVER.informationBanner(),
+        ZagModule.UNRAID.informationBanner(),
         _enabledToggle(),
         _connectionDetailsPage(),
       ],
@@ -46,13 +46,13 @@ class _State extends State<ConfigurationServerRoute>
   Widget _enabledToggle() {
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.SERVER.title]),
+        title: 'settings.EnableModule'.tr(args: [ZagModule.UNRAID.title]),
         trailing: ZagSwitch(
           value: ZagProfile.current.serverEnabled,
           onChanged: (value) {
             ZagProfile.current.serverEnabled = value;
             ZagProfile.current.save();
-            context.read<ServerState>().reset();
+            context.read<UnraidState>().reset();
           },
         ),
       ),
@@ -65,12 +65,12 @@ class _State extends State<ConfigurationServerRoute>
       body: [
         TextSpan(
           text: 'settings.ConnectionDetailsDescription'.tr(
-            args: [ZagModule.SERVER.title],
+            args: [ZagModule.UNRAID.title],
           ),
         ),
       ],
       trailing: const ZagIconButton.arrow(),
-      onTap: SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS.go,
+      onTap: SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS.go,
     );
   }
 }

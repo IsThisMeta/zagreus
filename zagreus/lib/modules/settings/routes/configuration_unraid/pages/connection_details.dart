@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 
-class ConfigurationServerConnectionDetailsRoute extends StatefulWidget {
-  const ConfigurationServerConnectionDetailsRoute({
+class ConfigurationUnraidConnectionDetailsRoute extends StatefulWidget {
+  const ConfigurationUnraidConnectionDetailsRoute({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<ConfigurationServerConnectionDetailsRoute> createState() => _State();
+  State<ConfigurationUnraidConnectionDetailsRoute> createState() => _State();
 }
 
-class _State extends State<ConfigurationServerConnectionDetailsRoute>
+class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -104,7 +104,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
         if (_values.item1) {
           ZagProfile.current.serverHost = _values.item2;
           ZagProfile.current.save();
-          context.read<ServerState>().reset();
+          context.read<UnraidState>().reset();
         }
       },
     );
@@ -126,7 +126,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
           profile.serverLocalHost = result.item2;
           profile.save();
           await ZagLocalConnectionService().refreshSsid();
-          context.read<ServerState>().reset();
+          context.read<UnraidState>().reset();
         }
       },
     );
@@ -154,7 +154,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
           profile.serverLocalSsids = result.item2;
           profile.save();
           await ZagLocalConnectionService().refreshSsid();
-          context.read<ServerState>().reset();
+          context.read<UnraidState>().reset();
         }
       },
     );
@@ -229,7 +229,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
         if (_values.item1) {
           ZagProfile.current.serverKey = _values.item2;
           ZagProfile.current.save();
-          context.read<ServerState>().reset();
+          context.read<UnraidState>().reset();
         }
       },
     );
@@ -240,7 +240,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
       title: 'settings.CustomHeaders'.tr(),
       body: [TextSpan(text: 'settings.CustomHeadersDescription'.tr())],
       trailing: const ZagIconButton.arrow(),
-      onTap: SettingsRoutes.CONFIGURATION_SERVER_CONNECTION_DETAILS_HEADERS.go,
+      onTap: SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS.go,
     );
   }
 
@@ -255,7 +255,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'
-                .tr(args: [ZagModule.SERVER.title]),
+                .tr(args: [ZagModule.UNRAID.title]),
           );
           return;
         }
@@ -263,7 +263,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
           showZagErrorSnackBar(
             title: 'settings.ApiKeyRequired'.tr(),
             message: 'settings.ApiKeyRequiredMessage'
-                .tr(args: [ZagModule.SERVER.title]),
+                .tr(args: [ZagModule.UNRAID.title]),
           );
           return;
         }
@@ -276,7 +276,7 @@ class _State extends State<ConfigurationServerConnectionDetailsRoute>
             showZagSuccessSnackBar(
               title: 'settings.ConnectedSuccessfully'.tr(),
               message: 'settings.ConnectedSuccessfullyMessage'
-                  .tr(args: [ZagModule.SERVER.title]),
+                  .tr(args: [ZagModule.UNRAID.title]),
             );
           },
         ).catchError(

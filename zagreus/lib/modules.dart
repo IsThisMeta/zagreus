@@ -16,7 +16,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
 import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/modules/tautulli.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
@@ -36,7 +36,7 @@ const MODULE_SONARR_KEY = 'sonarr';
 const MODULE_TAUTULLI_KEY = 'tautulli';
 const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
-const MODULE_SERVER_KEY = 'server';
+const MODULE_UNRAID_KEY = 'unraid';
 const MODULE_PROWLARR_KEY = 'prowlarr';
 const MODULE_READARR_KEY = 'readarr';
 
@@ -69,7 +69,7 @@ enum ZagModule {
   @HiveField(12)
   DISCOVER(MODULE_DISCOVER_KEY),
   @HiveField(13)
-  SERVER(MODULE_SERVER_KEY),
+  UNRAID(MODULE_UNRAID_KEY),
   @HiveField(14)
   PROWLARR(MODULE_PROWLARR_KEY),
   @HiveField(15)
@@ -106,8 +106,8 @@ enum ZagModule {
         return ZagModule.EXTERNAL_MODULES;
       case MODULE_DISCOVER_KEY:
         return ZagModule.DISCOVER;
-      case MODULE_SERVER_KEY:
-        return ZagModule.SERVER;
+      case MODULE_UNRAID_KEY:
+        return ZagModule.UNRAID;
       case MODULE_PROWLARR_KEY:
         return ZagModule.PROWLARR;
       case MODULE_READARR_KEY:
@@ -134,7 +134,7 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagWakeOnLAN.isSupported;
       case ZagModule.DISCOVER:
         return true;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return true;
       case ZagModule.PROWLARR:
         return true;
@@ -171,7 +171,7 @@ extension ZagModuleEnablementExtension on ZagModule {
         return !ZagBox.externalModules.isEmpty;
       case ZagModule.DISCOVER:
         return true;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return ZagProfile.current.serverEnabled;
       case ZagModule.PROWLARR:
         return !ZagBox.indexers.isEmpty;
@@ -210,8 +210,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'zagreus.ExternalModules'.tr();
       case ZagModule.DISCOVER:
         return 'zagreus.Dashboard'.tr();
-      case ZagModule.SERVER:
-        return 'Server';
+      case ZagModule.UNRAID:
+        return 'Unraid';
       case ZagModule.PROWLARR:
         return 'Prowlarr';
       case ZagModule.READARR:
@@ -247,7 +247,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.settings_ethernet_rounded;
       case ZagModule.DISCOVER:
         return Icons.home_rounded;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return ZagIcons.UNRAID;
       case ZagModule.PROWLARR:
         return Icons.travel_explore_rounded;
@@ -284,8 +284,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagColours.currentAccent;
       case ZagModule.DISCOVER:
         return ZagColours.currentAccent;
-      case ZagModule.SERVER:
-        return const Color(0xFFF0542C); // Unraid orange (240, 84, 44)
+      case ZagModule.UNRAID:
+        return const Color(0xFFFF8C2F); // Unraid orange
       case ZagModule.PROWLARR:
         return const Color(0xFF0087FF); // Prowlarr blue
       case ZagModule.READARR:
@@ -321,7 +321,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.DISCOVER:
         return null;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return 'https://unraid.net';
       case ZagModule.PROWLARR:
         return 'https://prowlarr.com';
@@ -358,7 +358,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.DISCOVER:
         return null;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return null;
       case ZagModule.PROWLARR:
         return 'https://github.com/Prowlarr/Prowlarr';
@@ -395,7 +395,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Access External Modules';
       case ZagModule.DISCOVER:
         return 'Browse movies, shows, and calendar views';
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return 'Manage Your Unraid Server';
       case ZagModule.PROWLARR:
         return 'Search Indexers and Manage Downloads';
@@ -432,7 +432,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Zagreus allows you to add links to additional modules that are not currently supported allowing you to open the module\'s web GUI without having to leave Zagreus!';
       case ZagModule.DISCOVER:
         return 'Discover new movies and TV shows, browse what\'s trending, see what\'s coming soon, and explore your recently downloaded content.';
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
       case ZagModule.PROWLARR:
         return 'Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. It supports management of both Torrent Trackers and Usenet Indexers, providing a unified search interface and download capabilities.';
@@ -471,7 +471,7 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.externalModules.root.path;
       case ZagModule.DISCOVER:
         return ZagRoutes.discover.root.path;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return ZagRoutes.server.root.path;
       case ZagModule.PROWLARR:
         return ZagRoutes.search.root.path; // Use search route for now
@@ -508,7 +508,7 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES;
       case ZagModule.DISCOVER:
         return SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return SettingsRoutes.CONFIGURATION_SERVER;
       case ZagModule.PROWLARR:
         return SettingsRoutes.CONFIGURATION_SEARCH; // Use search settings for now
@@ -658,7 +658,7 @@ extension ZagModuleExtension on ZagModule {
         return null;
       case ZagModule.DISCOVER:
         return null;
-      case ZagModule.SERVER:
+      case ZagModule.UNRAID:
         return context.read<ServerState>();
       case ZagModule.PROWLARR:
         return null;

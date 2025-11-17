@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
-import 'package:zagreus/modules/server/routes/server/widgets/navigation_bar.dart';
-import 'package:zagreus/modules/server/routes/server/pages/system.dart';
-import 'package:zagreus/modules/server/routes/server/pages/array.dart';
-import 'package:zagreus/modules/server/routes/server/pages/docker.dart';
-import 'package:zagreus/modules/server/routes/server/pages/vms.dart';
+import 'package:zagreus/modules/unraid.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/widgets/navigation_bar.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/pages/system.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/pages/array.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/pages/docker.dart';
+import 'package:zagreus/modules/unraid/routes/unraid/pages/vms.dart';
 
-class ServerRoute extends StatefulWidget {
-  const ServerRoute({Key? key}) : super(key: key);
+class UnraidRoute extends StatefulWidget {
+  const UnraidRoute({Key? key}) : super(key: key);
 
   @override
-  State<ServerRoute> createState() => _State();
+  State<UnraidRoute> createState() => _State();
 }
 
-class _State extends State<ServerRoute> {
+class _State extends State<UnraidRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  int _currentPage = ServerDatabase.NAVIGATION_INDEX.read();
+  int _currentPage = UnraidDatabase.NAVIGATION_INDEX.read();
 
   @override
   void initState() {
@@ -36,13 +36,13 @@ class _State extends State<ServerRoute> {
   Widget build(BuildContext context) {
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      module: ZagModule.SERVER,
-      drawer: ZagDrawer(page: ZagModule.SERVER.key),
+      module: ZagModule.UNRAID,
+      drawer: ZagDrawer(page: ZagModule.UNRAID.key),
       appBar: ZagAppBar(
-        title: 'Server',
+        title: 'Unraid',
         useDrawer: true,
       ),
-      bottomNavigationBar: ServerNavigationBar(pageController: _pageController),
+      bottomNavigationBar: UnraidNavigationBar(pageController: _pageController),
       body: _body(),
     );
   }
@@ -51,10 +51,10 @@ class _State extends State<ServerRoute> {
     return ZagPageView(
       controller: _pageController,
       children: [
-        const ServerSystemPage(),
-        const ServerArrayPage(),
-        const ServerDockerPage(),
-        const ServerVmPage(),
+        const UnraidSystemPage(),
+        const UnraidArrayPage(),
+        const UnraidDockerPage(),
+        const UnraidVmPage(),
       ],
     );
   }

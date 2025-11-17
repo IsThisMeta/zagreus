@@ -143,7 +143,7 @@ class ZagDrawer extends StatelessWidget {
         // Hide premium modules when the user is not Pro
         if ((module == ZagModule.DISCOVER ||
                 module == ZagModule.OVERSEERR ||
-                module == ZagModule.SERVER) &&
+                module == ZagModule.UNRAID) &&
             !ZagreusPro.isEnabled) {
           return const SizedBox(height: 0.0);
         }

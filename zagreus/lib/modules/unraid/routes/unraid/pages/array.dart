@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
 
-class ServerArrayPage extends StatefulWidget {
-  const ServerArrayPage({super.key});
+class UnraidArrayPage extends StatefulWidget {
+  const UnraidArrayPage({super.key});
 
   @override
-  State<ServerArrayPage> createState() => _ServerArrayPageState();
+  State<UnraidArrayPage> createState() => _UnraidArrayPageState();
 }
 
-class _ServerArrayPageState extends State<ServerArrayPage>
+class _UnraidArrayPageState extends State<UnraidArrayPage>
     with ZagScrollControllerMixin {
   UnraidArrayInfo? _arrayInfo;
   UnraidParityInfo? _parityInfo;
@@ -33,7 +33,7 @@ class _ServerArrayPageState extends State<ServerArrayPage>
     });
 
     try {
-      final serverState = context.read<ServerState>();
+      final serverState = context.read<UnraidState>();
 
       // Create API client
       final api = UnraidAPI(

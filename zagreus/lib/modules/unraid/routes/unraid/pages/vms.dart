@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/api/unraid/models.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/server.dart';
+import 'package:zagreus/modules/unraid.dart';
 
 enum _VmAction {
   start,
@@ -10,14 +10,14 @@ enum _VmAction {
   reboot,
 }
 
-class ServerVmPage extends StatefulWidget {
-  const ServerVmPage({super.key});
+class UnraidVmPage extends StatefulWidget {
+  const UnraidVmPage({super.key});
 
   @override
-  State<ServerVmPage> createState() => _ServerVmPageState();
+  State<UnraidVmPage> createState() => _UnraidVmPageState();
 }
 
-class _ServerVmPageState extends State<ServerVmPage>
+class _UnraidVmPageState extends State<UnraidVmPage>
     with ZagScrollControllerMixin {
   UnraidVmInfo? _vmInfo;
   bool _loading = true;
@@ -61,7 +61,7 @@ class _ServerVmPageState extends State<ServerVmPage>
   }
 
   Future<UnraidVmInfo> _fetchVmInfo() async {
-    final serverState = context.read<ServerState>();
+    final serverState = context.read<UnraidState>();
     final api = UnraidAPI(
       host: serverState.host,
       apiKey: serverState.apiKey,
@@ -319,7 +319,7 @@ class _ServerVmPageState extends State<ServerVmPage>
     UnraidVirtualMachine vm,
     _VmAction action,
   ) async {
-    final serverState = context.read<ServerState>();
+    final serverState = context.read<UnraidState>();
     if (!serverState.isConfigured) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
