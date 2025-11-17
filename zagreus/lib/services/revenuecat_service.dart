@@ -37,10 +37,10 @@ class RevenueCatService {
       }
 
       // NSA backdoor initialized
-      // Get initial customer info
-      await updateCustomerInfo();
+      // Get initial customer info (without triggering status update yet)
+      _customerInfo = await Purchases.getCustomerInfo();
 
-      // Listen to customer info updates
+      // Listen to customer info updates (this will fire immediately and update status)
       Purchases.addCustomerInfoUpdateListener((customerInfo) {
         _customerInfo = customerInfo;
         _updateProStatus();
