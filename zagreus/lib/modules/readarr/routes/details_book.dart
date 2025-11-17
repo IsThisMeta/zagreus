@@ -44,8 +44,10 @@ class _State extends State<AuthorBookDetailsRoute> {
     });
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadData({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       // Fetch book details
@@ -66,6 +68,10 @@ class _State extends State<AuthorBookDetailsRoute> {
       ZagLogger().error('Failed to load book details', error, stack);
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _refreshData() async {
+    return _loadData(showLoading: false);
   }
 
   @override
@@ -123,11 +129,11 @@ class _State extends State<AuthorBookDetailsRoute> {
         ReadarrBookDetailsOverviewPage(
           book: _book!,
           authorId: widget.authorId,
-          onRefresh: _loadData,
+          onRefresh: _refreshData,
         ),
         ReadarrBookDetailsFilesPage(
           bookFiles: _bookFiles,
-          onRefresh: _loadData,
+          onRefresh: _refreshData,
           onDeleteFile: _deleteFile,
         ),
       ],
