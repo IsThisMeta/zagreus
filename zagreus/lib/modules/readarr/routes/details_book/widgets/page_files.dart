@@ -61,7 +61,7 @@ class _State extends State<ReadarrBookDetailsFilesPage>
       return ZagMessage(
         text: 'No Files Found',
         buttonText: 'Refresh',
-        onTap: _refreshKey.currentState!.show,
+        onTap: () => _refreshKey.currentState?.show(),
       );
     }
 

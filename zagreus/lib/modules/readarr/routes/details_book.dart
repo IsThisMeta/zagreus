@@ -6,7 +6,6 @@ import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/readarr/routes/details_book/widgets/navigation_bar.dart';
 import 'package:zagreus/modules/readarr/routes/details_book/widgets/page_overview.dart';
 import 'package:zagreus/modules/readarr/routes/details_book/widgets/page_files.dart';
-import 'package:zagreus/modules/readarr/routes/details_book/widgets/page_history.dart';
 import 'package:zagreus/router/routes/readarr.dart';
 
 class AuthorBookDetailsRoute extends StatefulWidget {
@@ -131,9 +130,6 @@ class _State extends State<AuthorBookDetailsRoute> {
           bookFiles: _bookFiles,
           onRefresh: _loadData,
           onDeleteFile: _deleteFile,
-        ),
-        ReadarrBookDetailsHistoryPage(
-          book: _book!,
         ),
       ],
     );
