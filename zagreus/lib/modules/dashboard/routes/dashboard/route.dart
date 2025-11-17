@@ -105,12 +105,12 @@ class _State extends State<DashboardRoute> {
                   IconButton(
                     icon: const Icon(Icons.smart_toy),
                     tooltip: 'Z Agent',
-                    onPressed: () => DiscoverRoutes.HOME.push(queryParams: {'agent': 'true'}),
+                    onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'agent': 'true'}),
                   ),
                   IconButton(
                     icon: const Icon(Icons.search_rounded),
                     tooltip: 'Search',
-                    onPressed: () => DiscoverRoutes.HOME.push(queryParams: {'search': 'true'}),
+                    onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                   ),
                 ],
               );
