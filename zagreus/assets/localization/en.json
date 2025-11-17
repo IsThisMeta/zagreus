@@ -650,7 +650,7 @@
     "network.LocationPermissionRequiredMessage": "Enable Location access in Settings so Zagreus can detect trusted Wi-Fi networks.",
     "network.UnknownSsid": "this network",
     "settings.RemoteConnection": "Primary Connection",
-    "settings.LocalConnection": "Local Connection",
+    "settings.LocalConnection": "Local Connection (optional)",
     "settings.LocalHost": "Local Host",
     "settings.TrustedSsids": "Trusted Wi-Fi Networks",
     "settings.TrustedSsidsDescription": "Add comma-separated SSIDs that should use the local address.",
