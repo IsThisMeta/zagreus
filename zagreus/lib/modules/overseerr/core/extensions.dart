@@ -154,4 +154,83 @@ extension OverseerrMediaExtension on OverseerrMedia {
     }
     return null;
   }
+
+  /// Check if media has active downloads
+  bool hasActiveDownloads() {
+    return downloadStatus.isNotEmpty || downloadStatus4k.isNotEmpty;
+  }
+
+  /// Get total download size in bytes
+  int getTotalDownloadSize() {
+    int total = 0;
+    for (final download in downloadStatus) {
+      total += download.size;
+    }
+    for (final download in downloadStatus4k) {
+      total += download.size;
+    }
+    return total;
+  }
+
+  /// Get formatted download size string
+  String getFormattedDownloadSize() {
+    final bytes = getTotalDownloadSize();
+    if (bytes == 0) return '';
+
+    const kb = 1024;
+    const mb = kb * 1024;
+    const gb = mb * 1024;
+
+    if (bytes >= gb) {
+      return '${(bytes / gb).toStringAsFixed(2)} GB';
+    } else if (bytes >= mb) {
+      return '${(bytes / mb).toStringAsFixed(1)} MB';
+    } else if (bytes >= kb) {
+      return '${(bytes / kb).toStringAsFixed(0)} KB';
+    } else {
+      return '$bytes B';
+    }
+  }
+
+  /// Get download count (number of files downloading)
+  int getDownloadCount() {
+    return downloadStatus.length + downloadStatus4k.length;
+  }
+
+  /// Check if media was recently made available (within 7 days)
+  bool isRecentlyAvailable() {
+    if (mediaAddedAt == null) return false;
+    try {
+      final addedDate = DateTime.parse(mediaAddedAt!);
+      final now = DateTime.now();
+      final difference = now.difference(addedDate);
+      return difference.inDays <= 7;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get relative time since media became available
+  String getAvailableRelativeTime() {
+    if (mediaAddedAt == null) return '';
+    try {
+      final addedDate = DateTime.parse(mediaAddedAt!);
+      final now = DateTime.now();
+      final difference = now.difference(addedDate);
+
+      if (difference.inMinutes == 0) {
+        return 'Available just now';
+      } else if (difference.inMinutes < 60) {
+        return 'Available ${difference.inMinutes}m ago';
+      } else if (difference.inHours < 24) {
+        return 'Available ${difference.inHours}h ago';
+      } else if (difference.inDays < 30) {
+        return 'Available ${difference.inDays}d ago';
+      } else {
+        return 'Available ${(difference.inDays / 30).floor()}mth ago';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
 }

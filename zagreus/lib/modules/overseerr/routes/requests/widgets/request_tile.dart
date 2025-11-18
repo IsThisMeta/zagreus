@@ -85,6 +85,9 @@ class _State extends State<OverseerrRequestTile> {
   TextSpan _subtitle2() {
     final requestedBy = widget.request.requestedBy;
     final relativeTime = widget.request.getRelativeTime();
+    final media = widget.request.media;
+    final mediaStatus = OverseerrMediaStatus.fromValue(media.status);
+    final availableTime = media.getAvailableRelativeTime();
 
     return TextSpan(
       children: [
@@ -98,6 +101,17 @@ class _State extends State<OverseerrRequestTile> {
         if (relativeTime.isNotEmpty) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
           TextSpan(text: relativeTime),
+        ],
+        // Show when content became available
+        if (mediaStatus == OverseerrMediaStatus.AVAILABLE && availableTime.isNotEmpty) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: availableTime,
+            style: TextStyle(
+              color: ZagColours.currentAccent,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
         ],
       ],
     );
@@ -119,6 +133,18 @@ class _State extends State<OverseerrRequestTile> {
               ZagColours.purple,
             ),
           _buildStatusBadge(mediaStatus),
+          // Show download size if content is downloading
+          if (media.hasActiveDownloads())
+            _buildBadge(
+              '${media.getDownloadCount()} files • ${media.getFormattedDownloadSize()}',
+              ZagColours.blue,
+            ),
+          // Show "New" badge for recently available content
+          if (mediaStatus == OverseerrMediaStatus.AVAILABLE && media.isRecentlyAvailable())
+            _buildBadge(
+              'NEW',
+              ZagColours.currentAccent,
+            ),
           if (widget.request.type == 'tv')
             _buildIcon(
               Icons.tv_rounded,

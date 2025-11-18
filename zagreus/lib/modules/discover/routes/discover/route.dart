@@ -7237,7 +7237,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     });
 
     try {
-      // Set the filter before fetching
+      // Fetch requests using the saved filter preference
+      // Note: Client-side filtering is applied in _buildOverseerrSectionWithFilter
       overseerrState.requestsFilter = _overseerrRequestFilter;
       await overseerrState.fetchRequests();
       final requests = overseerrState.requests ?? [];
