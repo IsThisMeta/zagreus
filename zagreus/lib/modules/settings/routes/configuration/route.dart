@@ -149,16 +149,11 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   }
 
   Widget _tileFromModuleMap(ZagModule module) {
-    final bool isDiscoverModule = module == ZagModule.DISCOVER;
-    final bool isPro = ZagreusPro.isEnabled;
-
     return ZagBlock(
       title: module.title,
       body: [
         TextSpan(
-          text: isDiscoverModule && isPro
-              ? 'Customize the order of sections in Dashboard'
-              : 'settings.ConfigureModule'.tr(args: [module.title])
+          text: 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
       trailing: ZagIconButton(
