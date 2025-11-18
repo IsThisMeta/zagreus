@@ -61,8 +61,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
           return;
         }
 
-        // Skip Dashboard module for premium users (redundant)
-        if (module == ZagModule.DASHBOARD && ZagreusPro.isEnabled) {
+        // Skip Discover module for premium users (redundant - they're already in it)
+        if (module == ZagModule.DISCOVER && ZagreusPro.isEnabled) {
           return;
         }
 
@@ -88,8 +88,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
         return;
       }
 
-      // Skip Dashboard module for premium users (redundant)
-      if (module == ZagModule.DASHBOARD && ZagreusPro.isEnabled) {
+      // Skip Discover module for premium users (redundant - they're already in it)
+      if (module == ZagModule.DISCOVER && ZagreusPro.isEnabled) {
         return;
       }
 
