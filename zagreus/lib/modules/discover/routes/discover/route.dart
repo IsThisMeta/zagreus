@@ -7040,12 +7040,14 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   bool _overseerrEnabled = false;
   bool _overseerrLoading = false;
   String? _overseerrError;
+  String _overseerrRequestFilter = 'pending';
   bool _isLoading = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _overseerrRequestFilter = UnraidDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
     _loadData();
   }
 
@@ -7235,6 +7237,9 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     });
 
     try {
+      // Fetch requests using the saved filter preference
+      // Note: Client-side filtering is applied in _buildOverseerrSectionWithFilter
+      overseerrState.requestsFilter = _overseerrRequestFilter;
       await overseerrState.fetchRequests();
       final requests = overseerrState.requests ?? [];
       final sorted = List<OverseerrRequest>.from(requests)
@@ -7625,15 +7630,22 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     return [
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-        child: Text(
-          'Overseerr Requests',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: _overseerrEnabled
-                ? ZagModule.OVERSEERR.color
-                : Colors.grey,
-          ),
+        child: Row(
+          children: [
+            Text(
+              'Overseerr Requests',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: _overseerrEnabled
+                    ? ZagModule.OVERSEERR.color
+                    : Colors.grey,
+              ),
+            ),
+            const Spacer(),
+            if (_overseerrEnabled)
+              _buildFilterSelector(),
+          ],
         ),
       ),
       if (_overseerrLoading)
@@ -7675,7 +7687,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'No pending requests',
+            title: _getEmptyStateTitle(),
             body: const [
               TextSpan(text: 'All caught up for now.'),
             ],
@@ -7696,6 +7708,84 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             ),
       const SizedBox(height: 24),
     ];
+  }
+
+  String _getEmptyStateTitle() {
+    switch (_overseerrRequestFilter) {
+      case 'pending':
+        return 'No pending requests';
+      case 'approved':
+        return 'No approved requests';
+      case 'declined':
+        return 'No declined requests';
+      case 'available':
+        return 'No available content';
+      case 'processing':
+        return 'Nothing processing';
+      case 'unavailable':
+        return 'No unavailable requests';
+      default:
+        return 'No requests found';
+    }
+  }
+
+  Widget _buildFilterSelector() {
+    const filterOptions = {
+      'pending': 'Pending',
+      'approved': 'Approved',
+      'declined': 'Declined',
+      'available': 'Available',
+      'processing': 'Processing',
+      'unavailable': 'Unavailable',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          width: 1,
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: _overseerrRequestFilter,
+        underline: const SizedBox(),
+        isDense: true,
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+        dropdownColor: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        icon: Icon(
+          Icons.arrow_drop_down_rounded,
+          color: ZagColours.accentColor(context),
+        ),
+        items: filterOptions.entries.map((entry) {
+          return DropdownMenuItem<String>(
+            value: entry.key,
+            child: Text(entry.value),
+          );
+        }).toList(),
+        onChanged: (newFilter) {
+          if (newFilter == null) return;
+          setState(() {
+            _overseerrRequestFilter = newFilter;
+          });
+          UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
+          _loadOverseerrRequests();
+        },
+      ),
+    );
   }
 
   List<Widget> _buildDownloadHistorySection() {
