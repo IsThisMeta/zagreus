@@ -105,21 +105,17 @@ class DeepCutsService {
   }
 
   /// Check if recommendations need regeneration (> 7 days old or never generated)
-  Future<bool> needsRegeneration() async {
+  /// Pass existing result to avoid redundant API calls
+  bool needsRegeneration({DeepCutsResult? existingResult}) {
     if (!ZagreusMega.isEnabled) return false;
 
-    try {
-      final result = await fetchRecommendations();
-      if (!result.success || result.nextGenerationAt == null) {
-        return true; // No data or error, should try to generate
-      }
-
-      // Check if it's time for next generation
-      return DateTime.now().isAfter(result.nextGenerationAt!);
-    } catch (e, stack) {
-      ZagLogger().error('Error checking regeneration status', e, stack);
-      return false;
+    if (existingResult == null) return true;
+    if (!existingResult.success || existingResult.nextGenerationAt == null) {
+      return true; // No data or error, should try to generate
     }
+
+    // Check if it's time for next generation
+    return DateTime.now().isAfter(existingResult.nextGenerationAt!);
   }
 
   /// Fetch cached Deep Cuts recommendations from backend
@@ -297,14 +293,14 @@ class DeepCutsService {
 
   /// Convenience method to fetch or generate as needed
   Future<DeepCutsResult> syncIfNeeded() async {
-    // First try to fetch existing
+    // First try to fetch existing - do this ONCE
     final fetchResult = await fetchRecommendations();
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
-      // Check if regeneration is needed
-      final needsRegen = await needsRegeneration();
+      // Check if regeneration is needed based on the result we just fetched
+      final needsRegen = needsRegeneration(existingResult: fetchResult);
       if (!needsRegen) {
-        return fetchResult; // All good
+        return fetchResult; // All good, return what we already have
       }
     }
 

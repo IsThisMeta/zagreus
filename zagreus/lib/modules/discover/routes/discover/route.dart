@@ -206,6 +206,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
+  bool _deepCutsSyncInitialized = false;
 
   @override
   void initState() {
@@ -228,6 +229,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
     _startAutoScroll();
+    _syncDeepCutsIfNeeded();
   }
 
   void _refreshQuickSetupModal() {
@@ -245,20 +247,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadMostAnticipatedMovies();
     _loadPopularPeople();
     _loadSonarrAiringNext();
-    _syncDeepCutsIfNeeded();
   }
 
   Future<void> _syncDeepCutsIfNeeded() async {
-    if (!ZagreusMega.isEnabled) return;
+    // Guard to ensure this only runs once
+    if (_deepCutsSyncInitialized || !ZagreusMega.isEnabled) return;
+    _deepCutsSyncInitialized = true;
 
     try {
       final deepCutsService = DeepCutsService();
-      final needsRegen = await deepCutsService.needsRegeneration();
+      // Fetch current state once
+      final fetchResult = await deepCutsService.fetchRecommendations();
+
+      // Check if regeneration is needed based on fetched data
+      final needsRegen = deepCutsService.needsRegeneration(
+        existingResult: fetchResult,
+      );
 
       if (needsRegen) {
         ZagLogger().debug('Deep Cuts need regeneration - triggering...');
         // Fire and forget - don't await
-        deepCutsService.syncIfNeeded();
+        deepCutsService.generateRecommendations();
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts sync check failed', e, stack);
@@ -5757,11 +5766,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<DeepCutsResult>(
       future: _deepCutsFuture,
       builder: (context, futureSnapshot) {
-        // Check if refresh is available (nextGenerationAt has passed)
+        // Only show refresh button if:
+        // 1. We have no data yet (empty state) OR
+        // 2. We have data but it's time for regeneration (nextGenerationAt has passed)
+        // Do NOT show if we have a successful list that's still fresh
         final canRefresh = !futureSnapshot.hasData ||
             !futureSnapshot.data!.success ||
-            futureSnapshot.data!.nextGenerationAt == null ||
-            DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!);
+            (futureSnapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
