@@ -124,7 +124,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
 
   List<Widget> _moduleList() {
     final bool isPro = ZagreusPro.isEnabled;
-    final modules = ZagModule.active
+    final modules = [ZagModule.DASHBOARD, ...ZagModule.active]
         .where((module) => module.settingsRoute != null)
         .toList();
 
@@ -138,10 +138,8 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
       );
     }
 
-    // Remove Dashboard/Discover modules (redundant - settings moved elsewhere)
-    modules.removeWhere(
-      (module) => module == ZagModule.DASHBOARD || module == ZagModule.DISCOVER,
-    );
+    // Remove Discover module (redundant - settings moved elsewhere)
+    modules.removeWhere((module) => module == ZagModule.DISCOVER);
 
     return modules.map(_tileFromModuleMap).toList();
   }
