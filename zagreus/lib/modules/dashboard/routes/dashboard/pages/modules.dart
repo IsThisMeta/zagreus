@@ -60,7 +60,12 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
         if (_requiresPro(module) && !ZagreusPro.isEnabled) {
           return;
         }
-        
+
+        // Skip Dashboard module for premium users (redundant)
+        if (module == ZagModule.DASHBOARD && ZagreusPro.isEnabled) {
+          return;
+        }
+
         if (module.isEnabled) {
           if (module == ZagModule.WAKE_ON_LAN) {
             modules.add(_buildWakeOnLAN(context, index));
@@ -82,7 +87,12 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       if (_requiresPro(module) && !ZagreusPro.isEnabled) {
         return;
       }
-      
+
+      // Skip Dashboard module for premium users (redundant)
+      if (module == ZagModule.DASHBOARD && ZagreusPro.isEnabled) {
+        return;
+      }
+
       if (module.isEnabled) {
         if (module == ZagModule.WAKE_ON_LAN) {
           modules.add(_buildWakeOnLAN(context, index));
