@@ -7305,16 +7305,21 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   }
 
   Future<void> _loadLidarrRecentlyDownloaded() async {
+    print('🎵 _loadLidarrRecentlyDownloaded() called');
     if (!mounted) return;
 
     try {
+      print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
       if (ZagProfile.current.lidarrEnabled) {
+        print('🎵 Creating Lidarr API...');
         final api = LidarrAPI.from(ZagProfile.current);
+        print('🎵 Fetching Lidarr history...');
         final history = await api.getHistory(
           sortKey: 'date',
           sortDir: 'descending',
           pageSize: 100,
         );
+        print('🎵 Got ${history.length} history records');
 
         // Filter to only downloadImported events and dedupe by album
         final seenAlbumIds = <int>{};
@@ -7351,12 +7356,18 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           }
         }
 
+        print('🎵 Processed ${albums.length} albums');
         if (!mounted) return;
         setState(() {
           _lidarrRecentlyDownloaded = albums;
         });
+        print('🎵 State updated with ${_lidarrRecentlyDownloaded.length} albums');
+      } else {
+        print('🎵 Lidarr is disabled, skipping');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Failed to load Lidarr recently downloaded: $e');
+      print('❌ Stack trace: $stackTrace');
       ZagLogger().debug('Failed to load Lidarr recently downloaded: $e');
       // Fail silently - this is optional data
     }
@@ -7495,6 +7506,9 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         ? List<String>.from(sectionOrder)
         : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent'];
 
+    print('🎵 Ordered sections: $orderedSections');
+    print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
+
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
       'server_issues': _buildServerIssuesSection(),
@@ -7505,6 +7519,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       // TODO: Enable when Readarr API is fixed
       // if (ZagProfile.current.readarrEnabled) 'readarr_recent': _buildReadarrRecentSection(),
     };
+
+    print('🎵 Section widgets keys: ${sectionWidgets.keys.toList()}');
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -7705,6 +7721,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   }
 
   List<Widget> _buildLidarrRecentSection() {
+    print('🎵 _buildLidarrRecentSection() called with ${_lidarrRecentlyDownloaded.length} albums');
     return [
       LidarrRecentlyDownloadedCard(
         albums: _lidarrRecentlyDownloaded,

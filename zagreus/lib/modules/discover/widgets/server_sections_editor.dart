@@ -20,6 +20,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'overseerr_requests',
     'disk_space',
     'download_history',
+    'lidarr_recent',
+    'readarr_recent',
   ];
 
   static const Map<String, String> _sectionNames = {
@@ -27,6 +29,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'overseerr_requests': 'Overseerr Requests',
     'disk_space': 'Disk Space',
     'download_history': 'Download History',
+    'lidarr_recent': 'Recently Downloaded Albums',
+    'readarr_recent': 'Recently Downloaded Books',
   };
 
   late List<String> _sections;
@@ -303,6 +307,10 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
         return Icons.storage_rounded;
       case 'download_history':
         return Icons.history_rounded;
+      case 'lidarr_recent':
+        return Icons.album_rounded;
+      case 'readarr_recent':
+        return Icons.book_rounded;
       default:
         return Icons.view_list_rounded;
     }
