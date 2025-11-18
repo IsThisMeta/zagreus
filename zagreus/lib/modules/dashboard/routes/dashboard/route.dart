@@ -40,6 +40,11 @@ class _State extends State<DashboardRoute> {
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(initialPage: page);
 
+    // Add listener to rebuild app bar when page changes
+    _pageController?.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -54,6 +59,12 @@ class _State extends State<DashboardRoute> {
         _updateWidget();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
 
   Future<void> _updateWidget() async {
