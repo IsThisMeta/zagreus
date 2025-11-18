@@ -1448,10 +1448,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Widget>? _buildAppBarActions() {
     final enableLegacyModules = _showLegacyModules;
     final showAgentTab = _showAgentTab;
+    final modulesTabIndex = 0;
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
     final serverIndex = enableLegacyModules ? 4 : 3;
+    final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
 
     if (_isSearchActive) {
       return [
@@ -1499,9 +1501,42 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     final actions = <Widget>[];
-    if (_currentPageIndex == moviesTabIndex ||
+
+    // Show Agent and Search icons on Modules, Movies, Shows, and Server tabs for premium users
+    // Show download icon for free users on Modules tab
+    if (enableLegacyModules && _currentPageIndex == modulesTabIndex) {
+      // Modules tab
+      if (isPremium) {
+        if (showAgentTab) {
+          actions.add(
+            IconButton(
+              icon: const Icon(Icons.smart_toy),
+              tooltip: 'Z Agent',
+              onPressed: _openAgentOverlay,
+            ),
+          );
+        }
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Search',
+            onPressed: _openSearchOverlay,
+          ),
+        );
+      } else {
+        // Free users: show download icon
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.download_rounded),
+            tooltip: 'Downloads',
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        );
+      }
+    } else if (_currentPageIndex == moviesTabIndex ||
         _currentPageIndex == showsTabIndex ||
         _currentPageIndex == serverIndex) {
+      // Movies, Shows, and Server tabs
       if (showAgentTab) {
         actions.add(
           IconButton(

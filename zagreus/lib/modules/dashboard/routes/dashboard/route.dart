@@ -102,7 +102,7 @@ class _State extends State<DashboardRoute> {
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
             if (currentPage == 0) {
-              // Only show search and agent buttons for premium users
+              // Show search and agent buttons for premium users, download icon for free users
               final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
               if (isPremium) {
                 return Row(
@@ -119,8 +119,14 @@ class _State extends State<DashboardRoute> {
                     ),
                   ],
                 );
+              } else {
+                // Free users: show download icon
+                return IconButton(
+                  icon: const Icon(Icons.download_rounded),
+                  tooltip: 'Downloads',
+                  onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                );
               }
-              return const SizedBox();
             }
             return SwitchViewAction(pageController: _pageController);
           },

@@ -185,7 +185,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   String get title {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return 'Home';
+        return 'zagreus.Dashboard'.tr();
       case ZagModule.LIDARR:
         return 'Lidarr';
       case ZagModule.NZBGET:
