@@ -217,6 +217,12 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       radarrKey: demoConfig['radarr_key'] ?? '',
       radarrHeaders: {},
 
+      // Readarr
+      readarrEnabled: demoConfig['readarr_enabled'] ?? false,
+      readarrHost: demoConfig['readarr_host'] ?? '',
+      readarrKey: demoConfig['readarr_key'] ?? '',
+      readarrHeaders: {},
+
       // SABnzbd
       sabnzbdEnabled: demoConfig['sabnzbd_enabled'] ?? false,
       sabnzbdHost: demoConfig['sabnzbd_host'] ?? '',
