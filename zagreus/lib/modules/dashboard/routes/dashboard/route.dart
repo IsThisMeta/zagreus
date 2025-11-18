@@ -15,6 +15,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 
@@ -102,9 +103,12 @@ class _State extends State<DashboardRoute> {
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
             if (currentPage == 0) {
-              // Show search and agent buttons for premium users, download icon for free users
-              final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
-              if (isPremium) {
+              // Show search and agent buttons based on tier
+              final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+              final isPro = ZagreusPro.isEnabled;
+
+              if (isMegaOrUltra) {
+                // Mega/Ultra: Show both Agent and Search
                 return Row(
                   children: [
                     IconButton(
@@ -118,6 +122,13 @@ class _State extends State<DashboardRoute> {
                       onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                     ),
                   ],
+                );
+              } else if (isPro) {
+                // Pro: Show only Search
+                return IconButton(
+                  icon: const Icon(Icons.search_rounded),
+                  tooltip: 'Search',
+                  onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                 );
               } else {
                 // Free users: show download icon
