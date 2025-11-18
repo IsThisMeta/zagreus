@@ -1293,6 +1293,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Build app bar here so it rebuilds when _currentPageIndex changes
+    final appBar = ZagAppBar(
+      title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
+      useDrawer: true,
+      actions: _buildAppBarActions(),
+    );
+
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
         ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
@@ -1302,11 +1309,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         scaffoldKey: _scaffoldKey,
         module: ZagModule.DISCOVER,
         drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
-        appBar: ZagAppBar(
-          title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
-          useDrawer: true,
-          actions: _buildAppBarActions(),
-        ),
+        appBar: appBar,
         body: _body(),
         bottomNavigationBar: (_isSearchActive || _isAgentActive)
             ? null

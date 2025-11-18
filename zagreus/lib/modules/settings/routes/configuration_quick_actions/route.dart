@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/system/quick_actions/quick_actions.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationQuickActionsRoute extends StatefulWidget {
   const ConfigurationQuickActionsRoute({
@@ -45,7 +46,7 @@ class _State extends State<ConfigurationQuickActionsRoute>
           ZagModule.NZBGET.title,
           ZagreusDatabase.QUICK_ACTIONS_NZBGET,
         ),
-        if (ZagModule.OVERSEERR.featureFlag)
+        if (ZagModule.OVERSEERR.featureFlag && ZagreusPro.isEnabled)
           _actionTile(
             ZagModule.OVERSEERR.title,
             ZagreusDatabase.QUICK_ACTIONS_OVERSEERR,
