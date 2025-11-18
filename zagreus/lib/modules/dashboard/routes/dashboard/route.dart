@@ -102,8 +102,9 @@ class _State extends State<DashboardRoute> {
             final controller = _pageController;
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
+
             if (currentPage == 0) {
-              // Show search and agent buttons based on tier
+              // Modules tab - show tier-based icons
               final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
               final isPro = ZagreusPro.isEnabled;
 
@@ -139,6 +140,8 @@ class _State extends State<DashboardRoute> {
                 );
               }
             }
+
+            // Calendar tab (page 1) - show view switcher for all users
             return SwitchViewAction(pageController: _pageController);
           },
         ),
