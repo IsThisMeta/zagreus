@@ -52,10 +52,9 @@ import 'package:zagreus/modules/lidarr/widgets/recently_downloaded_card.dart';
 import 'package:zagreus/modules/lidarr/core/state.dart';
 import 'package:zagreus/modules/lidarr/core/api/data/history.dart';
 import 'package:zagreus/modules/lidarr/core/api/api.dart';
-// TODO: Re-enable when Readarr API models are fixed
-// import 'package:zagreus/modules/readarr/widgets/recently_downloaded_card.dart';
-// import 'package:zagreus/modules/readarr/core/state.dart';
-// import 'package:zagreus/api/readarr/readarr.dart';
+import 'package:zagreus/modules/readarr/widgets/recently_downloaded_card.dart';
+import 'package:zagreus/modules/readarr/core/api/api.dart';
+import 'package:zagreus/modules/readarr/core/api/data/history.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
@@ -7035,8 +7034,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   double _downloadHistoryTotalGB = 0;
   int _downloadHistoryWeeks = 2; // Default to 2 weeks for better overview
   List<LidarrRecentlyDownloadedAlbum> _lidarrRecentlyDownloaded = [];
-  // TODO: Re-enable when Readarr API is fixed
-  // List<ReadarrRecentlyDownloadedBook> _readarrRecentlyDownloaded = [];
+  List<ReadarrRecentlyDownloadedBook> _readarrRecentlyDownloaded = [];
   bool _overseerrEnabled = false;
   bool _overseerrLoading = false;
   String? _overseerrError;
@@ -7058,8 +7056,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       _loadOverseerrRequests(),
       _loadDownloadHistory(),
       _loadLidarrRecentlyDownloaded(),
-      // TODO: Fix Readarr API issues before enabling
-      // _loadReadarrRecentlyDownloaded(),
+      _loadReadarrRecentlyDownloaded(),
     ]);
   }
 
@@ -7378,69 +7375,86 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     }
   }
 
-  // TODO: Re-enable when Readarr API is fixed
-  // Future<void> _loadReadarrRecentlyDownloaded() async {
-  //   if (!mounted) return;
-  //
-  //   try {
-  //     if (ZagProfile.current.readarrEnabled) {
-  //       final api = ReadarrAPI.from(ZagProfile.current);
-  //       final history = await api.history.getHistory(
-  //         page: 1,
-  //         pageSize: 100,
-  //         sortKey: 'date',
-  //         sortDirection: 'descending',
-  //       );
-  //
-  //       // Filter to only download imported events and dedupe by book
-  //       final seenBookIds = <int>{};
-  //       final books = <ReadarrRecentlyDownloadedBook>[];
-  //
-  //       for (final record in history.records ?? []) {
-  //         if (record.eventType == 'downloadFolderImported' &&
-  //             record.bookId != null &&
-  //             !seenBookIds.contains(record.bookId)) {
-  //           seenBookIds.add(record.bookId!);
-  //
-  //           final book = record.book;
-  //           final author = record.author;
-  //
-  //           if (book != null) {
-  //             // Get cover URL
-  //             String? coverUrl;
-  //             if (book.images != null && book.images!.isNotEmpty) {
-  //               final coverImage = book.images!.firstWhere(
-  //                 (img) => img.coverType == 'cover',
-  //                 orElse: () => book.images!.first,
-  //               );
-  //               coverUrl = coverImage.url ?? coverImage.remoteUrl;
-  //             }
-  //
-  //             books.add(ReadarrRecentlyDownloadedBook(
-  //               bookId: record.bookId!,
-  //               authorId: record.authorId ?? 0,
-  //               bookTitle: book.title ?? 'Unknown Book',
-  //               authorName: author?.authorName,
-  //               coverUrl: coverUrl,
-  //               rating: book.ratings?.value,
-  //               downloadedAt: record.date ?? DateTime.now(),
-  //             ));
-  //
-  //             if (books.length >= 10) break; // Limit to 10 for card display
-  //           }
-  //         }
-  //       }
-  //
-  //       if (!mounted) return;
-  //       setState(() {
-  //         _readarrRecentlyDownloaded = books;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     ZagLogger().debug('Failed to load Readarr recently downloaded: $e');
-  //     // Fail silently - this is optional data
-  //   }
-  // }
+  Future<void> _loadReadarrRecentlyDownloaded() async {
+    print('📚 _loadReadarrRecentlyDownloaded() called');
+    if (!mounted) return;
+
+    try {
+      print('📚 Readarr enabled: ${ZagProfile.current.readarrEnabled}');
+      if (ZagProfile.current.readarrEnabled) {
+        print('📚 Creating Readarr API...');
+        final api = ReadarrAPI.from(ZagProfile.current);
+        print('📚 Fetching Readarr history...');
+        final history = await api.getHistory(
+          sortKey: 'date',
+          sortDir: 'descending',
+          pageSize: 100,
+        );
+        print('📚 Got ${history.length} history records');
+
+        // Filter to only downloadImported events and dedupe by book
+        final seenBookIds = <int>{};
+        final books = <ReadarrRecentlyDownloadedBook>[];
+
+        for (final record in history) {
+          if (record is ReadarrHistoryDataDownloadImported &&
+              !seenBookIds.contains(record.bookID)) {
+            seenBookIds.add(record.bookID);
+
+            try {
+              // Get book details for cover and rating
+              final book = await api.getBook(record.bookID);
+
+              // Get cover URL from book images
+              String? coverUrl;
+              if (book.images != null && book.images!.isNotEmpty) {
+                final coverImage = book.images!.firstWhere(
+                  (img) => img['coverType'] == 'cover',
+                  orElse: () => book.images!.first,
+                );
+                coverUrl = coverImage['url'] ?? coverImage['remoteUrl'];
+              }
+
+              // Fallback: construct cover URL manually if not found
+              if (coverUrl == null || coverUrl.isEmpty) {
+                coverUrl = '${ZagProfile.current.readarrHost}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
+              }
+
+              books.add(ReadarrRecentlyDownloadedBook(
+                bookId: record.bookID,
+                authorId: record.authorID,
+                bookTitle: book.title,
+                authorName: book.authorName,
+                coverUrl: coverUrl,
+                rating: book.rating,
+                downloadedAt: record.timestampObject ?? DateTime.now(),
+              ));
+
+              if (books.length >= 10) break; // Limit to 10 for card display
+            } catch (e) {
+              print('📚 Failed to get book details for ${record.bookID}: $e');
+              // Continue to next record if individual book fetch fails
+              continue;
+            }
+          }
+        }
+
+        print('📚 Processed ${books.length} books');
+        if (!mounted) return;
+        setState(() {
+          _readarrRecentlyDownloaded = books;
+        });
+        print('📚 State updated with ${_readarrRecentlyDownloaded.length} books');
+      } else {
+        print('📚 Readarr is disabled, skipping');
+      }
+    } catch (e, stackTrace) {
+      print('❌ Failed to load Readarr recently downloaded: $e');
+      print('❌ Stack trace: $stackTrace');
+      ZagLogger().debug('Failed to load Readarr recently downloaded: $e');
+      // Fail silently - this is optional data
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -7509,10 +7523,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     final sectionOrder = UnraidDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
-        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent'];
+        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
 
     print('🎵 Ordered sections: $orderedSections');
     print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
+    print('📚 Readarr enabled: ${ZagProfile.current.readarrEnabled}');
 
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
@@ -7521,8 +7536,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       'disk_space': _buildDiskSpaceSection(),
       if (ZagProfile.current.sabnzbdEnabled) 'download_history': _buildDownloadHistorySection(),
       if (ZagProfile.current.lidarrEnabled) 'lidarr_recent': _buildLidarrRecentSection(),
-      // TODO: Enable when Readarr API is fixed
-      // if (ZagProfile.current.readarrEnabled) 'readarr_recent': _buildReadarrRecentSection(),
+      if (ZagProfile.current.readarrEnabled) 'readarr_recent': _buildReadarrRecentSection(),
     };
 
     print('🎵 Section widgets keys: ${sectionWidgets.keys.toList()}');
@@ -7825,20 +7839,20 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     ];
   }
 
-  // TODO: Re-enable when Readarr API is fixed
-  // List<Widget> _buildReadarrRecentSection() {
-  //   return [
-  //     ReadarrRecentlyDownloadedCard(
-  //       books: _readarrRecentlyDownloaded,
-  //       onSeeAll: () {
-  //         // TODO: Navigate to full Readarr history page
-  //       },
-  //       onBookTap: (book) {
-  //         // TODO: Navigate to book details
-  //       },
-  //     ),
-  //   ];
-  // }
+  List<Widget> _buildReadarrRecentSection() {
+    print('📚 _buildReadarrRecentSection() called with ${_readarrRecentlyDownloaded.length} books');
+    return [
+      ReadarrRecentlyDownloadedCard(
+        books: _readarrRecentlyDownloaded,
+        onSeeAll: () {
+          // TODO: Navigate to full Readarr history page
+        },
+        onBookTap: (book) {
+          // TODO: Navigate to book details
+        },
+      ),
+    ];
+  }
 
   Future<void> _openServerSectionsEditor() async {
     final updated = await showServerSectionsEditorSheet(context);
