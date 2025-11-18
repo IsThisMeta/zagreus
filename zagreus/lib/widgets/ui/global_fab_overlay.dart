@@ -113,6 +113,7 @@ class ZagGlobalFABManager {
 
     if (routeLower.contains('sonarr')) return 'sonarr';
     if (routeLower.contains('radarr')) return 'radarr';
+    if (routeLower.contains('readarr')) return 'readarr';
     if (routeLower.contains('lidarr')) return 'lidarr';
     if (routeLower.contains('tautulli')) return 'tautulli';
     if (routeLower.contains('sabnzbd')) return 'sabnzbd';
