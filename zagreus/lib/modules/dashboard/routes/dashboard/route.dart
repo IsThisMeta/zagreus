@@ -103,9 +103,12 @@ class _State extends State<DashboardRoute> {
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
             if (currentPage == 0) {
-              // Show search and agent buttons for Mega/Ultra users, download icon for Pro/free users
-              final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
-              if (isPremium) {
+              // Show search and agent buttons based on tier
+              final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+              final isPro = ZagreusPro.isEnabled;
+
+              if (isMegaOrUltra) {
+                // Mega/Ultra: Show both Agent and Search
                 return Row(
                   children: [
                     IconButton(
@@ -119,6 +122,13 @@ class _State extends State<DashboardRoute> {
                       onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                     ),
                   ],
+                );
+              } else if (isPro) {
+                // Pro: Show only Search
+                return IconButton(
+                  icon: const Icon(Icons.search_rounded),
+                  tooltip: 'Search',
+                  onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                 );
               } else {
                 // Free users: show download icon

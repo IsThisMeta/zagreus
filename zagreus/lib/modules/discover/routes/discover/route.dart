@@ -1453,7 +1453,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
     final serverIndex = enableLegacyModules ? 4 : 3;
-    final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    final isPro = ZagreusPro.isEnabled;
 
     if (_isSearchActive) {
       return [
@@ -1502,11 +1503,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     final actions = <Widget>[];
 
-    // Show Agent and Search icons on Modules, Movies, Shows, and Server tabs for premium users
-    // Show download icon for free users on Modules tab
+    // Show icons based on tier and tab
     if (enableLegacyModules && _currentPageIndex == modulesTabIndex) {
       // Modules tab
-      if (isPremium) {
+      if (isMegaOrUltra) {
+        // Mega/Ultra: Show both Agent and Search
         if (showAgentTab) {
           actions.add(
             IconButton(
@@ -1516,6 +1517,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
           );
         }
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Search',
+            onPressed: _openSearchOverlay,
+          ),
+        );
+      } else if (isPro) {
+        // Pro: Show only Search
         actions.add(
           IconButton(
             icon: const Icon(Icons.search_rounded),
