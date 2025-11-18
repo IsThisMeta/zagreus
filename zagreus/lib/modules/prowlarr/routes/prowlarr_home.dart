@@ -77,6 +77,13 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Prowlarr - ${widget.indexer.displayName}'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search',
+              onPressed: () => _performSearch(_searchController.text.trim()),
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
             child: Padding(

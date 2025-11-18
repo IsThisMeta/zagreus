@@ -34,7 +34,6 @@ class _State extends State<ConfigurationAppearanceRoute>
     return ZagListView(
       controller: scrollController,
       children: [
-        ZagHeader(text: 'settings.Appearance'.tr()),
         _themeMode(),
         _imageBackgroundOpacity(),
         _useLunaseaColors(),

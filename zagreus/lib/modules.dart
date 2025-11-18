@@ -285,7 +285,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.DISCOVER:
         return ZagColours.currentAccent;
       case ZagModule.UNRAID:
-        return const Color(0xFFFF8C2F); // Unraid orange
+        return const Color(0xFFEA472B); // Updated Unraid brand orange
       case ZagModule.PROWLARR:
         return const Color(0xFF0087FF); // Prowlarr blue
       case ZagModule.READARR:
