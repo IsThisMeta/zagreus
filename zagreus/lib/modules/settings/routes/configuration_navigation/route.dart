@@ -41,7 +41,6 @@ class _State extends State<ConfigurationNavigationRoute>
         _moduleTabMemoryToggle(),
         _downloadsDrawer(),
         _legacyModulesTabToggle(),
-        _agentTabToggle(),
       ],
     );
   }
@@ -140,25 +139,6 @@ class _State extends State<ConfigurationNavigationRoute>
         body: const [
           TextSpan(
             text: 'Restore the Modules list as the first tab inside Dashboard.',
-          ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: db.update,
-        ),
-      ),
-    );
-  }
-
-  Widget _agentTabToggle() {
-    if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
-    const db = ZagreusDatabase.SHOW_AGENT_TAB;
-    return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Show Agent Button',
-        body: const [
-          TextSpan(
-            text: 'Show the Z Agent button in the app bar.',
           ),
         ],
         trailing: ZagSwitch(
