@@ -42,6 +42,8 @@ class ZagreusUltra {
     ZagreusDatabase.ZAGREUS_ULTRA_ENABLED.update(false);
     ZagreusDatabase.ZAGREUS_ULTRA_EXPIRY.update('');
     ZagreusDatabase.ZAGREUS_ULTRA_SUBSCRIPTION_TYPE.update('');
+
+    ZagreusPro.restoreBootModule();
   }
 
   static void applySubscription({

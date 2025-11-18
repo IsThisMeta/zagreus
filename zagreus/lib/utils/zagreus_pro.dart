@@ -62,6 +62,34 @@ class ZagreusPro {
       ZagreusDatabase.SETTINGS_LOCK_ENABLED.update(false);
       ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
     }
+
+    restoreBootModule();
+  }
+
+  /// Restore boot module when all premium tiers are disabled
+  static void restoreBootModule() {
+    // Only restore if no premium tier is active
+    if (ZagreusDatabase.ZAGREUS_PRO_ENABLED.read() ||
+        ZagreusDatabase.ZAGREUS_MEGA_ENABLED.read() ||
+        ZagreusDatabase.ZAGREUS_ULTRA_ENABLED.read()) {
+      print('Premium still active, keeping Discover boot module');
+      return;
+    }
+
+    // All premium tiers disabled - restore user's preference
+    final userPreference = ZagreusDatabase.USER_BOOT_MODULE.read();
+    if (userPreference.isNotEmpty) {
+      final preferredModule = ZagModule.fromKey(userPreference);
+      if (preferredModule != null && preferredModule != ZagModule.DISCOVER) {
+        BIOSDatabase.BOOT_MODULE.update(preferredModule);
+        print('Premium expired: Restoring boot module to $userPreference');
+        return;
+      }
+    }
+
+    // No preference saved, default to DASHBOARD
+    BIOSDatabase.BOOT_MODULE.update(ZagModule.DASHBOARD);
+    print('Premium expired: Restoring boot module to DASHBOARD');
   }
 
   /// Apply subscription data sourced from RevenueCat ONLY.
@@ -88,31 +116,25 @@ class ZagreusPro {
     _disablePro();
   }
 
-  /// Set up boot module for first premium activation (Pro/Mega/Ultra)
+  /// Set boot module to Discover for premium users
   /// Public so it can be called from Pro, Mega, or Ultra helpers
   static void setProBootModule() {
     try {
-      // Check if we've already done the first-time setup
-      if (ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.read()) {
-        print('Premium tier already activated before - respecting boot module preference');
+      final currentModule = BIOSDatabase.BOOT_MODULE.read();
+
+      // If already on Discover, nothing to do
+      if (currentModule == ZagModule.DISCOVER) {
+        print('Boot module already set to Discover');
         return;
       }
 
-      // First time a premium tier is being activated - set up boot module
-      final currentModule = BIOSDatabase.BOOT_MODULE.read();
+      // Save current module as user preference (for when premium expires)
+      ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
 
-      // Save current module as user preference (for when they toggle off)
-      if (currentModule != ZagModule.DISCOVER) {
-        ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
-      }
-
-      // Set boot module to Dashboard
+      // Set boot module to Discover (premium Dashboard)
       BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
 
-      // Mark first activation as complete so we don't do this again
-      ZagreusDatabase.ZAGREUS_PRO_FIRST_ACTIVATION_COMPLETE.update(true);
-
-      print('Premium tier first activation: Setting boot module to Dashboard');
+      print('Premium tier active: Setting boot module to Discover');
     } catch (e) {
       print('Error setting premium boot module: $e');
     }

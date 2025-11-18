@@ -52,6 +52,8 @@ class ZagreusMega {
     ZagreusDatabase.ZAGREUS_MEGA_ENABLED.update(false);
     ZagreusDatabase.ZAGREUS_MEGA_EXPIRY.update('');
     ZagreusDatabase.ZAGREUS_MEGA_SUBSCRIPTION_TYPE.update('');
+
+    ZagreusPro.restoreBootModule();
   }
 
   /// Apply subscription data sourced from RevenueCat ONLY.
