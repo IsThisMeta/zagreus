@@ -194,6 +194,7 @@ class _State extends State<SeriesDetailsRoute> with ZagLoadCallbackMixin {
           ),
           SonarrSeriesDetailsSeasonsPage(series: series),
           const SonarrSeriesDetailsHistoryPage(),
+          SonarrSeriesDetailsCastCrewPage(series: series),
         ],
       ),
     );

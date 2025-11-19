@@ -60,6 +60,7 @@ export 'models/root_folder/unmapped_folder.dart';
 
 /// Series
 export 'models/series/alternate_title.dart';
+export 'models/series/credits.dart';
 export 'models/series/image.dart';
 export 'models/series/rating.dart';
 export 'models/series/season_statistics.dart';
