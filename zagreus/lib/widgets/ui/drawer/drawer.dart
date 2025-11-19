@@ -198,7 +198,7 @@ class ZagDrawer extends StatelessWidget {
               Navigator.of(context).pop();
               if (!currentPage) {
                 ZagGlobalFABManager.instance.trackModuleLaunch(module.key);
-                module.launch();
+                module.launch(restore: false);
               }
             },
       ),

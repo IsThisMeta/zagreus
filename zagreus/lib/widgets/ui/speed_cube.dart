@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/router/router.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ZagSpeedCube extends StatefulWidget {
@@ -191,6 +193,16 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
                         print('🔍 FAB: Long press detected!');
                         if (_previousModuleKey != null) {
+                          // Save the current route before navigating away
+                          final currentLocation = ZagRouter.router.routeInformationProvider.value.location;
+                          if (currentLocation != null && currentLocation.isNotEmpty) {
+                            final currentModule = widget.currentModuleKey;
+                            if (currentModule.isNotEmpty) {
+                              ZagSessionState.instance.setModuleLastRoute(currentModule, currentLocation);
+                              print('🔍 FAB: Saved current route for bounce-back: $currentLocation');
+                            }
+                          }
+
                           print(
                               '🔍 FAB: Launching previous module: $_previousModuleKey');
                           final previousModule = modules.firstWhere(
@@ -199,7 +211,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                           );
 
                           try {
-                            await previousModule.launch();
+                            await previousModule.launch(); // restore defaults to true
                             print(
                                 '🔍 FAB: Successfully launched $_previousModuleKey');
 
@@ -322,9 +334,9 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
             await Future.delayed(const Duration(milliseconds: 100));
 
-            print('🔍 FAB: Calling module.launch()...');
+            print('🔍 FAB: Calling module.launch(restore: false)...');
             try {
-              await module.launch();
+              await module.launch(restore: false);
               print('🔍 FAB: module.launch() completed successfully');
 
               // Use the internal tracking method

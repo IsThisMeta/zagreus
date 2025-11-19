@@ -36,7 +36,7 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       return ZagMessage(
         text: 'zagreus.NoModulesEnabled'.tr(),
         buttonText: 'zagreus.GoToSettings'.tr(),
-        onTap: ZagModule.SETTINGS.launch,
+        onTap: () => ZagModule.SETTINGS.launch(restore: false),
       );
     }
     return ZagListView(
@@ -111,12 +111,12 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
     if (module == ZagModule.SETTINGS) {
       onTap = () {
         SettingsLockService.instance.ensureUnlocked(context).then((unlocked) {
-          if (unlocked) module.launch();
+          if (unlocked) module.launch(restore: false);
         });
       };
     } else {
       onTap = () {
-        module.launch();
+        module.launch(restore: false);
       };
     }
 
