@@ -570,6 +570,57 @@ class TMDBApi {
     }
   }
 
+  /// Get TMDB ID from IMDb ID for TV shows
+  /// Used for Sonarr series that have IMDb IDs but not TMDB IDs
+  static Future<int?> getTmdbIdFromImdb(String imdbId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '$_baseUrl/find/$imdbId?external_source=imdb_id&api_key=$_apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final tvResults = data['tv_results'] as List;
+
+        // Only proceed if exactly 1 result to avoid ambiguity
+        if (tvResults.length == 1) {
+          return tvResults[0]['id'] as int;
+        }
+
+        // Multiple or zero results = can't determine correct show
+        return null;
+      }
+
+      return null;
+    } catch (e) {
+      print('TMDB API Error (IMDb Lookup): $e');
+      return null;
+    }
+  }
+
+  /// Get TV show credits (cast and crew) from TMDB
+  static Future<Map<String, dynamic>?> getTvCredits(int tmdbId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/tv/$tmdbId/credits?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'cast': data['cast'] as List,
+          'crew': data['crew'] as List,
+        };
+      }
+
+      return null;
+    } catch (e) {
+      print('TMDB API Error (TV Credits): $e');
+      return null;
+    }
+  }
+
   static String? _extractYear(String? dateString) {
     if (dateString == null || dateString.isEmpty) return null;
     return dateString.split('-').first;
