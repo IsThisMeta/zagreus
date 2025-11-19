@@ -280,20 +280,23 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
       buttons.add(
         Positioned(
           bottom: 0,
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              final slideDistance = distance * _animationController.value;
-              final opacity = _animationController.value;
-              return Transform.translate(
-                offset: Offset(0, -slideDistance),
-                child: Opacity(
-                  opacity: opacity,
-                  child: child,
-                ),
-              );
-            },
-            child: _buildModuleButton(context, module),
+          child: Transform.translate(
+            offset: const Offset(-4, 0),
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                final slideDistance = distance * _animationController.value;
+                final opacity = _animationController.value;
+                return Transform.translate(
+                  offset: Offset(0, -slideDistance),
+                  child: Opacity(
+                    opacity: opacity,
+                    child: child,
+                  ),
+                );
+              },
+              child: _buildModuleButton(context, module),
+            ),
           ),
         ),
       );
