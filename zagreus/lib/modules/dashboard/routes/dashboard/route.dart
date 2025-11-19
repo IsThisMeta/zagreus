@@ -146,7 +146,7 @@ class _State extends State<DashboardRoute> {
                 // Free users: show download icon
                 return IconButton(
                   icon: const Icon(Icons.download_rounded),
-                  tooltip: 'Downloads',
+                  tooltip: 'Queue',
                   onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
                 );
               }

@@ -120,7 +120,7 @@ class _State extends State<OverseerrRoute> {
     return [
       IconButton(
         icon: const Icon(Icons.download_rounded),
-        tooltip: 'Downloads',
+        tooltip: 'Queue',
         onPressed: _openDownloadsDrawer,
       ),
     ];

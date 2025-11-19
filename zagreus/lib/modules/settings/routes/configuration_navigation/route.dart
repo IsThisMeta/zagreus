@@ -114,7 +114,7 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Downloads Drawer',
+        title: 'Queue Drawer',
         body: const [
           TextSpan(
             text: 'Access queues from the right edge.',
