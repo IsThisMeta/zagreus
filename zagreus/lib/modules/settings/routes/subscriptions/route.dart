@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                  : 'Unlock Dashboard module and more',
+                          : 'Unlock full homelab control & advanced modules',
             )
           ],
           trailing: GestureDetector(
@@ -96,7 +96,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                     ? 'Included with Ultra'
                     : isMega
                         ? 'Active • Mega plan'
-                        : 'AI recommendations and higher chat limits')
+                        : 'Add AI agent and recommendations to dashboard')
           ],
           trailing: ZagIconButton(
             icon: (isUltra || isMega)
@@ -114,7 +114,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             TextSpan(
               text: isUltra
                   ? ultraPlanLabel!
-                  : 'Upgrade to the most powerful models',
+                  : 'Use flagship models for AI features',
             ),
           ],
           trailing: ZagIconButton(
@@ -186,11 +186,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard, the Server module, Z Assistant access with GPT-5 mini, and more!"
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades, the Server module, Unraid integrations, and more!"
                   : 'Zagreus Pro unlocks:\n'
-                      '• Dashboard module\n'
-                      '• Server module\n'
-                      '• Limited Z Assistant access with GPT-5 mini\n'
+                      '• Dashboard enhancements\n'
+                      '• Unraid, Overseerr, and Search modules\n'
                       '• And more!\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
@@ -376,10 +375,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy AI Dashboard recommendations and higher GPT-5 mini Ask Z limits (15 messages every 12 hours)."
+                  ? "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5 mini (15 messages every 12 hours)."
                   : 'Zagreus Mega unlocks:\n'
-                      '• AI Dashboard recommendations powered by GPT-5 mini\n'
-                      '• Higher GPT-5 mini Ask Z limits\n'
+                      '• Fully unlocked AI agent and Dashboard recommendations\n'
+                      '• Ask Z powered by GPT-5 mini (15 messages every 12 hours)\n'
                       '• All Pro features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
