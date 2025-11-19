@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/system/session_state.dart';
@@ -107,6 +108,9 @@ class _RouteLocationTracker {
   }
 
   void _handleLocationChange() {
+    // Skip if module tab memory is disabled
+    if (!ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read()) return;
+
     final rawLocation = _provider.value.location ?? '';
     if (rawLocation.isEmpty) return;
 
