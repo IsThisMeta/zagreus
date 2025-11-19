@@ -41,6 +41,7 @@ class _State extends State<UnraidRoute> {
       appBar: ZagAppBar(
         title: 'Unraid',
         useDrawer: true,
+        actions: _buildAppBarActions(),
       ),
       bottomNavigationBar: UnraidNavigationBar(pageController: _pageController),
       body: _body(),
@@ -57,6 +58,24 @@ class _State extends State<UnraidRoute> {
         const UnraidVmPage(),
       ],
     );
+  }
+
+  List<Widget>? _buildAppBarActions() {
+    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return null;
+    return [
+      IconButton(
+        icon: const Icon(Icons.download_rounded),
+        tooltip: 'Queue',
+        onPressed: _openQueueDrawer,
+      ),
+    ];
+  }
+
+  void _openQueueDrawer() {
+    final scaffoldState = _scaffoldKey.currentState;
+    if (scaffoldState?.hasEndDrawer ?? false) {
+      scaffoldState?.openEndDrawer();
+    }
   }
 
   void _handlePageChanged() {
