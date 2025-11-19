@@ -24,8 +24,9 @@ class ZagRouter {
         _FABRouteObserver(), // Track routes for global FAB
       ],
     );
-    // Route tracking is now handled manually in Speed Cube long-press
-    // _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
+    // Route tracking saves routes as you navigate (for bounce-back feature)
+    // Restoration is controlled by module.launch(restore: true/false)
+    _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
   }
 
   void popSafely() {

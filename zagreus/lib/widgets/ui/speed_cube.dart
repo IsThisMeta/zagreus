@@ -324,16 +324,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
             await Future.delayed(const Duration(milliseconds: 100));
 
-            // Save current route before leaving for bounce-back feature
-            final currentLocation = ZagRouter.router.routeInformationProvider.value.location;
-            if (currentLocation != null && currentLocation.isNotEmpty) {
-              final currentModule = widget.currentModuleKey;
-              if (currentModule.isNotEmpty) {
-                ZagSessionState.instance.setModuleLastRoute(currentModule, currentLocation);
-                print('🔍 FAB: Saved current route for future bounce-back: $currentLocation');
-              }
-            }
-
+            // Route saving is handled automatically by _RouteLocationTracker
             print('🔍 FAB: Calling module.launch(restore: false)...');
             try {
               await module.launch(restore: false);
