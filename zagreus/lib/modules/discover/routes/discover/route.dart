@@ -7939,7 +7939,6 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   }
 
   List<Widget> _buildReadarrRecentSection() {
-    print('📚 _buildReadarrRecentSection() called with ${_readarrRecentlyDownloaded.length} books');
     return [
       ReadarrRecentlyDownloadedCard(
         books: _readarrRecentlyDownloaded,
