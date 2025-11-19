@@ -517,17 +517,17 @@ extension ZagModuleRoutingExtension on ZagModule {
     }
   }
 
-  Future<void> launch() async {
+  Future<void> launch({bool restore = true}) async {
     final home = homeRoute;
     if (home == null) return;
 
-    final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
+    final savedRoute = restore ? ZagSessionState.instance.getModuleLastRoute(key) : null;
     final shouldRestore =
         savedRoute != null && canRestoreRoute(savedRoute);
     final String targetRoute = shouldRestore ? savedRoute : home;
 
     ZagLogger().debug(
-      '🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)',
+      '🔍 Module.launch: restore=$restore, Restoring route => $shouldRestore ($targetRoute)',
     );
     ZagRouter.router.pushReplacement(targetRoute);
   }

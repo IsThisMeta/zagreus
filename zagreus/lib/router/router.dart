@@ -24,7 +24,8 @@ class ZagRouter {
         _FABRouteObserver(), // Track routes for global FAB
       ],
     );
-    _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
+    // Route tracking is now handled manually in Speed Cube long-press
+    // _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
   }
 
   void popSafely() {
