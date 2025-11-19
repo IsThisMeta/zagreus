@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/router/router.dart';
+import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ZagSpeedCube extends StatefulWidget {
@@ -192,16 +194,16 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                         print('🔍 FAB: Long press detected!');
                         if (_previousModuleKey != null) {
                           print(
-                              '🔍 FAB: Launching previous module: $_previousModuleKey');
+                              '🔍 FAB: Launching previous module with restore: $_previousModuleKey');
                           final previousModule = modules.firstWhere(
                             (m) => m.key == _previousModuleKey,
                             orElse: () => modules.first,
                           );
 
                           try {
-                            await previousModule.launch();
+                            await previousModule.launch(); // restore defaults to true
                             print(
-                                '🔍 FAB: Successfully launched $_previousModuleKey');
+                                '🔍 FAB: Successfully launched $_previousModuleKey with saved route');
 
                             // Swap the tracking so we can bounce back!
                             final temp = _lastLaunchedModuleKey;
@@ -322,9 +324,19 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
             await Future.delayed(const Duration(milliseconds: 100));
 
-            print('🔍 FAB: Calling module.launch()...');
+            // Save current route before leaving for bounce-back feature
+            final currentLocation = ZagRouter.router.routeInformationProvider.value.location;
+            if (currentLocation != null && currentLocation.isNotEmpty) {
+              final currentModule = widget.currentModuleKey;
+              if (currentModule.isNotEmpty) {
+                ZagSessionState.instance.setModuleLastRoute(currentModule, currentLocation);
+                print('🔍 FAB: Saved current route for future bounce-back: $currentLocation');
+              }
+            }
+
+            print('🔍 FAB: Calling module.launch(restore: false)...');
             try {
-              await module.launch();
+              await module.launch(restore: false);
               print('🔍 FAB: module.launch() completed successfully');
 
               // Use the internal tracking method

@@ -132,31 +132,26 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
     if (!isPro) {
       modules.removeWhere(
         (module) =>
-            module == ZagModule.DISCOVER || module == ZagModule.OVERSEERR,
+            module == ZagModule.DISCOVER ||
+            module == ZagModule.OVERSEERR ||
+            module == ZagModule.UNRAID,
       );
-    } else {
-      // Move DISCOVER to right after DASHBOARD if user has Pro
-      final discoverIndex = modules.indexOf(ZagModule.DISCOVER);
-      if (discoverIndex > 1) {
-        modules.removeAt(discoverIndex);
-        modules.insert(1, ZagModule.DISCOVER);
-      }
     }
+
+    // Remove Discover module (redundant - settings moved elsewhere)
+    modules.removeWhere(
+      (module) => module == ZagModule.DISCOVER || module == ZagModule.PROWLARR,
+    );
 
     return modules.map(_tileFromModuleMap).toList();
   }
 
   Widget _tileFromModuleMap(ZagModule module) {
-    final bool isDiscoverModule = module == ZagModule.DISCOVER;
-    final bool isPro = ZagreusPro.isEnabled;
-
     return ZagBlock(
       title: module.title,
       body: [
         TextSpan(
-          text: isDiscoverModule && isPro
-              ? 'Customize the order of sections in Dashboard'
-              : 'settings.ConfigureModule'.tr(args: [module.title])
+          text: 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
       trailing: ZagIconButton(

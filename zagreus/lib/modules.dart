@@ -172,7 +172,7 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.DISCOVER:
         return true;
       case ZagModule.UNRAID:
-        return ZagProfile.current.serverEnabled;
+        return ZagProfile.current.unraidEnabled;
       case ZagModule.PROWLARR:
         return !ZagBox.indexers.isEmpty;
       case ZagModule.READARR:
@@ -185,7 +185,7 @@ extension ZagModuleMetadataExtension on ZagModule {
   String get title {
     switch (this) {
       case ZagModule.DASHBOARD:
-        return 'Home';
+        return 'zagreus.Dashboard'.tr();
       case ZagModule.LIDARR:
         return 'Lidarr';
       case ZagModule.NZBGET:
@@ -285,7 +285,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.DISCOVER:
         return ZagColours.currentAccent;
       case ZagModule.UNRAID:
-        return const Color(0xFFFF8C2F); // Unraid orange
+        return const Color(0xFFEA472B); // Updated Unraid brand orange
       case ZagModule.PROWLARR:
         return const Color(0xFF0087FF); // Prowlarr blue
       case ZagModule.READARR:
@@ -517,17 +517,17 @@ extension ZagModuleRoutingExtension on ZagModule {
     }
   }
 
-  Future<void> launch() async {
+  Future<void> launch({bool restore = true}) async {
     final home = homeRoute;
     if (home == null) return;
 
-    final savedRoute = ZagSessionState.instance.getModuleLastRoute(key);
+    final savedRoute = restore ? ZagSessionState.instance.getModuleLastRoute(key) : null;
     final shouldRestore =
         savedRoute != null && canRestoreRoute(savedRoute);
     final String targetRoute = shouldRestore ? savedRoute : home;
 
     ZagLogger().debug(
-      '🔍 Module.launch: Restoring route => $shouldRestore ($targetRoute)',
+      '🔍 Module.launch: restore=$restore, Restoring route => $shouldRestore ($targetRoute)',
     );
     ZagRouter.router.pushReplacement(targetRoute);
   }

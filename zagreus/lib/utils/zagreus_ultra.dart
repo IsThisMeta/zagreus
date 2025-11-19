@@ -1,5 +1,6 @@
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ZagreusUltra {
   static bool get isEnabled {
@@ -41,6 +42,8 @@ class ZagreusUltra {
     ZagreusDatabase.ZAGREUS_ULTRA_ENABLED.update(false);
     ZagreusDatabase.ZAGREUS_ULTRA_EXPIRY.update('');
     ZagreusDatabase.ZAGREUS_ULTRA_SUBSCRIPTION_TYPE.update('');
+
+    ZagreusPro.restoreBootModule();
   }
 
   static void applySubscription({
@@ -57,6 +60,8 @@ class ZagreusUltra {
     );
     ZagreusDatabase.LAST_SUBSCRIPTION_VERIFY
         .update(DateTime.now().toUtc().toIso8601String());
+
+    ZagreusPro.setProBootModule();
   }
 
   static void disable() {

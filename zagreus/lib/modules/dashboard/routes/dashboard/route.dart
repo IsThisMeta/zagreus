@@ -15,6 +15,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 
@@ -39,6 +40,11 @@ class _State extends State<DashboardRoute> {
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
     _pageController = ZagPageController(initialPage: page);
 
+    // Add listener to rebuild app bar when page changes
+    _pageController?.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     // Inject global FAB overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ZagGlobalFABManager.instance.injectFAB(context);
@@ -53,6 +59,12 @@ class _State extends State<DashboardRoute> {
         _updateWidget();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
 
   Future<void> _updateWidget() async {
@@ -101,10 +113,14 @@ class _State extends State<DashboardRoute> {
             final controller = _pageController;
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
+
             if (currentPage == 0) {
-              // Only show search and agent buttons for premium users
-              final isPremium = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
-              if (isPremium) {
+              // Modules tab - show tier-based icons
+              final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+              final isPro = ZagreusPro.isEnabled;
+
+              if (isMegaOrUltra) {
+                // Mega/Ultra: Show both Agent and Search
                 return Row(
                   children: [
                     IconButton(
@@ -119,9 +135,24 @@ class _State extends State<DashboardRoute> {
                     ),
                   ],
                 );
+              } else if (isPro) {
+                // Pro: Show only Search
+                return IconButton(
+                  icon: const Icon(Icons.search_rounded),
+                  tooltip: 'Search',
+                  onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
+                );
+              } else {
+                // Free users: show download icon
+                return IconButton(
+                  icon: const Icon(Icons.download_rounded),
+                  tooltip: 'Downloads',
+                  onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                );
               }
-              return const SizedBox();
             }
+
+            // Calendar tab (page 1) - show view switcher for all users
             return SwitchViewAction(pageController: _pageController);
           },
         ),

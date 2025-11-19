@@ -35,13 +35,11 @@ class _State extends State<ConfigurationNavigationRoute>
     return ZagListView(
       controller: scrollController,
       children: [
-        const ZagHeader(text: 'Navigation'),
         _horizontalSwipeToggle(),
-        _speedCube(),
-        _moduleTabMemoryToggle(),
         _downloadsDrawer(),
         _legacyModulesTabToggle(),
-        _agentTabToggle(),
+        _speedCube(),
+        _moduleTabMemoryToggle(),
       ],
     );
   }
@@ -92,7 +90,7 @@ class _State extends State<ConfigurationNavigationRoute>
             title: 'Remember Module Page',
             body: const [
               TextSpan(
-                text: 'Jump back to the last page you viewed. Requires Speed Cube.',
+                text: 'Jump back to the last page you viewed.',
               ),
             ],
             trailing: ZagSwitch(
@@ -119,8 +117,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Downloads Drawer',
         body: const [
           TextSpan(
-            text:
-                'Access SABnzbd & NZBGet queues from the right edge.',
+            text: 'Access queues from the right edge.',
           ),
         ],
         trailing: ZagSwitch(
@@ -139,31 +136,20 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Show Modules Tab',
         body: const [
           TextSpan(
-            text: 'Restore the Modules list as the first tab inside Dashboard.',
+            text: 'Restores Modules tab in Dashboard.',
           ),
         ],
         trailing: ZagSwitch(
           value: db.read(),
-          onChanged: db.update,
-        ),
-      ),
-    );
-  }
-
-  Widget _agentTabToggle() {
-    if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
-    const db = ZagreusDatabase.SHOW_AGENT_TAB;
-    return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Show Agent Button',
-        body: const [
-          TextSpan(
-            text: 'Show the Z Agent button in the app bar.',
-          ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: db.update,
+          onChanged: (value) {
+            db.update(value);
+            if (!value &&
+                ZagreusDatabase.DISCOVER_DEFAULT_TAB.read() == 'modules') {
+              ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('movies');
+            } else if (value) {
+              ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
+            }
+          },
         ),
       ),
     );

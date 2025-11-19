@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/router/routes/settings.dart';
-import 'package:zagreus/api/prowlarr/prowlarr.dart';
 
 class ConfigurationSearchAddIndexerRoute extends StatefulWidget {
   const ConfigurationSearchAddIndexerRoute({
@@ -38,7 +37,6 @@ class _State extends State<ConfigurationSearchAddIndexerRoute>
   Widget _bottomActionBar() {
     return ZagBottomActionBar(
       actions: [
-        _testConnection(),
         ZagButton.text(
           text: 'search.AddIndexer'.tr(),
           icon: Icons.add_rounded,
@@ -61,52 +59,6 @@ class _State extends State<ConfigurationSearchAddIndexerRoute>
           },
         ),
       ],
-    );
-  }
-
-  Widget _testConnection() {
-    return ZagButton.text(
-      text: 'settings.TestConnection'.tr(),
-      icon: ZagIcons.CONNECTION_TEST,
-      onTap: () async {
-        if (_indexer.host.isEmpty) {
-          showZagErrorSnackBar(
-            title: 'settings.HostRequired'.tr(),
-            message: 'settings.HostRequiredMessage'.tr(args: ['Indexer']),
-          );
-          return;
-        }
-        if (_indexer.apiKey.isEmpty) {
-          showZagErrorSnackBar(
-            title: 'settings.ApiKeyRequired'.tr(),
-            message: 'settings.ApiKeyRequiredMessage'.tr(args: ['Indexer']),
-          );
-          return;
-        }
-
-        try {
-          final api = ProwlarrAPI(
-            host: _indexer.host,
-            apiKey: _indexer.apiKey,
-            headers: _indexer.headers.isNotEmpty ? _indexer.headers : null,
-          );
-          await api.getCategories();
-          showZagSuccessSnackBar(
-            title: 'settings.ConnectedSuccessfully'.tr(),
-            message: 'settings.ConnectedSuccessfullyMessage'.tr(args: ['Indexer']),
-          );
-        } catch (error) {
-          ZagLogger().error(
-            'Indexer Connection Test Failed',
-            error,
-            StackTrace.current,
-          );
-          showZagErrorSnackBar(
-            title: 'settings.ConnectionTestFailed'.tr(),
-            error: error,
-          );
-        }
-      },
     );
   }
 

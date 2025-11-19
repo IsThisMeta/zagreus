@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/system/session_state.dart';
@@ -23,7 +24,8 @@ class ZagRouter {
         _FABRouteObserver(), // Track routes for global FAB
       ],
     );
-    _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
+    // Route tracking is now handled manually in Speed Cube long-press
+    // _routeTracker = _RouteLocationTracker(router.routeInformationProvider);
   }
 
   void popSafely() {
@@ -107,30 +109,58 @@ class _RouteLocationTracker {
   }
 
   void _handleLocationChange() {
+    // Skip if module tab memory is disabled
+    if (!ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read()) {
+      print('🔍 RouteTracker: Memory disabled, skipping');
+      return;
+    }
+
     final rawLocation = _provider.value.location ?? '';
-    if (rawLocation.isEmpty) return;
+    if (rawLocation.isEmpty) {
+      print('🔍 RouteTracker: Empty location, skipping');
+      return;
+    }
 
     final uri = _normalizeUri(rawLocation);
-    if (uri == null) return;
+    if (uri == null) {
+      print('🔍 RouteTracker: Failed to normalize URI: $rawLocation');
+      return;
+    }
 
     var path = uri.path.isEmpty ? '/' : uri.path;
     if (path.length > 1 && path.endsWith('/')) {
       path = path.substring(0, path.length - 1);
     }
     final module = _moduleForPath(path);
-    if (module == null) return;
+    if (module == null) {
+      print('🔍 RouteTracker: No module for path: $path');
+      return;
+    }
 
     final home = module.homeRoute;
-    if (home == null) return;
+    if (home == null) {
+      print('🔍 RouteTracker: Module ${module.key} has no home route');
+      return;
+    }
 
-    if (!(path == home || path.startsWith('$home/'))) return;
+    if (!(path == home || path.startsWith('$home/'))) {
+      print('🔍 RouteTracker: Path $path not under home $home, skipping');
+      return;
+    }
 
     final normalizedLocation = uri.replace(fragment: null).toString();
-    if (!module.canRestoreRoute(normalizedLocation)) return;
+    if (!module.canRestoreRoute(normalizedLocation)) {
+      print('🔍 RouteTracker: Route $normalizedLocation not restorable for ${module.key}');
+      return;
+    }
 
     final last = ZagSessionState.instance.getModuleLastRoute(module.key);
-    if (last == normalizedLocation) return;
+    if (last == normalizedLocation) {
+      print('🔍 RouteTracker: Route $normalizedLocation already saved for ${module.key}, skipping');
+      return;
+    }
 
+    print('🔍 RouteTracker: Saving route $normalizedLocation for ${module.key}');
     ZagSessionState.instance.setModuleLastRoute(module.key, normalizedLocation);
   }
 

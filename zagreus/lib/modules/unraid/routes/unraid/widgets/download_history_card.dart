@@ -46,27 +46,6 @@ class DownloadHistoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.history,
-                size: 18, // Slightly smaller icon
-                color: _sectionIconColor(context),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Download History',
-                  style: (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
-                    fontSize: 15, // Slightly smaller
-                    fontWeight: FontWeight.w600,
-                    color: theme.textTheme.titleMedium?.color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8), // Tighter spacing
           Text(
             '${_formatSize(totalGB)} in last $periodLabel',
             style: (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(

@@ -40,6 +40,7 @@ import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/services/watch_history_sync_service.dart';
 import 'package:zagreus/services/device_id_service.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
@@ -52,10 +53,9 @@ import 'package:zagreus/modules/lidarr/widgets/recently_downloaded_card.dart';
 import 'package:zagreus/modules/lidarr/core/state.dart';
 import 'package:zagreus/modules/lidarr/core/api/data/history.dart';
 import 'package:zagreus/modules/lidarr/core/api/api.dart';
-// TODO: Re-enable when Readarr API models are fixed
-// import 'package:zagreus/modules/readarr/widgets/recently_downloaded_card.dart';
-// import 'package:zagreus/modules/readarr/core/state.dart';
-// import 'package:zagreus/api/readarr/readarr.dart';
+import 'package:zagreus/modules/readarr/widgets/recently_downloaded_card.dart';
+import 'package:zagreus/modules/readarr/core/api/api.dart';
+import 'package:zagreus/modules/readarr/core/api/data/history.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/widgets/ui/block/block.dart';
 import 'package:zagreus/widgets/ui/switch.dart';
@@ -207,13 +207,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
+  bool _deepCutsSyncInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _loadSavedSettings();
     _loadTrendingTimeWindowSetting();
-    _pageController = ZagPageController(initialPage: 0);
+    _ensureDiscoverDefaultTabIsValid();
+    _pageController = ZagPageController(
+      initialPage: _initialDiscoverTabIndex(),
+    );
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
         setState(() {
@@ -229,6 +233,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
     _startAutoScroll();
+    _syncDeepCutsIfNeeded();
   }
 
   void _refreshQuickSetupModal() {
@@ -246,20 +251,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadMostAnticipatedMovies();
     _loadPopularPeople();
     _loadSonarrAiringNext();
-    _syncDeepCutsIfNeeded();
   }
 
   Future<void> _syncDeepCutsIfNeeded() async {
-    if (!ZagreusMega.isEnabled) return;
+    // Guard to ensure this only runs once
+    if (_deepCutsSyncInitialized || !ZagreusMega.isEnabled) return;
+    _deepCutsSyncInitialized = true;
 
     try {
       final deepCutsService = DeepCutsService();
-      final needsRegen = await deepCutsService.needsRegeneration();
+      // Fetch current state once
+      final fetchResult = await deepCutsService.fetchRecommendations();
+
+      // Check if regeneration is needed based on fetched data
+      final needsRegen = deepCutsService.needsRegeneration(
+        existingResult: fetchResult,
+      );
 
       if (needsRegen) {
         ZagLogger().debug('Deep Cuts need regeneration - triggering...');
         // Fire and forget - don't await
-        deepCutsService.syncIfNeeded();
+        deepCutsService.generateRecommendations();
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts sync check failed', e, stack);
@@ -1292,8 +1304,49 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
 
+  List<String> _discoverTabKeys({bool? showLegacyModules}) {
+    final includeModules = showLegacyModules ?? _showLegacyModules;
+    return [
+      if (includeModules) 'modules',
+      'movies',
+      'shows',
+      'calendar',
+      'server',
+    ];
+  }
+
+  int _initialDiscoverTabIndex() {
+    final keys = _discoverTabKeys();
+    final stored = ZagreusDatabase.DISCOVER_DEFAULT_TAB.read();
+    if (stored != null) {
+      final index = keys.indexOf(stored);
+      if (index != -1) {
+        return index;
+      }
+    }
+    final fallback = keys.first;
+    ZagreusDatabase.DISCOVER_DEFAULT_TAB.update(fallback);
+    return 0;
+  }
+
+  void _ensureDiscoverDefaultTabIsValid() {
+    final keys = _discoverTabKeys();
+    final stored = ZagreusDatabase.DISCOVER_DEFAULT_TAB.read();
+    if (!keys.contains(stored)) {
+      ZagreusDatabase.DISCOVER_DEFAULT_TAB.update(keys.first);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _ensureDiscoverDefaultTabIsValid();
+    // Build app bar here so it rebuilds when _currentPageIndex changes
+    final appBar = ZagAppBar(
+      title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
+      useDrawer: true,
+      actions: _buildAppBarActions(),
+    );
+
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
         ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
@@ -1303,11 +1356,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         scaffoldKey: _scaffoldKey,
         module: ZagModule.DISCOVER,
         drawer: ZagDrawer(page: ZagModule.DISCOVER.key),
-        appBar: ZagAppBar(
-          title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
-          useDrawer: true,
-          actions: _buildAppBarActions(),
-        ),
+        appBar: appBar,
         body: _body(),
         bottomNavigationBar: (_isSearchActive || _isAgentActive)
             ? null
@@ -1446,10 +1495,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Widget>? _buildAppBarActions() {
     final enableLegacyModules = _showLegacyModules;
     final showAgentTab = _showAgentTab;
+    final modulesTabIndex = 0;
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
     final calendarIndex = enableLegacyModules ? 3 : 2;
     final serverIndex = enableLegacyModules ? 4 : 3;
+    final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    final isPro = ZagreusPro.isEnabled;
 
     if (_isSearchActive) {
       return [
@@ -1497,9 +1549,51 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     final actions = <Widget>[];
-    if (_currentPageIndex == moviesTabIndex ||
+
+    // Show icons based on tier and tab
+    if (enableLegacyModules && _currentPageIndex == modulesTabIndex) {
+      // Modules tab
+      if (isMegaOrUltra) {
+        // Mega/Ultra: Show both Agent and Search
+        if (showAgentTab) {
+          actions.add(
+            IconButton(
+              icon: const Icon(Icons.smart_toy),
+              tooltip: 'Z Agent',
+              onPressed: _openAgentOverlay,
+            ),
+          );
+        }
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Search',
+            onPressed: _openSearchOverlay,
+          ),
+        );
+      } else if (isPro) {
+        // Pro: Show only Search
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Search',
+            onPressed: _openSearchOverlay,
+          ),
+        );
+      } else {
+        // Free users: show download icon
+        actions.add(
+          IconButton(
+            icon: const Icon(Icons.download_rounded),
+            tooltip: 'Downloads',
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+        );
+      }
+    } else if (_currentPageIndex == moviesTabIndex ||
         _currentPageIndex == showsTabIndex ||
         _currentPageIndex == serverIndex) {
+      // Movies, Shows, and Server tabs
       if (showAgentTab) {
         actions.add(
           IconButton(
@@ -5710,11 +5804,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<DeepCutsResult>(
       future: _deepCutsFuture,
       builder: (context, futureSnapshot) {
-        // Check if refresh is available (nextGenerationAt has passed)
+        // Only show refresh button if:
+        // 1. We have no data yet (empty state) OR
+        // 2. We have data but it's time for regeneration (nextGenerationAt has passed)
+        // Do NOT show if we have a successful list that's still fresh
         final canRefresh = !futureSnapshot.hasData ||
             !futureSnapshot.data!.success ||
-            futureSnapshot.data!.nextGenerationAt == null ||
-            DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!);
+            (futureSnapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -7387,55 +7484,57 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         print('📚 Creating Readarr API...');
         final api = ReadarrAPI.from(ZagProfile.current);
         print('📚 Fetching Readarr history...');
-        final history = await api.history.get(
-          page: 1,
-          pageSize: 100,
+        final history = await api.getHistory(
           sortKey: 'date',
-          sortDirection: 'descending',
+          sortDir: 'descending',
+          pageSize: 100,
         );
-        print('📚 Got ${history.records?.length ?? 0} history records');
+        print('📚 Got ${history.length} history records');
 
-        // Filter to only download imported events and dedupe by book
+        // Filter to only downloadImported events and dedupe by book
         final seenBookIds = <int>{};
         final books = <ReadarrRecentlyDownloadedBook>[];
 
-        for (final record in history.records ?? []) {
-          try {
-            if (record.eventType == 'downloadFolderImported' &&
-                record.bookId != null &&
-                !seenBookIds.contains(record.bookId)) {
-              seenBookIds.add(record.bookId!);
+        for (final record in history) {
+          if (record is ReadarrHistoryDataDownloadImported &&
+              !seenBookIds.contains(record.bookID)) {
+            seenBookIds.add(record.bookID);
 
-              final book = record.book;
-              final author = record.author;
+            try {
+              // Get book details for cover and rating
+              final book = await api.getBook(record.bookID);
 
-              if (book != null) {
-                // Get cover URL from Readarr API (similar to Lidarr approach)
-                String? coverUrl;
-                try {
-                  // Readarr uses /mediacover/Book/{bookId} for book covers
-                  coverUrl = '${ZagProfile.current.readarrHost}/api/v1/mediacover/Book/${record.bookId}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
-                } catch (e) {
-                  print('📚 Failed to construct cover URL: $e');
-                  coverUrl = null;
-                }
-
-                books.add(ReadarrRecentlyDownloadedBook(
-                  bookId: record.bookId!,
-                  authorId: record.authorId ?? 0,
-                  bookTitle: book.title ?? 'Unknown Book',
-                  authorName: author?.authorName,
-                  coverUrl: coverUrl,
-                  rating: book.ratings?.value,
-                  downloadedAt: record.date ?? DateTime.now(),
-                ));
-
-                if (books.length >= 10) break; // Limit to 10 for card display
+              // Get cover URL from book images
+              String? coverUrl;
+              if (book.images != null && book.images!.isNotEmpty) {
+                final coverImage = book.images!.firstWhere(
+                  (img) => img['coverType'] == 'cover',
+                  orElse: () => book.images!.first,
+                );
+                coverUrl = coverImage['url'] ?? coverImage['remoteUrl'];
               }
+
+              // Fallback: construct cover URL manually if not found
+              if (coverUrl == null || coverUrl.isEmpty) {
+                coverUrl = '${ZagProfile.current.readarrHost}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
+              }
+
+              books.add(ReadarrRecentlyDownloadedBook(
+                bookId: record.bookID,
+                authorId: record.authorID,
+                bookTitle: book.title,
+                authorName: book.authorName,
+                coverUrl: coverUrl,
+                rating: book.rating,
+                downloadedAt: record.timestampObject ?? DateTime.now(),
+              ));
+
+              if (books.length >= 10) break; // Limit to 10 for card display
+            } catch (e) {
+              print('📚 Failed to get book details for ${record.bookID}: $e');
+              // Continue to next record if individual book fetch fails
+              continue;
             }
-          } catch (e) {
-            print('📚 Error processing record: $e');
-            continue; // Skip this record and continue with others
           }
         }
 
@@ -7523,10 +7622,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     final sectionOrder = UnraidDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
-        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent'];
+        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
 
     print('🎵 Ordered sections: $orderedSections');
     print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
+    print('📚 Readarr enabled: ${ZagProfile.current.readarrEnabled}');
 
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
