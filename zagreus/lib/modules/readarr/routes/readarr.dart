@@ -116,11 +116,6 @@ class _State extends State<ReadarrRoute> {
           icon: Icons.add_rounded,
           onPressed: () async => _enterAddAuthor(),
         ),
-        if (ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read())
-          ZagIconButton(
-            icon: Icons.download_rounded,
-            onPressed: _openQueueDrawer,
-          ),
         ZagIconButton(
           icon: Icons.more_vert_rounded,
           onPressed: () async => _handlePopup(),
@@ -194,13 +189,6 @@ class _State extends State<ReadarrRoute> {
         default:
           ZagLogger().warning('Unknown Case: ${values[1]}');
       }
-  }
-
-  void _openQueueDrawer() {
-    final scaffoldState = _scaffoldKey.currentState;
-    if (scaffoldState?.hasEndDrawer ?? false) {
-      scaffoldState?.openEndDrawer();
-    }
   }
 
   void _refreshProfile() {
