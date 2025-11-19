@@ -209,15 +209,20 @@ class _State extends State<DashboardRoute> {
       ),
     );
 
-    if (!_isAgentActive) return mainContent;
-
     return Stack(
       children: [
         mainContent,
         Positioned.fill(
-          child: KeyedSubtree(
-            key: const ValueKey('z_agent_overlay'),
-            child: const ZChatPage(),
+          child: Visibility(
+            visible: _isAgentActive,
+            maintainState: true,
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: KeyedSubtree(
+                key: const ValueKey('z_agent_overlay'),
+                child: const ZChatPage(),
+              ),
+            ),
           ),
         ),
       ],
