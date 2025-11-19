@@ -6,6 +6,7 @@ import 'package:zagreus/modules/search/routes/results/route.dart';
 import 'package:zagreus/modules/search/routes/search/route.dart';
 import 'package:zagreus/modules/search/routes/subcategories/route.dart';
 import 'package:zagreus/router/routes.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/vendor.dart';
 
 enum SearchRoutes with ZagRoutesMixin {
@@ -24,7 +25,7 @@ enum SearchRoutes with ZagRoutesMixin {
   ZagModule get module => ZagModule.SEARCH;
 
   @override
-  bool isModuleEnabled(BuildContext context) => true;
+  bool isModuleEnabled(BuildContext context) => ZagreusPro.isEnabled;
 
   @override
   GoRoute get routes {
