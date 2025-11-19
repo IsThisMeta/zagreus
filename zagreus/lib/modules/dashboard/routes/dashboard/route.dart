@@ -8,6 +8,7 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
+import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/appbar_agent_action.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
 import 'package:zagreus/router/routes/discover.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -18,6 +19,8 @@ import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
+import 'package:zagreus/router/routes/settings.dart';
 
 class DashboardRoute extends StatefulWidget {
   const DashboardRoute({
@@ -31,6 +34,7 @@ class DashboardRoute extends StatefulWidget {
 class _State extends State<DashboardRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
+  bool _isAgentActive = false;
 
   @override
   void initState() {
@@ -89,6 +93,25 @@ class _State extends State<DashboardRoute> {
     }
   }
 
+  void _openAgentOverlay() {
+    if (_isAgentActive) return;
+    setState(() {
+      _isAgentActive = true;
+    });
+  }
+
+  void _closeAgentOverlay() {
+    if (!_isAgentActive) return;
+    setState(() {
+      _isAgentActive = false;
+    });
+    FocusScope.of(context).unfocus();
+  }
+
+  void _showZAssistantSettings() {
+    SettingsRoutes.Z_AGENT.go();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -97,11 +120,30 @@ class _State extends State<DashboardRoute> {
       body: _body(),
       appBar: _appBar(),
       drawer: ZagDrawer(page: ZagModule.DASHBOARD.key),
-      bottomNavigationBar: HomeNavigationBar(pageController: _pageController),
+      bottomNavigationBar: _isAgentActive ? null : HomeNavigationBar(pageController: _pageController),
     );
   }
 
   PreferredSizeWidget _appBar() {
+    if (_isAgentActive) {
+      return ZagAppBar(
+        title: 'Z Agent',
+        useDrawer: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showZAssistantSettings,
+            tooltip: 'Z Agent Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _closeAgentOverlay,
+            tooltip: 'Close',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'Zagreus',
       useDrawer: true,
@@ -123,11 +165,7 @@ class _State extends State<DashboardRoute> {
                 // Mega/Ultra: Show both Agent and Search
                 return Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.smart_toy),
-                      tooltip: 'Z Agent',
-                      onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'agent': 'true'}),
-                    ),
+                    DashboardAppBarAgentAction(onPressed: _openAgentOverlay),
                     IconButton(
                       icon: const Icon(Icons.search_rounded),
                       tooltip: 'Search',
@@ -161,7 +199,7 @@ class _State extends State<DashboardRoute> {
   }
 
   Widget _body() {
-    return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
+    final mainContent = ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
       builder: (context, _) => ZagPageView(
         controller: _pageController,
         children: [
@@ -169,6 +207,20 @@ class _State extends State<DashboardRoute> {
           CalendarPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())),
         ],
       ),
+    );
+
+    if (!_isAgentActive) return mainContent;
+
+    return Stack(
+      children: [
+        mainContent,
+        Positioned.fill(
+          child: KeyedSubtree(
+            key: const ValueKey('z_agent_overlay'),
+            child: const ZChatPage(),
+          ),
+        ),
+      ],
     );
   }
 }
