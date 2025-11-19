@@ -12,7 +12,7 @@ class ZagSessionState {
   // Module last visited routes (module key -> full route path)
   final Map<String, String> _moduleLastRoutes = {};
 
-  bool get tabMemoryEnabled => ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read();
+  bool get tabMemoryEnabled => ZagreusDatabase.SPEED_CUBE_ENABLED.read();
 
   /// Get the saved tab position for a module, or null if not set
   int? getModuleTabPosition(String moduleKey) {
