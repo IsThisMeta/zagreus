@@ -133,20 +133,20 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.SHOW_LEGACY_MODULES_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Modules Tab',
+        title: 'Hide Modules Tab',
         body: const [
           TextSpan(
-            text: 'Restores Modules tab in Dashboard.',
+            text: 'Hides Modules tab in Dashboard.',
           ),
         ],
         trailing: ZagSwitch(
-          value: db.read(),
+          value: !db.read(),
           onChanged: (value) {
-            db.update(value);
-            if (!value &&
+            db.update(!value);
+            if (value &&
                 ZagreusDatabase.DISCOVER_DEFAULT_TAB.read() == 'modules') {
               ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('movies');
-            } else if (value) {
+            } else if (!value) {
               ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
             }
           },
