@@ -193,18 +193,8 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
                         print('🔍 FAB: Long press detected!');
                         if (_previousModuleKey != null) {
-                          // Save the current route before navigating away
-                          final currentLocation = ZagRouter.router.routeInformationProvider.value.location;
-                          if (currentLocation != null && currentLocation.isNotEmpty) {
-                            final currentModule = widget.currentModuleKey;
-                            if (currentModule.isNotEmpty) {
-                              ZagSessionState.instance.setModuleLastRoute(currentModule, currentLocation);
-                              print('🔍 FAB: Saved current route for bounce-back: $currentLocation');
-                            }
-                          }
-
                           print(
-                              '🔍 FAB: Launching previous module: $_previousModuleKey');
+                              '🔍 FAB: Launching previous module with restore: $_previousModuleKey');
                           final previousModule = modules.firstWhere(
                             (m) => m.key == _previousModuleKey,
                             orElse: () => modules.first,
@@ -213,7 +203,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                           try {
                             await previousModule.launch(); // restore defaults to true
                             print(
-                                '🔍 FAB: Successfully launched $_previousModuleKey');
+                                '🔍 FAB: Successfully launched $_previousModuleKey with saved route');
 
                             // Swap the tracking so we can bounce back!
                             final temp = _lastLaunchedModuleKey;
@@ -333,6 +323,16 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
             _toggle();
 
             await Future.delayed(const Duration(milliseconds: 100));
+
+            // Save current route before leaving for bounce-back feature
+            final currentLocation = ZagRouter.router.routeInformationProvider.value.location;
+            if (currentLocation != null && currentLocation.isNotEmpty) {
+              final currentModule = widget.currentModuleKey;
+              if (currentModule.isNotEmpty) {
+                ZagSessionState.instance.setModuleLastRoute(currentModule, currentLocation);
+                print('🔍 FAB: Saved current route for future bounce-back: $currentLocation');
+              }
+            }
 
             print('🔍 FAB: Calling module.launch(restore: false)...');
             try {
