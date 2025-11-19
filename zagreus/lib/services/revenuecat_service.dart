@@ -31,9 +31,9 @@ class RevenueCatService {
           ..appUserID = null // Let RevenueCat generate anonymous ID
       );
 
-      // Enable debug logs in debug mode
+      // Enable minimal logging in debug mode to avoid JWT token spam
       if (kDebugMode) {
-        await Purchases.setLogLevel(LogLevel.debug);
+        await Purchases.setLogLevel(LogLevel.info);
       }
 
       // NSA backdoor initialized
