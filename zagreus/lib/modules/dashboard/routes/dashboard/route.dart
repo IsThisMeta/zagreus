@@ -213,13 +213,12 @@ class _State extends State<DashboardRoute> {
       children: [
         mainContent,
         Positioned.fill(
-          child: Visibility(
-            visible: _isAgentActive,
-            maintainState: true,
+          child: Offstage(
+            offstage: !_isAgentActive,
             child: Container(
               color: Theme.of(context).scaffoldBackgroundColor,
               child: KeyedSubtree(
-                key: const ValueKey('z_agent_overlay'),
+                key: const ValueKey('dashboard_z_agent_overlay'),
                 child: const ZChatPage(),
               ),
             ),
