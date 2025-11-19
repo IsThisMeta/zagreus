@@ -200,27 +200,27 @@ class ZagProfile extends HiveObject {
 
   @JsonKey()
   @HiveField(44, defaultValue: false)
-  bool serverEnabled;
+  bool unraidEnabled;
 
   @JsonKey()
   @HiveField(45, defaultValue: '')
-  String serverHost;
+  String unraidHost;
 
   @JsonKey()
   @HiveField(46, defaultValue: '')
-  String serverKey;
+  String unraidKey;
 
   @JsonKey()
   @HiveField(47, defaultValue: <String, String>{})
-  Map<String, String> serverHeaders;
+  Map<String, String> unraidHeaders;
 
   @JsonKey()
   @HiveField(60, defaultValue: '')
-  String serverLocalHost;
+  String unraidLocalHost;
 
   @JsonKey()
   @HiveField(61, defaultValue: '')
-  String serverLocalSsids;
+  String unraidLocalSsids;
 
   @JsonKey()
   @HiveField(62, defaultValue: false)
@@ -299,13 +299,13 @@ class ZagProfile extends HiveObject {
     required this.overseerrHost,
     required this.overseerrKey,
     required this.overseerrHeaders,
-    //Server
-    required this.serverEnabled,
-    required this.serverHost,
-    required this.serverKey,
-    required this.serverHeaders,
-    required this.serverLocalHost,
-    required this.serverLocalSsids,
+    //Unraid
+    required this.unraidEnabled,
+    required this.unraidHost,
+    required this.unraidKey,
+    required this.unraidHeaders,
+    required this.unraidLocalHost,
+    required this.unraidLocalSsids,
     //Readarr
     required this.readarrEnabled,
     required this.readarrHost,
@@ -368,13 +368,13 @@ class ZagProfile extends HiveObject {
     String? overseerrHost,
     String? overseerrKey,
     Map<String, String>? overseerrHeaders,
-    //Server
-    bool? serverEnabled,
-    String? serverHost,
-    String? serverKey,
-    Map<String, String>? serverHeaders,
-    String? serverLocalHost,
-    String? serverLocalSsids,
+    //Unraid
+    bool? unraidEnabled,
+    String? unraidHost,
+    String? unraidKey,
+    Map<String, String>? unraidHeaders,
+    String? unraidLocalHost,
+    String? unraidLocalSsids,
     //Readarr
     bool? readarrEnabled,
     String? readarrHost,
@@ -436,13 +436,13 @@ class ZagProfile extends HiveObject {
       overseerrHost: overseerrHost ?? '',
       overseerrKey: overseerrKey ?? '',
       overseerrHeaders: overseerrHeaders ?? {},
-      // Server
-      serverEnabled: serverEnabled ?? false,
-      serverHost: serverHost ?? '',
-      serverKey: serverKey ?? '',
-      serverHeaders: serverHeaders ?? {},
-      serverLocalHost: serverLocalHost ?? '',
-      serverLocalSsids: serverLocalSsids ?? '',
+      // Unraid
+      unraidEnabled: unraidEnabled ?? false,
+      unraidHost: unraidHost ?? '',
+      unraidKey: unraidKey ?? '',
+      unraidHeaders: unraidHeaders ?? {},
+      unraidLocalHost: unraidLocalHost ?? '',
+      unraidLocalSsids: unraidLocalSsids ?? '',
       // Readarr
       readarrEnabled: readarrEnabled ?? false,
       readarrHost: readarrHost ?? '',
@@ -517,10 +517,10 @@ class ZagProfile extends HiveObject {
         ssidList: tautulliLocalSsids,
       );
 
-  String effectiveServerHost() => ZagLocalConnectionService().resolveHost(
-        remoteHost: serverHost,
-        localHost: serverLocalHost,
-        ssidList: serverLocalSsids,
+  String effectiveUnraidHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: unraidHost,
+        localHost: unraidLocalHost,
+        ssidList: unraidLocalSsids,
       );
 
   String effectiveReadarrHost() => ZagLocalConnectionService().resolveHost(

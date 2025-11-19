@@ -91,7 +91,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
       ];
 
   Widget _remoteHost() {
-    String host = ZagProfile.current.serverHost;
+    String host = ZagProfile.current.unraidHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -102,7 +102,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           prefill: host,
         );
         if (_values.item1) {
-          ZagProfile.current.serverHost = _values.item2;
+          ZagProfile.current.unraidHost = _values.item2;
           ZagProfile.current.save();
           context.read<UnraidState>().reset();
         }
@@ -112,7 +112,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
 
   Widget _localHost() {
     final profile = ZagProfile.current;
-    final host = profile.serverLocalHost;
+    final host = profile.unraidLocalHost;
     return ZagBlock(
       title: 'settings.LocalHost'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -123,7 +123,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           prefill: host,
         );
         if (result.item1) {
-          profile.serverLocalHost = result.item2;
+          profile.unraidLocalHost = result.item2;
           profile.save();
           await ZagLocalConnectionService().refreshSsid();
           context.read<UnraidState>().reset();
@@ -134,7 +134,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
 
   Widget _localSsids() {
     final profile = ZagProfile.current;
-    final ssids = profile.serverLocalSsids;
+    final ssids = profile.unraidLocalSsids;
     return ZagBlock(
       title: 'settings.TrustedSsids'.tr(),
       body: [
@@ -151,7 +151,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           extraText: [TextSpan(text: 'settings.TrustedSsidsHint'.tr())],
         );
         if (result.item1) {
-          profile.serverLocalSsids = result.item2;
+          profile.unraidLocalSsids = result.item2;
           profile.save();
           await ZagLocalConnectionService().refreshSsid();
           context.read<UnraidState>().reset();
@@ -169,8 +169,8 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
         final profile = ZagProfile.current;
         final advancedEnabled =
             ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
-        final hasLocalHost = profile.serverLocalHost.isNotEmpty;
-        final hasSsids = profile.serverLocalSsids.trim().isNotEmpty;
+        final hasLocalHost = profile.unraidLocalHost.isNotEmpty;
+        final hasSsids = profile.unraidLocalSsids.trim().isNotEmpty;
         final localConfigured = advancedEnabled && hasLocalHost && hasSsids;
 
         final title = 'settings.ConnectionStatus'.tr();
@@ -187,9 +187,9 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           );
         }
 
-        final effectiveHost = profile.effectiveServerHost();
+        final effectiveHost = profile.effectiveUnraidHost();
         final networkLabel = ssid ?? 'network.UnknownSsid'.tr();
-        final usingLocal = effectiveHost == profile.serverLocalHost;
+        final usingLocal = effectiveHost == profile.unraidLocalHost;
 
         final statusText = usingLocal
             ? 'settings.ConnectionStatusLocal'.tr(args: [networkLabel])
@@ -209,7 +209,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
   }
 
   Widget _apiKey() {
-    String apiKey = ZagProfile.current.serverKey;
+    String apiKey = ZagProfile.current.unraidKey;
     return ZagBlock(
       title: 'settings.ApiKey'.tr(),
       body: [
@@ -227,7 +227,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           prefill: apiKey,
         );
         if (_values.item1) {
-          ZagProfile.current.serverKey = _values.item2;
+          ZagProfile.current.unraidKey = _values.item2;
           ZagProfile.current.save();
           context.read<UnraidState>().reset();
         }
@@ -250,7 +250,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         ZagProfile _profile = ZagProfile.current;
-        final effectiveHost = _profile.effectiveServerHost();
+        final effectiveHost = _profile.effectiveUnraidHost();
         if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
@@ -259,7 +259,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
           );
           return;
         }
-        if (_profile.serverKey.isEmpty) {
+        if (_profile.unraidKey.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.ApiKeyRequired'.tr(),
             message: 'settings.ApiKeyRequiredMessage'
@@ -269,8 +269,8 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
         }
         UnraidAPI(
           host: effectiveHost,
-          apiKey: _profile.serverKey,
-          headers: Map<String, dynamic>.from(_profile.serverHeaders),
+          apiKey: _profile.unraidKey,
+          headers: Map<String, dynamic>.from(_profile.unraidHeaders),
         ).getSystemInfo().then(
           (info) {
             showZagSuccessSnackBar(

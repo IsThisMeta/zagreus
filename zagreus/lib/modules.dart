@@ -172,7 +172,7 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.DISCOVER:
         return true;
       case ZagModule.UNRAID:
-        return ZagProfile.current.serverEnabled;
+        return ZagProfile.current.unraidEnabled;
       case ZagModule.PROWLARR:
         return !ZagBox.indexers.isEmpty;
       case ZagModule.READARR:

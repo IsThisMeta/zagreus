@@ -41,9 +41,9 @@ class UnraidState extends ZagModuleState {
     ZagLogger().debug('UnraidState.resetProfile called');
     ZagProfile profile = ZagProfile.current;
     // Copy profile into state
-    _enabled = profile.serverEnabled;
-    _host = profile.effectiveServerHost();
-    _apiKey = profile.serverKey;
-    _headers = Map.unmodifiable(profile.serverHeaders);
+    _enabled = profile.unraidEnabled;
+    _host = profile.effectiveUnraidHost();
+    _apiKey = profile.unraidKey;
+    _headers = Map.unmodifiable(profile.unraidHeaders);
   }
 }
