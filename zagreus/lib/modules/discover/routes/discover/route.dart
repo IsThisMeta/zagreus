@@ -36,6 +36,7 @@ import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/unraid.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/services/z_conversation_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/services/watch_history_sync_service.dart';
@@ -128,6 +129,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   static const _deepCutsListKey =
       PageStorageKey<String>('discover_deep_cuts');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ZChatPageState> _agentChatKey = GlobalKey<ZChatPageState>();
   late ZagPageController _pageController;
   int _currentPageIndex = 0;
   bool _isSearchActive = false;
@@ -1405,7 +1407,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               color: Theme.of(context).scaffoldBackgroundColor,
               child: KeyedSubtree(
                 key: const ValueKey('discover_agent'),
-                child: const ZChatPage(),
+                child: ZChatPage(key: _agentChatKey),
               ),
             ),
           ),
@@ -1515,6 +1517,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (_isAgentActive) {
       return [
+        IconButton(
+          icon: const Icon(Icons.history),
+          onPressed: _showConversationHistory,
+          tooltip: 'Conversation History',
+        ),
         IconButton(
           icon: const Icon(Icons.tune),
           onPressed: _showZAssistantSettings,
@@ -3032,6 +3039,154 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         );
       },
     ).whenComplete(() => _quickSetupModalSetState = null);
+  }
+
+  Future<void> _showConversationHistory() async {
+    final conversationService = ZConversationService();
+    final conversations = await conversationService.listConversations();
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(
+                    'Conversation History',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // New Chat button
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('New Chat'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _agentChatKey.currentState?.clearChat();
+              },
+            ),
+            const Divider(height: 1),
+            // Conversation list
+            Expanded(
+              child: conversations.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No conversations yet',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Theme.of(context).disabledColor,
+                                ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: conversations.length,
+                      itemBuilder: (context, index) {
+                        final conversation = conversations[index];
+                        return ListTile(
+                          leading: const Icon(Icons.chat),
+                          title: Text(
+                            conversation.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${conversation.messageCount} messages • ${_formatDate(conversation.updatedAt)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Delete Conversation'),
+                                  content: const Text(
+                                    'Are you sure you want to delete this conversation?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(true),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true && mounted) {
+                                await conversationService.deleteConversation(
+                                  conversation.conversationId,
+                                );
+                                Navigator.of(context).pop();
+                                _showConversationHistory(); // Refresh list
+                              }
+                            },
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _agentChatKey.currentState?.loadConversation(
+                              conversation.conversationId,
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      return '${date.month}/${date.day}/${date.year}';
+    }
   }
 
   void _showZAssistantSettings() {

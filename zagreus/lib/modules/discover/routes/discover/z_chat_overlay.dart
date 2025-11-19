@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
+import 'package:zagreus/services/z_conversation_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/database/config.dart';
@@ -30,10 +31,12 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final StagedOperationsService _stagingService = StagedOperationsService();
+  final ZConversationService _conversationService = ZConversationService();
   bool _isThinking = false;
   final Set<String> _autoOpenedExploreStages = {};
   bool _isSignedIn = false;
   StreamSubscription<User?>? _authSubscription;
+  String? _currentConversationId;
 
   @override
   bool get wantKeepAlive => true;
@@ -108,15 +111,62 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
         .take(_maxHistoryEntries)
         .map((message) => message.toJson())
         .toList();
+
+    // Save to local storage
     ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(serialized);
+
+    // Also save to Supabase (fire and forget)
+    if (_currentConversationId != null && serialized.isNotEmpty) {
+      final title = _conversationService.generateTitle(serialized);
+      _conversationService.updateConversation(
+        _currentConversationId!,
+        title: title,
+        messages: serialized,
+      );
+    } else if (serialized.isNotEmpty && _currentConversationId == null) {
+      // Create new conversation if we don't have one yet
+      final title = _conversationService.generateTitle(serialized);
+      _conversationService
+          .createConversation(title: title, initialMessages: serialized)
+          .then((id) {
+        if (id != null && mounted) {
+          setState(() => _currentConversationId = id);
+        }
+      });
+    }
   }
 
   void clearChat() {
     setState(() {
       _messages.clear();
       _isThinking = false;
+      _currentConversationId = null; // Start fresh conversation
     });
     _persistHistory();
+  }
+
+  /// Load a specific conversation from Supabase
+  Future<void> loadConversation(String conversationId) async {
+    final conversation = await _conversationService.getConversation(conversationId);
+    if (conversation == null || !mounted) return;
+
+    final messages = conversation.messages
+        .map((m) => _ChatMessage.fromJson(m))
+        .toList();
+
+    setState(() {
+      _currentConversationId = conversationId;
+      _messages.clear();
+      _messages.addAll(messages);
+      _isThinking = false;
+    });
+
+    // Also update local storage
+    ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(
+      conversation.messages,
+    );
+
+    _scrollToBottom();
   }
 
   void _updateMessages(VoidCallback fn) {
