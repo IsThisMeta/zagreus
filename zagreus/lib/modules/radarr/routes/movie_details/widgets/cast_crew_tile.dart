@@ -16,7 +16,9 @@ class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
     return ZagBlock(
       title: credits.personName,
       posterPlaceholderIcon: ZagIcons.USER,
-      posterUrl: credits.images!.isEmpty ? null : credits.images![0].url,
+      posterUrl: credits.images!.isEmpty
+          ? null
+          : (credits.images![0].remoteUrl ?? credits.images![0].url),
       body: [
         TextSpan(text: _position),
         TextSpan(
