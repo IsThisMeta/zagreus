@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 
 class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
   final RadarrMovieCredits credits;
@@ -29,7 +29,18 @@ class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
           ),
         ),
       ],
-      onTap: credits.personTmdbId?.toString().openTmdbPerson,
+      onTap: credits.personTmdbId != null
+          ? () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PersonDetailsRoute(
+                    personId: credits.personTmdbId!,
+                    personName: credits.personName ?? '',
+                  ),
+                ),
+              );
+            }
+          : null,
     );
   }
 
