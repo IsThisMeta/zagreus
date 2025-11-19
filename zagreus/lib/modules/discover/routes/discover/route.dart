@@ -190,6 +190,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String? _radarrQualityProfileName;
   String? _radarrRootFolder;
   bool _radarrSearchForMissing = true;
+  bool _persistChatHistory = false;
+  bool _supabaseChatSync = false;
   int? _sonarrQualityProfileId;
   String? _sonarrQualityProfileName;
   String? _sonarrRootFolder;
@@ -1516,22 +1518,34 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     if (_isAgentActive) {
+      final persistLocal =
+          ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY.read();
+      final supabaseSync =
+          ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
+
       return [
         IconButton(
-          icon: const Icon(Icons.history),
-          onPressed: _showConversationHistory,
-          tooltip: 'Conversation History',
+          icon: const Icon(Icons.info_outline),
+          onPressed: _showZAgentQuickSetup,
+          tooltip: 'Z Agent setup',
         ),
         IconButton(
           icon: const Icon(Icons.tune),
           onPressed: _showZAssistantSettings,
           tooltip: 'Z Assistant Settings',
         ),
-        IconButton(
-          icon: const Icon(Icons.info_outline),
-          onPressed: _showZAgentQuickSetup,
-          tooltip: 'Z Agent setup',
-        ),
+        if (persistLocal && !supabaseSync)
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _agentChatKey.currentState?.clearChat(),
+            tooltip: 'Clear chat',
+          ),
+        if (supabaseSync)
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _agentChatKey.currentState?.startNewConversation(),
+            tooltip: 'New conversation',
+          ),
         if (_lastZAssistantStageId != null)
           IconButton(
             icon: const Icon(Icons.arrow_forward),
@@ -2718,6 +2732,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
     _radarrSearchForMissing =
         ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+    _persistChatHistory =
+        ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY.read();
+    _supabaseChatSync =
+        ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
 
     _sonarrQualityProfileId =
         ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
@@ -2896,6 +2914,141 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         },
                       ),
                       const SizedBox(height: 12),
+                      ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                              .read();
+                          return ZagBlock(
+                            title: 'Local Chat History',
+                            body: [
+                              TextSpan(
+                                text: enabled
+                                    ? 'Stored locally on this device'
+                                    : 'Stateless by default',
+                              ),
+                            ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase
+                                    .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                                    .update(value);
+                                setState(() => _persistChatHistory = value);
+
+                                if (value) {
+                                  // Mutually exclusive: disable Supabase
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                                      .update(false);
+                                  _supabaseChatSync = false;
+                                  _agentChatKey.currentState
+                                      ?.onSupabaseSyncChanged(false);
+                                }
+
+                                _agentChatKey.currentState
+                                    ?.onPersistenceChanged(value);
+                                showZagInfoSnackBar(
+                                  title: value
+                                      ? 'Local storage enabled'
+                                      : 'Local storage disabled',
+                                  message: value
+                                      ? 'Chat history will be kept on-device'
+                                      : 'Chat history will stay in-memory only',
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                              .read();
+                          return ZagBlock(
+                            title: 'Supabase Chats',
+                            body: [
+                              TextSpan(
+                                text: enabled
+                                    ? 'Sync chats to Supabase'
+                                    : 'Off by default',
+                              ),
+                            ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase
+                                    .Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                                    .update(value);
+                                setState(() => _supabaseChatSync = value);
+
+                                if (value) {
+                                  // Mutually exclusive: disable local persistence
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                                      .update(false);
+                                  _persistChatHistory = false;
+                                  _agentChatKey.currentState
+                                      ?.onPersistenceChanged(false);
+                                }
+
+                                _agentChatKey.currentState
+                                    ?.onSupabaseSyncChanged(value);
+                                showZagInfoSnackBar(
+                                  title: value
+                                      ? 'Supabase sync enabled'
+                                      : 'Supabase sync disabled',
+                                  message: value
+                                      ? 'Chats will sync to your account'
+                                      : 'Supabase chat sync paused',
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                          .listenableBuilder(
+                        builder: (context, _) {
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                              .read();
+                          return ZagBlock(
+                            title: 'Persist Chat History',
+                            body: [
+                              TextSpan(
+                                text: enabled
+                                    ? 'Chat history is stored on this device'
+                                    : 'Keep chat stateless unless enabled',
+                              ),
+                            ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase
+                                    .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                                    .update(value);
+                                _agentChatKey.currentState
+                                    ?.onPersistenceChanged(value);
+                                showZagInfoSnackBar(
+                                  title: value
+                                      ? 'Persistence Enabled'
+                                      : 'Persistence Disabled',
+                                  message: value
+                                      ? 'Z Agent will keep chat history locally'
+                                      : 'Z Agent will act stateless and stop storing chats',
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
                           .listenableBuilder(
                         builder: (context, _) {
@@ -3042,6 +3195,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _showConversationHistory() async {
+    if (!ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read()) return;
+
     final conversationService = ZConversationService();
     final conversations = await conversationService.listConversations();
 

@@ -41,6 +41,11 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   @override
   bool get wantKeepAlive => true;
 
+  bool get _persistenceEnabled =>
+      ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY.read();
+  bool get _supabaseEnabled =>
+      ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
+
   @override
   void initState() {
     super.initState();
@@ -88,6 +93,8 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   }
 
   void _hydrateHistory() {
+    if (!_persistenceEnabled) return;
+
     final stored = ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.read();
     if (stored is! List || stored.isEmpty) return;
 
@@ -107,32 +114,44 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   }
 
   void _persistHistory() {
+    if (!_persistenceEnabled) {
+      ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update([]);
+      // Still allow Supabase sync if enabled (stateless locally)
+      if (!_supabaseEnabled) return;
+    }
+
+    if (!_persistenceEnabled && _messages.isEmpty && !_supabaseEnabled) {
+      return;
+    }
+
     final serialized = _messages
         .take(_maxHistoryEntries)
         .map((message) => message.toJson())
         .toList();
 
     // Save to local storage
-    ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(serialized);
+    if (_persistenceEnabled) {
+      ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(serialized);
+    }
 
-    // Also save to Supabase (fire and forget)
-    if (_currentConversationId != null && serialized.isNotEmpty) {
-      final title = _conversationService.generateTitle(serialized);
-      _conversationService.updateConversation(
-        _currentConversationId!,
-        title: title,
-        messages: serialized,
-      );
-    } else if (serialized.isNotEmpty && _currentConversationId == null) {
-      // Create new conversation if we don't have one yet
-      final title = _conversationService.generateTitle(serialized);
-      _conversationService
-          .createConversation(title: title, initialMessages: serialized)
-          .then((id) {
-        if (id != null && mounted) {
-          setState(() => _currentConversationId = id);
-        }
-      });
+    if (_supabaseEnabled && serialized.isNotEmpty) {
+      if (_currentConversationId != null) {
+        final title = _conversationService.generateTitle(serialized);
+        _conversationService.updateConversation(
+          _currentConversationId!,
+          title: title,
+          messages: serialized,
+        );
+      } else {
+        final title = _conversationService.generateTitle(serialized);
+        _conversationService
+            .createConversation(title: title, initialMessages: serialized)
+            .then((id) {
+          if (id != null && mounted) {
+            setState(() => _currentConversationId = id);
+          }
+        });
+      }
     }
   }
 
@@ -145,8 +164,53 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     _persistHistory();
   }
 
+  void onPersistenceChanged(bool enabled) {
+    if (!enabled) {
+      // Stop persisting and clear stored history
+      ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update([]);
+      setState(() {
+        _currentConversationId = null;
+      });
+      return;
+    }
+
+    _persistHistory();
+  }
+
+  void onSupabaseSyncChanged(bool enabled) {
+    if (!enabled) {
+      setState(() => _currentConversationId = null);
+      return;
+    }
+
+    // If enabling supabase and we already have messages, push them up
+    if (_messages.isNotEmpty) {
+      _persistHistory();
+    }
+  }
+
+  Future<void> startNewConversation() async {
+    setState(() {
+      _messages.clear();
+      _isThinking = false;
+      _currentConversationId = null;
+    });
+
+    if (_supabaseEnabled) {
+      final id =
+          await _conversationService.createConversation(title: 'New Chat');
+      if (mounted) {
+        setState(() => _currentConversationId = id);
+      }
+    }
+
+    _persistHistory();
+  }
+
   /// Load a specific conversation from Supabase
   Future<void> loadConversation(String conversationId) async {
+    if (!_supabaseEnabled) return;
+
     final conversation = await _conversationService.getConversation(conversationId);
     if (conversation == null || !mounted) return;
 
@@ -161,12 +225,123 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       _isThinking = false;
     });
 
-    // Also update local storage
-    ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(
-      conversation.messages,
-    );
+    // Also update local storage if enabled
+    if (_persistenceEnabled) {
+      ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(
+        conversation.messages,
+      );
+    } else {
+      ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update([]);
+    }
 
     _scrollToBottom();
+  }
+
+  Future<void> _showConversationHistory() async {
+    if (!_supabaseEnabled) return;
+
+    final conversations = await _conversationService.listConversations();
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(
+                    'Conversation History',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('New Chat'),
+              onTap: () {
+                Navigator.of(context).pop();
+                startNewConversation();
+              },
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: conversations.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No conversations yet',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Theme.of(context).disabledColor,
+                                ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: conversations.length,
+                      itemBuilder: (context, index) {
+                        final convo = conversations[index];
+                        return ListTile(
+                          leading: const Icon(Icons.chat),
+                          title: Text(
+                            convo.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${convo.messageCount} messages • ${_formatHistoryDate(convo.updatedAt)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            loadConversation(convo.conversationId);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatHistoryDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inDays == 0) return 'Today';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    return '${date.month}/${date.day}/${date.year}';
   }
 
   void _updateMessages(VoidCallback fn) {
@@ -1002,36 +1177,24 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
                                 color: ZagColours.currentAccent.withOpacity(0.18),
                               ),
                             ),
-                            /* Temporary test buttons
-                            const SizedBox(height: 24),
-                            OutlinedButton.icon(
-                              onPressed: _loadTestZAssistantResults,
-                              icon: const Icon(Icons.science),
-                              label: const Text('Test Z Assistant (Mock Data)'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ZagColours.currentAccent,
-                                side: BorderSide(
-                                  color: ZagColours.currentAccent.withOpacity(0.5),
+                            if (_supabaseEnabled) ...[
+                              const SizedBox(height: 24),
+                              OutlinedButton.icon(
+                                onPressed: _showConversationHistory,
+                                icon: const Icon(Icons.history),
+                                label: const Text('Open history'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: ZagColours.currentAccent,
+                                  side: BorderSide(
+                                    color: ZagColours.currentAccent.withOpacity(0.5),
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: _showMockOperationPicker,
-                              icon: const Icon(Icons.science),
-                              label: const Text('Test Operations (Mock Data)'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ZagColours.currentAccent,
-                                side: BorderSide(
-                                  color: ZagColours.currentAccent.withOpacity(0.5),
-                                ),
-                              ),
-                            ),
-                            */
+                            ],
                           ],
                         ),
                       )
-                : ListView.builder(
+                    : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
