@@ -10,12 +10,14 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_a
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/appbar_agent_action.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/appbar_search_action.dart';
+import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/router/routes/settings.dart';
 
 class DashboardRoute extends StatefulWidget {
   const DashboardRoute({
@@ -29,6 +31,7 @@ class DashboardRoute extends StatefulWidget {
 class _State extends State<DashboardRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
+  bool _isAgentActive = false;
 
   @override
   void initState() {
@@ -76,6 +79,25 @@ class _State extends State<DashboardRoute> {
     }
   }
 
+  void _openAgentOverlay() {
+    if (_isAgentActive) return;
+    setState(() {
+      _isAgentActive = true;
+    });
+  }
+
+  void _closeAgentOverlay() {
+    if (!_isAgentActive) return;
+    setState(() {
+      _isAgentActive = false;
+    });
+    FocusScope.of(context).unfocus();
+  }
+
+  void _showZAssistantSettings() {
+    SettingsRoutes.Z_AGENT.go();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -84,18 +106,37 @@ class _State extends State<DashboardRoute> {
       body: _body(),
       appBar: _appBar(),
       drawer: ZagDrawer(page: ZagModule.DASHBOARD.key),
-      bottomNavigationBar: HomeNavigationBar(pageController: _pageController),
+      bottomNavigationBar: _isAgentActive ? null : HomeNavigationBar(pageController: _pageController),
     );
   }
 
   PreferredSizeWidget _appBar() {
+    if (_isAgentActive) {
+      return ZagAppBar(
+        title: 'Z Agent',
+        useDrawer: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showZAssistantSettings,
+            tooltip: 'Z Agent Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _closeAgentOverlay,
+            tooltip: 'Close',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'Zagreus',
       useDrawer: true,
       scrollControllers: HomeNavigationBar.scrollControllers,
       pageController: _pageController,
       actions: [
-        const DashboardAppBarAgentAction(),
+        DashboardAppBarAgentAction(onPressed: _openAgentOverlay),
         const DashboardAppBarSearchAction(),
         SwitchViewAction(pageController: _pageController),
       ],
@@ -103,7 +144,7 @@ class _State extends State<DashboardRoute> {
   }
 
   Widget _body() {
-    return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
+    final mainContent = ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
       builder: (context, _) => ZagPageView(
         controller: _pageController,
         children: [
@@ -111,6 +152,23 @@ class _State extends State<DashboardRoute> {
           CalendarPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())),
         ],
       ),
+    );
+
+    if (!_isAgentActive) return mainContent;
+
+    return Stack(
+      children: [
+        mainContent,
+        Positioned.fill(
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: const KeyedSubtree(
+              key: ValueKey('dashboard_agent'),
+              child: ZChatPage(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/widgets/ui.dart';
-import 'package:zagreus/router/routes/settings.dart';
 
 class DashboardAppBarAgentAction extends StatelessWidget {
+  final VoidCallback onPressed;
+
   const DashboardAppBarAgentAction({
     Key? key,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ZagIconButton(
-      icon: Icons.psychology_rounded,
+      icon: Icons.smart_toy,
       iconSize: ZagUI.ICON_SIZE,
-      onPressed: SettingsRoutes.Z_AGENT.go,
+      onPressed: onPressed,
       tooltip: 'Z Agent',
     );
   }
