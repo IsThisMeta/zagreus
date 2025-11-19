@@ -233,7 +233,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                                 child: Icon(
                                   Icons.apps_rounded,
                                   color: currentModule.color,
-                                  size: 32,
+                                  size: 28.8,
                                 ),
                               ),
                             );
