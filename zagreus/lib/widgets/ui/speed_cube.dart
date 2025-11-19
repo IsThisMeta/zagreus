@@ -230,10 +230,13 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                               angle: _rotateAnimation.value * 2 * 3.14159,
                               child: Opacity(
                                 opacity: _isOpen ? 1.0 : 0.5,
-                                child: Icon(
-                                  Icons.apps_rounded,
-                                  color: currentModule.color,
-                                  size: 32,
+                                child: Transform.translate(
+                                  offset: const Offset(-4, 0),
+                                  child: Icon(
+                                    Icons.apps_rounded,
+                                    color: currentModule.color,
+                                    size: 28,
+                                  ),
                                 ),
                               ),
                             );
