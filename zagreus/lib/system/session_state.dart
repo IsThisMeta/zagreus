@@ -29,12 +29,14 @@ class ZagSessionState {
 
   /// Get the last visited route for a module, or null if not set
   String? getModuleLastRoute(String moduleKey) {
+    print('🔍 Session: getModuleLastRoute - tabMemoryEnabled=$tabMemoryEnabled');
     if (!tabMemoryEnabled) return null;
     return _moduleLastRoutes[moduleKey];
   }
 
   /// Save the last visited route for a module
   void setModuleLastRoute(String moduleKey, String routePath) {
+    print('🔍 Session: setModuleLastRoute - tabMemoryEnabled=$tabMemoryEnabled');
     if (!tabMemoryEnabled) return;
     _moduleLastRoutes[moduleKey] = routePath;
     print('🔍 Session: Saved ${moduleKey} last route: $routePath');
