@@ -12,17 +12,18 @@ import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 
-/// Simple stateless Z chat page for the Dashboard module
-/// Resets conversation when you leave Dashboard
+/// Z chat page for the Dashboard module.
+/// Persists the conversation locally so closing the overlay does not clear it.
 class ZChatPage extends StatefulWidget {
   const ZChatPage({Key? key}) : super(key: key);
 
   @override
-  State<ZChatPage> createState() => _ZChatPageState();
+  State<ZChatPage> createState() => ZChatPageState();
 }
 
-class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin {
+class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin {
   static const int _maxHistoryEntries = 12;
   final List<_ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
@@ -70,6 +71,8 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
         }
       }
     });
+
+    _hydrateHistory();
   }
 
   @override
@@ -79,6 +82,46 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
     _focusNode.dispose();
     _authSubscription?.cancel();
     super.dispose();
+  }
+
+  void _hydrateHistory() {
+    final stored = ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.read();
+    if (stored is! List || stored.isEmpty) return;
+
+    final restored = stored
+        .whereType<Map>()
+        .map((item) => _ChatMessage.fromJson(item.cast<String, dynamic>()))
+        .take(_maxHistoryEntries)
+        .toList();
+
+    if (restored.isEmpty) return;
+
+    setState(() {
+      _messages
+        ..clear()
+        ..addAll(restored);
+    });
+  }
+
+  void _persistHistory() {
+    final serialized = _messages
+        .take(_maxHistoryEntries)
+        .map((message) => message.toJson())
+        .toList();
+    ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(serialized);
+  }
+
+  void clearChat() {
+    setState(() {
+      _messages.clear();
+      _isThinking = false;
+    });
+    _persistHistory();
+  }
+
+  void _updateMessages(VoidCallback fn) {
+    setState(fn);
+    _persistHistory();
   }
 
   void _scrollToBottom() {
@@ -99,7 +142,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
     final userMessage = _controller.text.trim();
     _controller.clear();
 
-    setState(() {
+    _updateMessages(() {
       _messages.add(_ChatMessage(content: userMessage, isUser: true));
       _isThinking = true;
     });
@@ -130,7 +173,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
         final displayMessage =
             meta.isNotEmpty ? '$detail\n$meta' : detail;
 
-        setState(() {
+        _updateMessages(() {
           _messages.add(_ChatMessage(
             content: displayMessage,
             isUser: false,
@@ -161,12 +204,13 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
             await _stagingService.fetchStagedOperation(response.stageId!);
 
         if (stagedOp == null) {
-          setState(() {
+          _updateMessages(() {
             _messages.add(_ChatMessage(
               content: 'Error: Could not fetch staged operation',
               isUser: false,
             ));
           });
+          _scrollToBottom();
           return;
         }
 
@@ -177,18 +221,17 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
               'Auto-executing queue operation with ${stagedOp.items.length} items');
 
           // Show AI's message
-          setState(() {
+          _updateMessages(() {
             _messages.add(_ChatMessage(
               content: response.text,
               isUser: false,
             ));
           });
-          _scrollToBottom();
 
           // Execute in background using existing batch code
           await _executeQueueOperation(stagedOp);
         } else if (stagedOp.operation == 'explore') {
-          setState(() {
+          _updateMessages(() {
             _messages.add(_ChatMessage(
               content: response.text.isNotEmpty ? response.text : null,
               isUser: false,
@@ -196,11 +239,10 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
               operation: stagedOp.operation,
             ));
           });
-          _scrollToBottom();
           _maybeAutoOpenExplore(stagedOp.stageId);
         } else {
           // Show staging modal for review (4+ items or explicit staging)
-          setState(() {
+          _updateMessages(() {
             _messages.add(_ChatMessage(
               content: response.text.isNotEmpty ? response.text : null,
               isUser: false,
@@ -208,31 +250,29 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
               operation: stagedOp.operation,
             ));
           });
-          _scrollToBottom();
 
           _showStagingModal(response.stageId!, stagedOp.operation);
         }
       } else {
         // Regular text response
-        setState(() {
+        _updateMessages(() {
           _messages.add(_ChatMessage(
             content: response.text,
             isUser: false,
           ));
         });
-        _scrollToBottom();
       }
     } catch (e) {
-      setState(() {
+      _updateMessages(() {
         _messages.add(_ChatMessage(
           content: 'Sorry, I encountered an error: ${e.toString()}',
           isUser: false,
         ));
         _isThinking = false;
       });
-
-      _scrollToBottom();
     }
+
+    _scrollToBottom();
   }
 
   List<Map<String, String>> _buildHistoryPayload({required String pendingUserMessage}) {
@@ -1239,7 +1279,7 @@ class _ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixi
 
     // Update chat based on result
     if (result == true) {
-      setState(() {
+      _updateMessages(() {
         _messages.add(_ChatMessage(
           content: 'Operation completed successfully!',
           isUser: false,
@@ -1723,13 +1763,31 @@ class _ChatMessage {
     this.operation,
     required this.isUser,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'isUser': isUser,
+      'stageId': stageId,
+      'operation': operation,
+    };
+  }
+
+  factory _ChatMessage.fromJson(Map<String, dynamic> json) {
+    return _ChatMessage(
+      content: json['content'] as String?,
+      isUser: (json['isUser'] as bool?) ?? false,
+      stageId: json['stageId'] as String?,
+      operation: json['operation'] as String?,
+    );
+  }
 }
 
 // Staging Modal - Power user list-based staging UI for Z Chat
 class _StagingModal extends StatefulWidget {
   final String stageId;
   final String operation;
-  final _ZChatPageState parentState;
+  final ZChatPageState parentState;
 
   const _StagingModal({
     required this.stageId,

@@ -33,6 +33,7 @@ class DashboardRoute extends StatefulWidget {
 
 class _State extends State<DashboardRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _agentChatKey = GlobalKey<ZChatPageState>();
   ZagPageController? _pageController;
   bool _isAgentActive = false;
 
@@ -108,6 +109,10 @@ class _State extends State<DashboardRoute> {
     FocusScope.of(context).unfocus();
   }
 
+  void _clearAgentChat() {
+    _agentChatKey.currentState?.clearChat();
+  }
+
   void _showZAssistantSettings() {
     SettingsRoutes.Z_AGENT.go();
   }
@@ -130,6 +135,11 @@ class _State extends State<DashboardRoute> {
         title: 'Z Agent',
         useDrawer: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _clearAgentChat,
+            tooltip: 'Clear chat',
+          ),
           IconButton(
             icon: const Icon(Icons.tune),
             onPressed: _showZAssistantSettings,
@@ -217,10 +227,7 @@ class _State extends State<DashboardRoute> {
             offstage: !_isAgentActive,
             child: Container(
               color: Theme.of(context).scaffoldBackgroundColor,
-              child: KeyedSubtree(
-                key: const ValueKey('dashboard_z_agent_overlay'),
-                child: const ZChatPage(),
-              ),
+              child: ZChatPage(key: _agentChatKey),
             ),
           ),
         ),
