@@ -118,6 +118,7 @@ class ZagGlobalCubeManager {
     if (routeLower.contains('sabnzbd')) return 'sabnzbd';
     if (routeLower.contains('nzbget')) return 'nzbget';
     if (routeLower.contains('overseerr')) return 'overseerr';
+    if (routeLower.contains('unraid')) return 'unraid';
     if (routeLower.contains('server')) return 'server';
     if (routeLower.contains('search')) return 'search';
     if (routeLower.contains('settings')) return '';
