@@ -39,7 +39,7 @@ class _State extends State<SettingsResourcesRoute>
           title: 'Reddit',
           body: [TextSpan(text: 'Join the community discussion')],
           trailing: const ZagIconButton(icon: Icons.forum_rounded),
-          onTap: () => 'https://reddit.com/r/ZagreusApp'.openLink(),
+          onTap: () => 'https://reddit.com/r/ZebrraLabs'.openLink(),
         ),
         ZagBlock(
           title: 'Discord',

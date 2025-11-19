@@ -3,7 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 
 class ZagDrawer extends StatelessWidget {
   final String page;
@@ -197,7 +197,7 @@ class ZagDrawer extends StatelessWidget {
             () async {
               Navigator.of(context).pop();
               if (!currentPage) {
-                ZagGlobalFABManager.instance.trackModuleLaunch(module.key);
+                ZagGlobalCubeManager.instance.trackModuleLaunch(module.key);
                 module.launch(restore: false);
               }
             },

@@ -27,9 +27,9 @@ class _State extends State<OverseerrRoute> {
 
     print('🔍 Page controller created with initialPage: 0');
 
-    // Inject global FAB overlay
+    // Inject global cube overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZagGlobalFABManager.instance.injectFAB(context);
+      ZagGlobalCubeManager.instance.injectCube(context);
     });
   }
 

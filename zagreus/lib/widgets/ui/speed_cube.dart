@@ -37,7 +37,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
     _previousModuleKey = fromModule;
     _lastLaunchedModuleKey = toModule;
     print(
-        '🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $toModule');
+        '🔍 CUBE: Tracking updated! Previous: $_previousModuleKey, Current: $toModule');
   }
 
   @override
@@ -141,16 +141,16 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
     return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
       builder: (context, _) {
         final modules = _getActiveModules();
-        print('🔍 FAB: Active modules count: ${modules.length}');
-        print('🔍 FAB: Modules: ${modules.map((m) => m.title).join(", ")}');
+        print('🔍 CUBE: Active modules count: ${modules.length}');
+        print('🔍 CUBE: Modules: ${modules.map((m) => m.title).join(", ")}');
 
         final currentModule = modules.firstWhere(
           (m) => m.key.toLowerCase() == widget.currentModuleKey.toLowerCase(),
           orElse: () => ZagModule.DASHBOARD,
         );
-        print('🔍 FAB: Current module: ${currentModule.title}');
+        print('🔍 CUBE: Current module: ${currentModule.title}');
 
-        // Calculate dynamic height: 56px for FAB + 54px per module button (46px + 8px gap)
+        // Calculate dynamic height: 56px for CUBE + 54px per module button (46px + 8px gap)
         final moduleCount = modules
             .where((m) =>
                 m.key.toLowerCase() != widget.currentModuleKey.toLowerCase())
@@ -164,7 +164,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
 
         final dynamicHeight = idealHeight > maxHeight ? maxHeight : idealHeight;
         print(
-            '🔍 FAB: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
+            '🔍 CUBE: Modules: $moduleCount, Spacing: $buttonSpacing, Height: $dynamicHeight');
 
         return SizedBox(
           width: 56,
@@ -176,7 +176,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
               // Module buttons
               ..._buildModuleButtons(
                   context, modules, currentModule, buttonSpacing),
-              // Main FAB - always on top
+              // Main CUBE - always on top
               Positioned(
                 bottom: 0,
                 child: ScaleTransition(
@@ -185,16 +185,16 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        print('🔍 FAB: Main FAB tapped, isOpen: $_isOpen');
+                        print('🔍 CUBE: Main CUBE tapped, isOpen: $_isOpen');
                         _toggle();
                       },
                       onLongPress: () async {
                         if (_isOpen) return;
 
-                        print('🔍 FAB: Long press detected!');
+                        print('🔍 CUBE: Long press detected!');
                         if (_previousModuleKey != null) {
                           print(
-                              '🔍 FAB: Launching previous module with restore: $_previousModuleKey');
+                              '🔍 CUBE: Launching previous module with restore: $_previousModuleKey');
                           final previousModule = modules.firstWhere(
                             (m) => m.key == _previousModuleKey,
                             orElse: () => modules.first,
@@ -203,19 +203,19 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
                           try {
                             await previousModule.launch(); // restore defaults to true
                             print(
-                                '🔍 FAB: Successfully launched $_previousModuleKey with saved route');
+                                '🔍 CUBE: Successfully launched $_previousModuleKey with saved route');
 
                             // Swap the tracking so we can bounce back!
                             final temp = _lastLaunchedModuleKey;
                             _lastLaunchedModuleKey = _previousModuleKey;
                             _previousModuleKey = temp;
                             print(
-                                '🔍 FAB: Swapped! Previous: $_previousModuleKey, Current: $_lastLaunchedModuleKey');
+                                '🔍 CUBE: Swapped! Previous: $_previousModuleKey, Current: $_lastLaunchedModuleKey');
                           } catch (e) {
-                            print('🔍 FAB: Error launching module: $e');
+                            print('🔍 CUBE: Error launching module: $e');
                           }
                         } else {
-                          print('🔍 FAB: No previous module tracked yet');
+                          print('🔍 CUBE: No previous module tracked yet');
                         }
                       },
                       borderRadius: BorderRadius.circular(28),
@@ -271,7 +271,7 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
         .toList();
 
     print(
-        '🔍 FAB: Building ${visibleModules.length} module buttons with spacing: $spacing');
+        '🔍 CUBE: Building ${visibleModules.length} module buttons with spacing: $spacing');
 
     for (int i = 0; i < visibleModules.length; i++) {
       final module = visibleModules[i];
@@ -321,26 +321,26 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
         ),
         child: InkWell(
           onTap: () async {
-            print('🔍 FAB: Module button tapped: ${module.title}');
-            print('🔍 FAB: Module key: ${module.key}');
-            print('🔍 FAB: Module is enabled: ${module.isEnabled}');
-            print('🔍 FAB: Module homeRoute: ${module.homeRoute}');
-            print('🔍 FAB: Closing menu...');
+            print('🔍 CUBE: Module button tapped: ${module.title}');
+            print('🔍 CUBE: Module key: ${module.key}');
+            print('🔍 CUBE: Module is enabled: ${module.isEnabled}');
+            print('🔍 CUBE: Module homeRoute: ${module.homeRoute}');
+            print('🔍 CUBE: Closing menu...');
             _toggle();
 
             await Future.delayed(const Duration(milliseconds: 100));
 
             // Route saving is handled automatically by _RouteLocationTracker
-            print('🔍 FAB: Calling module.launch(restore: false)...');
+            print('🔍 CUBE: Calling module.launch(restore: false)...');
             try {
               await module.launch(restore: false);
-              print('🔍 FAB: module.launch() completed successfully');
+              print('🔍 CUBE: module.launch() completed successfully');
 
               // Track that we're switching from current module to new module
               _updateTracking(widget.currentModuleKey, module.key);
             } catch (e, stack) {
-              print('🔍 FAB: ERROR during launch: $e');
-              print('🔍 FAB: Stack trace: $stack');
+              print('🔍 CUBE: ERROR during launch: $e');
+              print('🔍 CUBE: Stack trace: $stack');
             }
           },
           borderRadius: BorderRadius.circular(12),

@@ -5,7 +5,7 @@ import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/widgets/pages/error_route.dart';
-import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 import 'package:zagreus/router/routes.dart';
 import 'package:zagreus/vendor.dart';
 
@@ -21,7 +21,7 @@ class ZagRouter {
       initialLocation: ZagRoutes.initialLocation,
       routes: ZagRoutes.values.map((r) => r.root.routes).toList(),
       observers: [
-        _FABRouteObserver(), // Track routes for global FAB
+        _CubeRouteObserver(), // Track routes for global cube
       ],
     );
     // Route tracking saves routes as you navigate (for bounce-back feature)
@@ -42,58 +42,59 @@ class ZagRouter {
   }
 }
 
-/// Observer that tracks route changes for the global FAB
-class _FABRouteObserver extends NavigatorObserver {
-  bool _hasInjectedFAB = false;
+/// Observer that tracks route changes for the global cube
+class _CubeRouteObserver extends NavigatorObserver {
+  bool _hasInjectedCube = false;
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    // Inject FAB on first route push
-    if (!_hasInjectedFAB && navigator?.context != null) {
-      _hasInjectedFAB = true;
+    // Inject cube on first route push
+    if (!_hasInjectedCube && navigator?.context != null) {
+      _hasInjectedCube = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tryInjectFAB();
+        _tryInjectCube();
       });
     }
-    _updateFAB(route);
+    _updateCube(route);
   }
 
-  void _tryInjectFAB({int attempt = 0}) {
+  void _tryInjectCube({int attempt = 0}) {
     if (navigator?.context == null) return;
 
     // Check if Overlay is available
     final overlay = Overlay.maybeOf(navigator!.context, rootOverlay: true);
     if (overlay != null) {
-      print('🔍 FABRouteObserver: Injecting FAB on first route');
-      ZagGlobalFABManager.instance.injectFAB(navigator!.context);
+      print('🔍 CubeRouteObserver: Injecting cube on first route');
+      ZagGlobalCubeManager.instance.injectCube(navigator!.context);
     } else if (attempt < 3) {
       // Retry up to 3 times with increasing delays
-      print('🔍 FABRouteObserver: Overlay not ready, retrying (attempt ${attempt + 1}/3)');
+      print(
+          '🔍 CubeRouteObserver: Overlay not ready, retrying (attempt ${attempt + 1}/3)');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tryInjectFAB(attempt: attempt + 1);
+        _tryInjectCube(attempt: attempt + 1);
       });
     } else {
-      print('🔍 FABRouteObserver: Failed to inject FAB after 3 attempts');
+      print('🔍 CubeRouteObserver: Failed to inject cube after 3 attempts');
     }
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
     if (previousRoute != null) {
-      _updateFAB(previousRoute);
+      _updateCube(previousRoute);
     }
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     if (newRoute != null) {
-      _updateFAB(newRoute);
+      _updateCube(newRoute);
     }
   }
 
-  void _updateFAB(Route route) {
+  void _updateCube(Route route) {
     final name = route.settings.name ?? '';
-    ZagGlobalFABManager.instance.updateModule(name);
+    ZagGlobalCubeManager.instance.updateModule(name);
   }
 }
 

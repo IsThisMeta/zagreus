@@ -37,9 +37,9 @@ class _State extends State<ReadarrRoute> {
 
     print('🔍 Page controller created with initialPage: $initialPage');
 
-    // Inject global FAB overlay
+    // Inject global cube overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZagGlobalFABManager.instance.injectFAB(context);
+      ZagGlobalCubeManager.instance.injectCube(context);
     });
   }
 

@@ -14,7 +14,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
@@ -45,9 +45,9 @@ class _State extends State<DashboardRoute> {
       if (mounted) setState(() {});
     });
 
-    // Inject global FAB overlay
+    // Inject global cube overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZagGlobalFABManager.instance.injectFAB(context);
+      ZagGlobalCubeManager.instance.injectCube(context);
     });
 
     // Update home screen widget with Radarr/Sonarr upcoming content

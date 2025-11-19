@@ -26,9 +26,9 @@ class _State extends State<SonarrRoute> {
     );
     print('🔍 Page controller created with initialPage: $savedIndex');
 
-    // Inject global FAB overlay
+    // Inject global cube overlay
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ZagGlobalFABManager.instance.injectFAB(context);
+      ZagGlobalCubeManager.instance.injectCube(context);
     });
   }
 

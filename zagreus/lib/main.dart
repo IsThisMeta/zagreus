@@ -19,7 +19,7 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/system/recovery_mode/main.dart';
 import 'package:zagreus/system/window_manager/window_manager.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';

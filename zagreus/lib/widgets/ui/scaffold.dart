@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/widgets/ui/global_fab_overlay.dart';
+import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 
 class ZagScaffold extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -85,7 +85,7 @@ class ZagScaffold extends StatelessWidget {
             !isMediaModule &&
             endDrawer == null;
         final globalEndDrawer = shouldAttachGlobalEndDrawer
-            ? ZagGlobalFABManager.instance.getEndDrawer()
+            ? ZagGlobalCubeManager.instance.getEndDrawer()
             : null;
         final effectiveEndDrawer = endDrawer ?? globalEndDrawer;
         final effectiveEndDrawerDragWidth = endDrawerEnableOpenDragGesture ?? 25.0;

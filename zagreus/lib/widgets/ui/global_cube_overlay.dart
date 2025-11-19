@@ -4,10 +4,10 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/widgets/ui/downloads_drawer.dart';
 import 'package:zagreus/widgets/ui/speed_cube.dart';
 
-/// Manager to track current module globally, inject FAB overlay, and provide downloads drawer
-class ZagGlobalFABManager {
-  static final ZagGlobalFABManager instance = ZagGlobalFABManager._();
-  ZagGlobalFABManager._();
+/// Manager to track current module globally, inject cube overlay, and provide downloads drawer
+class ZagGlobalCubeManager {
+  static final ZagGlobalCubeManager instance = ZagGlobalCubeManager._();
+  ZagGlobalCubeManager._();
 
   final ValueNotifier<String> currentModuleNotifier = ValueNotifier<String>('');
   OverlayEntry? _overlayEntry;
@@ -17,23 +17,22 @@ class ZagGlobalFABManager {
   String _currentRoute = '';
   String _currentModule = '';
 
-  void injectFAB(BuildContext context, {GlobalKey<ScaffoldState>? scaffoldKey}) {
+  void injectCube(BuildContext context, {GlobalKey<ScaffoldState>? scaffoldKey}) {
     if (_isInjected) {
-      print('🔍 FABManager: FAB already injected, skipping');
+      print('🔍 CubeManager: Cube already injected, skipping');
       return;
     }
 
-    print('🔍 FABManager: Injecting FAB overlay');
-    print(
-        '🔍 FABManager: Setting enabled: ${ZagreusDatabase.SPEED_CUBE_ENABLED.read()}');
+    print('🔍 CubeManager: Injecting cube overlay');
+    print('🔍 CubeManager: Setting enabled: ${ZagreusDatabase.SPEED_CUBE_ENABLED.read()}');
 
     try {
       final overlay = Overlay.of(context, rootOverlay: true);
-      print('🔍 FABManager: Overlay found: $overlay');
+      print('🔍 CubeManager: Overlay found: $overlay');
 
       _overlayEntry = OverlayEntry(
         builder: (context) {
-          print('🔍 OverlayEntry: Building FAB');
+          print('🔍 OverlayEntry: Building cube');
           return SafeArea(
             child: IgnorePointer(
               ignoring: false,
@@ -49,21 +48,20 @@ class ZagGlobalFABManager {
                         final enabled =
                             ZagreusDatabase.SPEED_CUBE_ENABLED.read();
                         if (!enabled) {
-                          print('🔍 GlobalFAB: Disabled via settings, hiding');
+                          print('🔍 GlobalCube: Disabled via settings, hiding');
                           return const SizedBox.shrink();
                         }
                         return ValueListenableBuilder<String>(
                           valueListenable: currentModuleNotifier,
                           builder: (context, currentModule, __) {
-                            print(
-                                '🔍 GlobalFAB: Building with module: $currentModule');
+                            print('🔍 GlobalCube: Building with module: $currentModule');
 
                             if (currentModule.isEmpty) {
-                              print('🔍 GlobalFAB: Empty module, hiding');
+                              print('🔍 GlobalCube: Empty module, hiding');
                               return const SizedBox.shrink();
                             }
 
-                            print('🔍 GlobalFAB: Creating FAB widget');
+                            print('🔍 GlobalCube: Creating cube widget');
                             return ZagSpeedCube(
                               currentModuleKey: currentModule,
                             );
@@ -81,16 +79,16 @@ class ZagGlobalFABManager {
 
       overlay.insert(_overlayEntry!);
       _isInjected = true;
-      print('🔍 FABManager: FAB overlay injected successfully');
+      print('🔍 CubeManager: Cube overlay injected successfully');
     } catch (e, stack) {
-      print('🔍 FABManager: ERROR injecting FAB: $e');
-      print('🔍 FABManager: Stack: $stack');
+      print('🔍 CubeManager: ERROR injecting cube: $e');
+      print('🔍 CubeManager: Stack: $stack');
     }
   }
 
   void updateModule(String routeName) {
     final module = _extractModuleFromRoute(routeName);
-    print('🔍 FABManager: Route name: $routeName → Module: $module');
+    print('🔍 CubeManager: Route name: $routeName → Module: $module');
 
     // Update current tracking
     _currentModule = module;
@@ -102,8 +100,8 @@ class ZagGlobalFABManager {
 
   /// Call this when a module is launched (e.g., from drawer)
   void trackModuleLaunch(String targetModuleKey) {
-    print('🔍 FABManager: trackModuleLaunch called for: $targetModuleKey');
-    // Forward to the FAB's static tracking method
+    print('🔍 CubeManager: trackModuleLaunch called for: $targetModuleKey');
+    // Forward to the cube's static tracking method
     final fromModule = _currentModule; // Track where we're coming from
     ZagSpeedCube.updateModuleTracking(fromModule, targetModuleKey);
   }
@@ -123,8 +121,8 @@ class ZagGlobalFABManager {
     if (routeLower.contains('server')) return 'server';
     if (routeLower.contains('search')) return 'search';
     if (routeLower.contains('settings')) return '';
-    if (routeLower.contains('dashboard')) return ''; // Hide FAB on dashboard
-    if (routeLower == '/') return ''; // Hide FAB on dashboard
+    if (routeLower.contains('dashboard')) return ''; // Hide cube on dashboard
+    if (routeLower == '/') return ''; // Hide cube on dashboard
 
     return '';
   }
