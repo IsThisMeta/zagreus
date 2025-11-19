@@ -80,8 +80,26 @@ class _FABRouteObserver extends NavigatorObserver {
   void didPop(Route route, Route? previousRoute) {
     if (previousRoute != null) {
       _updateFAB(previousRoute);
-      _trackRoute(previousRoute);
+      // Only track the pop if we're staying within the same module
+      // Extract module from both routes
+      final poppedModule = _extractModuleFromRouteName(route.settings.name);
+      final targetModule = _extractModuleFromRouteName(previousRoute.settings.name);
+
+      // Only track if both routes are in the same module
+      if (poppedModule != null && poppedModule == targetModule) {
+        print('🔍 FABObserver: didPop within same module ($poppedModule), tracking');
+        _trackRoute(previousRoute);
+      } else {
+        print('🔍 FABObserver: didPop leaving module ($poppedModule → $targetModule), not tracking');
+      }
     }
+  }
+
+  String? _extractModuleFromRouteName(String? routeName) {
+    if (routeName == null || routeName.isEmpty) return null;
+    final parts = routeName.split(':');
+    if (parts.length < 2) return null;
+    return parts[0].toLowerCase();
   }
 
   @override
