@@ -114,7 +114,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_MONOCHROME_RATINGS<bool>(false),
   DISCOVER_TRENDING_TIME_WINDOW<String>('day'),
   DISCOVER_DEFAULT_TAB<String>('movies'),
-  SHOW_LEGACY_MODULES_TAB<bool>(false),
+  SHOW_LEGACY_MODULES_TAB<bool>(true),
   SHOW_AGENT_TAB<bool>(true);
 
   @override
