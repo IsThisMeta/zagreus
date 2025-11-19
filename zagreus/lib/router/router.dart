@@ -57,9 +57,6 @@ class _FABRouteObserver extends NavigatorObserver {
   }
 
   void _tryInjectFAB({int attempt = 0}) {
-    // Skip if Speed Cube is disabled
-    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) return;
-
     if (navigator?.context == null) return;
 
     // Check if Overlay is available
@@ -93,9 +90,6 @@ class _FABRouteObserver extends NavigatorObserver {
   }
 
   void _updateFAB(Route route) {
-    // Skip if Speed Cube is disabled
-    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) return;
-
     final name = route.settings.name ?? '';
     ZagGlobalFABManager.instance.updateModule(name);
   }
@@ -114,6 +108,9 @@ class _RouteLocationTracker {
   }
 
   void _handleLocationChange() {
+    // Skip if module tab memory is disabled
+    if (!ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read()) return;
+
     final rawLocation = _provider.value.location ?? '';
     if (rawLocation.isEmpty) return;
 
