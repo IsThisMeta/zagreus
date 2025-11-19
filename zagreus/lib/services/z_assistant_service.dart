@@ -138,10 +138,7 @@ class ZAssistantService {
 
       // Get Supabase user ID for tier-based rate limiting
 
-      print('🔐 Registering device with Z Assistant...');
-      print('   Receipt token (app user ID): $receiptToken');
-      print('   Supabase user ID: $supabaseUserId');
-      print('   Subscription tier: $subscriptionTier');
+      ZagLogger().debug('Registering device with Z Assistant (tier: $subscriptionTier)');
 
       final response = await _dio.post(
         '/device/register',

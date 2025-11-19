@@ -982,22 +982,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _loadPopularTVShows() async {
-    print('📺 Loading popular TV shows...');
     try {
       // Get user's region from locale
       final locale = Localizations.localeOf(context);
       final region = locale.countryCode ?? 'US';
-      print('📺 Using region: $region');
 
       final shows = await TMDBApi.getPopularTVShows(region: region);
-      print('📺 Got ${shows.length} popular TV shows from TMDB');
 
       // Check against Sonarr library if available
       final sonarrState = context.read<SonarrState>();
       if (sonarrState.enabled && sonarrState.api != null) {
         try {
           final sonarrSeries = await sonarrState.api!.series.getAll();
-          print('📺 Checking against ${sonarrSeries.length} Sonarr series');
 
           for (final show in shows) {
             final tmdbId = show['tmdbId'] as int;
@@ -1030,30 +1026,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _popularTVShows =
               shows.take(10).toList(); // Limit to 10 for the section
         });
-        print('📺 Set ${_popularTVShows.length} popular TV shows in state');
       }
     } catch (e) {
-      print('❌ Error loading popular TV shows: $e');
+      ZagLogger().error('Error loading popular TV shows', e, StackTrace.current);
     }
   }
 
   Future<void> _loadTrendingNewTVShows() async {
-    print('🆕 Loading trending new TV shows...');
     try {
       // Get user's region from locale
       final locale = Localizations.localeOf(context);
       final region = locale.countryCode ?? 'US';
-      print('🆕 Using region: $region');
 
       final shows = await TMDBApi.getTrendingNewTVShows(region: region);
-      print('🆕 Got ${shows.length} trending new TV shows from TMDB');
 
       // Check against Sonarr library if available
       final sonarrState = context.read<SonarrState>();
       if (sonarrState.enabled && sonarrState.api != null) {
         try {
           final sonarrSeries = await sonarrState.api!.series.getAll();
-          print('🆕 Checking against ${sonarrSeries.length} Sonarr series');
 
           for (final show in shows) {
             final tmdbId = show['tmdbId'] as int;
@@ -1129,7 +1120,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (sonarrState.enabled && sonarrState.api != null) {
         try {
           final sonarrSeries = await sonarrState.api!.series.getAll();
-          print('🎯 Checking against ${sonarrSeries.length} Sonarr series');
 
           for (final show in shows) {
             final tvdbId = show['tvdbId'] as int?;
@@ -1163,16 +1153,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _mostAnticipatedShows =
               shows.take(10).toList(); // Limit to 10 for the section
         });
-        print(
-            '🎯 Set ${_mostAnticipatedShows.length} most anticipated shows in state');
       }
     } catch (e) {
-      print('❌ Error loading most anticipated shows: $e');
+      ZagLogger().error('Error loading most anticipated shows', e, StackTrace.current);
     }
   }
 
   Future<void> _loadMostAnticipatedMovies() async {
-    print('🎯 Loading most anticipated movies from Trakt...');
     try {
       final movies = await TraktApi.getAnticipatedMovies(page: 1, limit: 20);
       final radarrState = context.read<RadarrState>();
@@ -1225,11 +1212,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         setState(() {
           _mostAnticipatedMovies = movies.take(12).toList();
         });
-        print(
-            '🎯 Set ${_mostAnticipatedMovies.length} most anticipated movies in state');
       }
     } catch (e) {
-      print('❌ Error loading most anticipated movies: $e');
+      ZagLogger().error('Error loading most anticipated movies', e, StackTrace.current);
     }
   }
 

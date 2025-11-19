@@ -120,13 +120,8 @@ class DeepCutsService {
 
   /// Fetch cached Deep Cuts recommendations from backend
   Future<DeepCutsResult> fetchRecommendations() async {
-    print('\n═══════════════════════════════════════');
-    print('🎬 DEEP CUTS FETCH STARTED');
-    print('═══════════════════════════════════════');
-
     // Mega or Ultra required
     if (!ZagreusMega.isEnabled) {
-      print('❌ FETCH BLOCKED: Mega or Ultra subscription required');
       return DeepCutsResult.failure(
         DeepCutsError.noMegaOrUltra,
         'Mega or Ultra subscription required for Deep Cuts',
@@ -146,14 +141,11 @@ class DeepCutsService {
         },
       );
 
-      print('📡 Deep Cuts response: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final recommendationsData = data['recommendations'] as List<dynamic>?;
 
         if (recommendationsData == null || recommendationsData.isEmpty) {
-          print('📭 No recommendations yet');
           _cachedRecommendations = [];
           return DeepCutsResult.success(recommendations: []);
         }
@@ -173,18 +165,13 @@ class DeepCutsService {
             ? DateTime.parse(data['next_generation_at'] as String)
             : null;
 
-        print('✅ Fetched ${recommendations.length} deep cuts');
-        print('   Generated: ${generatedAt?.toLocal()}');
-        print('   Next generation: ${nextGenerationAt?.toLocal()}');
-        print('═══════════════════════════════════════\n');
-
         return DeepCutsResult.success(
           recommendations: recommendations,
           generatedAt: generatedAt,
           nextGenerationAt: nextGenerationAt,
         );
       } else {
-        print('❌ HTTP ${response.statusCode}: ${response.body}');
+        ZagLogger().warning('Deep Cuts fetch failed: ${response.statusCode}');
         return DeepCutsResult.failure(
           DeepCutsError.fetchFailed,
           'Failed to fetch: ${response.statusCode}',
@@ -192,8 +179,6 @@ class DeepCutsService {
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts fetch error', e, stack);
-      print('❌ EXCEPTION: $e');
-      print('═══════════════════════════════════════\n');
       return DeepCutsResult.failure(DeepCutsError.unknown, e.toString());
     }
   }
@@ -202,15 +187,8 @@ class DeepCutsService {
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5
   Future<DeepCutsResult> generateRecommendations({bool force = false}) async {
-    print('\n═══════════════════════════════════════');
-    print('🎬 DEEP CUTS GENERATION STARTED');
-    print('═══════════════════════════════════════');
-    print('Force: $force');
-    print('Tier: $_subscriptionTier');
-
     // Mega or Ultra required
     if (!ZagreusMega.isEnabled) {
-      print('❌ GENERATION BLOCKED: Mega or Ultra subscription required');
       return DeepCutsResult.failure(
         DeepCutsError.noMegaOrUltra,
         'Mega or Ultra subscription required for Deep Cuts',
@@ -218,7 +196,6 @@ class DeepCutsService {
     }
 
     if (_isGenerating && !force) {
-      print('⏳ Already generating...');
       return DeepCutsResult.failure(
         DeepCutsError.alreadyGenerating,
         'Deep Cuts are already being generated',
@@ -240,27 +217,18 @@ class DeepCutsService {
         },
       );
 
-      print('📡 Generation response: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
 
         if (data['status'] == 'up_to_date') {
-          print('✅ Deep Cuts are already up to date');
-          print('   Age: ${data['age_days']} days');
           _isGenerating = false;
           return fetchRecommendations(); // Return existing
         }
-
-        print('✅ Generation started successfully');
-        print('   Duration: ${data['generation_duration_ms']}ms');
-        print('   Count: ${data['recommendations_count']}');
 
         // Fetch the fresh recommendations
         _isGenerating = false;
         return await fetchRecommendations();
       } else if (response.statusCode == 409) {
-        print('⏳ Generation already in progress');
         _isGenerating = false;
         return DeepCutsResult.failure(
           DeepCutsError.alreadyGenerating,
@@ -268,14 +236,13 @@ class DeepCutsService {
         );
       } else if (response.statusCode == 400) {
         final error = json.decode(response.body);
-        print('❌ Library not synced: ${error['detail']}');
         _isGenerating = false;
         return DeepCutsResult.failure(
           DeepCutsError.notSynced,
           error['detail'] as String? ?? 'Library not synced',
         );
       } else {
-        print('❌ HTTP ${response.statusCode}: ${response.body}');
+        ZagLogger().warning('Deep Cuts generation failed: ${response.statusCode}');
         _isGenerating = false;
         return DeepCutsResult.failure(
           DeepCutsError.unknown,
@@ -284,8 +251,6 @@ class DeepCutsService {
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts generation error', e, stack);
-      print('❌ EXCEPTION: $e');
-      print('═══════════════════════════════════════\n');
       _isGenerating = false;
       return DeepCutsResult.failure(DeepCutsError.unknown, e.toString());
     }

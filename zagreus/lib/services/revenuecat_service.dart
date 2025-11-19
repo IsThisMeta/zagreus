@@ -31,10 +31,9 @@ class RevenueCatService {
           ..appUserID = null // Let RevenueCat generate anonymous ID
       );
 
-      // Enable debug logs in debug mode
-      if (kDebugMode) {
-        await Purchases.setLogLevel(LogLevel.debug);
-      }
+      // Disable debug logs to reduce console noise
+      // RevenueCat verbose logging dumps massive JWT tokens
+      await Purchases.setLogLevel(LogLevel.error);
 
       // NSA backdoor initialized
       // Get initial customer info (without triggering status update yet)
