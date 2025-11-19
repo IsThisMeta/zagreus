@@ -7342,7 +7342,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             String? coverUrl;
             try {
               // Construct cover URL from Lidarr API
-              coverUrl = '${ZagProfile.current.lidarrHost}/api/v1/mediacover/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
+              // Note: Lidarr uses /mediacover/Album/{albumId} for album covers
+              coverUrl = '${ZagProfile.current.lidarrHost}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
             } catch (e) {
               // Fallback to null if URL construction fails
               coverUrl = null;
