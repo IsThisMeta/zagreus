@@ -186,11 +186,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard, the Server module, Z Assistant access with GPT-5 mini, and more!"
+                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard, the Server module, and more!"
                   : 'Zagreus Pro unlocks:\n'
                       '• Dashboard module\n'
                       '• Server module\n'
-                      '• Limited Z Assistant access with GPT-5 mini\n'
                       '• And more!\n\n'
                       'Choose a plan to get started.',
               style: const TextStyle(
