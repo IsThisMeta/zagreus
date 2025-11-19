@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zagreus/widgets/ui.dart';
 
 class DashboardAppBarAgentAction extends StatelessWidget {
   final VoidCallback onPressed;
@@ -11,11 +10,10 @@ class DashboardAppBarAgentAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ZagIconButton(
-      icon: Icons.smart_toy,
-      iconSize: ZagUI.ICON_SIZE,
-      onPressed: onPressed,
+    return IconButton(
+      icon: const Icon(Icons.smart_toy),
       tooltip: 'Z Agent',
+      onPressed: onPressed,
     );
   }
 }
