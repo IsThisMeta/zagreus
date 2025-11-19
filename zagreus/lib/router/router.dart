@@ -54,7 +54,6 @@ class _FABRouteObserver extends NavigatorObserver {
       });
     }
     _updateFAB(route);
-    _trackRoute(route);
   }
 
   void _tryInjectFAB({int attempt = 0}) {
@@ -80,129 +79,19 @@ class _FABRouteObserver extends NavigatorObserver {
   void didPop(Route route, Route? previousRoute) {
     if (previousRoute != null) {
       _updateFAB(previousRoute);
-      // Only track the pop if we're staying within the same module
-      // Extract module from both routes
-      final poppedModule = _extractModuleFromRouteName(route.settings.name);
-      final targetModule = _extractModuleFromRouteName(previousRoute.settings.name);
-
-      // Only track if both routes are in the same module
-      if (poppedModule != null && poppedModule == targetModule) {
-        print('🔍 FABObserver: didPop within same module ($poppedModule), tracking');
-        _trackRoute(previousRoute);
-      } else {
-        print('🔍 FABObserver: didPop leaving module ($poppedModule → $targetModule), not tracking');
-      }
     }
-  }
-
-  String? _extractModuleFromRouteName(String? routeName) {
-    if (routeName == null || routeName.isEmpty) return null;
-    final parts = routeName.split(':');
-    if (parts.length < 2) return null;
-    return parts[0].toLowerCase();
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     if (newRoute != null) {
       _updateFAB(newRoute);
-      _trackRoute(newRoute);
     }
   }
 
   void _updateFAB(Route route) {
     final name = route.settings.name ?? '';
     ZagGlobalFABManager.instance.updateModule(name);
-  }
-
-  void _trackRoute(Route route) {
-    // Skip if module tab memory is disabled
-    if (!ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read()) {
-      print('🔍 FABObserver: Route tracking disabled');
-      return;
-    }
-
-    // Use PostFrameCallback to ensure the router location is updated
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _trackRouteDelayed(route);
-    });
-  }
-
-  void _trackRouteDelayed(Route route) {
-    final routeName = route.settings.name;
-    if (routeName == null || routeName.isEmpty) {
-      print('🔍 FABObserver: No route name, skipping tracking');
-      return;
-    }
-
-    // Extract module from route name (format: "module:PAGE")
-    final parts = routeName.split(':');
-    if (parts.length < 2) {
-      print('🔍 FABObserver: Invalid route format: $routeName');
-      return;
-    }
-
-    final moduleName = parts[0].toLowerCase();
-
-    // Find the module
-    ZagModule? module;
-    for (final m in ZagModule.values) {
-      if (m.key == moduleName) {
-        module = m;
-        break;
-      }
-    }
-
-    if (module == null) {
-      print('🔍 FABObserver: No module found for: $moduleName');
-      return;
-    }
-
-    final homeRoute = module.homeRoute;
-    if (homeRoute == null) {
-      print('🔍 FABObserver: Module $moduleName has no home route');
-      return;
-    }
-
-    // Get the current location AFTER the navigation has completed
-    final router = ZagRouter.router;
-    final location = router.routeInformationProvider.value.location;
-    if (location == null || location.isEmpty) {
-      print('🔍 FABObserver: No current location');
-      return;
-    }
-
-    final uri = Uri.tryParse(location);
-    if (uri == null) {
-      print('🔍 FABObserver: Failed to parse location: $location');
-      return;
-    }
-
-    var path = uri.path.isEmpty ? '/' : uri.path;
-    if (path.length > 1 && path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
-    }
-
-    // Verify this path belongs to the module
-    if (!(path == homeRoute || path.startsWith('$homeRoute/'))) {
-      print('🔍 FABObserver: Path $path not under $homeRoute, skipping');
-      return;
-    }
-
-    final normalizedLocation = uri.replace(fragment: null).toString();
-    if (!module.canRestoreRoute(normalizedLocation)) {
-      print('🔍 FABObserver: Route $normalizedLocation not restorable');
-      return;
-    }
-
-    final last = ZagSessionState.instance.getModuleLastRoute(module.key);
-    if (last == normalizedLocation) {
-      print('🔍 FABObserver: Route $normalizedLocation already saved, skipping');
-      return;
-    }
-
-    print('🔍 FABObserver: Saving route $normalizedLocation for ${module.key}');
-    ZagSessionState.instance.setModuleLastRoute(module.key, normalizedLocation);
   }
 }
 
