@@ -246,11 +246,11 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       overseerrHost: demoConfig['overseerr_host'] ?? '',
       overseerrKey: demoConfig['overseerr_key'] ?? '',
       overseerrHeaders: {},
-      // Server
-      serverEnabled: demoConfig['server_enabled'] ?? true,
+      // Unraid (Server in profile model)
+      serverEnabled: demoConfig['unraid_enabled'] ?? true,
       serverHost:
-          demoConfig['server_host'] ?? 'https://tower.zagreus.app/',
-      serverKey: demoConfig['server_key'] ??
+          demoConfig['unraid_host'] ?? 'https://tower.zagreus.app/',
+      serverKey: demoConfig['unraid_key'] ??
           '4f881bebb9da6a41431cfa5b194b36fa12094a87b5164886542ddfa2e235066c',
       serverHeaders: const <String, String>{},
     );
@@ -297,6 +297,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       ZagModule.RADARR,
       ZagModule.SONARR,
       ZagModule.LIDARR,
+      ZagModule.READARR,
       ZagModule.SABNZBD,
       ZagModule.NZBGET,
       ZagModule.TAUTULLI,

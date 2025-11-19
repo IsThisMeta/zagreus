@@ -214,7 +214,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     super.initState();
     _loadSavedSettings();
     _loadTrendingTimeWindowSetting();
-    _pageController = ZagPageController(initialPage: 0);
+    _ensureDiscoverDefaultTabIsValid();
+    _pageController = ZagPageController(
+      initialPage: _initialDiscoverTabIndex(),
+    );
     _pageController.addListener(() {
       if (_pageController.hasClients && _pageController.page != null) {
         setState(() {
@@ -1301,8 +1304,42 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
 
+  List<String> _discoverTabKeys({bool? showLegacyModules}) {
+    final includeModules = showLegacyModules ?? _showLegacyModules;
+    return [
+      if (includeModules) 'modules',
+      'movies',
+      'shows',
+      'calendar',
+      'server',
+    ];
+  }
+
+  int _initialDiscoverTabIndex() {
+    final keys = _discoverTabKeys();
+    final stored = ZagreusDatabase.DISCOVER_DEFAULT_TAB.read();
+    if (stored != null) {
+      final index = keys.indexOf(stored);
+      if (index != -1) {
+        return index;
+      }
+    }
+    final fallback = keys.first;
+    ZagreusDatabase.DISCOVER_DEFAULT_TAB.update(fallback);
+    return 0;
+  }
+
+  void _ensureDiscoverDefaultTabIsValid() {
+    final keys = _discoverTabKeys();
+    final stored = ZagreusDatabase.DISCOVER_DEFAULT_TAB.read();
+    if (!keys.contains(stored)) {
+      ZagreusDatabase.DISCOVER_DEFAULT_TAB.update(keys.first);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _ensureDiscoverDefaultTabIsValid();
     // Build app bar here so it rebuilds when _currentPageIndex changes
     final appBar = ZagAppBar(
       title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),

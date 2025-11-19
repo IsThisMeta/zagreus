@@ -141,7 +141,15 @@ class _State extends State<ConfigurationNavigationRoute>
         ],
         trailing: ZagSwitch(
           value: db.read(),
-          onChanged: db.update,
+          onChanged: (value) {
+            db.update(value);
+            if (!value &&
+                ZagreusDatabase.DISCOVER_DEFAULT_TAB.read() == 'modules') {
+              ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('movies');
+            } else if (value) {
+              ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
+            }
+          },
         ),
       ),
     );
