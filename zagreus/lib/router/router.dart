@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/system/session_state.dart';
@@ -56,6 +57,9 @@ class _FABRouteObserver extends NavigatorObserver {
   }
 
   void _tryInjectFAB({int attempt = 0}) {
+    // Skip if Speed Cube is disabled
+    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) return;
+
     if (navigator?.context == null) return;
 
     // Check if Overlay is available
@@ -89,6 +93,9 @@ class _FABRouteObserver extends NavigatorObserver {
   }
 
   void _updateFAB(Route route) {
+    // Skip if Speed Cube is disabled
+    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) return;
+
     final name = route.settings.name ?? '';
     ZagGlobalFABManager.instance.updateModule(name);
   }

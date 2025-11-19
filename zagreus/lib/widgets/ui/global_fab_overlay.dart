@@ -18,6 +18,11 @@ class ZagGlobalFABManager {
   String _currentModule = '';
 
   void injectFAB(BuildContext context, {GlobalKey<ScaffoldState>? scaffoldKey}) {
+    // Skip if Speed Cube is disabled
+    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) {
+      return;
+    }
+
     if (_isInjected) {
       print('🔍 FABManager: FAB already injected, skipping');
       return;
@@ -89,6 +94,11 @@ class ZagGlobalFABManager {
   }
 
   void updateModule(String routeName) {
+    // Skip if Speed Cube is disabled
+    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) {
+      return;
+    }
+
     final module = _extractModuleFromRoute(routeName);
     print('🔍 FABManager: Route name: $routeName → Module: $module');
 
