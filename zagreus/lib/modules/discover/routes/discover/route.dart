@@ -2913,7 +2913,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
                       ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
                           .listenableBuilder(
                         builder: (context, _) {
@@ -2921,12 +2920,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               .Z_ASSISTANT_PERSIST_CHAT_HISTORY
                               .read();
                           return ZagBlock(
-                            title: 'Local Chat History',
+                            title: 'Persist Chat History',
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Stored locally on this device'
-                                    : 'Stateless by default',
+                                    ? 'Chat history is stored on this device'
+                                    : 'Keep chat stateless unless enabled',
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -2951,18 +2950,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     ?.onPersistenceChanged(value);
                                 showZagInfoSnackBar(
                                   title: value
-                                      ? 'Local storage enabled'
-                                      : 'Local storage disabled',
+                                      ? 'Persistence Enabled'
+                                      : 'Persistence Disabled',
                                   message: value
-                                      ? 'Chat history will be kept on-device'
-                                      : 'Chat history will stay in-memory only',
+                                      ? 'Z Agent will keep chat history locally'
+                                      : 'Z Agent will act stateless and stop storing chats',
                                 );
                               },
                             ),
                           );
                         },
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
                           .listenableBuilder(
                         builder: (context, _) {
@@ -3005,43 +3004,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   message: value
                                       ? 'Chats will sync to your account'
                                       : 'Supabase chat sync paused',
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
-                          .listenableBuilder(
-                        builder: (context, _) {
-                          final enabled = ZagreusDatabase
-                              .Z_ASSISTANT_PERSIST_CHAT_HISTORY
-                              .read();
-                          return ZagBlock(
-                            title: 'Persist Chat History',
-                            body: [
-                              TextSpan(
-                                text: enabled
-                                    ? 'Chat history is stored on this device'
-                                    : 'Keep chat stateless unless enabled',
-                              ),
-                            ],
-                            trailing: ZagSwitch(
-                              value: enabled,
-                              onChanged: (value) {
-                                ZagreusDatabase
-                                    .Z_ASSISTANT_PERSIST_CHAT_HISTORY
-                                    .update(value);
-                                _agentChatKey.currentState
-                                    ?.onPersistenceChanged(value);
-                                showZagInfoSnackBar(
-                                  title: value
-                                      ? 'Persistence Enabled'
-                                      : 'Persistence Disabled',
-                                  message: value
-                                      ? 'Z Agent will keep chat history locally'
-                                      : 'Z Agent will act stateless and stop storing chats',
                                 );
                               },
                             ),
