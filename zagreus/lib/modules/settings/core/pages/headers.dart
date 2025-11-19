@@ -122,7 +122,7 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
       case ZagModule.TAUTULLI:
         return ZagProfile.current.tautulliHeaders;
       case ZagModule.UNRAID:
-        return ZagProfile.current.serverHeaders;
+        return ZagProfile.current.unraidHeaders;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a headers page');
       case ZagModule.PROWLARR:

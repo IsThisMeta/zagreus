@@ -48,9 +48,9 @@ class _State extends State<ConfigurationUnraidRoute>
       builder: (context, _) => ZagBlock(
         title: 'settings.EnableModule'.tr(args: [ZagModule.UNRAID.title]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.serverEnabled,
+          value: ZagProfile.current.unraidEnabled,
           onChanged: (value) {
-            ZagProfile.current.serverEnabled = value;
+            ZagProfile.current.unraidEnabled = value;
             ZagProfile.current.save();
             context.read<UnraidState>().reset();
           },

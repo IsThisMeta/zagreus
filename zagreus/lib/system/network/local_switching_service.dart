@@ -246,9 +246,9 @@ class ZagLocalConnectionService {
       ),
       _LocalSwitchConfig(
         module: ZagModule.UNRAID,
-        enabled: profile.serverEnabled,
-        localHost: profile.serverLocalHost,
-        ssids: profile.serverLocalSsids,
+        enabled: profile.unraidEnabled,
+        localHost: profile.unraidLocalHost,
+        ssids: profile.unraidLocalSsids,
       ),
     ];
   }
