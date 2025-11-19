@@ -104,7 +104,8 @@ class ZagGlobalFABManager {
   void trackModuleLaunch(String targetModuleKey) {
     print('🔍 FABManager: trackModuleLaunch called for: $targetModuleKey');
     // Forward to the FAB's static tracking method
-    ZagSpeedCube.updateModuleTracking(targetModuleKey);
+    final fromModule = _currentModule; // Track where we're coming from
+    ZagSpeedCube.updateModuleTracking(fromModule, targetModuleKey);
   }
 
   String _extractModuleFromRoute(String route) {

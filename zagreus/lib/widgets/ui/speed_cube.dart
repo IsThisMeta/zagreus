@@ -13,8 +13,8 @@ class ZagSpeedCube extends StatefulWidget {
   }) : super(key: key);
 
   // Public static method accessible from outside
-  static void updateModuleTracking(String moduleKey) {
-    _ZagSpeedCubeState._updateTracking(moduleKey);
+  static void updateModuleTracking(String fromModule, String toModule) {
+    _ZagSpeedCubeState._updateTracking(fromModule, toModule);
   }
 
   @override
@@ -33,11 +33,11 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
   static String? _previousModuleKey;
 
   // Internal tracking method
-  static void _updateTracking(String moduleKey) {
-    _previousModuleKey = _lastLaunchedModuleKey;
-    _lastLaunchedModuleKey = moduleKey;
+  static void _updateTracking(String fromModule, String toModule) {
+    _previousModuleKey = fromModule;
+    _lastLaunchedModuleKey = toModule;
     print(
-        '🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $moduleKey');
+        '🔍 FAB: Tracking updated! Previous: $_previousModuleKey, Current: $toModule');
   }
 
   @override
@@ -339,8 +339,8 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
               await module.launch(restore: false);
               print('🔍 FAB: module.launch() completed successfully');
 
-              // Use the internal tracking method
-              _updateTracking(module.key);
+              // Track that we're switching from current module to new module
+              _updateTracking(widget.currentModuleKey, module.key);
             } catch (e, stack) {
               print('🔍 FAB: ERROR during launch: $e');
               print('🔍 FAB: Stack trace: $stack');
