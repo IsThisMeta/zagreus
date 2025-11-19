@@ -55,7 +55,7 @@ class _State extends State<SettingsResourcesRoute>
         ),
         ZagDivider(),
         ZagBlock(
-          title: 'Support Email',
+          title: 'Send Feedback / Get Support',
           body: [TextSpan(text: 'support@zebrra.co')],
           trailing: const ZagIconButton(icon: Icons.mail_rounded),
           onTap: () => 'mailto:support@zebrra.co'.openLink(),
