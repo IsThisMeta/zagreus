@@ -732,7 +732,10 @@ class LidarrAPI {
           seeders: entry['seeders'] ?? 0,
           leechers: entry['leechers'] ?? 0,
           customFormats: entry['customFormats'] != null
-              ? List<String>.from(entry['customFormats'])
+              ? (entry['customFormats'] as List)
+                  .map((cf) => cf is String ? cf : cf['name']?.toString() ?? '')
+                  .toList()
+                  .cast<String>()
               : null,
           customFormatScore: entry['customFormatScore'],
         ));
