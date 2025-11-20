@@ -8116,7 +8116,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           children: [
             Expanded(
               child: Text(
-                diskSpace.zagPath,
+                diskSpace.zagPath ?? '',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -8124,7 +8124,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
               ),
             ),
             Text(
-              diskSpace.zagPercentageString,
+              diskSpace.zagPercentageString ?? '',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -8135,7 +8135,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         ),
         const SizedBox(height: 4),
         Text(
-          diskSpace.zagSpace,
+          diskSpace.zagSpace ?? '',
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).brightness == Brightness.dark
