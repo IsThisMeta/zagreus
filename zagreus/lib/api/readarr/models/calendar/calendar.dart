@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/api/readarr/models/author/author.dart';
+import 'package:zagreus/api/readarr/models/author/author_links.dart';
+import 'package:zagreus/api/readarr/models/book/book_ratings.dart';
+import 'package:zagreus/api/readarr/models/book_file/book_file.dart';
+import 'package:zagreus/api/readarr/models/edition/edition.dart';
 
 part 'calendar.g.dart';
 

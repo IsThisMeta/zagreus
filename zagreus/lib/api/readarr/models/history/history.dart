@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/api/readarr/models/history/history_record.dart';
 
 part 'history.g.dart';
 
