@@ -56,9 +56,12 @@ class _State extends State<ArtistAlbumDetailsRoute>
       scrollControllers: [scrollController],
       actions: <Widget>[
         ZagIconButton(
+          icon: Icons.manage_search_rounded,
+          onPressed: () async => _manualSearch(),
+        ),
+        ZagIconButton(
           icon: Icons.search_rounded,
           onPressed: () async => _automaticSearch(),
-          onLongPress: () async => _manualSearch(),
         ),
       ],
     );
