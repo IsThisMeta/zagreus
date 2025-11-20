@@ -110,23 +110,39 @@ class ZagGlobalFABManager {
 
   String _extractModuleFromRoute(String route) {
     // Route format is like "sonarr:HOME" or "dashboard:HOME"
-    final routeLower = route.toLowerCase();
+    // Extract the module from the first part before the colon
+    final parts = route.split(':');
+    if (parts.isEmpty) return '';
 
-    if (routeLower.contains('sonarr')) return 'sonarr';
-    if (routeLower.contains('radarr')) return 'radarr';
-    if (routeLower.contains('readarr')) return 'readarr';
-    if (routeLower.contains('lidarr')) return 'lidarr';
-    if (routeLower.contains('tautulli')) return 'tautulli';
-    if (routeLower.contains('sabnzbd')) return 'sabnzbd';
-    if (routeLower.contains('nzbget')) return 'nzbget';
-    if (routeLower.contains('overseerr')) return 'overseerr';
-    if (routeLower.contains('server')) return 'server';
-    if (routeLower.contains('search')) return 'search';
-    if (routeLower.contains('settings')) return '';
-    if (routeLower.contains('dashboard')) return ''; // Hide FAB on dashboard
-    if (routeLower == '/') return ''; // Hide FAB on dashboard
+    final moduleName = parts[0].toLowerCase();
 
-    return '';
+    // Map route prefix to module key
+    switch (moduleName) {
+      case 'sonarr':
+        return 'sonarr';
+      case 'radarr':
+        return 'radarr';
+      case 'readarr':
+        return 'readarr';
+      case 'lidarr':
+        return 'lidarr';
+      case 'tautulli':
+        return 'tautulli';
+      case 'sabnzbd':
+        return 'sabnzbd';
+      case 'nzbget':
+        return 'nzbget';
+      case 'overseerr':
+        return 'overseerr';
+      case 'server':
+        return 'server';
+      case 'search':
+        return 'search';
+      case 'settings':
+      case 'dashboard':
+      default:
+        return ''; // Hide FAB for settings/dashboard
+    }
   }
 
   Widget? getEndDrawer() {
