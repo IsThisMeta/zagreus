@@ -24,6 +24,25 @@ class ZagDatabase {
   Future<void> open() async {
     await ZagBox.open();
     if (ZagBox.profiles.isEmpty) await bootstrap();
+    await _runMigrations();
+  }
+
+  /// Run database migrations for version updates
+  Future<void> _runMigrations() async {
+    await _migrateOpacityTo20();
+  }
+
+  /// Migration: Reset background image opacity from 25% to 20%
+  /// This migration fixes users who were stuck at 25% opacity after
+  /// toggling the "Use Original Colors" setting.
+  Future<void> _migrateOpacityTo20() async {
+    const opacityKey = ZagreusDatabase.THEME_IMAGE_BACKGROUND_OPACITY;
+    final currentOpacity = opacityKey.read();
+
+    // If user has 25% opacity, reset to 20%
+    if (currentOpacity == 25) {
+      opacityKey.update(20);
+    }
   }
 
   Future<void> nuke() async {
