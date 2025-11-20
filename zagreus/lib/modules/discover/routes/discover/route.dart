@@ -8098,7 +8098,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
               for (int i = 0; i < _diskSpaces.length; i++) ...[
                 _buildDiskSpaceItem(_diskSpaces[i]),
                 if (i < _diskSpaces.length - 1)
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
               ],
             ],
           ),
@@ -8143,6 +8143,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         ),
         ZagLinearPercentIndicator(
+          compact: true,
           percent: diskSpace.zagPercentage / 100,
           progressColor: diskSpace.zagColor,
         ),
