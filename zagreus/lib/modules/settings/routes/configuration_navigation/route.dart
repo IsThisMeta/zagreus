@@ -66,7 +66,7 @@ class _State extends State<ConfigurationNavigationRoute>
       builder: (context, _) => ZagBlock(
         title: 'Speed Cube',
         body: const [
-          TextSpan(text: 'Show the floating module switcher button with long-press bounce-back.'),
+          TextSpan(text: 'Show floating action cube'),
         ],
         trailing: ZagSwitch(
           value: db.read(),

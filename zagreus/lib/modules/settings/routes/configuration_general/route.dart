@@ -121,7 +121,7 @@ class _State extends State<ConfigurationGeneralRoute>
           title: 'Lock Settings',
           body: const [
             TextSpan(
-              text: 'Protect Settings with your Zagreus password or Face ID.',
+              text: 'Protect settings with your Zagreus password',
             ),
           ],
           trailing: ZagSwitch(
@@ -176,10 +176,10 @@ class _State extends State<ConfigurationGeneralRoute>
         }
 
         return ZagBlock(
-          title: 'Use Face ID',
+          title: 'Use FaceID',
           body: const [
             TextSpan(
-              text: 'Unlock Settings with Face ID or device biometrics.',
+              text: 'Unlock settings with FaceID',
             ),
           ],
           trailing: ZagSwitch(
@@ -305,10 +305,10 @@ class _State extends State<ConfigurationGeneralRoute>
     const db = ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.SlowServerMode'.tr(),
-        body: [
+        title: 'Slow Server Mode',
+        body: const [
           TextSpan(
-            text: 'settings.SlowServerModeDescription'.tr(),
+            text: 'Use much longer API timeouts',
           ),
         ],
         trailing: ZagSwitch(
