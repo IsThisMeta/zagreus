@@ -8111,35 +8111,45 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   Widget _buildDiskSpaceItem(RadarrDiskSpace diskSpace) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                diskSpace.zagPath ?? '',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+        SizedBox(
+          height: 16,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  diskSpace.zagPath ?? '',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.0,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              diskSpace.zagPercentageString ?? '',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: diskSpace.zagColor,
+              Text(
+                diskSpace.zagPercentageString ?? '',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: diskSpace.zagColor,
+                  height: 1.0,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        Text(
-          diskSpace.zagSpace ?? '',
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white70
-                : Colors.black54,
+        SizedBox(
+          height: 14,
+          child: Text(
+            diskSpace.zagSpace ?? '',
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.0,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
           ),
         ),
         SizedBox(
