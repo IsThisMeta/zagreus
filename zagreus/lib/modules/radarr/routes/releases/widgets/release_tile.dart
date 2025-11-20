@@ -64,11 +64,23 @@ class _State extends State<RadarrReleasesTile> {
   }
 
   TextSpan _subtitle2() {
+    final hasCustomFormats = (widget.release.customFormats?.isNotEmpty ?? false) ||
+                             (widget.release.customFormatScore != null && widget.release.customFormatScore != 0);
     return TextSpan(
       children: [
         TextSpan(text: widget.release.zagQuality),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(text: widget.release.zagSize),
+        if (hasCustomFormats) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: widget.release.zagCustomFormatScore()!,
+            style: TextStyle(
+              color: ZagColours.blue,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -79,14 +91,6 @@ class _State extends State<RadarrReleasesTile> {
         text: widget.release.protocol!.readable!,
         backgroundColor: widget.release.zagProtocolColor,
       ),
-      if (widget.release.zagCustomFormatScore(nullOnEmpty: true) != null)
-        ZagHighlightedNode(
-          text: widget.release.zagCustomFormatScore()!,
-          backgroundColor: ZagColours.purple,
-        ),
-      ...widget.release.customFormats!.map<ZagHighlightedNode>((custom) =>
-          ZagHighlightedNode(
-              text: custom.name!, backgroundColor: ZagColours.blueGrey)),
     ];
   }
 
@@ -103,6 +107,13 @@ class _State extends State<RadarrReleasesTile> {
                   .join('\n') ??
               ZagUI.TEXT_EMDASH),
       ZagTableContent(title: 'quality', body: widget.release.zagQuality),
+      if (widget.release.customFormats?.isNotEmpty ?? false)
+        ZagTableContent(
+          title: 'custom formats',
+          body: widget.release.customFormats!
+              .map<String>((format) => format.name ?? ZagUI.TEXT_EMDASH)
+              .join('\n'),
+        ),
       if (widget.release.seeders != null)
         ZagTableContent(title: 'seeders', body: '${widget.release.seeders}'),
       if (widget.release.leechers != null)

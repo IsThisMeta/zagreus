@@ -6,6 +6,7 @@ Future<List<RadarrRelease>> _commandGetReleases(
 }) async {
   Response response = await client.get('release', queryParameters: {
     'movieId': movieId,
+    'includeCustomFormats': true,
   });
   return (response.data as List)
       .map((release) => RadarrRelease.fromJson(release))
