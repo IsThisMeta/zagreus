@@ -49,7 +49,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Swipe Between Tabs',
         body: const [
           TextSpan(
-            text: 'Allow horizontal swiping between tabs.',
+            text: 'Allow horizontal swiping between tabs',
           ),
         ],
         trailing: ZagSwitch(
@@ -83,7 +83,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Queue Drawer',
         body: const [
           TextSpan(
-            text: 'Access queues from the right edge.',
+            text: 'Access queues from the right edge',
           ),
         ],
         trailing: ZagSwitch(
@@ -102,7 +102,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Hide Modules Tab',
         body: const [
           TextSpan(
-            text: 'Hides Modules tab in Dashboard.',
+            text: 'Hides Modules tab in Dashboard',
           ),
         ],
         trailing: ZagSwitch(
