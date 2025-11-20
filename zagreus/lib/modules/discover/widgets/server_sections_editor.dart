@@ -15,13 +15,19 @@ class ServerSectionsEditor extends StatefulWidget {
 }
 
 class ServerSectionsEditorState extends State<ServerSectionsEditor> {
-  static const List<String> _defaultSections = [
+  static const List<String> _allSections = [
     'server_issues',
     'overseerr_requests',
     'disk_space',
     'download_history',
     'lidarr_recent',
     'readarr_recent',
+  ];
+
+  static const List<String> _defaultSections = [
+    'disk_space',
+    'download_history',
+    'server_issues',
   ];
 
   static const Map<String, String> _sectionNames = {
@@ -224,7 +230,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
   }
 
   List<String> _availableSections() {
-    return _defaultSections
+    return _allSections
         .where((section) => !_sections.contains(section))
         .toList();
   }
