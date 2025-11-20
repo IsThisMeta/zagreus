@@ -177,11 +177,20 @@ class _Sorter {
 
   List<RadarrRelease> _customFormatScore(
       List<RadarrRelease> releases, bool ascending) {
-    ascending
-        ? releases.sort((a, b) =>
-            (a.customFormatScore ?? 0).compareTo((b.customFormatScore ?? 0)))
-        : releases.sort((a, b) =>
-            (b.customFormatScore ?? 0).compareTo((a.customFormatScore ?? 0)));
+    releases.sort((a, b) {
+      final aHasFormats = (a.customFormats?.isNotEmpty ?? false);
+      final bHasFormats = (b.customFormats?.isNotEmpty ?? false);
+
+      // Prioritize releases with formats over those without
+      if (!bHasFormats && aHasFormats) return ascending ? 1 : -1;
+      if (!aHasFormats && bHasFormats) return ascending ? -1 : 1;
+
+      // Both have formats or both don't - sort by score
+      final aScore = a.customFormatScore ?? 0;
+      final bScore = b.customFormatScore ?? 0;
+      return ascending ? aScore.compareTo(bScore) : bScore.compareTo(aScore);
+    });
+
     return releases;
   }
 }
