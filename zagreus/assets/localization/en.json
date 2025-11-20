@@ -182,6 +182,7 @@
     "radarr.Copy": "Copy",
     "radarr.CopyFiles": "Hardlink/Copy Files",
     "radarr.CopyFull": "Hardlink/Copy Files",
+    "radarr.CustomFormatScore": "Custom Format Score",
     "radarr.CutoffUnmet": "Cutoff Unmet",
     "radarr.DateAdded": "Date Added",
     "radarr.DigitalRelease": "Digital Release",
