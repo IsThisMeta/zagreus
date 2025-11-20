@@ -8139,6 +8139,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             ],
           ),
         ),
+        const SizedBox(height: 2),
         SizedBox(
           height: 14,
           child: Text(
@@ -8152,6 +8153,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             ),
           ),
         ),
+        const SizedBox(height: 2),
         SizedBox(
           height: 4,
           child: ZagLinearPercentIndicator(
