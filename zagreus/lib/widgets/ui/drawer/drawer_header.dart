@@ -34,7 +34,7 @@ class ZagDrawerHeader extends StatelessWidget {
                 final unlocked =
                     await SettingsLockService.instance.ensureUnlocked(context);
                 if (unlocked) {
-                  ZagModule.SETTINGS.launch();
+                  ZagModule.SETTINGS.launch(restore: false);
                 }
               },
               onLongPress: () {
