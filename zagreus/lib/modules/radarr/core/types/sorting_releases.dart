@@ -17,6 +17,8 @@ enum RadarrReleasesSorting {
   TYPE,
   @HiveField(5)
   WEIGHT,
+  @HiveField(6)
+  CUSTOM_FORMAT_SCORE,
 }
 
 extension RadarrReleasesSortingExtension on RadarrReleasesSorting {
@@ -34,6 +36,8 @@ extension RadarrReleasesSortingExtension on RadarrReleasesSorting {
         return 'type';
       case RadarrReleasesSorting.SIZE:
         return 'size';
+      case RadarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return 'customFormatScore';
     }
   }
 
@@ -51,6 +55,8 @@ extension RadarrReleasesSortingExtension on RadarrReleasesSorting {
         return 'radarr.Type'.tr();
       case RadarrReleasesSorting.SIZE:
         return 'radarr.Size'.tr();
+      case RadarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return 'radarr.CustomFormatScore'.tr();
     }
   }
 
@@ -68,6 +74,8 @@ extension RadarrReleasesSortingExtension on RadarrReleasesSorting {
         return RadarrReleasesSorting.TYPE;
       case 'weight':
         return RadarrReleasesSorting.WEIGHT;
+      case 'customFormatScore':
+        return RadarrReleasesSorting.CUSTOM_FORMAT_SCORE;
       default:
         return null;
     }
@@ -96,6 +104,8 @@ class _Sorter {
         return _type(releases, ascending);
       case RadarrReleasesSorting.SIZE:
         return _size(releases, ascending);
+      case RadarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return _customFormatScore(releases, ascending);
     }
   }
 
@@ -162,6 +172,25 @@ class _Sorter {
     ascending
         ? releases.sort((a, b) => (a.size ?? -1).compareTo((b.size ?? -1)))
         : releases.sort((a, b) => (b.size ?? -1).compareTo((a.size ?? -1)));
+    return releases;
+  }
+
+  List<RadarrRelease> _customFormatScore(
+      List<RadarrRelease> releases, bool ascending) {
+    releases.sort((a, b) {
+      final aHasFormats = (a.customFormats?.isNotEmpty ?? false);
+      final bHasFormats = (b.customFormats?.isNotEmpty ?? false);
+
+      // Prioritize releases with formats over those without
+      if (!bHasFormats && aHasFormats) return ascending ? 1 : -1;
+      if (!aHasFormats && bHasFormats) return ascending ? -1 : 1;
+
+      // Both have formats or both don't - sort by score
+      final aScore = a.customFormatScore ?? 0;
+      final bScore = b.customFormatScore ?? 0;
+      return ascending ? aScore.compareTo(bScore) : bScore.compareTo(aScore);
+    });
+
     return releases;
   }
 }
