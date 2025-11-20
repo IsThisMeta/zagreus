@@ -8143,7 +8143,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 : Colors.black54,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         ZagLinearPercentIndicator(
           percent: diskSpace.zagPercentage / 100,
           progressColor: diskSpace.zagColor,
