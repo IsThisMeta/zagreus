@@ -8133,7 +8133,6 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             ),
           ],
         ),
-        const SizedBox(height: 4),
         Text(
           diskSpace.zagSpace ?? '',
           style: TextStyle(
@@ -8143,7 +8142,6 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 : Colors.black54,
           ),
         ),
-        const SizedBox(height: 8),
         ZagLinearPercentIndicator(
           percent: diskSpace.zagPercentage / 100,
           progressColor: diskSpace.zagColor,
