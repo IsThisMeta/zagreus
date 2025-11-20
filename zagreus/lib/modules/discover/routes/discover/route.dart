@@ -8236,16 +8236,37 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         )
       else
-        ..._overseerrRequests
-            .take(_overseerrPreviewLimit)
-            .map(
-              (request) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: OverseerrRequestTile(
-                  request: request,
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? ZagColours.secondary
+                  : ZagColours.secondaryLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white10
+                    : Colors.black12,
+                width: 1,
               ),
             ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: _overseerrRequests
+                  .take(_overseerrPreviewLimit)
+                  .map(
+                    (request) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: OverseerrRequestTile(
+                        request: request,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
       const SizedBox(height: 24),
     ];
   }
@@ -8398,15 +8419,36 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         )
       else
-        ..._tautulliStreams
-            .map(
-              (stream) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TautulliStreamCard(
-                  session: stream,
-                ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? ZagColours.secondary
+                  : ZagColours.secondaryLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white10
+                    : Colors.black12,
+                width: 1,
               ),
             ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: _tautulliStreams
+                  .map(
+                    (stream) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TautulliStreamCard(
+                        session: stream,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
       const SizedBox(height: 24),
     ];
   }
