@@ -68,6 +68,8 @@ class _State extends State<SonarrReleasesTile> {
   TextSpan _subtitle2() {
     String? _preferredWordScore =
         widget.release.zagPreferredWordScore(nullOnEmpty: true);
+    final hasCustomFormats = (widget.release.customFormats?.isNotEmpty ?? false) ||
+                             (widget.release.customFormatScore != null && widget.release.customFormatScore != 0);
     return TextSpan(
       children: [
         if (_preferredWordScore != null)
@@ -87,6 +89,16 @@ class _State extends State<SonarrReleasesTile> {
           TextSpan(text: widget.release.zagLanguage),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(text: widget.release.zagSize),
+        if (hasCustomFormats) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: widget.release.zagCustomFormatScore()!,
+            style: TextStyle(
+              color: ZagColours.blue,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -130,6 +142,13 @@ class _State extends State<SonarrReleasesTile> {
         title: 'sonarr.Quality'.tr(),
         body: widget.release.zagQuality,
       ),
+      if (widget.release.customFormats?.isNotEmpty ?? false)
+        ZagTableContent(
+          title: 'sonarr.CustomFormats'.tr(),
+          body: widget.release.customFormats!
+              .map<String>((format) => format.name ?? ZagUI.TEXT_EMDASH)
+              .join('\n'),
+        ),
       if (widget.release.seeders != null)
         ZagTableContent(
           title: 'sonarr.Seeders'.tr(),

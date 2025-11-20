@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:zagreus/api/sonarr/models/custom_format/custom_format.dart';
 import 'package:zagreus/modules/sonarr.dart';
 
 part 'release.g.dart';
@@ -11,6 +12,12 @@ class SonarrRelease {
 
   @JsonKey(name: 'quality')
   SonarrEpisodeFileQuality? quality;
+
+  @JsonKey(name: 'customFormats')
+  List<SonarrCustomFormat>? customFormats;
+
+  @JsonKey(name: 'customFormatScore')
+  int? customFormatScore;
 
   @JsonKey(name: 'qualityWeight')
   int? qualityWeight;
@@ -149,6 +156,8 @@ class SonarrRelease {
   SonarrRelease({
     this.guid,
     this.quality,
+    this.customFormats,
+    this.customFormatScore,
     this.qualityWeight,
     this.age,
     this.ageHours,

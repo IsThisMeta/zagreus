@@ -6,6 +6,7 @@ Future<List<SonarrRelease>> _commandGetReleases(
 }) async {
   Response response = await client.get('release', queryParameters: {
     'episodeId': episodeId,
+    'includeCustomFormats': true,
   });
   return (response.data as List)
       .map((series) => SonarrRelease.fromJson(series))
