@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/api/readarr/models/author/author.dart';
+import 'package:zagreus/api/readarr/models/book_file/book_file_media_info.dart';
+import 'package:zagreus/api/readarr/models/book_file/book_file_quality.dart';
+import 'package:zagreus/api/readarr/models/edition/edition.dart';
 
 part 'book_file.g.dart';
 

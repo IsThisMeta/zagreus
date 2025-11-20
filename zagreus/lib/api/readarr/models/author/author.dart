@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/api/readarr/models/author/author_links.dart';
+import 'package:zagreus/api/readarr/models/author/author_ratings.dart';
+import 'package:zagreus/api/readarr/models/author/author_statistics.dart';
+import 'package:zagreus/api/readarr/models/image/image.dart';
 
 part 'author.g.dart';
 
