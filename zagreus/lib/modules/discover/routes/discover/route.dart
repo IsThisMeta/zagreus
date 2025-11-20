@@ -8111,6 +8111,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   Widget _buildDiskSpaceItem(RadarrDiskSpace diskSpace) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           children: [
@@ -8120,6 +8121,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  height: 1.0,
                 ),
               ),
             ),
@@ -8129,6 +8131,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: diskSpace.zagColor,
+                height: 1.0,
               ),
             ),
           ],
@@ -8137,6 +8140,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           diskSpace.zagSpace ?? '',
           style: TextStyle(
             fontSize: 14,
+            height: 1.0,
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white70
                 : Colors.black54,
