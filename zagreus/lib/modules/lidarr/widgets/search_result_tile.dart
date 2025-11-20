@@ -62,11 +62,23 @@ class _State extends State<LidarrReleasesTile> {
   }
 
   TextSpan _subtitle2() {
+    final hasCustomFormats = (widget.release.customFormats?.isNotEmpty ?? false) ||
+                             (widget.release.customFormatScore != null && widget.release.customFormatScore != 0);
     return TextSpan(
       children: [
         TextSpan(text: widget.release.quality),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(text: widget.release.size.asBytes()),
+        if (hasCustomFormats) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: widget.release.zagCustomFormatScore()!,
+            style: TextStyle(
+              color: ZagColours.blue,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -101,6 +113,11 @@ class _State extends State<LidarrReleasesTile> {
       ZagTableContent(title: 'indexer', body: widget.release.indexer),
       ZagTableContent(title: 'size', body: widget.release.size.asBytes()),
       ZagTableContent(title: 'quality', body: widget.release.quality),
+      if (widget.release.customFormats?.isNotEmpty ?? false)
+        ZagTableContent(
+          title: 'custom formats',
+          body: widget.release.customFormats!.join('\n'),
+        ),
       if (widget.release.protocol == 'torrent' &&
           widget.release.seeders != null)
         ZagTableContent(title: 'seeders', body: '${widget.release.seeders}'),
