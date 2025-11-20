@@ -67,7 +67,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                          : 'Unlock full homelab control & advanced modules',
+                          : 'Unlock advanced modules and features',
             )
           ],
           trailing: GestureDetector(
@@ -96,7 +96,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                     ? 'Included with Ultra'
                     : isMega
                         ? 'Active • Mega plan'
-                        : 'Add AI agent and recommendations to dashboard')
+                        : 'Add AI agent and recommendations')
           ],
           trailing: ZagIconButton(
             icon: (isUltra || isMega)
