@@ -47,6 +47,11 @@ import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
+import 'package:zagreus/modules/tautulli/core/state.dart';
+import 'package:zagreus/modules/discover/widgets/tautulli_stream_card.dart';
+import 'package:zagreus/api/tautulli/tautulli.dart';
+import 'package:zagreus/modules/tautulli.dart';
+import 'package:zagreus/router/routes/tautulli.dart';
 import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
 import 'package:zagreus/modules/unraid/core/download_history_fetcher.dart';
 import 'package:zagreus/modules/unraid/routes/unraid/widgets/download_history_card.dart';
@@ -7412,6 +7417,17 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   bool _isLoading = false;
   String? _error;
 
+  // Tautulli streams state
+  List<TautulliSession> _tautulliStreams = [];
+  bool _tautulliEnabled = false;
+  bool _tautulliLoading = false;
+  String? _tautulliError;
+  int? _tautulliStreamCount;
+  int? _tautulliDirectPlayCount;
+  int? _tautulliDirectStreamCount;
+  int? _tautulliTranscodeCount;
+  int? _tautulliBandwidth;
+
   @override
   void initState() {
     super.initState();
@@ -7424,6 +7440,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       _loadDiskSpaces(),
       _loadServerIssues(),
       _loadOverseerrRequests(),
+      _loadTautulliStreams(),
       _loadDownloadHistory(),
       _loadLidarrRecentlyDownloaded(),
       _loadReadarrRecentlyDownloaded(),
@@ -7642,6 +7659,58 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       _overseerrLoading ||
       _overseerrError != null ||
       _overseerrRequests.isNotEmpty;
+
+  Future<void> _loadTautulliStreams() async {
+    if (!mounted) return;
+
+    final tautulliState = context.read<TautulliState>();
+
+    if (!tautulliState.enabled) {
+      if (!mounted) return;
+      setState(() {
+        _tautulliEnabled = false;
+        _tautulliLoading = false;
+        _tautulliError = null;
+        _tautulliStreams = [];
+      });
+      return;
+    }
+
+    setState(() {
+      _tautulliEnabled = true;
+      _tautulliLoading = true;
+      _tautulliError = null;
+    });
+
+    try {
+      final activity = await tautulliState.api!.activity.getActivity();
+
+      if (!mounted) return;
+      setState(() {
+        _tautulliStreams = activity?.sessions ?? [];
+        _tautulliStreamCount = activity?.streamCount;
+        _tautulliDirectPlayCount = activity?.streamCountDirectPlay;
+        _tautulliDirectStreamCount = activity?.streamCountDirectStream;
+        _tautulliTranscodeCount = activity?.streamCountTranscode;
+        _tautulliBandwidth = activity?.totalBandwidth;
+        _tautulliLoading = false;
+      });
+    } catch (e) {
+      ZagLogger().warning('Failed to fetch Tautulli streams: $e');
+      if (!mounted) return;
+      setState(() {
+        _tautulliError = e.toString();
+        _tautulliLoading = false;
+        _tautulliStreams = [];
+      });
+    }
+  }
+
+  bool get _shouldShowTautulliStreamsSection =>
+      _tautulliEnabled ||
+      _tautulliLoading ||
+      _tautulliError != null ||
+      _tautulliStreams.isNotEmpty;
 
   Future<void> _loadDownloadHistory() async {
     if (!mounted) return;
@@ -7894,7 +7963,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     final sectionOrder = UnraidDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
-        : ['server_issues', 'overseerr_requests', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
+        : ['server_issues', 'overseerr_requests', 'tautulli_streams', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
 
     print('🎵 Ordered sections: $orderedSections');
     print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
@@ -7904,6 +7973,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     final sectionWidgets = <String, List<Widget>>{
       'server_issues': _buildServerIssuesSection(),
       if (_shouldShowOverseerrSection) 'overseerr_requests': _buildOverseerrSection(),
+      if (_shouldShowTautulliStreamsSection) 'tautulli_streams': _buildTautulliStreamsSection(),
       'disk_space': _buildDiskSpaceSection(),
       if (ZagProfile.current.sabnzbdEnabled) 'download_history': _buildDownloadHistorySection(),
       if (ZagProfile.current.lidarrEnabled) 'lidarr_recent': _buildLidarrRecentSection(),
@@ -8169,6 +8239,152 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
           _loadOverseerrRequests();
         },
+      ),
+    );
+  }
+
+  List<Widget> _buildTautulliStreamsSection() {
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+        child: Row(
+          children: [
+            Text(
+              'Tautulli Streams',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: _tautulliEnabled
+                    ? ZagModule.TAUTULLI.color
+                    : Colors.grey,
+              ),
+            ),
+            const Spacer(),
+            if (_tautulliEnabled && _tautulliStreams.isNotEmpty)
+              _buildStreamsSummary(),
+          ],
+        ),
+      ),
+      if (_tautulliLoading)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: ZagLoader(),
+          ),
+        )
+      else if (!_tautulliEnabled)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'Enable Tautulli',
+            body: const [
+              TextSpan(
+                text: 'Turn on Tautulli in Settings to see active streams here.',
+              ),
+            ],
+            trailing: const Icon(Icons.settings_rounded),
+            onTap: SettingsRoutes.CONFIGURATION_TAUTULLI.go,
+          ),
+        )
+      else if (_tautulliError != null)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'Unable to load streams',
+            body: const [
+              TextSpan(
+                text: 'Tap to retry. We could not reach Tautulli.',
+              ),
+            ],
+            trailing: const Icon(Icons.refresh_rounded),
+            onTap: _loadTautulliStreams,
+          ),
+        )
+      else if (_tautulliStreams.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: ZagBlock(
+            title: 'No Active Streams',
+            body: const [
+              TextSpan(text: 'Nobody is currently watching anything.'),
+            ],
+            trailing: const Icon(Icons.play_circle_outline_rounded),
+            onTap: () => ZagModule.TAUTULLI.launch(),
+          ),
+        )
+      else
+        ..._tautulliStreams
+            .map(
+              (stream) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: TautulliStreamCard(
+                  session: stream,
+                ),
+              ),
+            ),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  Widget _buildStreamsSummary() {
+    final parts = <String>[];
+
+    if (_tautulliDirectPlayCount != null && _tautulliDirectPlayCount! > 0) {
+      parts.add('$_tautulliDirectPlayCount Direct Play');
+    }
+    if (_tautulliDirectStreamCount != null && _tautulliDirectStreamCount! > 0) {
+      parts.add('$_tautulliDirectStreamCount Direct Stream');
+    }
+    if (_tautulliTranscodeCount != null && _tautulliTranscodeCount! > 0) {
+      parts.add('$_tautulliTranscodeCount Transcode');
+    }
+
+    final summaryText = parts.isEmpty ? '' : parts.join(' • ');
+    final bandwidthText = _tautulliBandwidth != null
+        ? '${(_tautulliBandwidth! / 1000).toStringAsFixed(1)} Mbps'
+        : '';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (summaryText.isNotEmpty)
+            Text(
+              summaryText,
+              style: TextStyle(
+                fontSize: 12,
+                color: ZagColours.accentColor(context),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          if (bandwidthText.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              bandwidthText,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
