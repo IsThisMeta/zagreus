@@ -8061,6 +8061,10 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   }
 
   List<Widget> _buildDiskSpaceSection() {
+    if (_diskSpaces.isEmpty) {
+      return [];
+    }
+
     return [
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
@@ -8073,12 +8077,79 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         ),
       ),
-      ..._diskSpaces.map((diskSpace) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: RadarrDiskSpaceTile(diskSpace: diskSpace),
-      )),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? ZagColours.secondary
+                : ZagColours.secondaryLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white10
+                  : Colors.black12,
+              width: 1,
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              for (int i = 0; i < _diskSpaces.length; i++) ...[
+                _buildDiskSpaceItem(_diskSpaces[i]),
+                if (i < _diskSpaces.length - 1)
+                  const SizedBox(height: 8),
+              ],
+            ],
+          ),
+        ),
+      ),
       const SizedBox(height: 24),
     ];
+  }
+
+  Widget _buildDiskSpaceItem(RadarrDiskSpace diskSpace) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                diskSpace.zagPath,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              diskSpace.zagPercentageString,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: diskSpace.zagColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          diskSpace.zagSpace,
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ZagLinearPercentIndicator(
+          percent: diskSpace.zagPercentage / 100,
+          progressColor: diskSpace.zagColor,
+        ),
+      ],
+    );
   }
 
   List<Widget> _buildOverseerrSection() {
