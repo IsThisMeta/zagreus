@@ -18,6 +18,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
   static const List<String> _allSections = [
     'server_issues',
     'overseerr_requests',
+    'tautulli_streams',
     'disk_space',
     'download_history',
     'lidarr_recent',
@@ -29,11 +30,13 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'download_history',
     'server_issues',
     'overseerr_requests',
+    'tautulli_streams',
   ];
 
   static const Map<String, String> _sectionNames = {
     'server_issues': 'Server Issues',
     'overseerr_requests': 'Overseerr Requests',
+    'tautulli_streams': 'Tautulli Streams',
     'disk_space': 'Disk Space',
     'download_history': 'Download History',
     'lidarr_recent': 'Recently Downloaded Albums',
@@ -310,6 +313,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
         return Icons.warning_rounded;
       case 'overseerr_requests':
         return Icons.movie_filter_rounded;
+      case 'tautulli_streams':
+        return Icons.play_circle_outline_rounded;
       case 'disk_space':
         return Icons.storage_rounded;
       case 'download_history':
