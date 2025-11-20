@@ -8098,7 +8098,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
               for (int i = 0; i < _diskSpaces.length; i++) ...[
                 _buildDiskSpaceItem(_diskSpaces[i]),
                 if (i < _diskSpaces.length - 1)
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
               ],
             ],
           ),
@@ -8133,7 +8133,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           diskSpace.zagSpace ?? '',
           style: TextStyle(
@@ -8143,7 +8143,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
                 : Colors.black54,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         ZagLinearPercentIndicator(
           percent: diskSpace.zagPercentage / 100,
           progressColor: diskSpace.zagColor,
