@@ -131,8 +131,6 @@ class _State extends State<ConfigurationAppearanceRoute>
           value: db.read(),
           onChanged: (value) {
             db.update(value);
-            ZagreusDatabase.THEME_IMAGE_BACKGROUND_OPACITY
-                .update(value ? 20 : 25);
             ZagTheme().initialize();
             ZagState.reset(context);
             showZagSnackBar(
