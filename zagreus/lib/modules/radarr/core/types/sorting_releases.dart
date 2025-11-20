@@ -177,18 +177,22 @@ class _Sorter {
 
   List<RadarrRelease> _customFormatScore(
       List<RadarrRelease> releases, bool ascending) {
+    // Note: For custom format score, ascending means high-to-low (reversed from normal)
+    // to match user expectations (highest scores are "best")
+    final sortDescending = ascending;
+
     releases.sort((a, b) {
       final aHasFormats = (a.customFormats?.isNotEmpty ?? false);
       final bHasFormats = (b.customFormats?.isNotEmpty ?? false);
 
       // Prioritize releases with formats over those without
-      if (!bHasFormats && aHasFormats) return ascending ? 1 : -1;
-      if (!aHasFormats && bHasFormats) return ascending ? -1 : 1;
+      if (!bHasFormats && aHasFormats) return sortDescending ? -1 : 1;
+      if (!aHasFormats && bHasFormats) return sortDescending ? 1 : -1;
 
       // Both have formats or both don't - sort by score
       final aScore = a.customFormatScore ?? 0;
       final bScore = b.customFormatScore ?? 0;
-      return ascending ? aScore.compareTo(bScore) : bScore.compareTo(aScore);
+      return sortDescending ? bScore.compareTo(aScore) : aScore.compareTo(bScore);
     });
 
     return releases;
