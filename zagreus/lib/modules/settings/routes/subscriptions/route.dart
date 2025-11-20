@@ -640,10 +640,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses with our highest usage limits, GPT-5 Dashboard results, and every Mega perk."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, GPT-5 Dashboard results, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
                       '• GPT-5 responses for Ask Z and Dashboard\n'
-                      '• Highest Ask Z usage limits\n'
                       '• All Pro and Mega features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
