@@ -137,7 +137,7 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.UNRAID:
         return true;
       case ZagModule.PROWLARR:
-        return true;
+        return false;
       default:
         return true;
     }
