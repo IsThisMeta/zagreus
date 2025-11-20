@@ -19,6 +19,8 @@ enum SonarrReleasesSorting {
   WEIGHT,
   @HiveField(6)
   WORD_SCORE,
+  @HiveField(7)
+  CUSTOM_FORMAT_SCORE,
 }
 
 extension SonarrReleasesSortingExtension on SonarrReleasesSorting {
@@ -38,6 +40,8 @@ extension SonarrReleasesSortingExtension on SonarrReleasesSorting {
         return 'size';
       case SonarrReleasesSorting.WORD_SCORE:
         return 'word_score';
+      case SonarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return 'customFormatScore';
     }
   }
 
@@ -57,6 +61,8 @@ extension SonarrReleasesSortingExtension on SonarrReleasesSorting {
         return 'Size';
       case SonarrReleasesSorting.WORD_SCORE:
         return 'sonarr.WordScore'.tr();
+      case SonarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return 'sonarr.CustomFormatScore'.tr();
     }
   }
 
@@ -76,6 +82,8 @@ extension SonarrReleasesSortingExtension on SonarrReleasesSorting {
         return SonarrReleasesSorting.WEIGHT;
       case 'word_score':
         return SonarrReleasesSorting.WORD_SCORE;
+      case 'customFormatScore':
+        return SonarrReleasesSorting.CUSTOM_FORMAT_SCORE;
       default:
         return null;
     }
@@ -106,6 +114,8 @@ class _Sorter {
         return _size(releases, ascending);
       case SonarrReleasesSorting.WORD_SCORE:
         return _wordScore(releases, ascending);
+      case SonarrReleasesSorting.CUSTOM_FORMAT_SCORE:
+        return _customFormatScore(releases, ascending);
     }
   }
 
@@ -181,6 +191,29 @@ class _Sorter {
             (b.preferredWordScore ?? 0).compareTo((a.preferredWordScore ?? 0)))
         : releases.sort((a, b) =>
             (a.preferredWordScore ?? 0).compareTo((b.preferredWordScore ?? 0)));
+    return releases;
+  }
+
+  List<SonarrRelease> _customFormatScore(
+      List<SonarrRelease> releases, bool ascending) {
+    // Note: For custom format score, ascending means high-to-low (reversed from normal)
+    // to match user expectations (highest scores are "best")
+    final sortDescending = ascending;
+
+    releases.sort((a, b) {
+      final aHasFormats = (a.customFormats?.isNotEmpty ?? false);
+      final bHasFormats = (b.customFormats?.isNotEmpty ?? false);
+
+      // Prioritize releases with formats over those without
+      if (!bHasFormats && aHasFormats) return sortDescending ? -1 : 1;
+      if (!aHasFormats && bHasFormats) return sortDescending ? 1 : -1;
+
+      // Both have formats or both don't - sort by score
+      final aScore = a.customFormatScore ?? 0;
+      final bScore = b.customFormatScore ?? 0;
+      return sortDescending ? bScore.compareTo(aScore) : aScore.compareTo(bScore);
+    });
+
     return releases;
   }
 }

@@ -59,4 +59,13 @@ extension SonarrReleaseExtension on SonarrRelease {
     if (nullOnEmpty) return null;
     return ZagUI.TEXT_EMDASH;
   }
+
+  String? zagCustomFormatScore({bool nullOnEmpty = false}) {
+    if ((this.customFormatScore ?? 0) != 0) {
+      String _prefix = this.customFormatScore! > 0 ? '+' : '';
+      return '$_prefix${this.customFormatScore}';
+    }
+    if (nullOnEmpty) return null;
+    return ZagUI.TEXT_EMDASH;
+  }
 }

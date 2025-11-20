@@ -693,6 +693,8 @@
     "sonarr.Codec": "Codec",
     "sonarr.Client": "Client",
     "sonarr.Continuing": "Continuing",
+    "sonarr.CustomFormats": "Custom Formats",
+    "sonarr.CustomFormatScore": "Custom Format Score",
     "sonarr.DeleteEpisodeFile": "Delete Episode File",
     "sonarr.DeleteEpisodeFileHint1": "Are you sure you want to delete this episode file?",
     "sonarr.DeleteFile": "Delete File",
