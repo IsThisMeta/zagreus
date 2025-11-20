@@ -8074,7 +8074,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         ),
       ),
       ..._diskSpaces.map((diskSpace) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(bottom: 6),
         child: RadarrDiskSpaceTile(diskSpace: diskSpace),
       )),
       const SizedBox(height: 24),
