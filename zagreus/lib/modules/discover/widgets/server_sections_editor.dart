@@ -28,6 +28,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'disk_space',
     'download_history',
     'server_issues',
+    'overseerr_requests',
   ];
 
   static const Map<String, String> _sectionNames = {
