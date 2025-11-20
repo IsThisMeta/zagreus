@@ -83,6 +83,59 @@ class _State extends State<PersonDetailsRoute>
       // Load person credits
       final credits = await TMDBApi.getPersonCombinedCredits(widget.personId);
 
+      // Check library status for movies (Radarr)
+      final radarrState = context.read<RadarrState>();
+      if (radarrState.enabled && radarrState.api != null) {
+        try {
+          radarrState.fetchMovies();
+          final radarrMovies = await radarrState.movies!;
+
+          for (final credit in credits) {
+            if (credit['mediaType'] == 'movie') {
+              final tmdbId = credit['id'] as int?;
+              final title = credit['title'] as String?;
+
+              final inLibrary = radarrMovies.any((radarrMovie) {
+                if (tmdbId != null && radarrMovie.tmdbId == tmdbId) {
+                  return true;
+                }
+                return radarrMovie.title?.toLowerCase() == title?.toLowerCase();
+              });
+              credit['inLibrary'] = inLibrary;
+            }
+          }
+        } catch (e) {
+          print('Failed to check Radarr library: $e');
+        }
+      }
+
+      // Check library status for TV shows (Sonarr)
+      final sonarrState = context.read<SonarrState>();
+      if (sonarrState.enabled && sonarrState.api != null) {
+        try {
+          sonarrState.fetchAllSeries();
+          final sonarrSeriesMap = await sonarrState.series!;
+          final sonarrSeries = sonarrSeriesMap.values.toList();
+
+          for (final credit in credits) {
+            if (credit['mediaType'] == 'tv') {
+              final tmdbId = credit['id'] as int?;
+              final title = credit['title'] as String?;
+
+              final inLibrary = sonarrSeries.any((sonarrShow) {
+                if (tmdbId != null && sonarrShow.tvdbId == tmdbId) {
+                  return true;
+                }
+                return sonarrShow.title?.toLowerCase() == title?.toLowerCase();
+              });
+              credit['inLibrary'] = inLibrary;
+            }
+          }
+        } catch (e) {
+          print('Failed to check Sonarr library: $e');
+        }
+      }
+
       setState(() {
         _personDetails = details;
         _credits = credits;
@@ -700,27 +753,53 @@ class _State extends State<PersonDetailsRoute>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    // Year badge - top-right
+                    // Year badge - top-center
                     if (credit['year'] != null)
                       Positioned(
                         top: 6,
-                        right: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            credit['year'],
-                            style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(6),
                             ),
+                            child: Text(
+                              credit['year'],
+                              style: TextStyle(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Library indicator - top-right
+                    if (credit['inLibrary'] == true && !_isMultiSelectMode)
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          width: 11,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            color: credit['mediaType'] == 'movie'
+                                ? ZagColours.orange
+                                : ZagColours.blue,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.6),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                       ),
