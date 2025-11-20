@@ -7,6 +7,7 @@ enum LidarrReleasesSorting {
   size,
   type,
   weight,
+  customFormatScore,
 }
 
 extension LidarrReleasesSortingExtension on LidarrReleasesSorting {
@@ -24,6 +25,8 @@ extension LidarrReleasesSortingExtension on LidarrReleasesSorting {
         return 'type';
       case LidarrReleasesSorting.size:
         return 'size';
+      case LidarrReleasesSorting.customFormatScore:
+        return 'customFormatScore';
     }
   }
 
@@ -41,6 +44,8 @@ extension LidarrReleasesSortingExtension on LidarrReleasesSorting {
         return 'Type';
       case LidarrReleasesSorting.size:
         return 'Size';
+      case LidarrReleasesSorting.customFormatScore:
+        return 'Custom Format Score';
     }
   }
 
@@ -67,6 +72,8 @@ class _Sorter {
         return _type(data, ascending);
       case LidarrReleasesSorting.size:
         return _size(data, ascending);
+      case LidarrReleasesSorting.customFormatScore:
+        return _customFormatScore(data, ascending);
     }
   }
 
@@ -120,6 +127,29 @@ class _Sorter {
     ascending
         ? _data.sort((a, b) => a.size.compareTo(b.size))
         : _data.sort((a, b) => b.size.compareTo(a.size));
+    return _data;
+  }
+
+  List<LidarrReleaseData> _customFormatScore(List data, bool ascending) {
+    List<LidarrReleaseData> _data = List.from(data, growable: false);
+    // Note: For custom format score, ascending means high-to-low (reversed from normal)
+    // to match user expectations (highest scores are "best")
+    final sortDescending = ascending;
+
+    _data.sort((a, b) {
+      final aHasFormats = (a.customFormats?.isNotEmpty ?? false);
+      final bHasFormats = (b.customFormats?.isNotEmpty ?? false);
+
+      // Prioritize releases with formats over those without
+      if (!bHasFormats && aHasFormats) return sortDescending ? -1 : 1;
+      if (!aHasFormats && bHasFormats) return sortDescending ? 1 : -1;
+
+      // Both have formats or both don't - sort by score
+      final aScore = a.customFormatScore ?? 0;
+      final bScore = b.customFormatScore ?? 0;
+      return sortDescending ? bScore.compareTo(aScore) : aScore.compareTo(bScore);
+    });
+
     return _data;
   }
 }

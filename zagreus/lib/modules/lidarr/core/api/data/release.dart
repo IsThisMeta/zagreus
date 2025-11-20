@@ -13,6 +13,8 @@ class LidarrReleaseData {
   int? leechers;
   double ageHours;
   List<dynamic> rejections;
+  List<String>? customFormats;
+  int? customFormatScore;
 
   LidarrReleaseData({
     required this.title,
@@ -29,9 +31,20 @@ class LidarrReleaseData {
     required this.rejections,
     this.seeders,
     this.leechers,
+    this.customFormats,
+    this.customFormatScore,
   });
 
   bool get isTorrent {
     return protocol == 'torrent';
+  }
+
+  String? zagCustomFormatScore({bool nullOnEmpty = false}) {
+    if ((customFormatScore ?? 0) != 0) {
+      String prefix = customFormatScore! > 0 ? '+' : '';
+      return '$prefix$customFormatScore';
+    }
+    if (nullOnEmpty) return null;
+    return '—';
   }
 }

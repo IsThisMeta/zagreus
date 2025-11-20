@@ -711,6 +711,7 @@ class LidarrAPI {
         'release',
         queryParameters: {
           'albumId': albumID,
+          'includeCustomFormats': true,
         },
       );
       List<LidarrReleaseData> entries = [];
@@ -730,6 +731,10 @@ class LidarrAPI {
           rejections: entry['rejections'] ?? [],
           seeders: entry['seeders'] ?? 0,
           leechers: entry['leechers'] ?? 0,
+          customFormats: entry['customFormats'] != null
+              ? List<String>.from(entry['customFormats'])
+              : null,
+          customFormatScore: entry['customFormatScore'],
         ));
       }
       return entries;
