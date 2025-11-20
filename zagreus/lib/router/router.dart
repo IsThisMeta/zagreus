@@ -111,9 +111,9 @@ class _RouteLocationTracker {
   }
 
   void _handleLocationChange() {
-    // Skip if module tab memory is disabled
-    if (!ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED.read()) {
-      print('🔍 RouteTracker: Memory disabled, skipping');
+    // Skip if Speed Cube is disabled (route memory is part of the cube feature)
+    if (!ZagreusDatabase.SPEED_CUBE_ENABLED.read()) {
+      print('🔍 RouteTracker: Speed Cube disabled, skipping');
       return;
     }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:zagreus/core.dart';
-import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationNavigationRoute extends StatefulWidget {
@@ -39,7 +38,6 @@ class _State extends State<ConfigurationNavigationRoute>
         _downloadsDrawer(),
         _legacyModulesTabToggle(),
         _speedCube(),
-        _moduleTabMemoryToggle(),
       ],
     );
   }
@@ -68,45 +66,13 @@ class _State extends State<ConfigurationNavigationRoute>
       builder: (context, _) => ZagBlock(
         title: 'Speed Cube',
         body: const [
-          TextSpan(text: 'Show the floating module switcher button.'),
+          TextSpan(text: 'Show the floating module switcher button with long-press bounce-back.'),
         ],
         trailing: ZagSwitch(
           value: db.read(),
           onChanged: db.update,
         ),
       ),
-    );
-  }
-
-  Widget _moduleTabMemoryToggle() {
-    const cubeDb = ZagreusDatabase.SPEED_CUBE_ENABLED;
-    const memoryDb = ZagreusDatabase.MODULE_TAB_MEMORY_ENABLED;
-
-    return cubeDb.listenableBuilder(
-      builder: (context, _) {
-        final cubeEnabled = cubeDb.read();
-        return memoryDb.listenableBuilder(
-          builder: (context, _) => ZagBlock(
-            title: 'Remember Module Page',
-            body: const [
-              TextSpan(
-                text: 'Jump back to the last page you viewed.',
-              ),
-            ],
-            trailing: ZagSwitch(
-              value: cubeEnabled ? memoryDb.read() : false,
-              onChanged: cubeEnabled
-                  ? (value) {
-                      memoryDb.update(value);
-                      if (!value) {
-                        ZagSessionState.instance.clearAllModuleTabPositions();
-                      }
-                    }
-                  : null,
-            ),
-          ),
-        );
-      },
     );
   }
 
