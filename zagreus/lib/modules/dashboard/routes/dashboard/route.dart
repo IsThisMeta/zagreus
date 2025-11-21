@@ -232,12 +232,9 @@ class _State extends State<DashboardRoute> {
                   onPressed: () => DiscoverRoutes.HOME.go(queryParams: {'search': 'true'}),
                 );
               } else {
-                // Free users: show download icon
-                return IconButton(
-                  icon: const Icon(Icons.download_rounded),
-                  tooltip: 'Queue',
-                  onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                );
+                // Free users: no app bar actions (drawer is Pro-only)
+                // Don't show download icon since they can't access the drawer
+                return const SizedBox();
               }
             }
 

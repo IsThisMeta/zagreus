@@ -94,7 +94,7 @@ class _State extends State<ConfigurationNavigationRoute>
             ),
           ],
           trailing: ZagSwitch(
-            value: db.read(),
+            value: isPro && db.read(),
             onChanged: isPro ? db.update : null,
           ),
           onTap: isPro ? null : () => _showProUpgradeToast(),

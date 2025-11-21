@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/sheets/links.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class MovieDetailsRoute extends StatefulWidget {

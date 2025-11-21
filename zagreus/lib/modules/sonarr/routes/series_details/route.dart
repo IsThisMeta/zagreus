@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sonarr/routes/series_details/sheets/links.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class SeriesDetailsRoute extends StatefulWidget {

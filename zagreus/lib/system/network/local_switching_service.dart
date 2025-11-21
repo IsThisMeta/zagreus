@@ -146,6 +146,11 @@ class ZagLocalConnectionService {
     return trimmed.isEmpty ? null : trimmed;
   }
 
+  /// Returns true if the given module is currently using its local endpoint
+  bool isModuleUsingLocal(ZagModule module) {
+    return _moduleLocalState[module] ?? false;
+  }
+
   void _applySsidUpdate(
     String? ssid, {
     required String source,
@@ -249,6 +254,12 @@ class ZagLocalConnectionService {
         enabled: profile.unraidEnabled,
         localHost: profile.unraidLocalHost,
         ssids: profile.unraidLocalSsids,
+      ),
+      _LocalSwitchConfig(
+        module: ZagModule.READARR,
+        enabled: profile.readarrEnabled,
+        localHost: profile.readarrLocalHost,
+        ssids: profile.readarrLocalSsids,
       ),
     ];
   }
