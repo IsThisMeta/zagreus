@@ -75,14 +75,14 @@ class _State extends State<DashboardRoute> {
 
   int _getVisiblePageCount() {
     int count = 0;
-    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) count++;
+    if (ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) count++;
     if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) count++;
     return count;
   }
 
   List<Widget> _getVisiblePages() {
     final List<Widget> pages = [];
-    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+    if (ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) {
       pages.add(ModulesPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())));
     }
     if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
@@ -93,12 +93,12 @@ class _State extends State<DashboardRoute> {
 
   int? _getVisiblePageIndex(int absoluteIndex) {
     // Maps absolute page indices (0 = modules, 1 = calendar) to visible page indices
-    if (absoluteIndex == 0 && ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+    if (absoluteIndex == 0 && ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) {
       return 0; // Modules is always first if visible
     }
     if (absoluteIndex == 1 && ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
       // Calendar is second if modules is visible, first otherwise
-      return ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ? 1 : 0;
+      return ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read() ? 1 : 0;
     }
     return null; // Page is not visible
   }
@@ -253,7 +253,7 @@ class _State extends State<DashboardRoute> {
 
   Widget _body() {
     final mainContent = ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
-      builder: (context, _) => ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+      builder: (context, _) => ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.listenableBuilder(
         builder: (context, _) => ZagreusDatabase.SHOW_CALENDAR_TAB.listenableBuilder(
           builder: (context, _) {
             final visiblePages = _getVisiblePages();

@@ -23,6 +23,7 @@ import 'package:zagreus/modules/discover/routes/downloading_soon/route.dart';
 import 'package:zagreus/modules/discover/routes/missing/route.dart';
 import 'package:zagreus/modules/discover/routes/recommended/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_movies/route.dart';
+import 'package:zagreus/modules/discover/routes/tmdb_recently_released_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_trending_new_tv_shows/route.dart';
 import 'package:zagreus/modules/discover/routes/tmdb_popular_people/route.dart';
@@ -102,6 +103,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   static const _scrollIdMissing = 'missing_movies_section';
   static const _scrollIdDownloadingSoon = 'downloading_soon_section';
   static const _scrollIdPopularMovies = 'popular_movies_section';
+  static const _scrollIdRecentlyReleasedMovies = 'recently_released_movies_section';
   static const _scrollIdPopularTv = 'popular_tv_shows_section';
   static const _scrollIdTrendingTv = 'trending_tv_shows_section';
   static const _scrollIdMostAnticipatedShows =
@@ -121,6 +123,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       PageStorageKey<String>('discover_downloading_soon');
   static const _popularMoviesListKey =
       PageStorageKey<String>('discover_popular_movies');
+  static const _recentlyReleasedMoviesListKey =
+      PageStorageKey<String>('discover_recently_released_movies');
   static const _popularTvShowsListKey =
       PageStorageKey<String>('discover_popular_tv_shows');
   static const _trendingTvShowsListKey =
@@ -163,6 +167,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<RadarrMovie> _missingMovies = [];
   List<RadarrMovie> _downloadingSoon = [];
   List<Map<String, dynamic>> _popularMovies = [];
+  List<Map<String, dynamic>> _recentlyReleasedMovies = [];
   List<Map<String, dynamic>> _popularTVShows = [];
   List<Map<String, dynamic>> _trendingNewTVShows = [];
   List<Map<String, dynamic>> _mostAnticipatedShows = [];
@@ -259,6 +264,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     super.didChangeDependencies();
     // Load popular movies and people here where we can access Localizations
     _loadPopularMovies();
+    _loadRecentlyReleasedMovies();
     _loadPopularTVShows();
     _loadTrendingNewTVShows();
     _loadMostAnticipatedShows();
@@ -770,6 +776,39 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
     } catch (e) {
       print('❌ Error loading popular movies: $e');
+    }
+  }
+
+  Future<void> _loadRecentlyReleasedMovies() async {
+    print('🎬 Loading recently released movies...');
+    try {
+      // Get user's region from locale
+      final locale = Localizations.localeOf(context);
+      final region = locale.countryCode ?? 'US';
+      print('🎬 Using region: $region');
+
+      final movies = await TMDBApi.getRecentlyReleasedMovies(region: region);
+      print('🎬 Got ${movies.length} recently released movies from TMDB');
+
+      // Check against Radarr library if available
+      final radarrState = context.read<RadarrState>();
+      if (radarrState.enabled && radarrState.movies != null) {
+        final radarrMovies = await radarrState.movies!;
+        for (final movie in movies) {
+          final tmdbId = movie['tmdbId'] as int;
+          movie['inLibrary'] = radarrMovies.any((m) => m.tmdbId == tmdbId);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _recentlyReleasedMovies =
+              movies.take(10).toList(); // Limit to 10 for the section
+        });
+        print('🎬 Set ${_recentlyReleasedMovies.length} recently released movies in state');
+      }
+    } catch (e) {
+      print('❌ Error loading recently released movies: $e');
     }
   }
 
@@ -1331,16 +1370,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   bool get _showLegacyModules =>
-      ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
+      ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB.read();
+  bool get _showCalendarTab => ZagreusDatabase.SHOW_CALENDAR_TAB.read();
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
 
-  List<String> _discoverTabKeys({bool? showLegacyModules}) {
+  List<String> _discoverTabKeys({bool? showLegacyModules, bool? showCalendar}) {
     final includeModules = showLegacyModules ?? _showLegacyModules;
+    final includeCalendar = showCalendar ?? _showCalendarTab;
     return [
       if (includeModules) 'modules',
       'movies',
       'shows',
-      'calendar',
+      if (includeCalendar) 'calendar',
       'server',
     ];
   }
@@ -1379,7 +1420,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
-        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
+        ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB,
+        ZagreusDatabase.SHOW_CALENDAR_TAB,
         ZagreusDatabase.SHOW_AGENT_TAB,
       ],
       builder: (context, _) => ZagScaffold(
@@ -1393,6 +1435,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             : _DiscoverNavigationBar(
                 pageController: _pageController,
                 showLegacyModules: _showLegacyModules,
+                showCalendar: _showCalendarTab,
                 showAgentTab: _showAgentTab,
               ),
       ),
@@ -1401,15 +1444,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _body() {
     final enableLegacyModules = _showLegacyModules;
+    final enableCalendar = _showCalendarTab;
     final showAgentTab = _showAgentTab;
     final tabs = ZagPageView(
-      key: ValueKey('discover_tabs_${enableLegacyModules}_$showAgentTab'),
+      key: ValueKey('discover_tabs_${enableLegacyModules}_${enableCalendar}_$showAgentTab'),
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
         _moviesPage(),
         _tvShowsPage(),
-        _calendarTab(),
+        if (enableCalendar) _calendarTab(),
         _serverTab(),
       ],
     );
@@ -1524,12 +1568,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   List<Widget>? _buildAppBarActions() {
     final enableLegacyModules = _showLegacyModules;
+    final enableCalendar = _showCalendarTab;
     final showAgentTab = _showAgentTab;
     final modulesTabIndex = 0;
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
-    final calendarIndex = enableLegacyModules ? 3 : 2;
-    final serverIndex = enableLegacyModules ? 4 : 3;
+
+    // Calculate calendar and server indices dynamically
+    int currentIndex = enableLegacyModules ? 3 : 2;
+    final calendarIndex = enableCalendar ? currentIndex : null;
+    if (enableCalendar) currentIndex++;
+    final serverIndex = currentIndex;
+
     final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
     final isPro = ZagreusPro.isEnabled;
 
@@ -1586,7 +1636,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == calendarIndex) {
+    if (calendarIndex != null && _currentPageIndex == calendarIndex) {
       return [
         SwitchViewAction(
           pageController: _pageController,
@@ -1736,6 +1786,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'missing',
       'downloading_soon',
       'popular_movies',
+      'recently_released_movies',
       'most_anticipated_movies',
       'popular_people',
       'deep_cuts',
@@ -1777,6 +1828,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ]),
       'popular_movies': () => Column(children: [
             _popularMoviesSection(),
+            if (_showTitles) const SizedBox(height: 4)
+          ]),
+      'recently_released_movies': () => Column(children: [
+            _recentlyReleasedMoviesSection(),
             if (_showTitles) const SizedBox(height: 4)
           ]),
       'most_anticipated_movies': () =>
@@ -4829,6 +4884,240 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _recentlyReleasedMoviesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section title
+        _sectionTitleRow(
+          context: context,
+          leadingIcon: Icons.new_releases_rounded,
+          leadingIconColor: const Color(0xFF6688FF),
+          moduleLabel: 'TMDB',
+          moduleLabelColor: const Color(0xFF6688FF),
+          title: 'Recently Released',
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          onTap: _recentlyReleasedMovies.isNotEmpty
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => TMDBRecentlyReleasedMoviesRoute(
+                        initialData: _recentlyReleasedMovies,
+                      ),
+                    ),
+                  );
+                }
+              : null,
+          onLongPress: () => _refreshSection(
+            scrollKey: _scrollIdRecentlyReleasedMovies,
+            loader: _loadRecentlyReleasedMovies,
+            sectionLabel: 'Recently Released Movies',
+          ),
+          showArrow: _recentlyReleasedMovies.isNotEmpty,
+        ),
+        // Movie list or loading placeholder
+        _recentlyReleasedMovies.isNotEmpty
+            ? SizedBox(
+                height: _posterListHeight,
+                child: ListView.builder(
+                  key: _recentlyReleasedMoviesListKey,
+                  controller:
+                      _sectionScrollController(_scrollIdRecentlyReleasedMovies),
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _recentlyReleasedMovies.length,
+                  itemBuilder: (context, index) {
+                    final movie = _recentlyReleasedMovies[index];
+                    return _recentlyReleasedMovieCard(movie);
+                  },
+                ),
+              )
+            : Container(
+                height: _posterHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Center(
+                  child: Text(
+                    'Loading recently released movies...',
+                    style: TextStyle(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black)
+                          .withOpacity(0.5),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget _recentlyReleasedMovieCard(Map<String, dynamic> movie) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: () {
+          // Could navigate to a detail view or add to Radarr
+          _handleRecentlyReleasedMovieTap(movie);
+        },
+        child: Container(
+          width: _posterWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Movie poster
+              Stack(
+                children: [
+                  Container(
+                    height: _posterHeight,
+                    width: _posterWidth,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.grey.shade800,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        movie['poster'] ?? '',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.movie_rounded,
+                              size: 40,
+                              color: Colors.grey.shade600,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // In library badge
+                  if (movie['inLibrary'] == true)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: ZagColours.orange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Rating badge - top left
+                  if (movie['rating'] != null && movie['rating'] > 0)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          (movie['rating'] as num).toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor(
+                                (movie['rating'] as num).toDouble()),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Gradient overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: _posterHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.8),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Title overlay
+                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                    Positioned(
+                      bottom: 8,
+                      left: 8,
+                      right: 8,
+                      child: Text(
+                        movie['title'] ?? 'Unknown',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: _moduleSectionTitleFontSize - 4,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleRecentlyReleasedMovieTap(Map<String, dynamic> movie) async {
+    final bool inLibrary = movie['inLibrary'] ?? false;
+    final int? serviceItemId = movie['serviceItemId'] as int?;
+    final int? tmdbId = movie['tmdbId'] as int?;
+
+    if (inLibrary && serviceItemId != null) {
+      RadarrRoutes.MOVIE.go(
+        params: {
+          'movie': serviceItemId.toString(),
+        },
+      );
+      return;
+    }
+
+    if (tmdbId == null) {
+      showZagSnackBar(
+        title: movie['title'] ?? 'Movie',
+        message: 'Missing TMDB identifier for this title.',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    await _openMovieInRadarr(
+      tmdbId: tmdbId,
+      title: movie['title'] as String?,
+    );
+  }
+
   Widget _popularTVShowsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -4836,7 +5125,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         _sectionTitleRow(
           context: context,
-          leadingIcon: Icons.tv_rounded,
+          leadingIcon: Icons.local_fire_department_rounded,
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
@@ -7364,6 +7653,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 class _DiscoverNavigationBar extends StatelessWidget {
   final PageController? pageController;
   final bool showLegacyModules;
+  final bool showCalendar;
   final bool showAgentTab;
 
   static final ScrollController modulesScrollController =
@@ -7378,6 +7668,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
     Key? key,
     required this.pageController,
     required this.showLegacyModules,
+    required this.showCalendar,
     required this.showAgentTab,
   }) : super(key: key);
 
@@ -7387,7 +7678,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) Icons.workspaces_rounded,
       Icons.movie_rounded,
       Icons.tv_rounded,
-      Icons.calendar_today_rounded,
+      if (showCalendar) Icons.calendar_today_rounded,
       Icons.dns_rounded,
     ];
 
@@ -7395,7 +7686,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) 'Modules',
       'Movies',
       'Shows',
-      'Calendar',
+      if (showCalendar) 'Calendar',
       'Server',
     ];
 
@@ -7403,7 +7694,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) modulesScrollController,
       moviesScrollController,
       showsScrollController,
-      calendarScrollController,
+      if (showCalendar) calendarScrollController,
       ScrollController(),
     ];
 
@@ -7490,7 +7781,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.radarrEnabled) {
         try {
           final radarrAPI = RadarrAPI(
-            host: ZagProfile.current.radarrHost,
+            host: ZagProfile.current.effectiveRadarrHost(),
             apiKey: ZagProfile.current.radarrKey,
             headers: ZagProfile.current.radarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
@@ -7507,7 +7798,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.sonarrEnabled) {
         try {
           final sonarrAPI = SonarrAPI(
-            host: ZagProfile.current.sonarrHost,
+            host: ZagProfile.current.effectiveSonarrHost(),
             apiKey: ZagProfile.current.sonarrKey,
             headers: ZagProfile.current.sonarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
@@ -7568,7 +7859,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.radarrEnabled) {
         try {
           final radarrAPI = RadarrAPI(
-            host: ZagProfile.current.radarrHost,
+            host: ZagProfile.current.effectiveRadarrHost(),
             apiKey: ZagProfile.current.radarrKey,
             headers: ZagProfile.current.radarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
@@ -7590,7 +7881,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.sonarrEnabled) {
         try {
           final sonarrAPI = SonarrAPI(
-            host: ZagProfile.current.sonarrHost,
+            host: ZagProfile.current.effectiveSonarrHost(),
             apiKey: ZagProfile.current.sonarrKey,
             headers: ZagProfile.current.sonarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
@@ -7807,7 +8098,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             try {
               // Construct cover URL from Lidarr API
               // Note: Lidarr uses /mediacover/Album/{albumId} for album covers
-              coverUrl = '${ZagProfile.current.lidarrHost}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
+              coverUrl = '${ZagProfile.current.effectiveLidarrHost()}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
             } catch (e) {
               // Fallback to null if URL construction fails
               coverUrl = null;
@@ -7885,7 +8176,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
 
               // Fallback: construct cover URL manually if not found
               if (coverUrl == null || coverUrl.isEmpty) {
-                coverUrl = '${ZagProfile.current.readarrHost}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
+                coverUrl = '${ZagProfile.current.effectiveReadarrHost()}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
               }
 
               books.add(ReadarrRecentlyDownloadedBook(

@@ -141,7 +141,7 @@ class _State extends State<NZBGetRoute> {
       switch (values[1]) {
         case 'web_gui':
           ZagProfile profile = ZagProfile.current;
-          await profile.nzbgetHost.openLink();
+          await profile.effectiveNzbgetHost().openLink();
           break;
         case 'add_nzb':
           _addNZB();

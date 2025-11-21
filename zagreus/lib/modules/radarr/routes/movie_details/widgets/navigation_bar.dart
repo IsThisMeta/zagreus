@@ -2,29 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
-import 'package:zagreus/utils/zagreus_pro.dart';
 
 class RadarrMovieDetailsNavigationBar extends StatefulWidget {
-  static const List<IconData> _baseIcons = [
+  static const List<IconData> icons = [
     Icons.subject_rounded,
     Icons.insert_drive_file_outlined,
     Icons.history_rounded,
+    Icons.person_rounded
   ];
-  static const List<String> _baseTitles = [
+  static const List<String> titles = [
     'Overview',
     'Files',
     'History',
+    'Cast & Crew'
   ];
-
-  static List<IconData> get icons => ZagreusPro.isEnabled
-    ? [..._baseIcons, Icons.person_rounded]
-    : _baseIcons;
-
-  static List<String> get titles => ZagreusPro.isEnabled
-    ? [..._baseTitles, 'Cast & Crew']
-    : _baseTitles;
-
-  static List<ScrollController> get scrollControllers =>
+  static List<ScrollController> scrollControllers =
       List.generate(icons.length, (_) => ScrollController());
   final PageController? pageController;
   final RadarrMovie? movie;

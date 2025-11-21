@@ -16,7 +16,7 @@ class ReadarrAPI {
         },
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        headers: ZagProfile.current.readarrHeaders,
+        headers: profile.readarrHeaders,
         followRedirects: true,
         maxRedirects: 5,
       ),

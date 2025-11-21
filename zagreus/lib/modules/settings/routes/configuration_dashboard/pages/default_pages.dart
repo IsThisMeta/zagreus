@@ -52,7 +52,7 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
   Widget _dashboardDefaultPageTile() {
     const _db = DashboardDatabase.NAVIGATION_INDEX;
     return _db.listenableBuilder(
-      builder: (context, _) => ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+      builder: (context, _) => ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.listenableBuilder(
         builder: (context, _) => ZagreusDatabase.SHOW_CALENDAR_TAB.listenableBuilder(
           builder: (context, _) {
             final visibleTitles = HomeNavigationBar.getVisibleTitles();
@@ -90,7 +90,8 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
         ZagreusDatabase.DISCOVER_DEFAULT_TAB,
-        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
+        ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB,
+        ZagreusDatabase.SHOW_CALENDAR_TAB,
       ],
       builder: (context, _) {
         final options = _discoverTabOptions();
@@ -144,7 +145,8 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
   }
 
   List<_DiscoverTabOption> _discoverTabOptions() {
-    final showModules = ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
+    final showModules = ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB.read();
+    final showCalendar = ZagreusDatabase.SHOW_CALENDAR_TAB.read();
     final options = <_DiscoverTabOption>[];
     if (showModules) {
       options.add(
@@ -155,23 +157,24 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
         ),
       );
     }
-    options.addAll(const [
-      _DiscoverTabOption(
+    options.addAll([
+      const _DiscoverTabOption(
         key: 'movies',
         label: 'Movies',
         icon: Icons.movie_rounded,
       ),
-      _DiscoverTabOption(
+      const _DiscoverTabOption(
         key: 'shows',
         label: 'Shows',
         icon: Icons.tv_rounded,
       ),
-      _DiscoverTabOption(
-        key: 'calendar',
-        label: 'Calendar',
-        icon: Icons.calendar_today_rounded,
-      ),
-      _DiscoverTabOption(
+      if (showCalendar)
+        const _DiscoverTabOption(
+          key: 'calendar',
+          label: 'Calendar',
+          icon: Icons.calendar_today_rounded,
+        ),
+      const _DiscoverTabOption(
         key: 'server',
         label: 'Server',
         icon: Icons.dns_rounded,

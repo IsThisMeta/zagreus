@@ -36,8 +36,8 @@ class _State extends State<ConfigurationNavigationRoute>
       children: [
         _horizontalSwipeToggle(),
         _downloadsDrawer(),
-        _legacyModulesTabToggle(),
         _calendarTabToggle(),
+        _legacyModulesTabToggle(),
         _speedCube(),
       ],
     );
@@ -105,24 +105,22 @@ class _State extends State<ConfigurationNavigationRoute>
 
   Widget _legacyModulesTabToggle() {
     if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
-    const db = ZagreusDatabase.SHOW_LEGACY_MODULES_TAB;
+    const db = ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Modules Tab',
+        title: 'Show Modules Tab',
         body: const [
           TextSpan(
-            text: 'Hides Modules tab in Dashboard',
+            text: 'Shows Modules tab in Discover',
           ),
         ],
         trailing: ZagSwitch(
-          value: !db.read(),
+          value: db.read(),
           onChanged: (value) {
-            db.update(!value);
-            if (value &&
+            db.update(value);
+            if (!value &&
                 ZagreusDatabase.DISCOVER_DEFAULT_TAB.read() == 'modules') {
               ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('movies');
-            } else if (!value) {
-              ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
             }
           },
         ),
@@ -135,15 +133,15 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.SHOW_CALENDAR_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Calendar Tab',
+        title: 'Show Calendar Tab',
         body: const [
           TextSpan(
-            text: 'Hides Calendar tab in Dashboard',
+            text: 'Shows Calendar tab in Dashboard and Discover',
           ),
         ],
         trailing: ZagSwitch(
-          value: !db.read(),
-          onChanged: (value) => db.update(!value),
+          value: db.read(),
+          onChanged: db.update,
         ),
       ),
     );
