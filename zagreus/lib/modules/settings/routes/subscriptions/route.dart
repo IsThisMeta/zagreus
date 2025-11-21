@@ -375,10 +375,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5 mini (15 messages every 12 hours)."
+                  ? "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5.1 mini (15 messages every 12 hours)."
                   : 'Zagreus Mega unlocks:\n'
                       '• Fully unlocked AI agent and Dashboard recommendations\n'
-                      '• Ask Z powered by GPT-5 mini (15 messages every 12 hours)\n'
+                      '• Ask Z powered by GPT-5.1 mini (15 messages every 12 hours)\n'
                       '• All Pro features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
@@ -640,9 +640,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5 Ask Z responses, GPT-5 Dashboard results, and every Mega perk."
+                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.1 Ask Z responses, GPT-5.1 Dashboard results, and every Mega perk."
                   : 'Zagreus Ultra unlocks:\n'
-                      '• GPT-5 responses for Ask Z and Dashboard\n'
+                      '• GPT-5.1 responses for Ask Z and Dashboard\n'
                       '• All Pro and Mega features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
