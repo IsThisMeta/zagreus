@@ -123,7 +123,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
         if (result.item1) {
           profile.readarrLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<ReadarrState>().reset();
         }
       },
@@ -151,7 +151,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
         if (result.item1) {
           profile.readarrLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<ReadarrState>().reset();
         }
       },

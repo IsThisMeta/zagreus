@@ -125,7 +125,7 @@ class _State extends State<ConfigurationNZBGetConnectionDetailsRoute>
         if (result.item1) {
           profile.nzbgetLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<NZBGetState>().reset();
         }
       },
@@ -153,7 +153,7 @@ class _State extends State<ConfigurationNZBGetConnectionDetailsRoute>
         if (result.item1) {
           profile.nzbgetLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<NZBGetState>().reset();
         }
       },
