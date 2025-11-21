@@ -1412,7 +1412,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   bool get _showLegacyModules =>
-      ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
+      ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB.read();
   bool get _showCalendarTab => ZagreusDatabase.SHOW_CALENDAR_TAB.read();
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
 
@@ -1462,7 +1462,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
-        ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
+        ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB,
         ZagreusDatabase.SHOW_CALENDAR_TAB,
         ZagreusDatabase.SHOW_AGENT_TAB,
       ],

@@ -27,7 +27,7 @@ class HomeNavigationBar extends StatelessWidget {
 
   static List<String> getVisibleTitles() {
     final List<String> visibleTitles = [];
-    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+    if (ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) {
       visibleTitles.add(_allTitles[0]);
     }
     if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
@@ -38,7 +38,7 @@ class HomeNavigationBar extends StatelessWidget {
 
   static List<IconData> getVisibleIcons() {
     final List<IconData> visibleIcons = [];
-    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+    if (ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) {
       visibleIcons.add(_allIcons[0]);
     }
     if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
@@ -49,7 +49,7 @@ class HomeNavigationBar extends StatelessWidget {
 
   static List<ScrollController> getVisibleScrollControllers() {
     final List<ScrollController> visibleControllers = [];
-    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+    if (ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.read()) {
       visibleControllers.add(scrollControllers[0]);
     }
     if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
@@ -60,7 +60,7 @@ class HomeNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+    return ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB.listenableBuilder(
       builder: (context, _) => ZagreusDatabase.SHOW_CALENDAR_TAB.listenableBuilder(
         builder: (context, _) {
           final visibleTitles = getVisibleTitles();
