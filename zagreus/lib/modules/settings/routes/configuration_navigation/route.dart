@@ -36,8 +36,8 @@ class _State extends State<ConfigurationNavigationRoute>
       children: [
         _horizontalSwipeToggle(),
         _downloadsDrawer(),
-        _legacyModulesTabToggle(),
         _calendarTabToggle(),
+        _legacyModulesTabToggle(),
         _speedCube(),
       ],
     );
