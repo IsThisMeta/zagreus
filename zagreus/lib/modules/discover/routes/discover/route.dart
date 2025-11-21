@@ -1413,15 +1413,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   bool get _showLegacyModules =>
       ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read();
+  bool get _showCalendarTab => ZagreusDatabase.SHOW_CALENDAR_TAB.read();
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
 
-  List<String> _discoverTabKeys({bool? showLegacyModules}) {
+  List<String> _discoverTabKeys({bool? showLegacyModules, bool? showCalendar}) {
     final includeModules = showLegacyModules ?? _showLegacyModules;
+    final includeCalendar = showCalendar ?? _showCalendarTab;
     return [
       if (includeModules) 'modules',
       'movies',
       'shows',
-      'calendar',
+      if (includeCalendar) 'calendar',
       'server',
     ];
   }
@@ -1461,6 +1463,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return ZagBox.zagreus.listenableBuilder(
       selectItems: const [
         ZagreusDatabase.SHOW_LEGACY_MODULES_TAB,
+        ZagreusDatabase.SHOW_CALENDAR_TAB,
         ZagreusDatabase.SHOW_AGENT_TAB,
       ],
       builder: (context, _) => ZagScaffold(
@@ -1474,6 +1477,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             : _DiscoverNavigationBar(
                 pageController: _pageController,
                 showLegacyModules: _showLegacyModules,
+                showCalendar: _showCalendarTab,
                 showAgentTab: _showAgentTab,
               ),
       ),
@@ -1482,15 +1486,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _body() {
     final enableLegacyModules = _showLegacyModules;
+    final enableCalendar = _showCalendarTab;
     final showAgentTab = _showAgentTab;
     final tabs = ZagPageView(
-      key: ValueKey('discover_tabs_${enableLegacyModules}_$showAgentTab'),
+      key: ValueKey('discover_tabs_${enableLegacyModules}_${enableCalendar}_$showAgentTab'),
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
         _moviesPage(),
         _tvShowsPage(),
-        _calendarTab(),
+        if (enableCalendar) _calendarTab(),
         _serverTab(),
       ],
     );
@@ -1605,12 +1610,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   List<Widget>? _buildAppBarActions() {
     final enableLegacyModules = _showLegacyModules;
+    final enableCalendar = _showCalendarTab;
     final showAgentTab = _showAgentTab;
     final modulesTabIndex = 0;
     final moviesTabIndex = enableLegacyModules ? 1 : 0;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
-    final calendarIndex = enableLegacyModules ? 3 : 2;
-    final serverIndex = enableLegacyModules ? 4 : 3;
+
+    // Calculate calendar and server indices dynamically
+    int currentIndex = enableLegacyModules ? 3 : 2;
+    final calendarIndex = enableCalendar ? currentIndex : null;
+    if (enableCalendar) currentIndex++;
+    final serverIndex = currentIndex;
+
     final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
     final isPro = ZagreusPro.isEnabled;
 
@@ -1667,7 +1678,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ];
     }
 
-    if (_currentPageIndex == calendarIndex) {
+    if (calendarIndex != null && _currentPageIndex == calendarIndex) {
       return [
         SwitchViewAction(
           pageController: _pageController,
@@ -7455,6 +7466,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 class _DiscoverNavigationBar extends StatelessWidget {
   final PageController? pageController;
   final bool showLegacyModules;
+  final bool showCalendar;
   final bool showAgentTab;
 
   static final ScrollController modulesScrollController =
@@ -7469,6 +7481,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
     Key? key,
     required this.pageController,
     required this.showLegacyModules,
+    required this.showCalendar,
     required this.showAgentTab,
   }) : super(key: key);
 
@@ -7478,7 +7491,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) Icons.workspaces_rounded,
       Icons.movie_rounded,
       Icons.tv_rounded,
-      Icons.calendar_today_rounded,
+      if (showCalendar) Icons.calendar_today_rounded,
       Icons.dns_rounded,
     ];
 
@@ -7486,7 +7499,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) 'Modules',
       'Movies',
       'Shows',
-      'Calendar',
+      if (showCalendar) 'Calendar',
       'Server',
     ];
 
@@ -7494,7 +7507,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
       if (showLegacyModules) modulesScrollController,
       moviesScrollController,
       showsScrollController,
-      calendarScrollController,
+      if (showCalendar) calendarScrollController,
       ScrollController(),
     ];
 
