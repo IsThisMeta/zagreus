@@ -176,6 +176,73 @@ class TMDBApi {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getRecentlyReleasedMovies({
+    int page = 1,
+    String? region,
+  }) async {
+    try {
+      // Calculate date range: 2 months ago to today
+      final now = DateTime.now();
+      final twoMonthsAgo = DateTime(now.year, now.month - 2, now.day);
+      final startDate = '${twoMonthsAgo.year}-${twoMonthsAgo.month.toString().padLeft(2, '0')}-${twoMonthsAgo.day.toString().padLeft(2, '0')}';
+      final endDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      // Use discover endpoint with filters for recently released theatrical movies
+      String url = '$_baseUrl/discover/movie?api_key=$_apiKey&page=$page';
+      url += '&with_release_type=4'; // Theatrical releases only
+      url += '&sort_by=release_date.desc'; // Newest first
+      url += '&vote_count.gte=10'; // Minimum 10 votes for quality
+      url += '&primary_release_date.gte=$startDate'; // Start date (2 months ago)
+      url += '&release_date.lte=$endDate'; // End date (today)
+
+      if (region != null) {
+        url += '&region=$region';
+      } else {
+        url += '&region=US'; // Default to US
+      }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+
+        // Transform and sort by release date (newest first)
+        final movies = results.map((item) {
+          return {
+            'id': item['id'],
+            'title': item['title'] ?? 'Unknown',
+            'backdrop': getImageUrl(item['backdrop_path']),
+            'poster': getImageUrl(item['poster_path'], size: 'w500'),
+            'rating': (item['vote_average'] ?? 0).toDouble(),
+            'overview': item['overview'] ?? '',
+            'releaseDate': item['release_date'],
+            'mediaType': 'movie',
+            'tmdbId': item['id'],
+            'popularity': item['popularity'] ?? 0,
+            'voteCount': item['vote_count'] ?? 0,
+            'inLibrary': false,
+          };
+        }).toList();
+
+        // Sort by release date (newest first)
+        movies.sort((a, b) {
+          final aDate = a['releaseDate'] as String?;
+          final bDate = b['releaseDate'] as String?;
+          if (aDate == null || bDate == null) return 0;
+          return bDate.compareTo(aDate);
+        });
+
+        return movies;
+      }
+
+      throw Exception('Failed to load recently released movies: ${response.statusCode}');
+    } catch (e) {
+      print('TMDB API Error (Recently Released Movies): $e');
+      return [];
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getPopularTVShows({
     int page = 1,
     String? region,
