@@ -21,6 +21,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'missing',
     'downloading_soon',
     'popular_movies',
+    'recently_released_movies',
     'most_anticipated_movies',
     'popular_people',
     'deep_cuts',
@@ -47,6 +48,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'missing': 'Missing',
     'downloading_soon': 'Downloading Soon',
     'popular_movies': 'Popular Movies',
+    'recently_released_movies': 'Recently Released',
     'most_anticipated_movies': 'Most Anticipated Movies',
     'popular_people': 'Popular People',
     'deep_cuts': 'Deep Cuts',
@@ -826,6 +828,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       case 'popular_movies':
       case 'popular_tv_shows':
         return Icons.star_rounded;
+      case 'recently_released_movies':
+        return Icons.new_releases_rounded;
       case 'popular_people':
         return Icons.person_rounded;
       case 'deep_cuts':
