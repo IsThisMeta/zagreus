@@ -7594,7 +7594,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.radarrEnabled) {
         try {
           final radarrAPI = RadarrAPI(
-            host: ZagProfile.current.radarrHost,
+            host: ZagProfile.current.effectiveRadarrHost(),
             apiKey: ZagProfile.current.radarrKey,
             headers: ZagProfile.current.radarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
@@ -7611,7 +7611,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.sonarrEnabled) {
         try {
           final sonarrAPI = SonarrAPI(
-            host: ZagProfile.current.sonarrHost,
+            host: ZagProfile.current.effectiveSonarrHost(),
             apiKey: ZagProfile.current.sonarrKey,
             headers: ZagProfile.current.sonarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
@@ -7672,7 +7672,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.radarrEnabled) {
         try {
           final radarrAPI = RadarrAPI(
-            host: ZagProfile.current.radarrHost,
+            host: ZagProfile.current.effectiveRadarrHost(),
             apiKey: ZagProfile.current.radarrKey,
             headers: ZagProfile.current.radarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.radarrHeaders)
@@ -7694,7 +7694,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       if (ZagProfile.current.sonarrEnabled) {
         try {
           final sonarrAPI = SonarrAPI(
-            host: ZagProfile.current.sonarrHost,
+            host: ZagProfile.current.effectiveSonarrHost(),
             apiKey: ZagProfile.current.sonarrKey,
             headers: ZagProfile.current.sonarrHeaders.isNotEmpty
                 ? Map<String, dynamic>.from(ZagProfile.current.sonarrHeaders)
@@ -7911,7 +7911,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             try {
               // Construct cover URL from Lidarr API
               // Note: Lidarr uses /mediacover/Album/{albumId} for album covers
-              coverUrl = '${ZagProfile.current.lidarrHost}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
+              coverUrl = '${ZagProfile.current.effectiveLidarrHost()}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
             } catch (e) {
               // Fallback to null if URL construction fails
               coverUrl = null;
@@ -7989,7 +7989,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
 
               // Fallback: construct cover URL manually if not found
               if (coverUrl == null || coverUrl.isEmpty) {
-                coverUrl = '${ZagProfile.current.readarrHost}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
+                coverUrl = '${ZagProfile.current.effectiveReadarrHost()}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
               }
 
               books.add(ReadarrRecentlyDownloadedBook(
