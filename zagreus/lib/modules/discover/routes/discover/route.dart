@@ -5216,7 +5216,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Section title
         _sectionTitleRow(
           context: context,
-          leadingIcon: Icons.tv_rounded,
+          leadingIcon: Icons.local_fire_department_rounded,
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
