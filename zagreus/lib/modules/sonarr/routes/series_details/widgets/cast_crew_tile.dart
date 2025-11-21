@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
