@@ -67,7 +67,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   int _columnsPerRow = 3;
   bool _showTitles = true;
   bool _monochromeRatings = false;
-  bool _filterHeroByTab = true;
+  bool _showHeroCarousel = true;
   String _trendingTimeWindow = 'day';
 
   bool get hasChanges => _hasChanges;
@@ -128,11 +128,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _monochromeRatings = savedMonochromeRatings;
     }
 
-    // Load filter hero by tab setting
-    final savedFilterHeroByTab =
-        ZagreusDatabase.DISCOVER_FILTER_HERO_BY_TAB.read();
-    if (savedFilterHeroByTab != null) {
-      _filterHeroByTab = savedFilterHeroByTab;
+    // Load show hero carousel setting
+    final savedShowHeroCarousel =
+        ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read();
+    if (savedShowHeroCarousel != null) {
+      _showHeroCarousel = savedShowHeroCarousel;
     }
 
     final savedTimeWindow =
@@ -153,7 +153,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
-    ZagreusDatabase.DISCOVER_FILTER_HERO_BY_TAB.update(_filterHeroByTab);
+    ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
     ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW
         .update(_trendingTimeWindow);
     setState(() => _hasChanges = false);
@@ -174,7 +174,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ((_columnsPerRowMin + _columnsPerRowMax) / 2).round();
       _showTitles = true;
       _monochromeRatings = false;
-      _filterHeroByTab = true;
+      _showHeroCarousel = true;
       _trendingTimeWindow = 'day';
       _hasChanges = true;
     });
@@ -487,24 +487,22 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  'Filter Hero Carousel by Tab',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: theme.brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
-                  ),
+              Text(
+                'Show Hero Carousel',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
                 ),
               ),
               Switch(
-                value: _filterHeroByTab,
+                value: _showHeroCarousel,
                 activeColor: ZagColours.accentColor(context),
                 onChanged: (value) {
                   setState(() {
-                    _filterHeroByTab = value;
+                    _showHeroCarousel = value;
                     _hasChanges = true;
                   });
                   widget.onHasChangesChanged?.call(_hasChanges);
@@ -513,7 +511,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'When enabled, the hero carousel shows only movies on the Movies tab and only shows on the TV Shows tab. When disabled, it shows a unified catalog of both.',
+            'Toggle the auto-scrolling hero carousel at the top of Movies and TV Shows tabs.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark

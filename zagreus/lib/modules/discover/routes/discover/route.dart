@@ -182,12 +182,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final PageController _tvHeroPageController = PageController();
   Iterable<PageController> get _heroPageControllers =>
       [_moviesHeroPageController, _tvHeroPageController];
-  int _currentHeroIndex = 0;
   int _currentMovieHeroIndex = 0;
   int _currentTVHeroIndex = 0;
   String _trendingTimeWindow = 'day'; // 'day' or 'week'
-  bool _filterHeroByTab = true;
-  List<Map<String, dynamic>> _trendingItems = [];
   List<Map<String, dynamic>> _trendingMovies = [];
   List<Map<String, dynamic>> _trendingTVShows = [];
   Timer? _autoScrollTimer;
@@ -223,6 +220,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   bool get _showTitles =>
       ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
+  bool get _showHeroCarousel =>
+      ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
 
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
@@ -360,35 +360,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_filterHeroByTab) {
-        // Handle separate auto-scroll for movies and TV
-        if (_trendingMovies.isNotEmpty && _moviesHeroPageController.hasClients) {
-          final nextIndex = (_currentMovieHeroIndex + 1) % _trendingMovies.length;
-          _moviesHeroPageController.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-        if (_trendingTVShows.isNotEmpty && _tvHeroPageController.hasClients) {
-          final nextIndex = (_currentTVHeroIndex + 1) % _trendingTVShows.length;
-          _tvHeroPageController.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      } else {
-        // Unified auto-scroll (original behavior)
-        if (_trendingItems.isEmpty) return;
-        final nextIndex = (_currentHeroIndex + 1) % _trendingItems.length;
-        _withHeroControllers((controller) {
-          controller.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        });
+      // Handle separate auto-scroll for movies and TV
+      if (_trendingMovies.isNotEmpty && _moviesHeroPageController.hasClients) {
+        final nextIndex = (_currentMovieHeroIndex + 1) % _trendingMovies.length;
+        _moviesHeroPageController.animateToPage(
+          nextIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+      if (_trendingTVShows.isNotEmpty && _tvHeroPageController.hasClients) {
+        final nextIndex = (_currentTVHeroIndex + 1) % _trendingTVShows.length;
+        _tvHeroPageController.animateToPage(
+          nextIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -409,11 +396,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } else {
       _trendingTimeWindow = 'day';
     }
-
-    final savedFilter = ZagreusDatabase.DISCOVER_FILTER_HERO_BY_TAB.read();
-    if (savedFilter != null) {
-      _filterHeroByTab = savedFilter;
-    }
   }
 
   void _loadMockTrendingData() {
@@ -422,119 +404,61 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _loadTrendingData() async {
     try {
-      if (_filterHeroByTab) {
-        // Load separate lists for movies and TV shows
-        final movieItems = await TMDBApi.getTrending(
-          mediaType: 'movie',
-          timeWindow: _trendingTimeWindow,
-        );
+      // Load separate lists for movies and TV shows
+      final movieItems = await TMDBApi.getTrending(
+        mediaType: 'movie',
+        timeWindow: _trendingTimeWindow,
+      );
 
-        final tvItems = await TMDBApi.getTrending(
-          mediaType: 'tv',
-          timeWindow: _trendingTimeWindow,
-        );
+      final tvItems = await TMDBApi.getTrending(
+        mediaType: 'tv',
+        timeWindow: _trendingTimeWindow,
+      );
 
-        // Check against Radarr library if available
-        if (mounted) {
-          final radarrState = context.read<RadarrState>();
-          if (radarrState.enabled && radarrState.movies != null) {
-            final movies = await radarrState.movies!;
-            for (final item in movieItems) {
-              final tmdbId = item['tmdbId'] as int;
-              item['inLibrary'] = movies.any((m) => m.tmdbId == tmdbId);
-            }
-          }
-
-          // Check against Sonarr library if available
-          final sonarrState = context.read<SonarrState>();
-          if (sonarrState.enabled && sonarrState.api != null) {
-            try {
-              final sonarrSeries = await sonarrState.api!.series.getAll();
-              for (final item in tvItems) {
-                final title = item['title'] as String;
-                // Check if this show is in Sonarr library by title match
-                final inLibrary = sonarrSeries.any((series) {
-                  return series.title?.toLowerCase() == title.toLowerCase();
-                });
-                item['inLibrary'] = inLibrary;
-              }
-            } catch (e) {
-              print('📺 Error checking Sonarr library for trending: $e');
-            }
+      // Check against Radarr library if available
+      if (mounted) {
+        final radarrState = context.read<RadarrState>();
+        if (radarrState.enabled && radarrState.movies != null) {
+          final movies = await radarrState.movies!;
+          for (final item in movieItems) {
+            final tmdbId = item['tmdbId'] as int;
+            item['inLibrary'] = movies.any((m) => m.tmdbId == tmdbId);
           }
         }
 
-        if (mounted) {
-          setState(() {
-            _trendingMovies = movieItems;
-            _trendingTVShows = tvItems;
-            _trendingItems = []; // Clear unified list
-            _precachedHeroBackdrops.clear();
-          });
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            // Precache both movie and TV images
-            _precacheHeroImage(_currentMovieHeroIndex, isMovie: true);
-            _precacheHeroImage(_currentMovieHeroIndex + 1, isMovie: true);
-            _precacheHeroImage(_currentTVHeroIndex, isMovie: false);
-            _precacheHeroImage(_currentTVHeroIndex + 1, isMovie: false);
-          });
-        }
-      } else {
-        // Load unified list (original behavior)
-        final items = await TMDBApi.getTrending(
-          mediaType: 'all', // Can be 'movie', 'tv', or 'all'
-          timeWindow: _trendingTimeWindow,
-        );
-
-        // Check against Radarr library if available
-        if (mounted) {
-          final radarrState = context.read<RadarrState>();
-          if (radarrState.enabled && radarrState.movies != null) {
-            final movies = await radarrState.movies!;
-            for (final item in items) {
-              if (item['mediaType'] == 'movie') {
-                final tmdbId = item['tmdbId'] as int;
-                item['inLibrary'] = movies.any((m) => m.tmdbId == tmdbId);
-              }
+        // Check against Sonarr library if available
+        final sonarrState = context.read<SonarrState>();
+        if (sonarrState.enabled && sonarrState.api != null) {
+          try {
+            final sonarrSeries = await sonarrState.api!.series.getAll();
+            for (final item in tvItems) {
+              final title = item['title'] as String;
+              // Check if this show is in Sonarr library by title match
+              final inLibrary = sonarrSeries.any((series) {
+                return series.title?.toLowerCase() == title.toLowerCase();
+              });
+              item['inLibrary'] = inLibrary;
             }
-          }
-
-          // Check against Sonarr library if available
-          final sonarrState = context.read<SonarrState>();
-          if (sonarrState.enabled && sonarrState.api != null) {
-            try {
-              final sonarrSeries = await sonarrState.api!.series.getAll();
-              for (final item in items) {
-                if (item['mediaType'] == 'tv') {
-                  final title = item['title'] as String;
-                  // Check if this show is in Sonarr library by title match
-                  final inLibrary = sonarrSeries.any((series) {
-                    return series.title?.toLowerCase() == title.toLowerCase();
-                  });
-                  item['inLibrary'] = inLibrary;
-                }
-              }
-            } catch (e) {
-              print('📺 Error checking Sonarr library for trending: $e');
-            }
+          } catch (e) {
+            print('📺 Error checking Sonarr library for trending: $e');
           }
         }
+      }
 
-        if (mounted) {
-          setState(() {
-            _trendingItems = items;
-            _trendingMovies = []; // Clear separate lists
-            _trendingTVShows = [];
-            _precachedHeroBackdrops.clear();
-          });
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            _precacheHeroImage(_currentHeroIndex);
-            _precacheHeroImage(_currentHeroIndex + 1);
-            _precacheHeroImage(_currentHeroIndex + 2);
-          });
-        }
+      if (mounted) {
+        setState(() {
+          _trendingMovies = movieItems;
+          _trendingTVShows = tvItems;
+          _precachedHeroBackdrops.clear();
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          // Precache both movie and TV images
+          _precacheHeroImage(_currentMovieHeroIndex, isMovie: true);
+          _precacheHeroImage(_currentMovieHeroIndex + 1, isMovie: true);
+          _precacheHeroImage(_currentTVHeroIndex, isMovie: false);
+          _precacheHeroImage(_currentTVHeroIndex + 1, isMovie: false);
+        });
       }
     } catch (e) {
       print('Failed to load trending: $e');
@@ -542,15 +466,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
-  void _precacheHeroImage(int index, {bool? isMovie}) {
+  void _precacheHeroImage(int index, {required bool isMovie}) {
     if (!mounted) return;
 
-    List<Map<String, dynamic>> items;
-    if (_filterHeroByTab && isMovie != null) {
-      items = isMovie ? _trendingMovies : _trendingTVShows;
-    } else {
-      items = _trendingItems;
-    }
+    final items = isMovie ? _trendingMovies : _trendingTVShows;
 
     if (index < 0 || index >= items.length) return;
     final url = items[index]['backdrop'] as String?;
@@ -1844,11 +1763,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
-          _heroCarousel(
-            controller: _moviesHeroPageController,
-            storageKey: 'discoverHeroCarouselMovies',
-            isMovieTab: true,
-          ),
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _moviesHeroPageController,
+              storageKey: 'discoverHeroCarouselMovies',
+              isMovieTab: true,
+            ),
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
@@ -1956,11 +1876,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
-          _heroCarousel(
-            controller: _tvHeroPageController,
-            storageKey: 'discoverHeroCarouselTv',
-            isMovieTab: false,
-          ),
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _tvHeroPageController,
+              storageKey: 'discoverHeroCarouselTv',
+              isMovieTab: false,
+            ),
           // TV shows sections in custom order
           ..._buildTVSections(),
           const SizedBox(height: 16),
@@ -4286,19 +4207,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _heroCarousel({
     required PageController controller,
     required String storageKey,
-    bool? isMovieTab,
+    required bool isMovieTab,
   }) {
     // Determine which list and index to use
-    final List<Map<String, dynamic>> items;
-    final int currentIndex;
-
-    if (_filterHeroByTab && isMovieTab != null) {
-      items = isMovieTab ? _trendingMovies : _trendingTVShows;
-      currentIndex = isMovieTab ? _currentMovieHeroIndex : _currentTVHeroIndex;
-    } else {
-      items = _trendingItems;
-      currentIndex = _currentHeroIndex;
-    }
+    final items = isMovieTab ? _trendingMovies : _trendingTVShows;
+    final currentIndex = isMovieTab ? _currentMovieHeroIndex : _currentTVHeroIndex;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -4324,14 +4237,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               controller: controller,
               onPageChanged: (index) {
                 setState(() {
-                  if (_filterHeroByTab && isMovieTab != null) {
-                    if (isMovieTab) {
-                      _currentMovieHeroIndex = index;
-                    } else {
-                      _currentTVHeroIndex = index;
-                    }
+                  if (isMovieTab) {
+                    _currentMovieHeroIndex = index;
                   } else {
-                    _currentHeroIndex = index;
+                    _currentTVHeroIndex = index;
                   }
                 });
                 _precacheHeroImage(index + 1, isMovie: isMovieTab);
