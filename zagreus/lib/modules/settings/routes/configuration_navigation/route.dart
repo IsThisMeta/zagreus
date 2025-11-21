@@ -105,37 +105,10 @@ class _State extends State<ConfigurationNavigationRoute>
 
   Widget _legacyModulesTabToggle() {
     if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
-    return Column(
-      children: [
-        _dashboardModulesTabToggle(),
-        _discoverModulesTabToggle(),
-      ],
-    );
-  }
-
-  Widget _dashboardModulesTabToggle() {
-    const db = ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB;
-    return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Show Modules Tab (Dashboard)',
-        body: const [
-          TextSpan(
-            text: 'Shows Modules tab in Dashboard',
-          ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: db.update,
-        ),
-      ),
-    );
-  }
-
-  Widget _discoverModulesTabToggle() {
     const db = ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Modules Tab (Discover)',
+        title: 'Show Modules Tab',
         body: const [
           TextSpan(
             text: 'Shows Modules tab in Discover',
@@ -160,15 +133,15 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.SHOW_CALENDAR_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Calendar Tab',
+        title: 'Show Calendar Tab',
         body: const [
           TextSpan(
-            text: 'Hides Calendar tab in Dashboard',
+            text: 'Shows Calendar tab in Dashboard and Discover',
           ),
         ],
         trailing: ZagSwitch(
-          value: !db.read(),
-          onChanged: (value) => db.update(!value),
+          value: db.read(),
+          onChanged: db.update,
         ),
       ),
     );
