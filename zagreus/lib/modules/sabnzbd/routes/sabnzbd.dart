@@ -139,7 +139,7 @@ class _State extends State<SABnzbdRoute> {
       switch (values[1]) {
         case 'web_gui':
           ZagProfile profile = ZagProfile.current;
-          await profile.sabnzbdHost.openLink();
+          await profile.effectiveSabnzbdHost().openLink();
           break;
         case 'add_nzb':
           _addNZB();

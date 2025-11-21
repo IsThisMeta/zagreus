@@ -143,7 +143,7 @@ class _State extends State<LidarrRoute> {
       switch (values[1]) {
         case 'web_gui':
           ZagProfile profile = ZagProfile.current;
-          await profile.lidarrHost.openLink();
+          await profile.effectiveLidarrHost().openLink();
           break;
         case 'update_library':
           await _api
