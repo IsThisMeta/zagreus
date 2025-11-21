@@ -1607,8 +1607,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         );
       } else {
-        // Free users: no app bar actions (drawer is Pro-only)
-        // Don't show download icon since they can't access the drawer
+        // Defensive fallback: Discover is Pro-only, so this shouldn't be reached
+        // No app bar actions needed here
       }
     } else if (_currentPageIndex == moviesTabIndex ||
         _currentPageIndex == showsTabIndex ||
