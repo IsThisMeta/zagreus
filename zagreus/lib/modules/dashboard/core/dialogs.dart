@@ -16,14 +16,17 @@ class DashboardDialogs {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
+    final visibleTitles = HomeNavigationBar.getVisibleTitles();
+    final visibleIcons = HomeNavigationBar.getVisibleIcons();
+
     await ZagDialog.dialog(
       context: context,
       title: 'zagreus.Page'.tr(),
       content: List.generate(
-        HomeNavigationBar.titles.length,
+        visibleTitles.length,
         (index) => ZagDialog.tile(
-          text: HomeNavigationBar.titles[index],
-          icon: HomeNavigationBar.icons[index],
+          text: visibleTitles[index],
+          icon: visibleIcons[index],
           iconColor: ZagColours().byListIndex(index),
           onTap: () => _setValues(true, index),
         ),

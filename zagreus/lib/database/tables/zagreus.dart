@@ -118,6 +118,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_TRENDING_TIME_WINDOW<String>('day'),
   DISCOVER_DEFAULT_TAB<String>('modules'),
   SHOW_LEGACY_MODULES_TAB<bool>(true),
+  SHOW_CALENDAR_TAB<bool>(true),
   SHOW_AGENT_TAB<bool>(true);
 
   @override

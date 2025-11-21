@@ -43,6 +43,13 @@ class _State extends State<DashboardRoute> {
 
     print('🏠 Dashboard initState called');
     int page = DashboardDatabase.NAVIGATION_INDEX.read();
+
+    // Ensure the initial page is valid for the visible tabs
+    final visiblePageCount = _getVisiblePageCount();
+    if (page >= visiblePageCount) {
+      page = 0;
+    }
+
     _pageController = ZagPageController(initialPage: page);
 
     // Add listener to rebuild app bar when page changes
@@ -64,6 +71,36 @@ class _State extends State<DashboardRoute> {
         _updateWidget();
       });
     }
+  }
+
+  int _getVisiblePageCount() {
+    int count = 0;
+    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) count++;
+    if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) count++;
+    return count;
+  }
+
+  List<Widget> _getVisiblePages() {
+    final List<Widget> pages = [];
+    if (ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+      pages.add(ModulesPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())));
+    }
+    if (ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
+      pages.add(CalendarPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())));
+    }
+    return pages;
+  }
+
+  int? _getVisiblePageIndex(int absoluteIndex) {
+    // Maps absolute page indices (0 = modules, 1 = calendar) to visible page indices
+    if (absoluteIndex == 0 && ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read()) {
+      return 0; // Modules is always first if visible
+    }
+    if (absoluteIndex == 1 && ZagreusDatabase.SHOW_CALENDAR_TAB.read()) {
+      // Calendar is second if modules is visible, first otherwise
+      return ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.read() ? 1 : 0;
+    }
+    return null; // Page is not visible
   }
 
   @override
@@ -157,7 +194,7 @@ class _State extends State<DashboardRoute> {
     return ZagAppBar(
       title: 'Zagreus',
       useDrawer: true,
-      scrollControllers: HomeNavigationBar.scrollControllers,
+      scrollControllers: HomeNavigationBar.getVisibleScrollControllers(),
       pageController: _pageController,
       actions: [
         Builder(
@@ -166,7 +203,11 @@ class _State extends State<DashboardRoute> {
             if (controller == null) return const SizedBox();
             final currentPage = controller.hasClients ? controller.page?.round() ?? 0 : 0;
 
-            if (currentPage == 0) {
+            // Check which page we're on based on visible tabs
+            final modulesIndex = _getVisiblePageIndex(0); // 0 = modules
+            final calendarIndex = _getVisiblePageIndex(1); // 1 = calendar
+
+            if (modulesIndex != null && currentPage == modulesIndex) {
               // Modules tab - show tier-based icons
               final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
               final isPro = ZagreusPro.isEnabled;
@@ -200,8 +241,13 @@ class _State extends State<DashboardRoute> {
               }
             }
 
-            // Calendar tab (page 1) - show view switcher for all users
-            return SwitchViewAction(pageController: _pageController);
+            if (calendarIndex != null && currentPage == calendarIndex) {
+              // Calendar tab - show view switcher for all users
+              return SwitchViewAction(pageController: _pageController);
+            }
+
+            // Default: show nothing
+            return const SizedBox();
           },
         ),
       ],
@@ -210,12 +256,21 @@ class _State extends State<DashboardRoute> {
 
   Widget _body() {
     final mainContent = ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
-      builder: (context, _) => ZagPageView(
-        controller: _pageController,
-        children: [
-          ModulesPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())),
-          CalendarPage(key: ValueKey(ZagreusDatabase.ENABLED_PROFILE.read())),
-        ],
+      builder: (context, _) => ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+        builder: (context, _) => ZagreusDatabase.SHOW_CALENDAR_TAB.listenableBuilder(
+          builder: (context, _) {
+            final visiblePages = _getVisiblePages();
+            if (visiblePages.isEmpty) {
+              return const Center(
+                child: Text('No tabs enabled. Please enable at least one tab in Settings > Navigation.'),
+              );
+            }
+            return ZagPageView(
+              controller: _pageController,
+              children: visiblePages,
+            );
+          },
+        ),
       ),
     );
 
