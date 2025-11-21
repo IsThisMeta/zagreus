@@ -18,6 +18,14 @@ extension StringAsLinksExtension on String {
     );
   }
 
+  Future<bool> _launchInApp(String uri) async {
+    return await launchUrlString(
+      uri,
+      webOnlyWindowName: '_self',
+      mode: LaunchMode.inAppBrowserView,
+    );
+  }
+
   Future<void> openLink() async {
     try {
       if (await _launchUniversal(this)) return;
@@ -25,6 +33,19 @@ extension StringAsLinksExtension on String {
     } catch (error, stack) {
       ZagLogger().error(
         'Unable to open URL',
+        error,
+        stack,
+      );
+    }
+  }
+
+  Future<void> openLinkInApp() async {
+    try {
+      if (await _launchInApp(this)) return;
+      await _launchDefault(this);
+    } catch (error, stack) {
+      ZagLogger().error(
+        'Unable to open URL in-app',
         error,
         stack,
       );
@@ -44,6 +65,10 @@ extension StringAsLinksExtension on String {
 
   Future<void> openTmdbPerson() async {
     await 'https://www.themoviedb.org/person/$this'.openLink();
+  }
+
+  Future<void> openTmdbPersonInApp() async {
+    await 'https://www.themoviedb.org/person/$this'.openLinkInApp();
   }
 
   Future<void> openTraktMovie() async {

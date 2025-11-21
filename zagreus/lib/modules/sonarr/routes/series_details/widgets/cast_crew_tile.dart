@@ -44,8 +44,8 @@ class SonarrSeriesDetailsCastCrewTile extends StatelessWidget {
                   ),
                 );
               } else {
-                // Free users: Open TMDB person page externally
-                credits.personTmdbId.toString().openTmdbPerson();
+                // Free users: Open TMDB person page in in-app browser
+                credits.personTmdbId.toString().openTmdbPersonInApp();
               }
             }
           : null,
