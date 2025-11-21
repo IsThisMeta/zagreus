@@ -80,7 +80,7 @@ class DeepCutMovie {
 
 /// Service for managing Deep Cuts AI-powered recommendations
 /// Deep Cuts are hidden gem films recommended weekly by AI
-/// Available to Mega (GPT-5.1-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
 class DeepCutsService {
   static final DeepCutsService _instance = DeepCutsService._internal();
   factory DeepCutsService() => _instance;
@@ -200,7 +200,7 @@ class DeepCutsService {
 
   /// Generate new Deep Cuts recommendations
   /// This triggers the backend to analyze library + watch history with AI
-  /// Mega users get GPT-5.1-mini, Ultra users get GPT-5.1
+  /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
   Future<DeepCutsResult> generateRecommendations({bool force = false}) async {
     print('\n═══════════════════════════════════════');
     print('🎬 DEEP CUTS GENERATION STARTED');
