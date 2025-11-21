@@ -1607,16 +1607,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         );
       } else {
-        // Free users: show download icon only if drawer is enabled
-        if (ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
-          actions.add(
-            IconButton(
-              icon: const Icon(Icons.download_rounded),
-              tooltip: 'Queue',
-              onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-            ),
-          );
-        }
+        // Free users: no app bar actions (drawer is Pro-only)
+        // Don't show download icon since they can't access the drawer
       }
     } else if (_currentPageIndex == moviesTabIndex ||
         _currentPageIndex == showsTabIndex ||
