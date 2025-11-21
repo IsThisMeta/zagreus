@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/widgets/ui/downloads_drawer.dart';
 import 'package:zagreus/widgets/ui/speed_cube.dart';
 
@@ -47,7 +48,7 @@ class ZagGlobalCubeManager {
                       builder: (context, _) {
                         final enabled =
                             ZagreusDatabase.SPEED_CUBE_ENABLED.read();
-                        if (!enabled) {
+                        if (!enabled || !ZagreusPro.isEnabled) {
                           print('🔍 GlobalCube: Disabled via settings, hiding');
                           return const SizedBox.shrink();
                         }
@@ -129,7 +130,7 @@ class ZagGlobalCubeManager {
   }
 
   Widget? getEndDrawer() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) {
+    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read() || !ZagreusPro.isEnabled) {
       return null;
     }
     return const ZagDownloadsDrawer();

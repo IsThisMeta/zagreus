@@ -63,34 +63,42 @@ class _State extends State<ConfigurationNavigationRoute>
   Widget _speedCube() {
     const db = ZagreusDatabase.SPEED_CUBE_ENABLED;
     return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Speed Cube',
-        body: const [
-          TextSpan(text: 'Show floating action cube'),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: db.update,
-        ),
-      ),
+      builder: (context, _) {
+        final isPro = ZagreusPro.isEnabled;
+        return ZagBlock(
+          title: 'Speed Cube',
+          body: const [
+            TextSpan(text: 'Show floating action cube'),
+          ],
+          trailing: ZagSwitch(
+            value: db.read(),
+            onChanged: isPro ? db.update : null,
+          ),
+          onTap: isPro ? null : () => _showSpeedCubeProUpgradeToast(),
+        );
+      },
     );
   }
 
   Widget _downloadsDrawer() {
     const db = ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED;
     return db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'Queue Drawer',
-        body: const [
-          TextSpan(
-            text: 'Access queues from the right edge',
+      builder: (context, _) {
+        final isPro = ZagreusPro.isEnabled;
+        return ZagBlock(
+          title: 'Queue Drawer',
+          body: const [
+            TextSpan(
+              text: 'Access queues from the right edge',
+            ),
+          ],
+          trailing: ZagSwitch(
+            value: db.read(),
+            onChanged: isPro ? db.update : null,
           ),
-        ],
-        trailing: ZagSwitch(
-          value: db.read(),
-          onChanged: db.update,
-        ),
-      ),
+          onTap: isPro ? null : () => _showProUpgradeToast(),
+        );
+      },
     );
   }
 
@@ -118,6 +126,20 @@ class _State extends State<ConfigurationNavigationRoute>
           },
         ),
       ),
+    );
+  }
+
+  void _showProUpgradeToast() {
+    showZagInfoSnackBar(
+      title: 'Zagreus Pro required',
+      message: 'Upgrade to Zagreus Pro to use Queue Drawer.',
+    );
+  }
+
+  void _showSpeedCubeProUpgradeToast() {
+    showZagInfoSnackBar(
+      title: 'Zagreus Pro required',
+      message: 'Upgrade to Zagreus Pro to use Speed Cube.',
     );
   }
 }
