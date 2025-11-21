@@ -48,7 +48,7 @@ class ZagGlobalCubeManager {
                       builder: (context, _) {
                         final enabled =
                             ZagreusDatabase.SPEED_CUBE_ENABLED.read();
-                        if (!enabled) {
+                        if (!enabled || !ZagreusPro.isEnabled) {
                           print('🔍 GlobalCube: Disabled via settings, hiding');
                           return const SizedBox.shrink();
                         }
