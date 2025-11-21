@@ -653,7 +653,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
               iconColor: ZagColours.purple,
-              text: 'Monthly • \$4.99/month',
+              text: 'Monthly • \$3.99/month',
               subtitle: RichText(
                 text: TextSpan(
                   text: 'Includes all Mega + Pro features',
