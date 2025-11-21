@@ -9,6 +9,7 @@ import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/navigation_bar.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/services/settings_lock_service.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ModulesPage extends StatefulWidget {
   final ScrollController? controller;
@@ -39,12 +40,19 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
         onTap: () => ZagModule.SETTINGS.launch(restore: false),
       );
     }
-    return ZagListView(
-      controller: widget.controller ?? HomeNavigationBar.scrollControllers[0],
-      itemExtent: ZagBlock.calculateItemExtent(1),
-      children: ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE.read()
-          ? _buildAlphabeticalList()
-          : _buildManuallyOrderedList(),
+
+    // Listen to SSID changes to update "• Local" indicators
+    return ValueListenableBuilder<String?>(
+      valueListenable: ZagLocalConnectionService().currentSsid,
+      builder: (context, ssid, child) {
+        return ZagListView(
+          controller: widget.controller ?? HomeNavigationBar.scrollControllers[0],
+          itemExtent: ZagBlock.calculateItemExtent(1),
+          children: ZagreusDatabase.DRAWER_AUTOMATIC_MANAGE.read()
+              ? _buildAlphabeticalList()
+              : _buildManuallyOrderedList(),
+        );
+      },
     );
   }
 
@@ -120,9 +128,15 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       };
     }
 
+    // Build description with "• Local" suffix if module is using local endpoint
+    final isUsingLocal = ZagLocalConnectionService().isModuleUsingLocal(module);
+    final description = isUsingLocal
+        ? '${module.description} • Local'
+        : module.description;
+
     return ZagBlock(
       title: module.title,
-      body: [TextSpan(text: module.description)],
+      body: [TextSpan(text: description)],
       trailing: ZagIconButton(icon: module.icon, color: module.color),
       onTap: onTap,
     );
