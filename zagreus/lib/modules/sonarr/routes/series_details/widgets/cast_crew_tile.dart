@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SonarrSeriesDetailsCastCrewTile extends StatelessWidget {
   final SonarrSeriesCredits credits;
@@ -32,14 +33,20 @@ class SonarrSeriesDetailsCastCrewTile extends StatelessWidget {
       ],
       onTap: credits.personTmdbId != null
           ? () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PersonDetailsRoute(
-                    personId: credits.personTmdbId!,
-                    personName: credits.personName ?? '',
+              if (ZagreusPro.isEnabled) {
+                // Pro users: Navigate to internal person details page
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PersonDetailsRoute(
+                      personId: credits.personTmdbId!,
+                      personName: credits.personName ?? '',
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                // Free users: Open TMDB person page in in-app browser
+                credits.personTmdbId.toString().openTmdbPersonInApp();
+              }
             }
           : null,
     );

@@ -154,26 +154,21 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
   }
 
   Widget _pages(RadarrQualityProfile? qualityProfile, List<RadarrTag> tags) {
-    final pages = [
-      RadarrMovieDetailsOverviewPage(
-        movie: movie,
-        qualityProfile: qualityProfile,
-        tags: tags,
-      ),
-      const RadarrMovieDetailsFilesPage(),
-      RadarrMovieDetailsHistoryPage(movie: movie),
-    ];
-
-    if (ZagreusPro.isEnabled) {
-      pages.add(RadarrMovieDetailsCastCrewPage(movie: movie));
-    }
-
     return ChangeNotifierProvider(
       create: (context) =>
           RadarrMovieDetailsState(context: context, movie: movie!),
       builder: (context, _) => ZagPageView(
         controller: _pageController,
-        children: pages,
+        children: [
+          RadarrMovieDetailsOverviewPage(
+            movie: movie,
+            qualityProfile: qualityProfile,
+            tags: tags,
+          ),
+          const RadarrMovieDetailsFilesPage(),
+          RadarrMovieDetailsHistoryPage(movie: movie),
+          RadarrMovieDetailsCastCrewPage(movie: movie),
+        ],
       ),
     );
   }
