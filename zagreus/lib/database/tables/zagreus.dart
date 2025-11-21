@@ -15,7 +15,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DRAWER_AUTOMATIC_MANAGE<bool>(true),
   DRAWER_MANUAL_ORDER<List>([]),
   ENABLED_PROFILE<String>(ZagProfile.DEFAULT_PROFILE),
-  DOWNLOADS_DRAWER_ENABLED<bool>(false),
+  DOWNLOADS_DRAWER_ENABLED<bool>(true),
   SPEED_CUBE_ENABLED<bool>(false),
   MODULE_TAB_MEMORY_ENABLED<bool>(true),
   NETWORKING_TLS_VALIDATION<bool>(false),

@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/sheets/links.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class MovieDetailsRoute extends StatefulWidget {
@@ -153,21 +154,26 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
   }
 
   Widget _pages(RadarrQualityProfile? qualityProfile, List<RadarrTag> tags) {
+    final pages = [
+      RadarrMovieDetailsOverviewPage(
+        movie: movie,
+        qualityProfile: qualityProfile,
+        tags: tags,
+      ),
+      const RadarrMovieDetailsFilesPage(),
+      RadarrMovieDetailsHistoryPage(movie: movie),
+    ];
+
+    if (ZagreusPro.isEnabled) {
+      pages.add(RadarrMovieDetailsCastCrewPage(movie: movie));
+    }
+
     return ChangeNotifierProvider(
       create: (context) =>
           RadarrMovieDetailsState(context: context, movie: movie!),
       builder: (context, _) => ZagPageView(
         controller: _pageController,
-        children: [
-          RadarrMovieDetailsOverviewPage(
-            movie: movie,
-            qualityProfile: qualityProfile,
-            tags: tags,
-          ),
-          const RadarrMovieDetailsFilesPage(),
-          RadarrMovieDetailsHistoryPage(movie: movie),
-          RadarrMovieDetailsCastCrewPage(movie: movie),
-        ],
+        children: pages,
       ),
     );
   }
