@@ -389,7 +389,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.orange,
-              text: 'Monthly • \$1.79/month',
+              text: 'Monthly • \$1.99/month',
               subtitle: RichText(
                 text: TextSpan(
                   text: '7-day free trial',
@@ -653,7 +653,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
               iconColor: ZagColours.purple,
-              text: 'Monthly • \$3.79/month',
+              text: 'Monthly • \$4.99/month',
               subtitle: RichText(
                 text: TextSpan(
                   text: 'Includes all Mega + Pro features',
