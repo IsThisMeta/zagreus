@@ -65,6 +65,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   int _columnsPerRow = 3;
   bool _showTitles = true;
   bool _monochromeRatings = false;
+  bool _showHeroCarousel = true;
   String _trendingTimeWindow = 'day';
 
   bool get hasChanges => _hasChanges;
@@ -125,6 +126,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _monochromeRatings = savedMonochromeRatings;
     }
 
+    // Load show hero carousel setting
+    final savedShowHeroCarousel =
+        ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read();
+    if (savedShowHeroCarousel != null) {
+      _showHeroCarousel = savedShowHeroCarousel;
+    }
+
     final savedTimeWindow =
         ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.read();
     if (savedTimeWindow == 'day' || savedTimeWindow == 'week') {
@@ -143,6 +151,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
+    ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
     ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW
         .update(_trendingTimeWindow);
     setState(() => _hasChanges = false);
@@ -163,6 +172,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ((_columnsPerRowMin + _columnsPerRowMax) / 2).round();
       _showTitles = true;
       _monochromeRatings = false;
+      _showHeroCarousel = true;
       _trendingTimeWindow = 'day';
       _hasChanges = true;
     });
@@ -464,6 +474,42 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Text(
             'Display rating badges in white instead of colored. Restart required.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Show Hero Carousel',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Switch(
+                value: _showHeroCarousel,
+                activeColor: ZagColours.accentColor(context),
+                onChanged: (value) {
+                  setState(() {
+                    _showHeroCarousel = value;
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+            ],
+          ),
+          Text(
+            'Toggle the auto-scrolling hero carousel at the top of Movies and TV Shows tabs.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark

@@ -216,6 +216,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool get _showTitles =>
       ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
 
+  bool get _showHeroCarousel =>
+      ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
+
   // Deep Cuts future (cached to avoid refetching on rebuild)
   Future<DeepCutsResult>? _deepCutsFuture;
   bool _deepCutsSyncInitialized = false;
@@ -1710,11 +1713,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
-          _heroCarousel(
-            controller: _moviesHeroPageController,
-            storageKey: 'discoverHeroCarouselMovies',
-            isMovieTab: true,
-          ),
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _moviesHeroPageController,
+              storageKey: 'discoverHeroCarouselMovies',
+              isMovieTab: true,
+            ),
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
@@ -1817,11 +1821,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
-          _heroCarousel(
-            controller: _tvHeroPageController,
-            storageKey: 'discoverHeroCarouselTv',
-            isMovieTab: false,
-          ),
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _tvHeroPageController,
+              storageKey: 'discoverHeroCarouselTv',
+              isMovieTab: false,
+            ),
           // TV shows sections in custom order
           ..._buildTVSections(),
           const SizedBox(height: 16),
