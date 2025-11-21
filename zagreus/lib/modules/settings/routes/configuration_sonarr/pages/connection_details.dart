@@ -129,7 +129,7 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
         if (result.item1) {
           profile.sonarrLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<SonarrState>().reset();
         }
       },
@@ -159,7 +159,7 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
         if (result.item1) {
           profile.sonarrLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<SonarrState>().reset();
         }
       },

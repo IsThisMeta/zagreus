@@ -124,7 +124,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
         if (result.item1) {
           profile.tautulliLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<TautulliState>().reset();
         }
       },
@@ -152,7 +152,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
         if (result.item1) {
           profile.tautulliLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<TautulliState>().reset();
         }
       },

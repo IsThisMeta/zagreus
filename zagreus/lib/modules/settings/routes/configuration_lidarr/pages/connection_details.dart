@@ -124,7 +124,7 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
         if (result.item1) {
           profile.lidarrLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<LidarrState>().reset();
         }
       },
@@ -152,7 +152,7 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
         if (result.item1) {
           profile.lidarrLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<LidarrState>().reset();
         }
       },

@@ -130,7 +130,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
         if (result.item1) {
           profile.radarrLocalHost = result.item2;
           profile.save();
-          ZagLocalConnectionService().refreshSsid();
+          ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<RadarrState>().resetProfile();
         }
       },
@@ -160,7 +160,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
         if (result.item1) {
           profile.radarrLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<RadarrState>().resetProfile();
         }
       },

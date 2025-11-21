@@ -125,7 +125,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
         if (result.item1) {
           profile.unraidLocalHost = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<UnraidState>().reset();
         }
       },
@@ -153,7 +153,7 @@ class _State extends State<ConfigurationUnraidConnectionDetailsRoute>
         if (result.item1) {
           profile.unraidLocalSsids = result.item2;
           profile.save();
-          await ZagLocalConnectionService().refreshSsid();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<UnraidState>().reset();
         }
       },
