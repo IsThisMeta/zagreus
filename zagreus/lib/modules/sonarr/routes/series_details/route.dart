@@ -179,21 +179,6 @@ class _State extends State<SeriesDetailsRoute> with ZagLoadCallbackMixin {
     required SonarrLanguageProfile? languageProfile,
     required List<SonarrTag> tags,
   }) {
-    final pages = [
-      SonarrSeriesDetailsOverviewPage(
-        series: series!,
-        qualityProfile: qualityProfile,
-        languageProfile: languageProfile,
-        tags: tags,
-      ),
-      SonarrSeriesDetailsSeasonsPage(series: series),
-      const SonarrSeriesDetailsHistoryPage(),
-    ];
-
-    if (ZagreusPro.isEnabled) {
-      pages.add(SonarrSeriesDetailsCastCrewPage(series: series));
-    }
-
     return ChangeNotifierProvider(
       create: (context) => SonarrSeriesDetailsState(
         context: context,
@@ -201,7 +186,17 @@ class _State extends State<SeriesDetailsRoute> with ZagLoadCallbackMixin {
       ),
       builder: (context, _) => ZagPageView(
         controller: _pageController,
-        children: pages,
+        children: [
+          SonarrSeriesDetailsOverviewPage(
+            series: series!,
+            qualityProfile: qualityProfile,
+            languageProfile: languageProfile,
+            tags: tags,
+          ),
+          SonarrSeriesDetailsSeasonsPage(series: series),
+          const SonarrSeriesDetailsHistoryPage(),
+          SonarrSeriesDetailsCastCrewPage(series: series),
+        ],
       ),
     );
   }
