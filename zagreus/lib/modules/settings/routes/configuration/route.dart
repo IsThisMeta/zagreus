@@ -184,7 +184,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ZagDialog.tile(
             icon: Icons.calendar_month_rounded,
             iconColor: ZagColours.currentAccent,
-            text: 'Monthly • \$0.79/month',
+            text: 'Monthly • \$0.99/month',
             onTap: () {
               Navigator.of(context).pop();
               _mockPurchase(true);
@@ -193,7 +193,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ZagDialog.tile(
             icon: Icons.star_rounded,
             iconColor: ZagColours.currentAccent,
-            text: 'Yearly • \$3.99/year',
+            text: 'Yearly • \$4.99/year',
             onTap: () {
               Navigator.of(context).pop();
               _mockPurchase(false);
