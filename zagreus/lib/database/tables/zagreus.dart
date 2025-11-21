@@ -118,7 +118,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_TRENDING_TIME_WINDOW<String>('day'),
   DISCOVER_FILTER_HERO_BY_TAB<bool>(true),
   DISCOVER_DEFAULT_TAB<String>('movies'),
-  SHOW_LEGACY_MODULES_TAB<bool>(false),
+  DASHBOARD_SHOW_MODULES_TAB<bool>(true),
+  DISCOVER_SHOW_MODULES_TAB<bool>(false),
   SHOW_CALENDAR_TAB<bool>(true),
   SHOW_AGENT_TAB<bool>(true);
 

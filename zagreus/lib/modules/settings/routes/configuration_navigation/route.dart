@@ -105,13 +105,40 @@ class _State extends State<ConfigurationNavigationRoute>
 
   Widget _legacyModulesTabToggle() {
     if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
-    const db = ZagreusDatabase.SHOW_LEGACY_MODULES_TAB;
+    return Column(
+      children: [
+        _dashboardModulesTabToggle(),
+        _discoverModulesTabToggle(),
+      ],
+    );
+  }
+
+  Widget _dashboardModulesTabToggle() {
+    const db = ZagreusDatabase.DASHBOARD_SHOW_MODULES_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Modules Tab',
+        title: 'Hide Modules Tab (Dashboard)',
         body: const [
           TextSpan(
             text: 'Hides Modules tab in Dashboard',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: !db.read(),
+          onChanged: (value) => db.update(!value),
+        ),
+      ),
+    );
+  }
+
+  Widget _discoverModulesTabToggle() {
+    const db = ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Hide Modules Tab (Discover)',
+        body: const [
+          TextSpan(
+            text: 'Hides Modules tab in Discover',
           ),
         ],
         trailing: ZagSwitch(
