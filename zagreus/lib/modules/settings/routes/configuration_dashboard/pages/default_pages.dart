@@ -52,14 +52,36 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
   Widget _dashboardDefaultPageTile() {
     const _db = DashboardDatabase.NAVIGATION_INDEX;
     return _db.listenableBuilder(
-      builder: (context, _) => ZagBlock(
-        title: 'zagreus.Home'.tr(),
-        body: [TextSpan(text: HomeNavigationBar.titles[_db.read()])],
-        trailing: ZagIconButton(icon: HomeNavigationBar.icons[_db.read()]),
-        onTap: () async {
-          final values = await DashboardDialogs().defaultPage(context);
-          if (values.item1) _db.update(values.item2);
-        },
+      builder: (context, _) => ZagreusDatabase.SHOW_LEGACY_MODULES_TAB.listenableBuilder(
+        builder: (context, _) => ZagreusDatabase.SHOW_CALENDAR_TAB.listenableBuilder(
+          builder: (context, _) {
+            final visibleTitles = HomeNavigationBar.getVisibleTitles();
+            final visibleIcons = HomeNavigationBar.getVisibleIcons();
+
+            if (visibleTitles.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            // Ensure the index is within bounds
+            int index = _db.read();
+            if (index >= visibleTitles.length) {
+              index = 0;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _db.update(0);
+              });
+            }
+
+            return ZagBlock(
+              title: 'zagreus.Home'.tr(),
+              body: [TextSpan(text: visibleTitles[index])],
+              trailing: ZagIconButton(icon: visibleIcons[index]),
+              onTap: () async {
+                final values = await DashboardDialogs().defaultPage(context);
+                if (values.item1) _db.update(values.item2);
+              },
+            );
+          },
+        ),
       ),
     );
   }

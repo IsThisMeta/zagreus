@@ -37,6 +37,7 @@ class _State extends State<ConfigurationNavigationRoute>
         _horizontalSwipeToggle(),
         _downloadsDrawer(),
         _legacyModulesTabToggle(),
+        _calendarTabToggle(),
         _speedCube(),
       ],
     );
@@ -124,6 +125,25 @@ class _State extends State<ConfigurationNavigationRoute>
               ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
             }
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _calendarTabToggle() {
+    if (!ZagreusPro.isEnabled) return const SizedBox.shrink();
+    const db = ZagreusDatabase.SHOW_CALENDAR_TAB;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Hide Calendar Tab',
+        body: const [
+          TextSpan(
+            text: 'Hides Calendar tab in Dashboard',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: !db.read(),
+          onChanged: (value) => db.update(!value),
         ),
       ),
     );
