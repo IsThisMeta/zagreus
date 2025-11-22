@@ -7,5 +7,6 @@ export 'widgets/page_cast_crew.dart';
 export 'widgets/page_history.dart';
 export 'widgets/page_overview.dart';
 export 'widgets/page_seasons.dart';
+export 'widgets/ratings_tile.dart';
 export 'widgets/season_all_tile.dart';
 export 'widgets/season_tile.dart';
