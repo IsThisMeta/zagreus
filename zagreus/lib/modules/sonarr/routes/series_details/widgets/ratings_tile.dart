@@ -103,10 +103,15 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
             ),
           if (_tmdbRating != null)
             _buildRating(
-              SvgPicture.asset(
-                'assets/icons/ratings/tmdb.svg',
-                height: 20,
-                colorFilter: null, // Preserve original SVG colors
+              ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Colors.transparent,
+                  BlendMode.dst,
+                ),
+                child: SvgPicture.asset(
+                  'assets/icons/ratings/tmdb.svg',
+                  height: 20,
+                ),
               ),
               _tmdbRating!.toStringAsFixed(1),
             ),
