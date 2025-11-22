@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/radarr.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
@@ -57,40 +58,58 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
       return const SizedBox.shrink();
     }
 
+    final imdbId = widget.movie?.imdbId;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (_ratings!.imdbRating != null)
-            _buildRating('⭐', _ratings!.imdbRating!),
-          if (_ratings!.rottenTomatoes != null)
-            _buildRating('🍅', _ratings!.rottenTomatoes!),
-          if (_ratings!.metacritic != null)
-            _buildRating('Ⓜ️', _ratings!.metacritic!),
+          if (_ratings!.imdbRating != null && imdbId != null)
+            _buildRating(
+              '⭐',
+              _ratings!.imdbRating!,
+              () => 'https://www.imdb.com/title/$imdbId'.openLink(),
+            ),
+          if (_ratings!.rottenTomatoes != null && imdbId != null)
+            _buildRating(
+              '🍅',
+              _ratings!.rottenTomatoes!,
+              () => 'https://www.rottentomatoes.com/search?search=$imdbId'
+                  .openLink(),
+            ),
+          if (_ratings!.metacritic != null && imdbId != null)
+            _buildRating(
+              'Ⓜ️',
+              _ratings!.metacritic!,
+              () => 'https://www.metacritic.com/search/$imdbId'.openLink(),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildRating(String emoji, String value) {
+  Widget _buildRating(String emoji, String value, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 16.0),
-      child: Row(
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 18),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Text(
+              emoji,
+              style: const TextStyle(fontSize: 18),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
