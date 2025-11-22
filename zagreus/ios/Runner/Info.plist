@@ -42,6 +42,7 @@
 		<string>plex</string>
 		<string>https</string>
 		<string>imdb</string>
+		<string>letterboxd</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
