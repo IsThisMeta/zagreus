@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
-import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
@@ -17,7 +16,7 @@ class RadarrRottenTomatoesTile extends StatefulWidget {
 }
 
 class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
-  RottenTomatoesRatings? _ratings;
+  MovieRatings? _ratings;
   bool _loading = true;
   bool _hasError = false;
 
@@ -37,8 +36,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
     }
 
     try {
-      final ratings =
-          await OMDbApi.getRottenTomatoesRatings(widget.movie!.imdbId);
+      final ratings = await OMDbApi.getMovieRatings(widget.movie!.imdbId);
       setState(() {
         _ratings = ratings;
         _loading = false;
@@ -59,19 +57,41 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
       return const SizedBox.shrink();
     }
 
-    return ZagTableCard(
-      content: [
-        if (_ratings!.tomatoMeterValue != null)
-          ZagTableContent(
-            title: '🍅 Tomatometer',
-            body: '${_ratings!.tomatoMeterValue}%',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          if (_ratings!.imdbRating != null)
+            _buildRating('⭐', _ratings!.imdbRating!),
+          if (_ratings!.rottenTomatoes != null)
+            _buildRating('🍅', _ratings!.rottenTomatoes!),
+          if (_ratings!.metacritic != null)
+            _buildRating('Ⓜ️', _ratings!.metacritic!),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRating(String emoji, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: Row(
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 18),
           ),
-        if (_ratings!.audienceScoreValue != null)
-          ZagTableContent(
-            title: '🍿 Audience Score',
-            body: '${_ratings!.audienceScoreValue}%',
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-      ],
+        ],
+      ),
     );
   }
 }
