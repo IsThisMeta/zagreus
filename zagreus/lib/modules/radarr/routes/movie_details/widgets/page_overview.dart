@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/routes/movie_details/widgets/rotten_tomatoes_tile.dart';
 
 class RadarrMovieDetailsOverviewPage extends StatefulWidget {
   final RadarrMovie? movie;
@@ -37,6 +38,7 @@ class _State extends State<RadarrMovieDetailsOverviewPage>
           controller: RadarrMovieDetailsNavigationBar.scrollControllers[0],
           children: [
             RadarrMovieDetailsOverviewDescriptionTile(movie: widget.movie),
+            RadarrRottenTomatoesTile(movie: widget.movie),
             RadarrMovieDetailsOverviewInformationBlock(
               movie: widget.movie,
               qualityProfile: widget.qualityProfile,

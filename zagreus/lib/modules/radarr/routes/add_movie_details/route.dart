@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/sheets/links.dart';
+import 'package:zagreus/modules/radarr/routes/movie_details/widgets/rotten_tomatoes_tile.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class AddMovieDetailsRoute extends StatefulWidget {
@@ -128,6 +129,9 @@ class _State extends State<AddMovieDetailsRoute>
             onTapShowOverview: true,
             exists: false,
             isExcluded: false,
+          ),
+          RadarrRottenTomatoesTile(
+            movie: context.read<RadarrAddMovieDetailsState>().movie,
           ),
           const RadarrAddMovieDetailsRootFolderTile(),
           const RadarrAddMovieDetailsMonitoredTile(),
