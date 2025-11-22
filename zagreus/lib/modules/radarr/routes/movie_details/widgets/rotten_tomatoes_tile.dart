@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -88,7 +89,10 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
         children: [
           if (_ratings?.imdbRating != null && imdbId != null)
             _buildRating(
-              '⭐',
+              SvgPicture.asset(
+                'assets/icons/ratings/imdb.svg',
+                height: 20,
+              ),
               _ratings!.imdbRating!,
               onTap: () {
                 // Use imdb:// deep link on mobile, https on web
@@ -99,23 +103,38 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
               },
             ),
           if (_tmdbRating != null)
-            _buildRating('🎬', _tmdbRating!.toStringAsFixed(1)),
+            _buildRating(
+              SvgPicture.asset(
+                'assets/icons/ratings/tmdb.svg',
+                height: 20,
+              ),
+              _tmdbRating!.toStringAsFixed(1),
+            ),
           if (_ratings?.rottenTomatoes != null)
-            _buildRating('🍅', _ratings!.rottenTomatoes!),
+            _buildRating(
+              Image.asset(
+                'assets/icons/ratings/rotten_tomatoes.png',
+                height: 20,
+              ),
+              _ratings!.rottenTomatoes!,
+            ),
           if (_ratings?.metacritic != null)
-            _buildRating('Ⓜ️', _ratings!.metacritic!),
+            _buildRating(
+              Image.asset(
+                'assets/icons/ratings/metacritic.jpg',
+                height: 20,
+              ),
+              _ratings!.metacritic!,
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildRating(String emoji, String value, {VoidCallback? onTap}) {
+  Widget _buildRating(Widget icon, String value, {VoidCallback? onTap}) {
     final content = Row(
       children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 18),
-        ),
+        icon,
         const SizedBox(width: 6),
         Text(
           value,
