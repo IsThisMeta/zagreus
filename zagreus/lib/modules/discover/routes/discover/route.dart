@@ -1956,7 +1956,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (updated == true && mounted) {
       setState(() {
         _loadTrendingTimeWindowSetting();
-        _currentHeroIndex = 0;
+        _currentMovieHeroIndex = 0;
+        _currentTVHeroIndex = 0;
       });
       _withHeroControllers((controller) => controller.jumpToPage(0));
       _loadTrendingData();
