@@ -62,6 +62,7 @@ class _State extends State<LidarrRoute> {
       module: ZagModule.LIDARR,
       body: _body(),
       drawer: _drawer(),
+      endDrawer: ZagGlobalCubeManager.instance.getEndDrawer(),
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       onProfileChange: (_) {
@@ -120,6 +121,7 @@ class _State extends State<LidarrRoute> {
           icon: Icons.more_vert_rounded,
           onPressed: () async => _handlePopup(),
         ),
+        ..._buildQueueDrawerAction(),
       ];
     return ZagAppBar.dropdown(
       title: ZagModule.LIDARR.title,
@@ -129,6 +131,24 @@ class _State extends State<LidarrRoute> {
       pageController: _pageController,
       scrollControllers: LidarrNavigationBar.scrollControllers,
     );
+  }
+
+  List<Widget> _buildQueueDrawerAction() {
+    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return [];
+    return [
+      IconButton(
+        icon: const Icon(Icons.download_rounded),
+        tooltip: 'Queue',
+        onPressed: _openQueueDrawer,
+      ),
+    ];
+  }
+
+  void _openQueueDrawer() {
+    final scaffoldState = _scaffoldKey.currentState;
+    if (scaffoldState?.hasEndDrawer ?? false) {
+      scaffoldState?.openEndDrawer();
+    }
   }
 
   Future<void> _enterAddArtist() async {
