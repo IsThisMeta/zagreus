@@ -104,8 +104,8 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             ),
           if (_tmdbRating != null)
             _buildRating(
-              SvgPicture.asset(
-                'assets/icons/ratings/tmdb.svg',
+              Image.asset(
+                'assets/icons/ratings/tmdb.png',
                 height: 20,
               ),
               _tmdbRating!.toStringAsFixed(1),
