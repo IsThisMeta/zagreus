@@ -39,20 +39,12 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
     try {
       final ratings = await OMDbApi.getMovieRatings(widget.series!.imdbId);
-
-      // Debug: Log ratings data for TV shows
-      print('OMDb Ratings for ${widget.series!.title} (${widget.series!.imdbId}):');
-      print('  IMDb: ${ratings?.imdbRating}');
-      print('  RT: ${ratings?.rottenTomatoes}');
-      print('  Metacritic: ${ratings?.metacritic}');
-
       setState(() {
         _ratings = ratings;
         _loading = false;
         _hasError = ratings == null || !ratings.hasRatings;
       });
     } catch (e) {
-      print('Error fetching ratings for ${widget.series!.title}: $e');
       setState(() {
         _loading = false;
         _hasError = true;
@@ -69,6 +61,7 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
     final imdbId = widget.series?.imdbId;
 
+    // TV shows typically only have IMDb ratings in OMDb
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -86,10 +79,6 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
                 if (link != null) link.openLink();
               },
             ),
-          if (_ratings!.rottenTomatoes != null)
-            _buildRating('🍅', _ratings!.rottenTomatoes!),
-          if (_ratings!.metacritic != null)
-            _buildRating('Ⓜ️', _ratings!.metacritic!),
         ],
       ),
     );
