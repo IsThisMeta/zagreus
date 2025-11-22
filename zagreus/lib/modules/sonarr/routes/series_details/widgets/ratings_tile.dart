@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
