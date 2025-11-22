@@ -92,7 +92,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
                 final query = year != null
                     ? '$searchTitle $year'
                     : searchTitle;
-                return 'https://www.metacritic.com/search/$query/'.openLink();
+                'https://www.metacritic.com/search/$query/'.openLink();
               },
             ),
         ],
