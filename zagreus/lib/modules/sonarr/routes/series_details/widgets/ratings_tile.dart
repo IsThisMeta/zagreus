@@ -58,6 +58,11 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
     }
 
     final imdbId = widget.series?.imdbId;
+    final title = widget.series?.title;
+    final year = widget.series?.year;
+
+    // Construct search-friendly title (encode for URL)
+    final searchTitle = title != null ? Uri.encodeComponent(title) : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -70,18 +75,24 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
               _ratings!.imdbRating!,
               () => 'https://www.imdb.com/title/$imdbId'.openLink(),
             ),
-          if (_ratings!.rottenTomatoes != null && imdbId != null)
+          if (_ratings!.rottenTomatoes != null && searchTitle != null)
             _buildRating(
               '🍅',
               _ratings!.rottenTomatoes!,
-              () => 'https://www.rottentomatoes.com/search?search=$imdbId'
+              () => 'https://www.rottentomatoes.com/search?search=$searchTitle'
                   .openLink(),
             ),
-          if (_ratings!.metacritic != null && imdbId != null)
+          if (_ratings!.metacritic != null && searchTitle != null)
             _buildRating(
               'Ⓜ️',
               _ratings!.metacritic!,
-              () => 'https://www.metacritic.com/search/$imdbId'.openLink(),
+              () {
+                // Add year to search if available for better results
+                final query = year != null
+                    ? '$searchTitle $year'
+                    : searchTitle;
+                return 'https://www.metacritic.com/search/$query/'.openLink();
+              },
             ),
         ],
       ),
