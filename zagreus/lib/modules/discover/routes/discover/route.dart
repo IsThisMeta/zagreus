@@ -1585,7 +1585,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         actions.add(
           IconButton(
             icon: const Icon(Icons.download_rounded),
-            tooltip: 'Queue',
+            tooltip: 'Downloads',
             onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),
         );

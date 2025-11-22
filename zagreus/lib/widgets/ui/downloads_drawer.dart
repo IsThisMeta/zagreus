@@ -94,7 +94,7 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Queue',
+              'Downloads',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
