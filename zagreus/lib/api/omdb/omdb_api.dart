@@ -1,62 +1,56 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Model for Rotten Tomatoes ratings from OMDb API
-class RottenTomatoesRatings {
-  final String? tomatometer;
-  final String? audienceScore;
-  final int? tomatoMeterValue;
-  final int? audienceScoreValue;
+/// Model for movie ratings from OMDb API
+class MovieRatings {
+  final String? imdbRating;
+  final String? imdbVotes;
+  final String? rottenTomatoes;
+  final String? metacritic;
 
-  RottenTomatoesRatings({
-    this.tomatometer,
-    this.audienceScore,
-    this.tomatoMeterValue,
-    this.audienceScoreValue,
+  MovieRatings({
+    this.imdbRating,
+    this.imdbVotes,
+    this.rottenTomatoes,
+    this.metacritic,
   });
 
-  factory RottenTomatoesRatings.fromJson(Map<String, dynamic> json) {
-    // Parse tomatometer from Ratings array
-    String? tomatometer;
-    int? tomatoMeterValue;
-    String? audienceScore;
-    int? audienceScoreValue;
+  factory MovieRatings.fromJson(Map<String, dynamic> json) {
+    // Parse ratings from Ratings array
+    String? rottenTomatoes;
+    String? metacritic;
 
     final ratings = json['Ratings'] as List?;
     if (ratings != null) {
       for (final rating in ratings) {
-        if (rating['Source'] == 'Rotten Tomatoes') {
-          tomatometer = rating['Value'] as String?;
-          // Extract numeric value (e.g., "85%" -> 85)
-          if (tomatometer != null && tomatometer.isNotEmpty) {
-            tomatoMeterValue = int.tryParse(tomatometer.replaceAll('%', ''));
+        final source = rating['Source'] as String?;
+        final value = rating['Value'] as String?;
+
+        if (source == 'Rotten Tomatoes') {
+          rottenTomatoes = value;
+        } else if (source == 'Metacritic') {
+          // Metacritic comes as "96/100", extract just the number
+          if (value != null && value.contains('/')) {
+            metacritic = value.split('/').first;
           }
         }
       }
     }
 
-    // Try to get audience score from the old tomato fields if available
-    // Note: OMDb may not always return these fields
-    final tomatoUserRating = json['tomatoUserRating'] as String?;
-    if (tomatoUserRating != null && tomatoUserRating != 'N/A') {
-      // tomatoUserRating is usually out of 5, convert to percentage
-      final rating = double.tryParse(tomatoUserRating);
-      if (rating != null) {
-        audienceScoreValue = ((rating / 5) * 100).round();
-        audienceScore = '$audienceScoreValue%';
-      }
-    }
+    // Get IMDb rating
+    final imdbRating = json['imdbRating'] as String?;
+    final imdbVotes = json['imdbVotes'] as String?;
 
-    return RottenTomatoesRatings(
-      tomatometer: tomatometer,
-      audienceScore: audienceScore,
-      tomatoMeterValue: tomatoMeterValue,
-      audienceScoreValue: audienceScoreValue,
+    return MovieRatings(
+      imdbRating: (imdbRating != null && imdbRating != 'N/A') ? imdbRating : null,
+      imdbVotes: (imdbVotes != null && imdbVotes != 'N/A') ? imdbVotes : null,
+      rottenTomatoes: (rottenTomatoes != null && rottenTomatoes != 'N/A') ? rottenTomatoes : null,
+      metacritic: (metacritic != null && metacritic != 'N/A') ? metacritic : null,
     );
   }
 
   bool get hasRatings =>
-      tomatoMeterValue != null || audienceScoreValue != null;
+      imdbRating != null || rottenTomatoes != null || metacritic != null;
 }
 
 /// OMDb API client for fetching Rotten Tomatoes ratings
@@ -64,17 +58,15 @@ class OMDbApi {
   static const String _baseUrl = 'http://www.omdbapi.com';
   static const String _apiKey = '84a211de';
 
-  /// Fetch Rotten Tomatoes ratings for a movie by IMDb ID
-  static Future<RottenTomatoesRatings?> getRottenTomatoesRatings(
-      String? imdbId) async {
+  /// Fetch movie ratings (IMDb, Rotten Tomatoes, Metacritic) by IMDb ID
+  static Future<MovieRatings?> getMovieRatings(String? imdbId) async {
     if (imdbId == null || imdbId.isEmpty) {
       return null;
     }
 
     try {
-      // Use tomatoes=true to get RT ratings
       final response = await http.get(
-        Uri.parse('$_baseUrl/?i=$imdbId&apikey=$_apiKey&tomatoes=true'),
+        Uri.parse('$_baseUrl/?i=$imdbId&apikey=$_apiKey'),
       );
 
       if (response.statusCode == 200) {
@@ -86,13 +78,13 @@ class OMDbApi {
           return null;
         }
 
-        return RottenTomatoesRatings.fromJson(data);
+        return MovieRatings.fromJson(data);
       }
 
       print('OMDb API HTTP Error: ${response.statusCode}');
       return null;
     } catch (e) {
-      print('Error fetching Rotten Tomatoes ratings: $e');
+      print('Error fetching movie ratings: $e');
       return null;
     }
   }
