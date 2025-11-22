@@ -106,6 +106,7 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
               SvgPicture.asset(
                 'assets/icons/ratings/tmdb.svg',
                 height: 20,
+                colorFilter: null, // Preserve original SVG colors
               ),
               _tmdbRating!.toStringAsFixed(1),
             ),
