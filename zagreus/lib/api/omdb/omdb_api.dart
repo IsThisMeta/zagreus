@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:zagreus/modules/discover/core/api_keys.dart';
 
 /// Model for Rotten Tomatoes ratings from OMDb API
 class RottenTomatoesRatings {
@@ -63,7 +62,7 @@ class RottenTomatoesRatings {
 /// OMDb API client for fetching Rotten Tomatoes ratings
 class OMDbApi {
   static const String _baseUrl = 'http://www.omdbapi.com';
-  static String get _apiKey => ApiKeys.omdbApiKey;
+  static const String _apiKey = '84a211de';
 
   /// Fetch Rotten Tomatoes ratings for a movie by IMDb ID
   static Future<RottenTomatoesRatings?> getRottenTomatoesRatings(
