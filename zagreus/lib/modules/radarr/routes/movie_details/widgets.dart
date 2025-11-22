@@ -9,3 +9,4 @@ export 'widgets/page_cast_crew.dart';
 export 'widgets/page_files.dart';
 export 'widgets/page_history.dart';
 export 'widgets/page_overview.dart';
+export 'widgets/rotten_tomatoes_tile.dart';
