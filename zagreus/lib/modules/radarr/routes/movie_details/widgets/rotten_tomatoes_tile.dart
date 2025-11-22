@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
-import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/utils/links.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
   final RadarrMovie? movie;
@@ -59,11 +60,6 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
     }
 
     final imdbId = widget.movie?.imdbId;
-    final title = widget.movie?.title;
-    final year = widget.movie?.year;
-
-    // Construct search-friendly title (encode for URL)
-    final searchTitle = title != null ? Uri.encodeComponent(title) : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -74,54 +70,46 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             _buildRating(
               '⭐',
               _ratings!.imdbRating!,
-              () => 'https://www.imdb.com/title/$imdbId'.openLink(),
-            ),
-          if (_ratings!.rottenTomatoes != null && searchTitle != null)
-            _buildRating(
-              '🍅',
-              _ratings!.rottenTomatoes!,
-              () => 'https://www.rottentomatoes.com/search?search=$searchTitle'
-                  .openLink(),
-            ),
-          if (_ratings!.metacritic != null && searchTitle != null)
-            _buildRating(
-              'Ⓜ️',
-              _ratings!.metacritic!,
-              () {
-                // Add year to search if available for better results
-                final query = year != null
-                    ? '$searchTitle $year'
-                    : searchTitle;
-                'https://www.metacritic.com/search/$query/'.openLink();
+              onTap: () {
+                // Use imdb:// deep link on mobile, https on web
+                final link = ZagPlatform.isMobile
+                    ? ZagLinkedContent.imdb(imdbId)
+                    : 'https://www.imdb.com/title/$imdbId';
+                if (link != null) link.openLink();
               },
             ),
+          if (_ratings!.rottenTomatoes != null)
+            _buildRating('🍅', _ratings!.rottenTomatoes!),
+          if (_ratings!.metacritic != null)
+            _buildRating('Ⓜ️', _ratings!.metacritic!),
         ],
       ),
     );
   }
 
-  Widget _buildRating(String emoji, String value, VoidCallback onTap) {
+  Widget _buildRating(String emoji, String value, {VoidCallback? onTap}) {
+    final content = Row(
+      children: [
+        Text(
+          emoji,
+          style: const TextStyle(fontSize: 18),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.only(right: 16.0),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Row(
-          children: [
-            Text(
-              emoji,
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: onTap != null
+          ? GestureDetector(onTap: onTap, child: content)
+          : content,
     );
   }
 }
