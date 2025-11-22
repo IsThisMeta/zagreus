@@ -104,15 +104,9 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             ),
           if (_tmdbRating != null)
             _buildRating(
-              ColorFiltered(
-                colorFilter: const ColorFilter.mode(
-                  Colors.transparent,
-                  BlendMode.dst,
-                ),
-                child: SvgPicture.asset(
-                  'assets/icons/ratings/tmdb.svg',
-                  height: 20,
-                ),
+              SvgPicture.asset(
+                'assets/icons/ratings/tmdb.svg',
+                height: 20,
               ),
               _tmdbRating!.toStringAsFixed(1),
             ),
