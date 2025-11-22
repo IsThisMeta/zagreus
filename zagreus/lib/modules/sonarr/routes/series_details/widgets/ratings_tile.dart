@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
 import 'package:zagreus/extensions/string/links.dart';
-import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/sonarr.dart';
 
-class RadarrRottenTomatoesTile extends StatefulWidget {
-  final RadarrMovie? movie;
+class SonarrRatingsTile extends StatefulWidget {
+  final SonarrSeries? series;
 
-  const RadarrRottenTomatoesTile({
+  const SonarrRatingsTile({
     Key? key,
-    required this.movie,
+    required this.series,
   }) : super(key: key);
 
   @override
-  State<RadarrRottenTomatoesTile> createState() =>
-      _RadarrRottenTomatoesTileState();
+  State<SonarrRatingsTile> createState() => _SonarrRatingsTileState();
 }
 
-class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
+class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
   MovieRatings? _ratings;
   bool _loading = true;
   bool _hasError = false;
@@ -28,7 +27,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
   }
 
   Future<void> _fetchRatings() async {
-    if (widget.movie?.imdbId == null) {
+    if (widget.series?.imdbId == null) {
       setState(() {
         _loading = false;
         _hasError = true;
@@ -37,7 +36,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
     }
 
     try {
-      final ratings = await OMDbApi.getMovieRatings(widget.movie!.imdbId);
+      final ratings = await OMDbApi.getMovieRatings(widget.series!.imdbId);
       setState(() {
         _ratings = ratings;
         _loading = false;
@@ -58,9 +57,9 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
       return const SizedBox.shrink();
     }
 
-    final imdbId = widget.movie?.imdbId;
-    final title = widget.movie?.title;
-    final year = widget.movie?.year;
+    final imdbId = widget.series?.imdbId;
+    final title = widget.series?.title;
+    final year = widget.series?.year;
 
     // Construct search-friendly title (encode for URL)
     final searchTitle = title != null ? Uri.encodeComponent(title) : null;

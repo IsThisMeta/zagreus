@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/routes/series_details/widgets/ratings_tile.dart';
 
 class SonarrSeriesDetailsOverviewPage extends StatefulWidget {
   final SonarrSeries series;
@@ -39,6 +40,7 @@ class _State extends State<SonarrSeriesDetailsOverviewPage>
           controller: SonarrSeriesDetailsNavigationBar.scrollControllers[0],
           children: [
             SonarrSeriesDetailsOverviewDescriptionTile(series: widget.series),
+            SonarrRatingsTile(series: widget.series),
             SonarrSeriesDetailsOverviewInformationBlock(
               series: widget.series,
               qualityProfile: widget.qualityProfile,
