@@ -1727,7 +1727,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load recently downloaded',
+              'Failed to load recently queued',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -4194,7 +4194,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           const SizedBox(height: 4),
           Text(
-            'No recently downloaded movies',
+            'No recently queued movies',
             style: const TextStyle(
               fontSize: 18,
               color: Colors.grey,
@@ -7039,7 +7039,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFFEC333),
           moduleLabel: 'Radarr',
           moduleLabelColor: const Color(0xFFFEC333),
-          title: 'Recently Downloaded',
+          title: 'Recently Queued',
           titleStyle: TextStyle(
             fontSize: _moduleSectionTitleFontSize,
             fontWeight: FontWeight.w600,
@@ -7057,7 +7057,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdRecentlyDownloaded,
             loader: () => _loadRecentlyDownloaded(showGlobalLoader: false),
-            sectionLabel: 'Recently Downloaded',
+            sectionLabel: 'Recently Queued',
           ),
           trailingIcon: Icons.chevron_right_rounded,
           trailingColor: Colors.grey,
@@ -7259,7 +7259,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: ZagColours.blue,
           moduleLabel: 'Sonarr',
           moduleLabelColor: ZagColours.blue,
-          title: 'Recently Downloaded',
+          title: 'Recently Queued',
           titleStyle: TextStyle(
             fontSize: _moduleSectionTitleFontSize,
             fontWeight: FontWeight.w600,

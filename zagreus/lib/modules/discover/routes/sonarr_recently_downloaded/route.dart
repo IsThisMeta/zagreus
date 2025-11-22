@@ -159,7 +159,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Recently Downloaded',
+      title: 'Recently Queued',
       actions: [
         IconButton(
           icon: Icon(Icons.refresh_rounded),
@@ -196,7 +196,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
             ),
             const SizedBox(height: 16),
             Text(
-              'No Recently Downloaded Episodes',
+              'No Recently Queued Episodes',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -204,7 +204,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
             ),
             const SizedBox(height: 8),
             Text(
-              'Downloaded episodes will appear here',
+              'Queued episodes will appear here',
               style: const TextStyle(
                 color: Colors.grey,
               ),

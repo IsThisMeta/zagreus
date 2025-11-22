@@ -43,7 +43,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const int _columnsPerRowMax = 4;
 
   static const Map<String, String> _sectionNames = {
-    'recently_downloaded': 'Recently Downloaded',
+    'recently_downloaded': 'Recently Queued',
     'recommended': 'Recommended',
     'missing': 'Missing',
     'downloading_soon': 'Downloading Soon',
@@ -52,7 +52,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'most_anticipated_movies': 'Most Anticipated Movies',
     'popular_people': 'Popular People',
     'deep_cuts': 'Deep Cuts',
-    'recently_downloaded_shows': 'Recently Downloaded',
+    'recently_downloaded_shows': 'Recently Queued',
     'airing_next': 'Airing Next',
     'popular_tv_shows': 'Popular TV Shows',
     'trending_new_tv_shows': 'Trending New',

@@ -130,7 +130,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Recently Downloaded',
+      title: 'Recently Queued',
       actions: [
         IconButton(
           icon: Icon(Icons.refresh_rounded),
@@ -173,7 +173,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
             ),
             const SizedBox(height: 16),
             Text(
-              'No Recently Downloaded',
+              'No Recently Queued',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -181,7 +181,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
             ),
             const SizedBox(height: 8),
             Text(
-              'No movies have been downloaded recently',
+              'No movies have been queued recently',
               style: const TextStyle(
                 color: Colors.grey,
               ),
