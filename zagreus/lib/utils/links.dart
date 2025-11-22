@@ -21,8 +21,14 @@ enum ZagLinkedContent {
 
   static String? imdb(String? id) {
     if (id == null) return null;
-    const base = 'https://www.imdb.com';
 
+    // Use app deep link on mobile platforms to open the IMDb app
+    if (ZagPlatform.isMobile) {
+      return 'imdb:///title/$id/';
+    }
+
+    // Use web URL on desktop/web platforms
+    const base = 'https://www.imdb.com';
     return '$base/title/$id';
   }
 
