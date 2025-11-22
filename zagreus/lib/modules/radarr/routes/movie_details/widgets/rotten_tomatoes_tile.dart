@@ -91,7 +91,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             _buildRating(
               SvgPicture.asset(
                 'assets/icons/ratings/imdb.svg',
-                height: 20,
+                height: 17,
               ),
               _ratings!.imdbRating!,
               onTap: () {
@@ -106,7 +106,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             _buildRating(
               Image.asset(
                 'assets/icons/ratings/tmdb.png',
-                height: 20,
+                height: 30,
               ),
               _tmdbRating!.toStringAsFixed(1),
             ),
