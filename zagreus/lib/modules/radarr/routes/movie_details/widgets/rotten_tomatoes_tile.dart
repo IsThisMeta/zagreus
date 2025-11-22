@@ -107,6 +107,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
               SvgPicture.asset(
                 'assets/icons/ratings/tmdb.svg',
                 height: 20,
+                colorFilter: null, // Preserve original SVG colors
               ),
               _tmdbRating!.toStringAsFixed(1),
             ),
@@ -120,9 +121,13 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             ),
           if (_ratings?.metacritic != null)
             _buildRating(
-              Image.asset(
-                'assets/icons/ratings/metacritic.jpg',
-                height: 20,
+              ClipOval(
+                child: Image.asset(
+                  'assets/icons/ratings/metacritic.jpg',
+                  height: 20,
+                  width: 20,
+                  fit: BoxFit.cover,
+                ),
               ),
               _ratings!.metacritic!,
             ),
