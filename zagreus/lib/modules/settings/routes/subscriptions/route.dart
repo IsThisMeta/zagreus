@@ -40,16 +40,17 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   PreferredSizeWidget _appBar() {
+    final bool isPro = ZagreusPro.isEnabled;
     final bool isMega = ZagreusMega.isEnabled;
     final bool isUltra = ZagreusUltra.isEnabled;
-    final bool canShare = isMega || isUltra;
+    final bool hasAnySub = isPro || isMega || isUltra;
 
     return ZagAppBar(
       title: 'Subscriptions',
       scrollControllers: [scrollController],
       actions: [
-        // Only show redeem button for non-Mega/Ultra users
-        if (ZagSupabaseAuth().isSignedIn && !canShare)
+        // Only show redeem button for users with NO subscription
+        if (ZagSupabaseAuth().isSignedIn && !hasAnySub)
           IconButton(
             icon: Icon(
               Icons.redeem_rounded,
