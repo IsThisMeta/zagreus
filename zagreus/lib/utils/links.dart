@@ -130,6 +130,15 @@ enum ZagLinkedContent {
     }
   }
 
+  static String? rottenTomatoes(String? title) {
+    if (title == null || title.isEmpty) return null;
+    const base = 'https://www.rottentomatoes.com';
+
+    // URL encode the title for the search query
+    final encodedTitle = Uri.encodeComponent(title);
+    return '$base/search?search=$encodedTitle';
+  }
+
   static String? youtube(String? id) {
     if (id == null) return null;
     const base = 'https://www.youtube.com';
