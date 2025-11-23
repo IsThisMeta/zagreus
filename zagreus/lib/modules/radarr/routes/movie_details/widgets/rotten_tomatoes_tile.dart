@@ -37,7 +37,13 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
     _isPremium = ZagreusPro.isEnabled ||
                  ZagreusMega.isEnabled ||
                  ZagreusUltra.isEnabled;
-    _fetchRatings();
+
+    // Only fetch ratings if user is premium
+    if (_isPremium) {
+      _fetchRatings();
+    } else {
+      _loading = false;
+    }
   }
 
   Future<void> _fetchRatings() async {
