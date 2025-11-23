@@ -5897,6 +5897,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _openTVShowInSonarr({required int tmdbId, required String title}) async {
+    await _openSeriesInSonarr(tmdbId: tmdbId, title: title);
+  }
+
   Widget _mostAnticipatedShowsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
