@@ -14,6 +14,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/modules/settings/routes/subscriptions/shares_route.dart';
 import 'package:zagreus/supabase/auth.dart';
+import 'package:zagreus/supabase/subscription_shares.dart';
+import 'package:zagreus/services/subscription_service.dart';
 
 class SubscriptionsRoute extends StatefulWidget {
   const SubscriptionsRoute({
@@ -38,9 +40,37 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   PreferredSizeWidget _appBar() {
+    final bool isMega = ZagreusMega.isEnabled;
+    final bool isUltra = ZagreusUltra.isEnabled;
+    final bool canShare = isMega || isUltra;
+
     return ZagAppBar(
       title: 'Subscriptions',
       scrollControllers: [scrollController],
+      actions: [
+        if (ZagSupabaseAuth().isSignedIn)
+          IconButton(
+            icon: Icon(
+              canShare ? Icons.supervisor_account_rounded : Icons.redeem_rounded,
+              color: canShare
+                  ? (isUltra ? ZagColours.purple : ZagColours.orange)
+                  : ZagColours.currentAccent,
+            ),
+            onPressed: () {
+              if (canShare) {
+                // Navigate to shares management for Mega/Ultra users
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SharesManagementRoute(),
+                  ),
+                );
+              } else {
+                // Show redemption dialog for non-subscribers
+                _showEnterShareCodeDialog();
+              }
+            },
+          ),
+      ],
     );
   }
 
@@ -126,43 +156,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           onTap: () => _showUltraDialog(context),
         ),
 
-        // Subscription Sharing (for Mega/Ultra users or shared Pro users)
-        if (ZagSupabaseAuth().isSignedIn && (isMega || isUltra || _hasSharedPro()))
-          ZagBlock(
-            title: 'Subscription Sharing',
-            body: [
-              TextSpan(
-                text: isUltra
-                    ? 'Manage your 5 Pro shares'
-                    : isMega
-                        ? 'Manage your 1 Pro share'
-                        : 'View shared access',
-              ),
-            ],
-            trailing: ZagIconButton(
-              icon: Icons.supervisor_account_rounded,
-              color: isUltra
-                  ? ZagColours.purple
-                  : isMega
-                      ? ZagColours.orange
-                      : ZagColours.currentAccent,
-            ),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const SharesManagementRoute(),
-              ),
-            ),
-          ),
       ],
     );
-  }
-
-  bool _hasSharedPro() {
-    // Check if user has shared Pro access (no direct subscription but has Pro enabled)
-    return ZagreusPro.isEnabled &&
-        !ZagreusDatabase.ZAGREUS_PRO_ENABLED.read() &&
-        !ZagreusMega.isEnabled &&
-        !ZagreusUltra.isEnabled;
   }
 
   void _showProDialog(BuildContext context) {
@@ -803,6 +798,88 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     // Refresh the UI to show updated Pro status
     setState(() {});
+  }
+
+  void _showEnterShareCodeDialog() {
+    final TextEditingController codeController = TextEditingController();
+
+    ZagDialog.dialog(
+      context: context,
+      title: 'Enter Share Code',
+      customContent: ZagDialog.content(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enter the share code you received:',
+                  style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: codeController,
+                  autocorrect: false,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    labelText: 'Share Code',
+                    hintText: 'ABC123XY',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ZagDialog.tile(
+            icon: Icons.check_rounded,
+            iconColor: ZagColours.currentAccent,
+            text: 'Redeem',
+            onTap: () {
+              Navigator.of(context).pop();
+              _redeemShareCode(codeController.text.trim().toUpperCase());
+            },
+          ),
+        ],
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+  }
+
+  Future<void> _redeemShareCode(String code) async {
+    if (code.isEmpty) {
+      showZagInfoSnackBar(
+        title: 'Invalid Code',
+        message: 'Please enter a share code',
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'Redeeming',
+      message: 'Checking share code...',
+    );
+
+    final result = await ZagSupabaseShares().redeemShareCode(code);
+
+    if (result.success) {
+      showZagInfoSnackBar(
+        title: 'Success',
+        message: 'Pro access activated!',
+      );
+
+      // Refresh subscription status
+      SubscriptionService().refresh();
+
+      setState(() {});
+    } else {
+      showZagInfoSnackBar(
+        title: 'Failed',
+        message: result.error ?? 'Invalid or expired share code',
+      );
+    }
   }
 
   @override
