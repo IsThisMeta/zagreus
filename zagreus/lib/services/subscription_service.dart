@@ -1,6 +1,7 @@
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/utils/zagreus_supreme.dart';
 
 /// Singleton service for caching subscription tier status
 ///
@@ -35,17 +36,19 @@ class SubscriptionService {
   void _refreshCache() {
     _isPremium = ZagreusPro.isEnabled ||
                  ZagreusMega.isEnabled ||
-                 ZagreusUltra.isEnabled;
+                 ZagreusUltra.isEnabled ||
+                 ZagreusSupreme.isEnabled;
   }
 
-  /// Check if user has any premium tier (Pro/Mega/Ultra)
+  /// Check if user has any premium tier (Pro/Mega/Ultra/Supreme)
   /// Returns cached value - no DB reads!
   static bool get isPremium {
     if (!_instance._isInitialized) {
       // Fallback to live check if service not initialized
       return ZagreusPro.isEnabled ||
              ZagreusMega.isEnabled ||
-             ZagreusUltra.isEnabled;
+             ZagreusUltra.isEnabled ||
+             ZagreusSupreme.isEnabled;
     }
     return _instance._isPremium;
   }

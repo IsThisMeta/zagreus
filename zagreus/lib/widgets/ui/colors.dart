@@ -76,6 +76,7 @@ class ZagColours {
   static const Color purple = Color(0xFF9649CB);
   static const Color red = Color(0xFFF71735);
   static const Color search = Color(0xFFDF5D02);
+  static const Color gold = Color(0xFFFFD700);  // Luminous gold for Supreme tier
 
   /// Shades of White
   static const Color white = Color(0xFFFFFFFF);

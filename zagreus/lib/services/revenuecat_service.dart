@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/utils/zagreus_supreme.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/services/subscription_service.dart';
 import 'package:zagreus/supabase/subscription_shares.dart';
@@ -18,12 +19,15 @@ class RevenueCatService {
   static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
   static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
   static const String _ultraEntitlementId = 'Ultra';  // Ultra entitlement for top-tier AI
+  static const String _supremeEntitlementId = 'Supreme';  // Supreme entitlement for GPT-5-Pro
   static const String proMonthlyProductId = 'com.zagreus.pro.monthly.v2';
   static const String proYearlyProductId = 'com.zagreus.pro.yearly';
   static const String megaMonthlyProductId = 'com.zagreus.mega.monthly';
   static const String megaYearlyProductId = 'com.zagreus.mega.yearly';
   static const String ultraMonthlyProductId = 'com.zagreus.ultra.monthly';
   static const String ultraYearlyProductId = 'com.zagreus.ultra.yearly';
+  static const String supremeMonthlyProductId = 'com.zagreus.supreme.monthly';
+  static const String supremeYearlyProductId = 'com.zagreus.supreme.yearly';
 
   CustomerInfo? _customerInfo;
   bool _isUpdating = false; // Prevent duplicate updates
@@ -135,11 +139,51 @@ class RevenueCatService {
       ZagreusPro.disable();
     }
 
-    // Check Ultra entitlement (highest tier)
-    final ultraEntitlement = _customerInfo?.entitlements.all[_ultraEntitlementId];
-    final isUltraActive = ultraEntitlement?.isActive ?? false;
+    // Check Supreme entitlement (highest tier)
+    final supremeEntitlement = _customerInfo?.entitlements.all[_supremeEntitlementId];
+    final isSupremeActive = supremeEntitlement?.isActive ?? false;
 
-    if (isUltraActive) {
+    if (isSupremeActive) {
+      final expirationDate = supremeEntitlement?.expirationDate;
+      if (expirationDate != null) {
+        final expiry = DateTime.parse(expirationDate);
+        final productId =
+            supremeEntitlement?.productIdentifier ?? supremeMonthlyProductId;
+        print('🎯 RevenueCat: Supreme active until $expiry (product: $productId)');
+
+        ZagreusSupreme.applySubscription(
+          expiresAt: expiry,
+          productId: productId,
+        );
+
+        // Ensure base Pro features remain marked as active
+        ZagreusPro.applySubscription(
+          expiresAt: expiry,
+          productId: productId,
+        );
+
+        // Sync to Supabase for share management (Supreme gets 10 shares)
+        ZagSupabaseShares().syncMasterSubscription(
+          productId: productId,
+          expiresAt: expiry,
+        );
+
+        // Supreme subsumes Ultra/Mega/Pro benefits
+        ZagreusUltra.disable();
+        ZagreusMega.disable();
+      } else {
+        print('⚠️ RevenueCat: Supreme marked active but no expiration date');
+        ZagreusSupreme.disable();
+      }
+    } else {
+      print('📵 RevenueCat: Supreme not active');
+      ZagreusSupreme.disable();
+
+      // Check Ultra entitlement
+      final ultraEntitlement = _customerInfo?.entitlements.all[_ultraEntitlementId];
+      final isUltraActive = ultraEntitlement?.isActive ?? false;
+
+      if (isUltraActive) {
       final expirationDate = ultraEntitlement?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
@@ -209,6 +253,7 @@ class RevenueCatService {
         print('📵 RevenueCat: Mega not active');
         ZagreusMega.disable();
       }
+    }
     }
 
     if (!ZagreusPro.isEnabled) {
@@ -291,15 +336,18 @@ class RevenueCatService {
       ZagLogger().debug('🔍 Looking for Pro Yearly: "$_proYearlyEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proYearlyEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Mega: "$_megaEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_megaEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Ultra: "$_ultraEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_ultraEntitlementId)}');
+      ZagLogger().debug('🔍 Looking for Supreme: "$_supremeEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_supremeEntitlementId)}');
 
       _updateProStatus();
 
       // Only show ONE toast with the final result
-      final hasAny = isUltraActive || isMegaActive || isProActive;
+      final hasAny = isSupremeActive || isUltraActive || isMegaActive || isProActive;
       if (hasAny) {
-        final subscriptionType = isUltraActive
-            ? 'Ultra'
-            : (isMegaActive ? 'Mega' : 'Pro');
+        final subscriptionType = isSupremeActive
+            ? 'Supreme'
+            : isUltraActive
+                ? 'Ultra'
+                : (isMegaActive ? 'Mega' : 'Pro');
         showZagInfoSnackBar(
           title: 'Restored Successfully',
           message: 'Your $subscriptionType subscription is active.',
@@ -319,9 +367,14 @@ class RevenueCatService {
     }
   }
 
+  bool get isSupremeActive =>
+    (_customerInfo?.entitlements.all[_supremeEntitlementId]?.isActive ?? false) ||
+    ZagreusSupreme.isEnabled;
+
   bool get isUltraActive =>
     (_customerInfo?.entitlements.all[_ultraEntitlementId]?.isActive ?? false) ||
-    ZagreusUltra.isEnabled;
+    ZagreusUltra.isEnabled ||
+    isSupremeActive;
 
   bool get isMegaActive =>
     (_customerInfo?.entitlements.all[_megaEntitlementId]?.isActive ?? false) ||
@@ -536,6 +589,101 @@ class RevenueCatService {
         return false;
       }
       print('❌ Ultra purchase failed: $e');
+      showZagInfoSnackBar(
+        title: 'Purchase Failed',
+        message: 'Unable to complete purchase',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> purchaseSupreme(bool isMonthly) async {
+    try {
+      final offerings = await Purchases.getOfferings();
+
+      print('🔍 RevenueCat Offerings: ${offerings.all.keys}');
+
+      final supremeOffering = offerings.all['supreme'];
+      List<Package> packages = [];
+
+      if (supremeOffering != null) {
+        packages = supremeOffering.availablePackages;
+      }
+
+      if (packages.isEmpty) {
+        // Fallback: scan all offerings for Supreme products
+        for (final entry in offerings.all.entries) {
+          final match = entry.value.availablePackages.firstWhereOrNull(
+            (pkg) {
+              final id = pkg.storeProduct.identifier.toLowerCase();
+              if (isMonthly) {
+                return id.contains('supreme') && id.contains('month');
+              }
+              return id.contains('supreme') &&
+                     (id.contains('year') || id.contains('annual'));
+            },
+          );
+          if (match != null) {
+            packages = [match];
+            break;
+          }
+        }
+      }
+
+      if (packages.isEmpty) {
+        print('❌ No Supreme packages found in offerings');
+        return false;
+      }
+
+      Package? selectedPackage;
+      if (isMonthly) {
+        const desiredId = supremeMonthlyProductId;
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.storeProduct.identifier == desiredId ||
+              pkg.identifier == '\$rc_monthly' ||
+              pkg.packageType == PackageType.monthly ||
+              pkg.identifier.toLowerCase().contains('month'),
+        );
+      } else {
+        const desiredId = supremeYearlyProductId;
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.storeProduct.identifier == desiredId ||
+              pkg.identifier == '\$rc_annual' ||
+              pkg.packageType == PackageType.annual ||
+              pkg.identifier.toLowerCase().contains('year') ||
+              pkg.identifier.toLowerCase().contains('annual') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('year') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('annual'),
+        );
+
+        if (selectedPackage == null && packages.length > 1) {
+          packages.sort(
+            (a, b) => b.storeProduct.price.compareTo(a.storeProduct.price),
+          );
+          selectedPackage = packages.first;
+        }
+      }
+
+      selectedPackage ??= packages.first;
+
+      print('📦 Purchasing Supreme package: ${selectedPackage.identifier}');
+
+      final result = await Purchases.purchasePackage(selectedPackage);
+      _customerInfo = result.customerInfo;
+      _updateProStatus();
+
+      showZagInfoSnackBar(
+        title: 'Welcome to Zagreus Supreme!',
+        message: 'Supreme AI features are now unlocked.',
+      );
+      return true;
+    } catch (e) {
+      if (e is PurchasesErrorCode && e == PurchasesErrorCode.purchaseCancelledError) {
+        return false;
+      }
+      print('❌ Supreme purchase failed: $e');
       showZagInfoSnackBar(
         title: 'Purchase Failed',
         message: 'Unable to complete purchase',
