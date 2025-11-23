@@ -18,7 +18,7 @@ class LinksSheet extends ZagBottomModalSheet {
         ZagLinkedContent.theMovieDB(movie.tmdbId, LinkedContentType.MOVIE);
     final letterboxd = ZagLinkedContent.letterboxd(movie.tmdbId);
     final trakt =
-        ZagLinkedContent.trakt(movie.tmdbId, LinkedContentType.MOVIE);
+        ZagLinkedContent.trakt(movie.imdbId, LinkedContentType.MOVIE);
     final youtube = ZagLinkedContent.youtube(movie.youTubeTrailerId);
 
     return ZagListViewModal(

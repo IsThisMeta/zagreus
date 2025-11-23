@@ -17,7 +17,7 @@ class LinksSheet extends ZagBottomModalSheet {
     final tvdb =
         ZagLinkedContent.theTVDB(series.tvdbId, LinkedContentType.SERIES);
     final trakt =
-        ZagLinkedContent.trakt(series.tvdbId, LinkedContentType.SERIES);
+        ZagLinkedContent.trakt(series.imdbId, LinkedContentType.SERIES);
     final tvMaze = ZagLinkedContent.tvMaze(series.tvMazeId);
 
     return ZagListViewModal(

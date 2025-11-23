@@ -93,15 +93,15 @@ enum ZagLinkedContent {
     }
   }
 
-  static String? trakt(int? id, LinkedContentType type) {
-    if (id == null) return null;
+  static String? trakt(String? imdbId, LinkedContentType type) {
+    if (imdbId == null) return null;
     const base = 'https://trakt.tv';
 
     switch (type) {
       case LinkedContentType.MOVIE:
-        return '$base/search/tmdb/$id?id_type=movie';
+        return '$base/movies/$imdbId';
       case LinkedContentType.SERIES:
-        return '$base/search/tvdb/$id?id_type=show';
+        return '$base/shows/$imdbId';
       default:
         throw UnsupportedError('$type content type is not supported');
     }
