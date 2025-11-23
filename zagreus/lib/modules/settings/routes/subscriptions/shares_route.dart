@@ -102,7 +102,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
             title: 'Shared With You',
             body: [
               TextSpan(
-                text: 'You have Pro access shared from ${_receivedShares.first.sharedWithEmail ?? "another user"}',
+                text: 'You have Pro access shared by another user • Expires ${_formatDate(_receivedShares.first.ownerExpiresAt)}',
               ),
             ],
             trailing: ZagIconButton(
@@ -135,23 +135,19 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
           // List of granted shares
           if (_grantedShares.isNotEmpty)
             ..._grantedShares.map((share) => ZagBlock(
-              title: share.isRedeemed
-                  ? (share.sharedWithEmail ?? 'Redeemed')
-                  : 'Code: ${share.shareCode}',
+              title: share.sharedWithEmail,
               body: [
                 TextSpan(
-                  text: share.isRedeemed
-                      ? 'Redeemed • Expires ${_formatDate(share.ownerExpiresAt)}'
-                      : 'Not redeemed yet • Tap to view code',
+                  text: share.isActive
+                      ? 'Active • Expires ${_formatDate(share.ownerExpiresAt)}'
+                      : 'Pending sign-in • Expires ${_formatDate(share.ownerExpiresAt)}',
                 ),
               ],
               trailing: ZagIconButton(
                 icon: Icons.close_rounded,
                 color: ZagColours.red,
               ),
-              onTap: () => share.isRedeemed
-                  ? _confirmRevokeShare(share)
-                  : _showShareCode(share),
+              onTap: () => _confirmRevokeShare(share),
             )),
         ],
 
@@ -194,58 +190,49 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   }
 
   void _showGrantShareDialog() {
-    _createShareCode();
-  }
+    final emailController = TextEditingController();
 
-  void _showShareCode(SubscriptionShare share) {
     ZagDialog.dialog(
       context: context,
-      title: 'Share Code',
+      title: 'Share Pro Access',
       customContent: ZagDialog.content(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: ZagDialog.textDialogContentPadding(),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Share this code with your friend or family member:',
+                  'Enter the email address of the person you want to share Pro access with:',
                   style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: ZagColours.currentAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: ZagColours.currentAccent.withOpacity(0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: Text(
-                    share.shareCode,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
-                      color: ZagColours.currentAccent,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  'They can redeem it in Settings > System > Enter Share Code',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    hintText: 'email@example.com',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
+          ),
+          ZagDialog.tile(
+            icon: Icons.person_add_rounded,
+            iconColor: ZagColours.currentAccent,
+            text: 'Grant Access',
+            onTap: () {
+              Navigator.of(context).pop();
+              final email = emailController.text.trim();
+              if (email.isNotEmpty) {
+                _grantShareByEmail(email);
+              }
+            },
           ),
         ],
       ),
@@ -253,7 +240,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     );
   }
 
-  Future<void> _createShareCode() async {
+  Future<void> _grantShareByEmail(String email) async {
     if (_currentProductId == null) {
       showZagInfoSnackBar(
         title: 'Error',
@@ -263,8 +250,8 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     }
 
     showZagInfoSnackBar(
-      title: 'Creating Share Code',
-      message: 'Generating code...',
+      title: 'Granting Access',
+      message: 'Creating share...',
     );
 
     // Get expiry from local tier
@@ -289,24 +276,22 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
       return;
     }
 
-    final result = await ZagSupabaseShares().createShareCode(
+    final result = await ZagSupabaseShares().grantShareByEmail(
+      email: email,
       productId: _currentProductId!,
       expiresAt: expiresAt,
     );
 
-    if (result.success && result.shareCode != null) {
-      await _loadShares(); // Reload shares
-
-      // Show the new share code
-      final newShare = _grantedShares.firstWhere(
-        (s) => s.shareCode == result.shareCode,
-        orElse: () => _grantedShares.first,
+    if (result.success) {
+      showZagInfoSnackBar(
+        title: 'Success',
+        message: 'Pro access shared with $email',
       );
-      _showShareCode(newShare);
+      _loadShares(); // Reload shares
     } else {
       showZagInfoSnackBar(
         title: 'Failed',
-        message: result.error ?? 'Could not create share code',
+        message: result.error ?? 'Could not grant share',
       );
     }
   }

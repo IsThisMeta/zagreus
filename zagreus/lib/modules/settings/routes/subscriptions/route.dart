@@ -40,25 +40,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   PreferredSizeWidget _appBar() {
-    final bool isPro = ZagreusPro.isEnabled;
-    final bool isMega = ZagreusMega.isEnabled;
-    final bool isUltra = ZagreusUltra.isEnabled;
-    final bool hasAnySub = isPro || isMega || isUltra;
-
     return ZagAppBar(
       title: 'Subscriptions',
       scrollControllers: [scrollController],
-      actions: [
-        // Only show enter code button for users with NO subscription
-        if (ZagSupabaseAuth().isSignedIn && !hasAnySub)
-          IconButton(
-            icon: Icon(
-              Icons.tag_rounded, // Pound sign - retro code entry vibe
-              color: ZagColours.currentAccent,
-            ),
-            onPressed: _showEnterShareCodeDialog,
-          ),
-      ],
     );
   }
 
@@ -821,88 +805,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     // Refresh the UI to show updated Pro status
     setState(() {});
-  }
-
-  void _showEnterShareCodeDialog() {
-    final TextEditingController codeController = TextEditingController();
-
-    ZagDialog.dialog(
-      context: context,
-      title: 'Enter Share Code',
-      customContent: ZagDialog.content(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Enter the share code you received:',
-                  style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: codeController,
-                  autocorrect: false,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    labelText: 'Share Code',
-                    hintText: 'ABC123XY',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ZagDialog.tile(
-            icon: Icons.check_rounded,
-            iconColor: ZagColours.currentAccent,
-            text: 'Redeem',
-            onTap: () {
-              Navigator.of(context).pop();
-              _redeemShareCode(codeController.text.trim().toUpperCase());
-            },
-          ),
-        ],
-      ),
-      contentPadding: ZagDialog.listDialogContentPadding(),
-    );
-  }
-
-  Future<void> _redeemShareCode(String code) async {
-    if (code.isEmpty) {
-      showZagInfoSnackBar(
-        title: 'Invalid Code',
-        message: 'Please enter a share code',
-      );
-      return;
-    }
-
-    showZagInfoSnackBar(
-      title: 'Redeeming',
-      message: 'Checking share code...',
-    );
-
-    final result = await ZagSupabaseShares().redeemShareCode(code);
-
-    if (result.success) {
-      showZagInfoSnackBar(
-        title: 'Success',
-        message: 'Pro access activated!',
-      );
-
-      // Refresh subscription status
-      SubscriptionService().refresh();
-
-      setState(() {});
-    } else {
-      showZagInfoSnackBar(
-        title: 'Failed',
-        message: result.error ?? 'Invalid or expired share code',
-      );
-    }
   }
 
   @override
