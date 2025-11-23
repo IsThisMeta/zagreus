@@ -6,9 +6,7 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
-import 'package:zagreus/utils/zagreus_pro.dart';
-import 'package:zagreus/utils/zagreus_mega.dart';
-import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/services/subscription_service.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
   final RadarrMovie? movie;
@@ -33,10 +31,8 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
   @override
   void initState() {
     super.initState();
-    // Check premium status once on init
-    _isPremium = ZagreusPro.isEnabled ||
-                 ZagreusMega.isEnabled ||
-                 ZagreusUltra.isEnabled;
+    // Get cached premium status (no DB reads!)
+    _isPremium = SubscriptionService.isPremium;
 
     // Only fetch ratings if user is premium
     if (_isPremium) {
