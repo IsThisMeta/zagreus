@@ -1946,6 +1946,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
     }
 
+    // Migration: Add 'magic_movies' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_movies')) {
+      sectionOrder.add('magic_movies');
+      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
+    }
+
+    // Migration: Add 'magic_movies_cast_crew' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_movies_cast_crew')) {
+      sectionOrder.add('magic_movies_cast_crew');
+      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
+    }
+
     // Map of section builders
     final sectionBuilders = <String, Widget Function()>{
       'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
@@ -2065,6 +2077,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Migration: Add 'up_next' to existing saved orders if missing
     if (savedOrder.isNotEmpty && !sectionOrder.contains('up_next')) {
       sectionOrder.add('up_next');
+      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
+    }
+
+    // Migration: Add 'magic_shows' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_shows')) {
+      sectionOrder.add('magic_shows');
+      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
+    }
+
+    // Migration: Add 'magic_shows_cast_crew' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_shows_cast_crew')) {
+      sectionOrder.add('magic_shows_cast_crew');
       ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
     }
 
