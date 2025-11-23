@@ -18,12 +18,18 @@ class SubscriptionService {
   void initialize() {
     _refreshCache();
     _isInitialized = true;
+
+    // Also check for shared Pro access from Supabase
+    ZagreusPro.checkSharedAccess();
   }
 
   /// Refresh cached subscription status
   /// Call this when subscriptions change (purchase, restore, expiry)
   void refresh() {
     _refreshCache();
+
+    // Also recheck shared access
+    ZagreusPro.checkSharedAccess();
   }
 
   void _refreshCache() {
