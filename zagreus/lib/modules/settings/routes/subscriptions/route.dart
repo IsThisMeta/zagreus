@@ -354,7 +354,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               },
             ),
             ZagDialog.tile(
-              icon: Icons.star_rounded,
+              icon: Icons.stars_rounded,
               iconColor: ZagColours.currentAccent,
               text: 'Yearly • \$4.99/year',
               subtitle: showProYearlyTrial
@@ -573,7 +573,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               },
             ),
             ZagDialog.tile(
-              icon: Icons.star_rounded,
+              icon: Icons.stars_rounded,
               iconColor: ZagColours.orange,
               text: 'Yearly • \$14.99/year',
               subtitle: showMegaYearlyTrial
