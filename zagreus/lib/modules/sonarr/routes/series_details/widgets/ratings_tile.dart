@@ -26,6 +26,7 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
   bool _loading = true;
   bool _hasError = false;
   late final bool _isPremium;
+  int? _tmdbId;
 
   @override
   void initState() {
@@ -56,7 +57,8 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
       // Fetch TMDb rating by looking up TMDb ID from IMDb ID
       double? tmdbRating;
-      final tmdbId = await TMDBApi.getTmdbIdFromImdb(widget.series!.imdbId!);
+      int? tmdbId;
+      tmdbId = await TMDBApi.getTmdbIdFromImdb(widget.series!.imdbId!);
       if (tmdbId != null) {
         final tmdbData = await TMDBApi.getTVShowDetails(tmdbId);
         if (tmdbData != null && tmdbData['vote_average'] != null) {
@@ -67,6 +69,7 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
       setState(() {
         _ratings = ratings;
         _tmdbRating = tmdbRating;
+        _tmdbId = tmdbId;
         _loading = false;
         _hasError = ratings == null && tmdbRating == null;
       });
@@ -123,6 +126,15 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
                 height: 30,
               ),
               _tmdbRating!.toStringAsFixed(1),
+              onTap: _tmdbId != null
+                  ? () {
+                      final link = ZagLinkedContent.theMovieDB(
+                        _tmdbId,
+                        LinkedContentType.SERIES,
+                      );
+                      if (link != null) link.openLink();
+                    }
+                  : null,
             ),
         ],
       ),
