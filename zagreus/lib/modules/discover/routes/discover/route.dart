@@ -1829,13 +1829,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Get saved order or use default
     final savedOrder =
         ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
-    final sectionOrder =
+    var sectionOrder =
         savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
+
+    // Migration: Add 'most_anticipated_movies' if missing
     if (!sectionOrder.contains('most_anticipated_movies')) {
       final popularIndex = sectionOrder.indexOf('popular_movies');
       final insertIndex =
           popularIndex == -1 ? sectionOrder.length : popularIndex + 1;
       sectionOrder.insert(insertIndex, 'most_anticipated_movies');
+    }
+
+    // Migration: Add 'deep_cuts' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('deep_cuts')) {
+      sectionOrder.add('deep_cuts');
+      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
     }
 
     // Map of section builders
@@ -1939,8 +1947,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     // Get saved order or use default
     final savedOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
-    final sectionOrder =
+    var sectionOrder =
         savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
+
+    // Migration: Add 'up_next' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('up_next')) {
+      sectionOrder.add('up_next');
+      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
+    }
 
     // Map of section builders
     final sectionBuilders = <String, Widget Function()>{
