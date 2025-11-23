@@ -18,9 +18,16 @@ class RevenueCatService {
   static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
   static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
   static const String _ultraEntitlementId = 'Ultra';  // Ultra entitlement for top-tier AI
+  static const String proMonthlyProductId = 'com.zagreus.pro.monthly.v2';
+  static const String proYearlyProductId = 'com.zagreus.pro.yearly';
+  static const String megaMonthlyProductId = 'com.zagreus.mega.monthly';
+  static const String megaYearlyProductId = 'com.zagreus.mega.yearly';
+  static const String ultraMonthlyProductId = 'com.zagreus.ultra.monthly';
+  static const String ultraYearlyProductId = 'com.zagreus.ultra.yearly';
 
   CustomerInfo? _customerInfo;
   bool _isUpdating = false; // Prevent duplicate updates
+  final Map<String, IntroEligibilityStatus> _trialEligibilityCache = {};
 
   // Public getter for customer info
   CustomerInfo? get customerInfo => _customerInfo;
@@ -136,7 +143,8 @@ class RevenueCatService {
       final expirationDate = ultraEntitlement?.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
-        final productId = ultraEntitlement?.productIdentifier ?? 'com.zagreus.ultra.monthly';
+        final productId =
+            ultraEntitlement?.productIdentifier ?? ultraMonthlyProductId;
         print('🎯 RevenueCat: Ultra active until $expiry (product: $productId)');
 
         ZagreusUltra.applySubscription(
@@ -408,6 +416,39 @@ class RevenueCatService {
     }
   }
 
+  Future<Map<String, bool>> getTrialEligibility(List<String> productIds) async {
+    final result = <String, bool>{};
+    final missing = productIds
+        .where((id) => !_trialEligibilityCache.containsKey(id))
+        .toList();
+
+    if (missing.isNotEmpty) {
+      try {
+        final eligibilityMap =
+            await Purchases.checkTrialOrIntroductoryPriceEligibility(missing);
+        eligibilityMap.forEach((productId, eligibility) {
+          if (eligibility != null) {
+            _trialEligibilityCache[productId] = eligibility.status;
+          }
+        });
+      } catch (e) {
+        print('⚠️ RevenueCat: Failed to check trial eligibility: $e');
+      }
+    }
+
+    for (final id in productIds) {
+      final status = _trialEligibilityCache[id];
+      result[id] = _isIntroEligible(status);
+    }
+    return result;
+  }
+
+  bool _isIntroEligible(IntroEligibilityStatus? status) {
+    if (status == null) return true; // default to showing trial copy
+    return status == IntroEligibilityStatus.introEligibilityStatusEligible ||
+        status == IntroEligibilityStatus.introEligibilityStatusUnknown;
+  }
+
   Future<bool> purchaseUltra(bool isMonthly) async {
     try {
       final offerings = await Purchases.getOfferings();
@@ -448,7 +489,7 @@ class RevenueCatService {
 
       Package? selectedPackage;
       if (isMonthly) {
-        const desiredId = 'com.zagreus.ultra.monthly';
+        const desiredId = ultraMonthlyProductId;
         selectedPackage = packages.firstWhereOrNull(
           (pkg) =>
               pkg.storeProduct.identifier == desiredId ||
@@ -457,7 +498,7 @@ class RevenueCatService {
               pkg.identifier.toLowerCase().contains('month'),
         );
       } else {
-        const desiredId = 'com.zagreus.ultra.yearly';
+        const desiredId = ultraYearlyProductId;
         selectedPackage = packages.firstWhereOrNull(
           (pkg) =>
               pkg.storeProduct.identifier == desiredId ||
