@@ -25,6 +25,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'most_anticipated_movies',
     'popular_people',
     'deep_cuts',
+    'magic_movies',
+    'magic_movies_cast_crew',
   ];
 
   static const List<String> _defaultTVSections = [
@@ -34,6 +36,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'trending_new_tv_shows',
     'most_anticipated',
     'up_next',
+    'magic_shows',
+    'magic_shows_cast_crew',
   ];
 
   static const double _posterHeightMin = 150.0;
@@ -53,12 +57,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'most_anticipated_movies': 'Most Anticipated Movies',
     'popular_people': 'Popular People',
     'deep_cuts': 'Deep Cuts',
+    'magic_movies': 'Magic Movies',
+    'magic_movies_cast_crew': 'Magic Movies: Cast & Crew',
     'recently_downloaded_shows': 'Recently Downloaded',
     'airing_next': 'Airing Next',
     'popular_tv_shows': 'Popular TV Shows',
     'trending_new_tv_shows': 'Trending New',
     'most_anticipated': 'Most Anticipated',
     'up_next': 'Up Next',
+    'magic_shows': 'Magic Shows',
+    'magic_shows_cast_crew': 'Magic Shows: Cast & Crew',
   };
 
   late List<String> _movieSections;
@@ -834,6 +842,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.person_rounded;
       case 'deep_cuts':
         return Icons.auto_awesome_rounded;
+      case 'magic_movies':
+        return Icons.auto_fix_high_rounded;
+      case 'magic_movies_cast_crew':
+        return Icons.groups_rounded;
       case 'airing_next':
         return Icons.live_tv_rounded;
       case 'trending_new_tv_shows':
@@ -844,6 +856,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.favorite_rounded;
       case 'up_next':
         return Icons.auto_awesome_rounded;
+      case 'magic_shows':
+        return Icons.auto_fix_high_rounded;
+      case 'magic_shows_cast_crew':
+        return Icons.groups_rounded;
       default:
         return Icons.view_list_rounded;
     }
