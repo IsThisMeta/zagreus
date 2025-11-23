@@ -16,8 +16,6 @@ import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/demo_config.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
-import 'package:zagreus/supabase/subscription_shares.dart';
-import 'package:zagreus/services/subscription_service.dart';
 
 class SystemRoute extends StatefulWidget {
   const SystemRoute({
@@ -56,25 +54,12 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
         const SettingsSystemBackupRestoreBackupTile(),
         const SettingsSystemBackupRestoreRestoreTile(),
         ZagDivider(),
-        if (ZagSupabaseAuth().isSignedIn) _enterShareCode(),
         _logs(),
         _clearImageCache(),
         _clearConfiguration(),
         ZagDivider(),
         _buildDemoButton(),
       ],
-    );
-  }
-
-  Widget _enterShareCode() {
-    return ZagBlock(
-      title: 'Enter Share Code',
-      body: [TextSpan(text: 'Redeem a Pro subscription share')],
-      trailing: ZagIconButton(
-        icon: Icons.redeem_rounded,
-        color: ZagColours.currentAccent,
-      ),
-      onTap: _showEnterShareCodeDialog,
     );
   }
 
@@ -85,88 +70,6 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       trailing: const ZagIconButton(icon: Icons.developer_mode_rounded),
       onTap: SettingsRoutes.SYSTEM_LOGS.go,
     );
-  }
-
-  void _showEnterShareCodeDialog() {
-    final TextEditingController codeController = TextEditingController();
-
-    ZagDialog.dialog(
-      context: context,
-      title: 'Enter Share Code',
-      customContent: ZagDialog.content(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Enter the share code you received:',
-                  style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: codeController,
-                  autocorrect: false,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    labelText: 'Share Code',
-                    hintText: 'ABC123XYZ',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ZagDialog.tile(
-            icon: Icons.check_rounded,
-            iconColor: ZagColours.currentAccent,
-            text: 'Redeem',
-            onTap: () {
-              Navigator.of(context).pop();
-              _redeemShareCode(codeController.text.trim().toUpperCase());
-            },
-          ),
-        ],
-      ),
-      contentPadding: ZagDialog.listDialogContentPadding(),
-    );
-  }
-
-  Future<void> _redeemShareCode(String code) async {
-    if (code.isEmpty) {
-      showZagInfoSnackBar(
-        title: 'Invalid Code',
-        message: 'Please enter a share code',
-      );
-      return;
-    }
-
-    showZagInfoSnackBar(
-      title: 'Redeeming',
-      message: 'Checking share code...',
-    );
-
-    final result = await ZagSupabaseShares().redeemShareCode(code);
-
-    if (result.success) {
-      showZagInfoSnackBar(
-        title: 'Success',
-        message: 'Pro access activated!',
-      );
-
-      // Refresh subscription status
-      SubscriptionService().refresh();
-
-      if (mounted) setState(() {});
-    } else {
-      showZagInfoSnackBar(
-        title: 'Failed',
-        message: result.error ?? 'Invalid or expired share code',
-      );
-    }
   }
 
   Widget _clearImageCache() {
