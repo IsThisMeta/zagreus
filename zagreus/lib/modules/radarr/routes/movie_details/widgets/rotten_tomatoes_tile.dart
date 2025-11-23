@@ -28,10 +28,15 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
   double? _tmdbRating;
   bool _loading = true;
   bool _hasError = false;
+  late final bool _isPremium;
 
   @override
   void initState() {
     super.initState();
+    // Check premium status once on init
+    _isPremium = ZagreusPro.isEnabled ||
+                 ZagreusMega.isEnabled ||
+                 ZagreusUltra.isEnabled;
     _fetchRatings();
   }
 
@@ -75,12 +80,8 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for Pro/Mega/Ultra users
-    final bool isPremium = ZagreusPro.isEnabled ||
-                          ZagreusMega.isEnabled ||
-                          ZagreusUltra.isEnabled;
-
-    if (!isPremium) {
+    // Only show for Pro/Mega/Ultra users (checked once in initState)
+    if (!_isPremium) {
       return const SizedBox.shrink();
     }
 
