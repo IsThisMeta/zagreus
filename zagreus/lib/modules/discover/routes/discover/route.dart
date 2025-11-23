@@ -2412,7 +2412,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               : 0.0;
           final matchScore = computeMatchScore(item);
           final yearScore = computeYearScore(extractYear(item));
-          final mediaScore = mediaPriority(item);
+          var mediaScore = mediaPriority(item);
+
+          // Boost person results when there's a strong name match
+          // This ensures exact person matches (e.g., "Marlon Brando") appear at the top
+          final mediaType = item['media_type'] as String?;
+          if (mediaType == 'person' && matchScore >= 0.88) {
+            mediaScore = 1.0;
+          }
 
           return (mediaScore * 40) +
               (matchScore * 50) +
