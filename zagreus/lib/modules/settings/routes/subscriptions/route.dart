@@ -49,11 +49,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       title: 'Subscriptions',
       scrollControllers: [scrollController],
       actions: [
-        // Only show redeem button for users with NO subscription
+        // Only show enter code button for users with NO subscription
         if (ZagSupabaseAuth().isSignedIn && !hasAnySub)
           IconButton(
             icon: Icon(
-              Icons.redeem_rounded,
+              Icons.tag_rounded, // Pound sign - retro code entry vibe
               color: ZagColours.currentAccent,
             ),
             onPressed: _showEnterShareCodeDialog,
