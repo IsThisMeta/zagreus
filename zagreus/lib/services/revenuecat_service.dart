@@ -6,6 +6,7 @@ import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/services/subscription_service.dart';
+import 'package:zagreus/supabase/subscription_shares.dart';
 
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
@@ -149,6 +150,12 @@ class RevenueCatService {
           productId: productId,
         );
 
+        // Sync to Supabase for share management (Ultra gets 5 shares)
+        ZagSupabaseShares().syncMasterSubscription(
+          productId: productId,
+          expiresAt: expiry,
+        );
+
         // Ultra subsume Mega/Pro benefits
         ZagreusMega.disable();
 
@@ -176,6 +183,12 @@ class RevenueCatService {
           ZagreusMega.applySubscription(
             expiresAt: expiry,
             productId: productId,
+          );
+
+          // Sync to Supabase for share management (Mega gets 1 share)
+          ZagSupabaseShares().syncMasterSubscription(
+            productId: productId,
+            expiresAt: expiry,
           );
 
           // Note: Backend syncs subscription during device registration

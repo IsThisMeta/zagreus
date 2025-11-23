@@ -12,6 +12,8 @@ import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
+import 'package:zagreus/modules/settings/routes/subscriptions/shares_route.dart';
+import 'package:zagreus/supabase/auth.dart';
 
 class SubscriptionsRoute extends StatefulWidget {
   const SubscriptionsRoute({
@@ -123,8 +125,44 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           ),
           onTap: () => _showUltraDialog(context),
         ),
+
+        // Subscription Sharing (for Mega/Ultra users or shared Pro users)
+        if (ZagSupabaseAuth().isSignedIn && (isMega || isUltra || _hasSharedPro()))
+          ZagBlock(
+            title: 'Subscription Sharing',
+            body: [
+              TextSpan(
+                text: isUltra
+                    ? 'Manage your 5 Pro shares'
+                    : isMega
+                        ? 'Manage your 1 Pro share'
+                        : 'View shared access',
+              ),
+            ],
+            trailing: ZagIconButton(
+              icon: Icons.supervisor_account_rounded,
+              color: isUltra
+                  ? ZagColours.purple
+                  : isMega
+                      ? ZagColours.orange
+                      : ZagColours.currentAccent,
+            ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SharesManagementRoute(),
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  bool _hasSharedPro() {
+    // Check if user has shared Pro access (no direct subscription but has Pro enabled)
+    return ZagreusPro.isEnabled &&
+        !ZagreusDatabase.ZAGREUS_PRO_ENABLED.read() &&
+        !ZagreusMega.isEnabled &&
+        !ZagreusUltra.isEnabled;
   }
 
   void _showProDialog(BuildContext context) {

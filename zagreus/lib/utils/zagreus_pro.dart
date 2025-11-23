@@ -3,10 +3,16 @@ import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/supabase/subscription_shares.dart';
 
 class ZagreusPro {
 
-  // RevenueCat is the ONLY source of truth
+  // Cached shared Pro access (checked at startup and when needed)
+  static bool _hasSharedAccess = false;
+  static DateTime? _sharedExpiresAt;
+
+  // RevenueCat is the ONLY source of truth for direct subscriptions
+  // But we also check for shared Pro access from Mega/Ultra users
   static bool get isEnabled {
     if (ZagreusUltra.isEnabled) {
       return true;
@@ -19,6 +25,16 @@ class ZagreusPro {
 
     // Check if Pro is enabled locally
     if (!ZagreusDatabase.ZAGREUS_PRO_ENABLED.read()) {
+      // No direct subscription - check for shared access
+      if (_hasSharedAccess && _sharedExpiresAt != null) {
+        if (DateTime.now().toUtc().isBefore(_sharedExpiresAt!)) {
+          return true;
+        } else {
+          print('⏰ Pro (shared): Access expired - disabling');
+          _hasSharedAccess = false;
+          _sharedExpiresAt = null;
+        }
+      }
       return false;
     }
 
@@ -161,5 +177,29 @@ class ZagreusPro {
     if (lower.contains('year')) return 'yearly';
     if (lower.contains('month')) return 'monthly';
     return lower;
+  }
+
+  /// Check Supabase for shared Pro access
+  /// Call this at app startup and when subscriptions might change
+  static Future<void> checkSharedAccess() async {
+    try {
+      final result = await ZagSupabaseShares().checkProAccess();
+
+      if (result.isShared && result.hasAccess) {
+        _hasSharedAccess = true;
+        _sharedExpiresAt = result.expiresAt;
+        print('✅ Pro (shared): Access granted until ${result.expiresAt}');
+
+        // Set Pro boot module for shared users too
+        setProBootModule();
+      } else {
+        _hasSharedAccess = false;
+        _sharedExpiresAt = null;
+      }
+    } catch (e) {
+      print('❌ Pro: Failed to check shared access: $e');
+      _hasSharedAccess = false;
+      _sharedExpiresAt = null;
+    }
   }
 }
