@@ -6,6 +6,9 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
   final RadarrMovie? movie;
@@ -72,6 +75,15 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Only show for Pro/Mega/Ultra users
+    final bool isPremium = ZagreusPro.isEnabled ||
+                          ZagreusMega.isEnabled ||
+                          ZagreusUltra.isEnabled;
+
+    if (!isPremium) {
+      return const SizedBox.shrink();
+    }
+
     // Don't show anything if still loading or has error
     if (_loading ||
         _hasError ||

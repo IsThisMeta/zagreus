@@ -6,6 +6,9 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class SonarrRatingsTile extends StatefulWidget {
   final SonarrSeries? series;
@@ -70,6 +73,15 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Only show for Pro/Mega/Ultra users
+    final bool isPremium = ZagreusPro.isEnabled ||
+                          ZagreusMega.isEnabled ||
+                          ZagreusUltra.isEnabled;
+
+    if (!isPremium) {
+      return const SizedBox.shrink();
+    }
+
     // Don't show anything if still loading or has error
     if (_loading ||
         _hasError ||
