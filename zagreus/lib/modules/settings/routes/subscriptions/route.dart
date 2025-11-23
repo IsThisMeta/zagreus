@@ -429,10 +429,10 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.orange,
-              text: 'Monthly • \$1.79/month',
+              text: 'Monthly • \$1.99/month',
               subtitle: RichText(
                 text: TextSpan(
-                  text: '7-day free trial',
+                  text: '2-week free trial',
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -446,6 +446,28 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               onTap: () {
                 Navigator.of(context).pop();
                 _purchaseMega(true);
+              },
+            ),
+            ZagDialog.tile(
+              icon: Icons.star_rounded,
+              iconColor: ZagColours.orange,
+              text: 'Yearly • \$14.99/year',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '1 month free trial',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseMega(false);
               },
             ),
             const SizedBox(height: 16),
@@ -594,7 +616,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     }
   }
 
-  void _purchaseUltra() async {
+  void _purchaseUltra(bool isMonthly) async {
     final iapService = RevenueCatService();
 
     if (!iapService.isAvailable) {
@@ -610,7 +632,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       message: 'Connecting to App Store...',
     );
 
-    final bool success = await iapService.purchaseUltra();
+    final bool success = await iapService.purchaseUltra(isMonthly);
 
     if (success) {
       setState(() {});
@@ -709,7 +731,29 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                _purchaseUltra();
+                _purchaseUltra(true);
+              },
+            ),
+            ZagDialog.tile(
+              icon: Icons.stars_rounded,
+              iconColor: ZagColours.purple,
+              text: 'Yearly • \$34.99/year',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'Best value • save over 25%',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseUltra(false);
               },
             ),
             const SizedBox(height: 16),

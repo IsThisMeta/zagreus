@@ -351,15 +351,41 @@ class RevenueCatService {
         return false;
       }
 
-      // Find monthly package (for now we only have monthly)
-      final monthlyPackage = packages.firstWhereOrNull(
-        (pkg) => pkg.identifier == '\$rc_monthly' || pkg.packageType == PackageType.monthly
-      ) ?? packages.first;
+      Package? selectedPackage;
+      if (isMonthly) {
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.identifier == '\$rc_monthly' ||
+              pkg.packageType == PackageType.monthly ||
+              pkg.identifier.toLowerCase().contains('month') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('month'),
+        );
+      } else {
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.identifier == '\$rc_annual' ||
+              pkg.packageType == PackageType.annual ||
+              pkg.identifier.toLowerCase().contains('year') ||
+              pkg.identifier.toLowerCase().contains('annual') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('year') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('annual'),
+        );
 
-      print('📦 Purchasing Mega package: ${monthlyPackage.identifier}');
+        // Fallback: if multiple packages exist, prefer the more expensive for yearly
+        if (selectedPackage == null && packages.length > 1) {
+          packages.sort(
+            (a, b) => b.storeProduct.price.compareTo(a.storeProduct.price),
+          );
+          selectedPackage = packages.first;
+        }
+      }
+
+      selectedPackage ??= packages.first;
+
+      print('📦 Purchasing Mega package: ${selectedPackage.identifier}');
 
       // Make purchase
-      final result = await Purchases.purchasePackage(monthlyPackage);
+      final result = await Purchases.purchasePackage(selectedPackage);
       _customerInfo = result.customerInfo;
       _updateProStatus();
 
@@ -382,7 +408,7 @@ class RevenueCatService {
     }
   }
 
-  Future<bool> purchaseUltra() async {
+  Future<bool> purchaseUltra(bool isMonthly) async {
     try {
       final offerings = await Purchases.getOfferings();
 
@@ -396,10 +422,17 @@ class RevenueCatService {
       }
 
       if (packages.isEmpty) {
-        // Fallback: scan all offerings for the Ultra product
+        // Fallback: scan all offerings for Ultra products
         for (final entry in offerings.all.entries) {
           final match = entry.value.availablePackages.firstWhereOrNull(
-            (pkg) => pkg.storeProduct.identifier == 'com.zagreus.ultra.monthly',
+            (pkg) {
+              final id = pkg.storeProduct.identifier.toLowerCase();
+              if (isMonthly) {
+                return id.contains('ultra') && id.contains('month');
+              }
+              return id.contains('ultra') &&
+                     (id.contains('year') || id.contains('annual'));
+            },
           );
           if (match != null) {
             packages = [match];
@@ -413,18 +446,42 @@ class RevenueCatService {
         return false;
       }
 
-      final desiredId = 'com.zagreus.ultra.monthly';
-      final monthlyPackage = packages.firstWhereOrNull(
-            (pkg) =>
-                pkg.storeProduct.identifier == desiredId ||
-                pkg.identifier == '\$rc_monthly' ||
-                pkg.packageType == PackageType.monthly,
-          ) ??
-          packages.first;
+      Package? selectedPackage;
+      if (isMonthly) {
+        const desiredId = 'com.zagreus.ultra.monthly';
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.storeProduct.identifier == desiredId ||
+              pkg.identifier == '\$rc_monthly' ||
+              pkg.packageType == PackageType.monthly ||
+              pkg.identifier.toLowerCase().contains('month'),
+        );
+      } else {
+        const desiredId = 'com.zagreus.ultra.yearly';
+        selectedPackage = packages.firstWhereOrNull(
+          (pkg) =>
+              pkg.storeProduct.identifier == desiredId ||
+              pkg.identifier == '\$rc_annual' ||
+              pkg.packageType == PackageType.annual ||
+              pkg.identifier.toLowerCase().contains('year') ||
+              pkg.identifier.toLowerCase().contains('annual') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('year') ||
+              pkg.storeProduct.identifier.toLowerCase().contains('annual'),
+        );
 
-      print('📦 Purchasing Ultra package: ${monthlyPackage.identifier}');
+        if (selectedPackage == null && packages.length > 1) {
+          packages.sort(
+            (a, b) => b.storeProduct.price.compareTo(a.storeProduct.price),
+          );
+          selectedPackage = packages.first;
+        }
+      }
 
-      final result = await Purchases.purchasePackage(monthlyPackage);
+      selectedPackage ??= packages.first;
+
+      print('📦 Purchasing Ultra package: ${selectedPackage.identifier}');
+
+      final result = await Purchases.purchasePackage(selectedPackage);
       _customerInfo = result.customerInfo;
       _updateProStatus();
 
