@@ -47,6 +47,10 @@ import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/services/up_next_service.dart';
+import 'package:zagreus/services/magic_movies_service.dart';
+import 'package:zagreus/services/magic_movies_cast_crew_service.dart';
+import 'package:zagreus/services/magic_shows_service.dart';
+import 'package:zagreus/services/magic_shows_cast_crew_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
@@ -114,6 +118,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   static const _scrollIdPopularPeople = 'popular_people_section';
   static const _scrollIdDeepCuts = 'deep_cuts_recommendations';
   static const _scrollIdUpNext = 'up_next_recommendations';
+  static const _scrollIdMagicMovies = 'magic_movies_recommendations';
+  static const _scrollIdMagicMoviesCastCrew = 'magic_movies_cast_crew_recommendations';
+  static const _scrollIdMagicShows = 'magic_shows_recommendations';
+  static const _scrollIdMagicShowsCastCrew = 'magic_shows_cast_crew_recommendations';
 
   static const _recentlyDownloadedListKey =
       PageStorageKey<String>('discover_recently_downloaded_movies');
@@ -236,6 +244,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<UpNextResult>? _upNextFuture;
   bool _upNextSyncInitialized = false;
 
+  // Magic Movies future
+  Future<MagicMoviesResult>? _magicMoviesFuture;
+  bool _magicMoviesSyncInitialized = false;
+
+  // Magic Movies Cast & Crew future
+  Future<MagicMoviesCastCrewResult>? _magicMoviesCastCrewFuture;
+  bool _magicMoviesCastCrewSyncInitialized = false;
+
+  // Magic Shows future
+  Future<MagicShowsResult>? _magicShowsFuture;
+  bool _magicShowsSyncInitialized = false;
+
+  // Magic Shows Cast & Crew future
+  Future<MagicShowsCastCrewResult>? _magicShowsCastCrewFuture;
+  bool _magicShowsCastCrewSyncInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -262,6 +286,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _startAutoScroll();
     _syncDeepCutsIfNeeded();
     _syncUpNextIfNeeded();
+    _syncMagicMoviesIfNeeded();
+    _syncMagicMoviesCastCrewIfNeeded();
+    _syncMagicShowsIfNeeded();
+    _syncMagicShowsCastCrewIfNeeded();
   }
 
   void _refreshQuickSetupModal() {
@@ -329,6 +357,78 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
     } catch (e, stack) {
       ZagLogger().error('Up Next sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncMagicMoviesIfNeeded() async {
+    if (_magicMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicMoviesSyncInitialized = true;
+
+    try {
+      final service = MagicMoviesService();
+      final fetchResult = await service.fetchRecommendations();
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic Movies need regeneration - triggering...');
+        service.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic Movies sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncMagicMoviesCastCrewIfNeeded() async {
+    if (_magicMoviesCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicMoviesCastCrewSyncInitialized = true;
+
+    try {
+      final service = MagicMoviesCastCrewService();
+      final fetchResult = await service.fetchRecommendations();
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic Movies Cast & Crew need regeneration - triggering...');
+        service.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic Movies Cast & Crew sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncMagicShowsIfNeeded() async {
+    if (_magicShowsSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicShowsSyncInitialized = true;
+
+    try {
+      final service = MagicShowsService();
+      final fetchResult = await service.fetchRecommendations();
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic Shows need regeneration - triggering...');
+        service.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic Shows sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncMagicShowsCastCrewIfNeeded() async {
+    if (_magicShowsCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicShowsCastCrewSyncInitialized = true;
+
+    try {
+      final service = MagicShowsCastCrewService();
+      final fetchResult = await service.fetchRecommendations();
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic Shows Cast & Crew need regeneration - triggering...');
+        service.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic Shows Cast & Crew sync check failed', e, stack);
     }
   }
 
@@ -1888,6 +1988,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
+      'magic_movies': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicMoviesSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
+      'magic_movies_cast_crew': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicMoviesCastCrewSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
     };
 
     // Build sections in saved order
@@ -1974,6 +2086,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'up_next': () => ZagreusMega.isEnabled
           ? Column(children: [
               _upNextSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
+      'magic_shows': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicShowsSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
+      'magic_shows_cast_crew': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicShowsCastCrewSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
@@ -7077,6 +7201,370 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Magic Movies Section
+  Widget _magicMoviesSection() {
+    final service = MagicMoviesService();
+    _magicMoviesFuture ??= service.fetchRecommendations();
+
+    return FutureBuilder<MagicMoviesResult>(
+      future: _magicMoviesFuture,
+      builder: (context, snapshot) {
+        final canRefresh = !snapshot.hasData ||
+            !snapshot.data!.success ||
+            (snapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
+
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_fix_high_rounded, color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Z', style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold, color: ZagColours.purple)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                  ),
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
+                      onPressed: () async {
+                        await service.generateRecommendations(force: true);
+                        if (mounted) setState(() => _magicMoviesFuture = service.fetchRecommendations());
+                      },
+                    ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                }
+                final recommendations = snapshot.data!.recommendations!;
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    controller: _sectionScrollController(_scrollIdMagicMovies),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) => _buildMagicMovieCard(recommendations[index]),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMagicMovieCard(MagicMovie movie) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Container(
+        width: 160,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 240,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: ZagColours.purple.withOpacity(0.2),
+                image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Magic Movies Cast & Crew Section
+  Widget _magicMoviesCastCrewSection() {
+    final service = MagicMoviesCastCrewService();
+    _magicMoviesCastCrewFuture ??= service.fetchRecommendations();
+
+    return FutureBuilder<MagicMoviesCastCrewResult>(
+      future: _magicMoviesCastCrewFuture,
+      builder: (context, snapshot) {
+        final canRefresh = !snapshot.hasData ||
+            !snapshot.data!.success ||
+            (snapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
+
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies: Cast & Crew';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.groups_rounded, color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Z', style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold, color: ZagColours.purple)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                  ),
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
+                      onPressed: () async {
+                        await service.generateRecommendations(force: true);
+                        if (mounted) setState(() => _magicMoviesCastCrewFuture = service.fetchRecommendations());
+                      },
+                    ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                }
+                final recommendations = snapshot.data!.recommendations!;
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    controller: _sectionScrollController(_scrollIdMagicMoviesCastCrew),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) => _buildMagicMovieCastCrewCard(recommendations[index]),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMagicMovieCastCrewCard(MagicMovieCastCrew movie) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Container(
+        width: 160,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 240,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: ZagColours.purple.withOpacity(0.2),
+                image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Magic Shows Section
+  Widget _magicShowsSection() {
+    final service = MagicShowsService();
+    _magicShowsFuture ??= service.fetchRecommendations();
+
+    return FutureBuilder<MagicShowsResult>(
+      future: _magicShowsFuture,
+      builder: (context, snapshot) {
+        final canRefresh = !snapshot.hasData ||
+            !snapshot.data!.success ||
+            (snapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
+
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_fix_high_rounded, color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Z', style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold, color: ZagColours.purple)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                  ),
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
+                      onPressed: () async {
+                        await service.generateRecommendations(force: true);
+                        if (mounted) setState(() => _magicShowsFuture = service.fetchRecommendations());
+                      },
+                    ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                }
+                final recommendations = snapshot.data!.recommendations!;
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    controller: _sectionScrollController(_scrollIdMagicShows),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) => _buildMagicShowCard(recommendations[index]),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMagicShowCard(MagicShow show) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Container(
+        width: 160,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 240,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: ZagColours.purple.withOpacity(0.2),
+                image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Magic Shows Cast & Crew Section
+  Widget _magicShowsCastCrewSection() {
+    final service = MagicShowsCastCrewService();
+    _magicShowsCastCrewFuture ??= service.fetchRecommendations();
+
+    return FutureBuilder<MagicShowsCastCrewResult>(
+      future: _magicShowsCastCrewFuture,
+      builder: (context, snapshot) {
+        final canRefresh = !snapshot.hasData ||
+            !snapshot.data!.success ||
+            (snapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
+
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows: Cast & Crew';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.groups_rounded, color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Z', style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold, color: ZagColours.purple)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                  ),
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
+                      onPressed: () async {
+                        await service.generateRecommendations(force: true);
+                        if (mounted) setState(() => _magicShowsCastCrewFuture = service.fetchRecommendations());
+                      },
+                    ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                }
+                final recommendations = snapshot.data!.recommendations!;
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    controller: _sectionScrollController(_scrollIdMagicShowsCastCrew),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) => _buildMagicShowCastCrewCard(recommendations[index]),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMagicShowCastCrewCard(MagicShowCastCrew show) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Container(
+        width: 160,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 240,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: ZagColours.purple.withOpacity(0.2),
+                image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+          ],
         ),
       ),
     );
