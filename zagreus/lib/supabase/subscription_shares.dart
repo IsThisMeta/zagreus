@@ -9,29 +9,25 @@ class SubscriptionShare {
   final String ownerUserId;
   final String ownerProductId;
   final DateTime ownerExpiresAt;
-  final String shareCode; // 8-character redemption code
-  final String? sharedWithUserId; // NULL until redeemed
-  final String? sharedWithEmail;
-  final String status; // 'active', 'revoked', 'redeemed'
+  final String sharedWithEmail; // Email address granted access
+  final String? sharedWithUserId; // NULL until user signs in
+  final String status; // 'active', 'revoked'
   final DateTime createdAt;
   final DateTime updatedAt;
-  final DateTime? redeemedAt;
 
   SubscriptionShare({
     required this.id,
     required this.ownerUserId,
     required this.ownerProductId,
     required this.ownerExpiresAt,
-    required this.shareCode,
+    required this.sharedWithEmail,
     this.sharedWithUserId,
-    this.sharedWithEmail,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
-    this.redeemedAt,
   });
 
-  bool get isRedeemed => sharedWithUserId != null;
+  bool get isActive => sharedWithUserId != null;
 
   factory SubscriptionShare.fromMap(Map<String, dynamic> map) {
     return SubscriptionShare(
@@ -39,15 +35,11 @@ class SubscriptionShare {
       ownerUserId: map['owner_user_id'] as String,
       ownerProductId: map['owner_product_id'] as String,
       ownerExpiresAt: DateTime.parse(map['owner_expires_at'] as String),
-      shareCode: map['share_code'] as String,
+      sharedWithEmail: map['shared_with_email'] as String,
       sharedWithUserId: map['shared_with_user_id'] as String?,
-      sharedWithEmail: map['shared_with_email'] as String?,
       status: map['status'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
-      redeemedAt: map['redeemed_at'] != null
-          ? DateTime.parse(map['redeemed_at'] as String)
-          : null,
     );
   }
 }
@@ -58,12 +50,14 @@ class ProAccessResult {
   final String? accessType; // 'direct', 'shared', or null
   final DateTime? expiresAt;
   final String? productId;
+  final String? shareId; // For linking email to user on first sign-in
 
   ProAccessResult({
     required this.hasAccess,
     this.accessType,
     this.expiresAt,
     this.productId,
+    this.shareId,
   });
 
   bool get isDirect => accessType == 'direct';
@@ -79,6 +73,7 @@ class ZagSupabaseShares {
   SupabaseClient get _client => ZagSupabaseDatabase.instance;
 
   /// Check if user has Pro access (direct subscription OR shared)
+  /// Auto-links email-based shares to user on first sign-in
   Future<ProAccessResult> checkProAccess() async {
     if (!ZagSupabaseAuth().isSignedIn) {
       return ProAccessResult(hasAccess: false);
@@ -86,8 +81,11 @@ class ZagSupabaseShares {
 
     try {
       final userId = ZagSupabaseAuth().uid;
+      final userEmail = ZagSupabaseAuth().email;
+
       final response = await _client.rpc('has_pro_access', params: {
         'p_user_id': userId,
+        'p_user_email': userEmail,
       }) as List;
 
       if (response.isEmpty) {
@@ -95,6 +93,13 @@ class ZagSupabaseShares {
       }
 
       final result = response.first;
+      final shareId = result['share_id'] as String?;
+
+      // If we got a share_id, link the email to this user
+      if (shareId != null && userEmail != null) {
+        await linkEmailShareToUser(shareId, userEmail);
+      }
+
       return ProAccessResult(
         hasAccess: result['has_access'] as bool? ?? false,
         accessType: result['access_type'] as String?,
@@ -102,6 +107,7 @@ class ZagSupabaseShares {
             ? DateTime.parse(result['expires_at'] as String)
             : null,
         productId: result['product_id'] as String?,
+        shareId: shareId,
       );
     } catch (error, stack) {
       ZagLogger().error('Failed to check Pro access', error, stack);
@@ -149,17 +155,20 @@ class ZagSupabaseShares {
     }
   }
 
-  /// Get shares granted to the current user
+  /// Get shares granted to the current user (by user_id or email)
   Future<List<SubscriptionShare>> getReceivedShares() async {
     if (!ZagSupabaseAuth().isSignedIn) return [];
 
     try {
       final userId = ZagSupabaseAuth().uid;
+      final userEmail = ZagSupabaseAuth().email;
+
+      // Query by user_id OR email
       final response = await _client
           .from('subscription_shares')
           .select()
-          .eq('shared_with_user_id', userId!)
           .eq('status', 'active')
+          .or('shared_with_user_id.eq.$userId,shared_with_email.eq.${userEmail?.toLowerCase()}')
           .order('created_at', ascending: false);
 
       return (response as List)
@@ -171,21 +180,23 @@ class ZagSupabaseShares {
     }
   }
 
-  /// Create a share code
-  Future<({bool success, String? error, String? shareId, String? shareCode})> createShareCode({
+  /// Grant share to an email address
+  Future<({bool success, String? error, String? shareId})> grantShareByEmail({
+    required String email,
     required String productId,
     required DateTime expiresAt,
   }) async {
     if (!ZagSupabaseAuth().isSignedIn) {
-      return (success: false, error: 'Not signed in', shareId: null, shareCode: null);
+      return (success: false, error: 'Not signed in', shareId: null);
     }
 
     try {
       final userId = ZagSupabaseAuth().uid;
-      final response = await _client.rpc('create_share_code', params: {
+      final response = await _client.rpc('grant_share_by_email', params: {
         'p_owner_user_id': userId,
         'p_owner_product_id': productId,
         'p_owner_expires_at': expiresAt.toUtc().toIso8601String(),
+        'p_recipient_email': email.toLowerCase().trim(),
       });
 
       final result = response as Map<String, dynamic>;
@@ -193,35 +204,29 @@ class ZagSupabaseShares {
         success: result['success'] as bool? ?? false,
         error: result['error'] as String?,
         shareId: result['share_id'] as String?,
-        shareCode: result['share_code'] as String?,
       );
     } catch (error, stack) {
-      ZagLogger().error('Failed to create share code', error, stack);
-      return (success: false, error: error.toString(), shareId: null, shareCode: null);
+      ZagLogger().error('Failed to grant share by email', error, stack);
+      return (success: false, error: error.toString(), shareId: null);
     }
   }
 
-  /// Redeem a share code
-  Future<({bool success, String? error})> redeemShareCode(String code) async {
-    if (!ZagSupabaseAuth().isSignedIn) {
-      return (success: false, error: 'Not signed in');
-    }
+  /// Link email-based share to user (called automatically on sign-in)
+  Future<bool> linkEmailShareToUser(String shareId, String email) async {
+    if (!ZagSupabaseAuth().isSignedIn) return false;
 
     try {
       final userId = ZagSupabaseAuth().uid;
-      final response = await _client.rpc('redeem_share_code', params: {
+      final response = await _client.rpc('link_email_share_to_user', params: {
         'p_user_id': userId,
-        'p_share_code': code,
+        'p_user_email': email.toLowerCase().trim(),
+        'p_share_id': shareId,
       });
 
-      final result = response as Map<String, dynamic>;
-      return (
-        success: result['success'] as bool? ?? false,
-        error: result['error'] as String?,
-      );
+      return response as bool? ?? false;
     } catch (error, stack) {
-      ZagLogger().error('Failed to redeem share code', error, stack);
-      return (success: false, error: error.toString());
+      ZagLogger().error('Failed to link email share to user', error, stack);
+      return false;
     }
   }
 
