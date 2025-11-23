@@ -33,6 +33,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'popular_tv_shows',
     'trending_new_tv_shows',
     'most_anticipated',
+    'up_next',
   ];
 
   static const double _posterHeightMin = 150.0;
@@ -57,6 +58,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'popular_tv_shows': 'Popular TV Shows',
     'trending_new_tv_shows': 'Trending New',
     'most_anticipated': 'Most Anticipated',
+    'up_next': 'Up Next',
   };
 
   late List<String> _movieSections;
@@ -840,6 +842,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.favorite_rounded;
       case 'most_anticipated_movies':
         return Icons.favorite_rounded;
+      case 'up_next':
+        return Icons.auto_awesome_rounded;
       default:
         return Icons.view_list_rounded;
     }

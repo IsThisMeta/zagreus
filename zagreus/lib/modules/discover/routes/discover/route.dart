@@ -46,6 +46,7 @@ import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
+import 'package:zagreus/services/up_next_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
@@ -112,6 +113,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'most_anticipated_movies_section';
   static const _scrollIdPopularPeople = 'popular_people_section';
   static const _scrollIdDeepCuts = 'deep_cuts_recommendations';
+  static const _scrollIdUpNext = 'up_next_recommendations';
 
   static const _recentlyDownloadedListKey =
       PageStorageKey<String>('discover_recently_downloaded_movies');
@@ -137,6 +139,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       PageStorageKey<String>('discover_popular_people');
   static const _deepCutsListKey =
       PageStorageKey<String>('discover_deep_cuts');
+  static const _upNextListKey =
+      PageStorageKey<String>('discover_up_next');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<ZChatPageState> _agentChatKey = GlobalKey<ZChatPageState>();
   late ZagPageController _pageController;
@@ -228,6 +232,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<DeepCutsResult>? _deepCutsFuture;
   bool _deepCutsSyncInitialized = false;
 
+  // Up Next future (cached to avoid refetching on rebuild)
+  Future<UpNextResult>? _upNextFuture;
+  bool _upNextSyncInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -253,6 +261,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadMockTrendingData();
     _startAutoScroll();
     _syncDeepCutsIfNeeded();
+    _syncUpNextIfNeeded();
   }
 
   void _refreshQuickSetupModal() {
@@ -295,6 +304,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncUpNextIfNeeded() async {
+    // Guard to ensure this only runs once
+    if (_upNextSyncInitialized || !ZagreusMega.isEnabled) return;
+    _upNextSyncInitialized = true;
+
+    try {
+      final upNextService = UpNextService();
+      // Fetch current state once
+      final fetchResult = await upNextService.fetchRecommendations();
+
+      // Check if regeneration is needed based on fetched data
+      final needsRegen = upNextService.needsRegeneration(
+        existingResult: fetchResult,
+      );
+
+      if (needsRegen) {
+        ZagLogger().debug('Up Next need regeneration - triggering...');
+        // Fire and forget - don't await
+        upNextService.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Up Next sync check failed', e, stack);
     }
   }
 
@@ -1900,6 +1934,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'popular_tv_shows',
       'trending_new_tv_shows',
       'most_anticipated',
+      'up_next',
     ];
 
     // Get saved order or use default
@@ -1922,6 +1957,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             if (_showTitles) const SizedBox(height: 12)
           ]),
       'most_anticipated': () => _mostAnticipatedShowsSection(),
+      'up_next': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _upNextSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
     };
 
     // Build sections in saved order
@@ -6686,6 +6727,319 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               // Reason
               Text(
                 movie.reason,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(0.7),
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _upNextSection() {
+    final upNextService = UpNextService();
+
+    // Initialize future once if not already set
+    _upNextFuture ??= upNextService.fetchRecommendations();
+
+    return FutureBuilder<UpNextResult>(
+      future: _upNextFuture,
+      builder: (context, futureSnapshot) {
+        // Only show refresh button if:
+        // 1. We have no data yet (empty state) OR
+        // 2. We have data but it's time for regeneration (nextGenerationAt has passed)
+        // Do NOT show if we have a successful list that's still fresh
+        final canRefresh = !futureSnapshot.hasData ||
+            !futureSnapshot.data!.success ||
+            (futureSnapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section title with sync button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: ZagColours.purple,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Z',
+                    style: TextStyle(
+                      fontSize: _moduleSectionTitleFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: ZagColours.purple,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Up Next',
+                      style: TextStyle(
+                        fontSize: _moduleSectionTitleFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  // Refresh button (hidden if cooldown active)
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: ZagColours.purple,
+                        size: 20,
+                      ),
+                      onPressed: () async {
+                        await upNextService.generateRecommendations(
+                            force: true);
+                        if (mounted) {
+                          setState(() {
+                            _upNextFuture =
+                                upNextService.fetchRecommendations();
+                          });
+                        }
+                      },
+                    ),
+                ],
+              ),
+            ),
+            // Content
+            Builder(
+              builder: (context) {
+                if (futureSnapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    height: 280,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                if (!futureSnapshot.hasData ||
+                    !futureSnapshot.data!.success ||
+                    futureSnapshot.data!.recommendations == null ||
+                    futureSnapshot.data!.recommendations!.isEmpty) {
+                  return _upNextEmptyState(futureSnapshot.data);
+                }
+
+                final recommendations = futureSnapshot.data!.recommendations!;
+
+                return Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    key: _upNextListKey,
+                    controller:
+                        _sectionScrollController(_scrollIdUpNext),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) {
+                      return _upNextShowCard(recommendations[index]);
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _upNextEmptyState(UpNextResult? result) {
+    // Determine message based on error type
+    String title = 'No recommendations yet';
+    String message = 'Tap refresh to generate AI-powered show recommendations';
+    IconData icon = Icons.live_tv_rounded;
+
+    if (result != null && !result.success && result.error != null) {
+      switch (result.error!) {
+        case UpNextError.notSynced:
+          title = 'Library not synced';
+          message = result.errorMessage ?? 'Please sync your library first';
+          icon = Icons.sync_problem_rounded;
+          break;
+        case UpNextError.noMegaOrUltra:
+          title = 'Mega subscription required';
+          message = result.errorMessage ?? 'Up Next requires Mega or Ultra';
+          icon = Icons.lock_rounded;
+          break;
+        case UpNextError.alreadyGenerating:
+          title = 'Generation in progress';
+          message = result.errorMessage ??
+              'Please wait while recommendations are being generated';
+          icon = Icons.hourglass_empty_rounded;
+          break;
+        case UpNextError.fetchFailed:
+        case UpNextError.unknown:
+          title = 'Something went wrong';
+          message = result.errorMessage ?? 'Please try again later';
+          icon = Icons.error_outline_rounded;
+          break;
+      }
+    }
+
+    return Container(
+      height: 280,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: TextStyle(
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.7),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                      .withOpacity(0.5),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _upNextShowCard(UpNextShow show) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: GestureDetector(
+        onTap: () async {
+          // Use tmdbId from backend if available
+          if (show.tmdbId != null) {
+            await _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title);
+          } else {
+            // Fallback: search for the show if no tmdbId
+            final tmdbApi = TMDBApi();
+            final searchResults =
+                await tmdbApi.searchMulti('${show.title} ${show.year}');
+
+            // Filter for TV shows only
+            final tvResults =
+                searchResults.where((r) => r['media_type'] == 'tv').toList();
+
+            if (tvResults.isNotEmpty) {
+              final tmdbId = tvResults.first['id'] as int;
+              await _openTVShowInSonarr(tmdbId: tmdbId, title: show.title);
+            }
+          }
+        },
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Show poster
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  border: show.posterUrl == null
+                      ? Border.all(
+                          color: ZagColours.purple.withOpacity(0.3),
+                          width: 2,
+                        )
+                      : null,
+                  image: show.posterUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(show.posterUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: show.posterUrl == null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.live_tv_rounded,
+                              size: 48,
+                              color: ZagColours.purple.withOpacity(0.5),
+                            ),
+                            const SizedBox(height: 12),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                show.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${show.year}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 8),
+              // Reason
+              Text(
+                show.reason,
                 style: TextStyle(
                   fontSize: 12,
                   color: (Theme.of(context).brightness == Brightness.dark
