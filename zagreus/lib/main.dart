@@ -26,6 +26,7 @@ import 'package:zagreus/modules/services/webhook_sync_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
 import 'package:zagreus/services/command_processor_service.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
+import 'package:zagreus/services/subscription_service.dart';
 
 /// Zagreus Entry Point: Bootstrap & Run Application
 ///
@@ -50,6 +51,7 @@ Future<void> main() async {
 ///
 Future<void> bootstrap() async {
   await ZagDatabase().initialize();
+  SubscriptionService().initialize();
   ZagLogger().initialize();
   ZagTheme().initialize();
   if (ZagWindowManager.isSupported) await ZagWindowManager().initialize();

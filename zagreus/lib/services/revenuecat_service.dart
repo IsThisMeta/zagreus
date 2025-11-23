@@ -5,6 +5,7 @@ import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
+import 'package:zagreus/services/subscription_service.dart';
 
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
@@ -192,6 +193,9 @@ class RevenueCatService {
     if (!ZagreusPro.isEnabled) {
       await ZagLocalConnectionService().disableAdvancedSwitching();
     }
+
+    // Refresh subscription cache for instant UI updates
+    SubscriptionService().refresh();
 
     _isUpdating = false; // Reset the flag
   }

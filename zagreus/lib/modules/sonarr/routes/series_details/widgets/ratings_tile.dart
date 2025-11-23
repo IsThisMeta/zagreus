@@ -6,6 +6,7 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
+import 'package:zagreus/services/subscription_service.dart';
 
 class SonarrRatingsTile extends StatefulWidget {
   final SonarrSeries? series;
@@ -24,11 +25,20 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
   double? _tmdbRating;
   bool _loading = true;
   bool _hasError = false;
+  late final bool _isPremium;
 
   @override
   void initState() {
     super.initState();
-    _fetchRatings();
+    // Get cached premium status (no DB reads!)
+    _isPremium = SubscriptionService.isPremium;
+
+    // Only fetch ratings if user is premium
+    if (_isPremium) {
+      _fetchRatings();
+    } else {
+      _loading = false;
+    }
   }
 
   Future<void> _fetchRatings() async {
@@ -70,6 +80,11 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Only show for Pro/Mega/Ultra users (checked once in initState)
+    if (!_isPremium) {
+      return const SizedBox.shrink();
+    }
+
     // Don't show anything if still loading or has error
     if (_loading ||
         _hasError ||
