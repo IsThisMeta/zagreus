@@ -48,27 +48,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       title: 'Subscriptions',
       scrollControllers: [scrollController],
       actions: [
-        if (ZagSupabaseAuth().isSignedIn)
+        // Only show redeem button for non-Mega/Ultra users
+        if (ZagSupabaseAuth().isSignedIn && !canShare)
           IconButton(
             icon: Icon(
-              canShare ? Icons.supervisor_account_rounded : Icons.redeem_rounded,
-              color: canShare
-                  ? (isUltra ? ZagColours.purple : ZagColours.orange)
-                  : ZagColours.currentAccent,
+              Icons.redeem_rounded,
+              color: ZagColours.currentAccent,
             ),
-            onPressed: () {
-              if (canShare) {
-                // Navigate to shares management for Mega/Ultra users
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const SharesManagementRoute(),
-                  ),
-                );
-              } else {
-                // Show redemption dialog for non-subscribers
-                _showEnterShareCodeDialog();
-              }
-            },
+            onPressed: _showEnterShareCodeDialog,
           ),
       ],
     );
@@ -156,8 +143,43 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           onTap: () => _showUltraDialog(context),
         ),
 
+        // Subscription Sharing (for Mega/Ultra users or shared Pro users)
+        if (ZagSupabaseAuth().isSignedIn && (isMega || isUltra || _hasSharedPro()))
+          ZagBlock(
+            title: 'Subscription Sharing',
+            body: [
+              TextSpan(
+                text: isUltra
+                    ? 'Manage your 5 Pro shares'
+                    : isMega
+                        ? 'Manage your 1 Pro share'
+                        : 'View shared access',
+              ),
+            ],
+            trailing: ZagIconButton(
+              icon: Icons.supervisor_account_rounded,
+              color: isUltra
+                  ? ZagColours.purple
+                  : isMega
+                      ? ZagColours.orange
+                      : ZagColours.currentAccent,
+            ),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SharesManagementRoute(),
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  bool _hasSharedPro() {
+    // Check if user has shared Pro access (no direct subscription but has Pro enabled)
+    return ZagreusPro.isEnabled &&
+        !ZagreusDatabase.ZAGREUS_PRO_ENABLED.read() &&
+        !ZagreusMega.isEnabled &&
+        !ZagreusUltra.isEnabled;
   }
 
   void _showProDialog(BuildContext context) {
