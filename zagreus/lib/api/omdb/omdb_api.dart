@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:zagreus/modules/discover/core/api_keys.dart';
 
 /// Model for movie ratings from OMDb API
 class MovieRatings {
@@ -65,7 +66,7 @@ class OMDbApi {
 
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/?i=$imdbId'),
+        Uri.parse('$_baseUrl/?i=$imdbId&apikey=${ApiKeys.omdbApiKey}'),
       );
 
       if (response.statusCode == 200) {
