@@ -56,7 +56,6 @@ class MovieRatings {
 /// OMDb API client for fetching Rotten Tomatoes ratings
 class OMDbApi {
   static const String _baseUrl = 'http://www.omdbapi.com';
-  static const String _apiKey = '84a211de';
 
   /// Fetch movie ratings (IMDb, Rotten Tomatoes, Metacritic) by IMDb ID
   static Future<MovieRatings?> getMovieRatings(String? imdbId) async {
@@ -66,7 +65,7 @@ class OMDbApi {
 
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/?i=$imdbId&apikey=$_apiKey'),
+        Uri.parse('$_baseUrl/?i=$imdbId'),
       );
 
       if (response.statusCode == 200) {
