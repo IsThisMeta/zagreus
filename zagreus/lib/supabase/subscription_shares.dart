@@ -9,23 +9,29 @@ class SubscriptionShare {
   final String ownerUserId;
   final String ownerProductId;
   final DateTime ownerExpiresAt;
-  final String sharedWithUserId;
+  final String shareCode; // 8-character redemption code
+  final String? sharedWithUserId; // NULL until redeemed
   final String? sharedWithEmail;
-  final String status; // 'active' or 'revoked'
+  final String status; // 'active', 'revoked', 'redeemed'
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? redeemedAt;
 
   SubscriptionShare({
     required this.id,
     required this.ownerUserId,
     required this.ownerProductId,
     required this.ownerExpiresAt,
-    required this.sharedWithUserId,
+    required this.shareCode,
+    this.sharedWithUserId,
     this.sharedWithEmail,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    this.redeemedAt,
   });
+
+  bool get isRedeemed => sharedWithUserId != null;
 
   factory SubscriptionShare.fromMap(Map<String, dynamic> map) {
     return SubscriptionShare(
@@ -33,11 +39,15 @@ class SubscriptionShare {
       ownerUserId: map['owner_user_id'] as String,
       ownerProductId: map['owner_product_id'] as String,
       ownerExpiresAt: DateTime.parse(map['owner_expires_at'] as String),
-      sharedWithUserId: map['shared_with_user_id'] as String,
+      shareCode: map['share_code'] as String,
+      sharedWithUserId: map['shared_with_user_id'] as String?,
       sharedWithEmail: map['shared_with_email'] as String?,
       status: map['status'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
+      redeemedAt: map['redeemed_at'] != null
+          ? DateTime.parse(map['redeemed_at'] as String)
+          : null,
     );
   }
 }
@@ -161,21 +171,19 @@ class ZagSupabaseShares {
     }
   }
 
-  /// Grant a share to another user by email
-  Future<({bool success, String? error, String? shareId})> grantShare({
-    required String recipientEmail,
+  /// Create a share code
+  Future<({bool success, String? error, String? shareId, String? shareCode})> createShareCode({
     required String productId,
     required DateTime expiresAt,
   }) async {
     if (!ZagSupabaseAuth().isSignedIn) {
-      return (success: false, error: 'Not signed in', shareId: null);
+      return (success: false, error: 'Not signed in', shareId: null, shareCode: null);
     }
 
     try {
       final userId = ZagSupabaseAuth().uid;
-      final response = await _client.rpc('grant_share', params: {
+      final response = await _client.rpc('create_share_code', params: {
         'p_owner_user_id': userId,
-        'p_shared_with_email': recipientEmail,
         'p_owner_product_id': productId,
         'p_owner_expires_at': expiresAt.toUtc().toIso8601String(),
       });
@@ -185,10 +193,35 @@ class ZagSupabaseShares {
         success: result['success'] as bool? ?? false,
         error: result['error'] as String?,
         shareId: result['share_id'] as String?,
+        shareCode: result['share_code'] as String?,
       );
     } catch (error, stack) {
-      ZagLogger().error('Failed to grant share', error, stack);
-      return (success: false, error: error.toString(), shareId: null);
+      ZagLogger().error('Failed to create share code', error, stack);
+      return (success: false, error: error.toString(), shareId: null, shareCode: null);
+    }
+  }
+
+  /// Redeem a share code
+  Future<({bool success, String? error})> redeemShareCode(String code) async {
+    if (!ZagSupabaseAuth().isSignedIn) {
+      return (success: false, error: 'Not signed in');
+    }
+
+    try {
+      final userId = ZagSupabaseAuth().uid;
+      final response = await _client.rpc('redeem_share_code', params: {
+        'p_user_id': userId,
+        'p_share_code': code,
+      });
+
+      final result = response as Map<String, dynamic>;
+      return (
+        success: result['success'] as bool? ?? false,
+        error: result['error'] as String?,
+      );
+    } catch (error, stack) {
+      ZagLogger().error('Failed to redeem share code', error, stack);
+      return (success: false, error: error.toString());
     }
   }
 

@@ -135,17 +135,23 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
           // List of granted shares
           if (_grantedShares.isNotEmpty)
             ..._grantedShares.map((share) => ZagBlock(
-              title: share.sharedWithEmail ?? 'Shared User',
+              title: share.isRedeemed
+                  ? (share.sharedWithEmail ?? 'Redeemed')
+                  : 'Code: ${share.shareCode}',
               body: [
                 TextSpan(
-                  text: 'Active • Expires ${_formatDate(share.ownerExpiresAt)}',
+                  text: share.isRedeemed
+                      ? 'Redeemed • Expires ${_formatDate(share.ownerExpiresAt)}'
+                      : 'Not redeemed yet • Tap to view code',
                 ),
               ],
               trailing: ZagIconButton(
                 icon: Icons.close_rounded,
                 color: ZagColours.red,
               ),
-              onTap: () => _confirmRevokeShare(share),
+              onTap: () => share.isRedeemed
+                  ? _confirmRevokeShare(share)
+                  : _showShareCode(share),
             )),
         ],
 
@@ -188,46 +194,58 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   }
 
   void _showGrantShareDialog() {
-    final TextEditingController emailController = TextEditingController();
+    _createShareCode();
+  }
 
+  void _showShareCode(SubscriptionShare share) {
     ZagDialog.dialog(
       context: context,
-      title: 'Grant Pro Share',
+      title: 'Share Code',
       customContent: ZagDialog.content(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Enter the email of the person you want to share Pro access with:',
+                  'Share this code with your friend or family member:',
                   style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: 'Email address',
-                    hintText: 'friend@example.com',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: ZagColours.currentAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ZagColours.currentAccent.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    share.shareCode,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                      color: ZagColours.currentAccent,
+                      fontFamily: 'monospace',
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                Text(
+                  'They can redeem it in Settings > System > Enter Share Code',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
-          ),
-          ZagDialog.tile(
-            icon: Icons.send_rounded,
-            iconColor: ZagColours.currentAccent,
-            text: 'Send Invite',
-            onTap: () {
-              Navigator.of(context).pop();
-              _grantShare(emailController.text.trim());
-            },
           ),
         ],
       ),
@@ -235,15 +253,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     );
   }
 
-  Future<void> _grantShare(String email) async {
-    if (email.isEmpty || !email.contains('@')) {
-      showZagInfoSnackBar(
-        title: 'Invalid Email',
-        message: 'Please enter a valid email address',
-      );
-      return;
-    }
-
+  Future<void> _createShareCode() async {
     if (_currentProductId == null) {
       showZagInfoSnackBar(
         title: 'Error',
@@ -253,8 +263,8 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     }
 
     showZagInfoSnackBar(
-      title: 'Sending Invite',
-      message: 'Granting Pro access...',
+      title: 'Creating Share Code',
+      message: 'Generating code...',
     );
 
     // Get expiry from local tier
@@ -279,22 +289,24 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
       return;
     }
 
-    final result = await ZagSupabaseShares().grantShare(
-      recipientEmail: email,
+    final result = await ZagSupabaseShares().createShareCode(
       productId: _currentProductId!,
       expiresAt: expiresAt,
     );
 
-    if (result.success) {
-      showZagInfoSnackBar(
-        title: 'Share Granted',
-        message: 'Pro access shared with $email',
+    if (result.success && result.shareCode != null) {
+      await _loadShares(); // Reload shares
+
+      // Show the new share code
+      final newShare = _grantedShares.firstWhere(
+        (s) => s.shareCode == result.shareCode,
+        orElse: () => _grantedShares.first,
       );
-      _loadShares(); // Reload shares
+      _showShareCode(newShare);
     } else {
       showZagInfoSnackBar(
         title: 'Failed',
-        message: result.error ?? 'Could not grant share',
+        message: result.error ?? 'Could not create share code',
       );
     }
   }

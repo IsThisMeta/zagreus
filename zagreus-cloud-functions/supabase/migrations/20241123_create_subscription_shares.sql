@@ -9,17 +9,21 @@ CREATE TABLE IF NOT EXISTS public.subscription_shares (
   owner_product_id TEXT NOT NULL, -- mega.monthly, ultra.yearly, etc
   owner_expires_at TIMESTAMPTZ NOT NULL, -- Synced from RevenueCat by master device
 
-  -- Shared with
-  shared_with_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  -- Share code for redemption
+  share_code TEXT UNIQUE NOT NULL, -- 8-character code like ABC123XY
+
+  -- Shared with (NULL until redeemed)
+  shared_with_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   shared_with_email TEXT, -- For display purposes
 
   -- Status
-  status TEXT NOT NULL DEFAULT 'active', -- active, revoked
+  status TEXT NOT NULL DEFAULT 'active', -- active, revoked, redeemed
 
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
+  redeemed_at TIMESTAMPTZ, -- When the code was redeemed
 
-  -- Prevent duplicate shares
+  -- Prevent duplicate shares per owner+recipient (only after redemption)
   UNIQUE(owner_user_id, shared_with_user_id)
 );
 
@@ -27,6 +31,7 @@ CREATE TABLE IF NOT EXISTS public.subscription_shares (
 CREATE INDEX IF NOT EXISTS idx_shares_owner ON public.subscription_shares(owner_user_id);
 CREATE INDEX IF NOT EXISTS idx_shares_recipient ON public.subscription_shares(shared_with_user_id);
 CREATE INDEX IF NOT EXISTS idx_shares_status ON public.subscription_shares(status);
+CREATE INDEX IF NOT EXISTS idx_shares_code ON public.subscription_shares(share_code);
 
 -- RLS
 ALTER TABLE public.subscription_shares ENABLE ROW LEVEL SECURITY;
@@ -135,17 +140,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to grant a share (with quota validation)
-CREATE OR REPLACE FUNCTION grant_share(
+-- Function to generate random share code
+CREATE OR REPLACE FUNCTION generate_share_code()
+RETURNS TEXT AS $$
+DECLARE
+  v_code TEXT;
+  v_exists BOOLEAN;
+BEGIN
+  LOOP
+    -- Generate 8-character alphanumeric code
+    v_code := UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 8));
+
+    -- Check if code already exists
+    SELECT EXISTS(
+      SELECT 1 FROM public.subscription_shares WHERE share_code = v_code
+    ) INTO v_exists;
+
+    EXIT WHEN NOT v_exists;
+  END LOOP;
+
+  RETURN v_code;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to create a share code (with quota validation)
+CREATE OR REPLACE FUNCTION create_share_code(
   p_owner_user_id UUID,
-  p_shared_with_email TEXT,
   p_owner_product_id TEXT,
   p_owner_expires_at TIMESTAMPTZ
 )
 RETURNS JSON AS $$
 DECLARE
   v_remaining INTEGER;
-  v_recipient_user_id UUID;
+  v_share_code TEXT;
   v_share_id UUID;
 BEGIN
   -- Check quota
@@ -154,45 +181,83 @@ BEGIN
     RETURN json_build_object('success', false, 'error', 'No shares remaining');
   END IF;
 
-  -- Find recipient user
-  SELECT id INTO v_recipient_user_id
-  FROM auth.users
-  WHERE email = p_shared_with_email;
+  -- Generate unique share code
+  v_share_code := generate_share_code();
 
-  IF v_recipient_user_id IS NULL THEN
-    RETURN json_build_object('success', false, 'error', 'User not found');
-  END IF;
-
-  -- Can't share with yourself
-  IF v_recipient_user_id = p_owner_user_id THEN
-    RETURN json_build_object('success', false, 'error', 'Cannot share with yourself');
-  END IF;
-
-  -- Insert or update share
+  -- Insert share with code (no recipient yet)
   INSERT INTO public.subscription_shares (
     owner_user_id,
     owner_product_id,
     owner_expires_at,
-    shared_with_user_id,
-    shared_with_email,
+    share_code,
     status
   ) VALUES (
     p_owner_user_id,
     p_owner_product_id,
     p_owner_expires_at,
-    v_recipient_user_id,
-    p_shared_with_email,
+    v_share_code,
     'active'
   )
-  ON CONFLICT (owner_user_id, shared_with_user_id)
-  DO UPDATE SET
-    status = 'active',
-    owner_product_id = EXCLUDED.owner_product_id,
-    owner_expires_at = EXCLUDED.owner_expires_at,
-    updated_at = NOW()
   RETURNING id INTO v_share_id;
 
-  RETURN json_build_object('success', true, 'share_id', v_share_id);
+  RETURN json_build_object(
+    'success', true,
+    'share_id', v_share_id,
+    'share_code', v_share_code
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to redeem a share code
+CREATE OR REPLACE FUNCTION redeem_share_code(
+  p_user_id UUID,
+  p_share_code TEXT
+)
+RETURNS JSON AS $$
+DECLARE
+  v_share RECORD;
+  v_user_email TEXT;
+BEGIN
+  -- Get user email
+  SELECT email INTO v_user_email
+  FROM auth.users
+  WHERE id = p_user_id;
+
+  -- Find the share
+  SELECT * INTO v_share
+  FROM public.subscription_shares
+  WHERE share_code = p_share_code
+    AND status = 'active'
+    AND owner_expires_at > NOW();
+
+  IF v_share IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Invalid or expired share code');
+  END IF;
+
+  -- Can't redeem your own share
+  IF v_share.owner_user_id = p_user_id THEN
+    RETURN json_build_object('success', false, 'error', 'Cannot redeem your own share');
+  END IF;
+
+  -- Check if already redeemed by someone else
+  IF v_share.shared_with_user_id IS NOT NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Share code already used');
+  END IF;
+
+  -- Redeem the share
+  UPDATE public.subscription_shares
+  SET
+    shared_with_user_id = p_user_id,
+    shared_with_email = v_user_email,
+    redeemed_at = NOW(),
+    updated_at = NOW()
+  WHERE share_code = p_share_code;
+
+  RETURN json_build_object(
+    'success', true,
+    'expires_at', v_share.owner_expires_at,
+    'product_id', v_share.owner_product_id
+  );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
