@@ -27,6 +27,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
   bool _loading = true;
   bool _hasError = false;
   late final bool _isPremium;
+  int? _tmdbId;
 
   @override
   void initState() {
@@ -59,8 +60,10 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
 
       // Fetch TMDb rating
       double? tmdbRating;
+      int? tmdbId;
       if (widget.movie?.tmdbId != null) {
-        final tmdbData = await TMDBApi.getMovieDetails(widget.movie!.tmdbId!);
+        tmdbId = widget.movie!.tmdbId;
+        final tmdbData = await TMDBApi.getMovieDetails(tmdbId!);
         if (tmdbData != null && tmdbData['vote_average'] != null) {
           tmdbRating = (tmdbData['vote_average'] as num).toDouble();
         }
@@ -69,6 +72,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
       setState(() {
         _ratings = ratings;
         _tmdbRating = tmdbRating;
+        _tmdbId = tmdbId;
         _loading = false;
         _hasError = ratings == null && tmdbRating == null;
       });
@@ -124,6 +128,15 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
                 height: 30,
               ),
               _tmdbRating!.toStringAsFixed(1),
+              onTap: _tmdbId != null
+                  ? () {
+                      final link = ZagLinkedContent.theMovieDB(
+                        _tmdbId,
+                        LinkedContentType.MOVIE,
+                      );
+                      if (link != null) link.openLink();
+                    }
+                  : null,
             ),
           if (_ratings?.rottenTomatoes != null)
             _buildRating(
