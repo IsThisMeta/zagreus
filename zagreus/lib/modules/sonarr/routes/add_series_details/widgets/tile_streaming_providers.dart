@@ -40,8 +40,8 @@ class _SonarrAddSeriesStreamingProvidersTileState
   }
 
   Future<void> _loadProviders() async {
-    final tmdbId = widget.series?.tmdbId;
-    if (tmdbId == null) {
+    final imdbId = widget.series?.imdbId;
+    if (imdbId == null) {
       setState(() {
         _loading = false;
       });
@@ -49,6 +49,15 @@ class _SonarrAddSeriesStreamingProvidersTileState
     }
 
     try {
+      // Look up TMDB ID from IMDb ID
+      final tmdbId = await TMDBApi.getTmdbIdFromImdb(imdbId);
+      if (tmdbId == null) {
+        setState(() {
+          _loading = false;
+        });
+        return;
+      }
+
       // Get user's region from locale
       final locale = Localizations.localeOf(context);
       final region = locale.countryCode ?? 'US';
