@@ -1906,6 +1906,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
+          _metadataCredits(),
           const SizedBox(height: 32),
         ],
       ),
@@ -2052,6 +2053,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ..._buildTVSections(),
           const SizedBox(height: 16),
           _discoverSectionsButton(),
+          _metadataCredits(),
           const SizedBox(height: 32),
         ],
       ),
@@ -2150,6 +2152,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         icon: Icons.tune_rounded,
         color: ZagColours.currentAccent,
         onTap: _openDiscoverSectionsEditor,
+      ),
+    );
+  }
+
+  Widget _metadataCredits() {
+    final textColor = Theme.of(context)
+        .textTheme
+        .bodySmall
+        ?.color
+        ?.withOpacity(0.7);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        ZagUI.DEFAULT_MARGIN_SIZE,
+        0,
+        ZagUI.DEFAULT_MARGIN_SIZE,
+        8,
+      ),
+      child: Text(
+        'Metadata provided by TMDB, JustWatch, and the Open Movie Database.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 12,
+          color: textColor ?? Colors.grey,
+        ),
       ),
     );
   }
