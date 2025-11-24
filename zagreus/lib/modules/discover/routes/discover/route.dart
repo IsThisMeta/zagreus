@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/api/overseerr/models.dart';
@@ -2169,14 +2170,84 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagUI.DEFAULT_MARGIN_SIZE,
         8,
       ),
-      child: Text(
-        'Metadata provided by TMDB, JustWatch, and the Open Movie Database.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 12,
-          color: textColor ?? Colors.grey,
-        ),
+      child: Column(
+        children: [
+          Text(
+            'Metadata provided by TMDB, JustWatch, and the Open Movie Database.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: textColor ?? Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Column(
+            children: [
+              _metadataIcon(
+                'assets/images/tmdb_long.svg',
+                isSvg: true,
+                fullWidth: true,
+                height: 20,
+                gradientOverride: const LinearGradient(
+                  colors: [
+                    Color(0xFF90CEA1),
+                    Color(0xFF01B4E4),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _metadataIcon(
+                'assets/images/justwatch_long.png',
+                fullWidth: true,
+                height: 28,
+              ),
+            ],
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _metadataIcon(
+    String assetPath, {
+    bool isSvg = false,
+    bool fullWidth = false,
+    double height = 44,
+    Color? colorOverride,
+    Gradient? gradientOverride,
+  }) {
+    Widget image = isSvg
+        ? SvgPicture.asset(
+            assetPath,
+            width: double.infinity,
+            height: height,
+            fit: BoxFit.contain,
+            colorFilter: colorOverride != null && gradientOverride == null
+                ? ColorFilter.mode(colorOverride, BlendMode.srcIn)
+                : null,
+          )
+        : Image.asset(
+            assetPath,
+            width: double.infinity,
+            height: height,
+            fit: BoxFit.contain,
+            color: gradientOverride == null ? colorOverride : null,
+          );
+
+    if (gradientOverride != null) {
+      image = ShaderMask(
+        shaderCallback: (rect) => gradientOverride.createShader(rect),
+        blendMode: BlendMode.srcIn,
+        child: image,
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: height,
+      child: image,
     );
   }
 
