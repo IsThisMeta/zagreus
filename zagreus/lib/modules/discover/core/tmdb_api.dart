@@ -689,8 +689,8 @@ class TMDBApi {
   }
 
   /// Get watch providers (streaming services) for a movie
-  /// Returns a map with 'streaming' and 'buyRent' lists of providers
-  static Future<Map<String, List<Map<String, dynamic>>>> getMovieWatchProviders(
+  /// Returns a map with 'streaming' and 'buyRent' lists of providers, plus a 'link' to JustWatch
+  static Future<Map<String, dynamic>> getMovieWatchProviders(
     int tmdbId, {
     required String region,
   }) async {
@@ -704,15 +704,18 @@ class TMDBApi {
         final results = data['results'] as Map<String, dynamic>?;
 
         if (results == null || results.isEmpty) {
-          return {'streaming': [], 'buyRent': []};
+          return {'streaming': [], 'buyRent': [], 'link': null};
         }
 
         final regionKey = region.toUpperCase();
         final regionData = results[regionKey] as Map<String, dynamic>?;
 
         if (regionData == null) {
-          return {'streaming': [], 'buyRent': []};
+          return {'streaming': [], 'buyRent': [], 'link': null};
         }
+
+        // Get the JustWatch link
+        final link = regionData['link'] as String?;
 
         // Get streaming providers (flatrate)
         final streamingProviders = (regionData['flatrate'] as List?)
@@ -760,18 +763,19 @@ class TMDBApi {
         return {
           'streaming': streamingProviders,
           'buyRent': buyRentProviders,
+          'link': link,
         };
       }
     } catch (e) {
       print('Error fetching movie watch providers: $e');
     }
 
-    return {'streaming': [], 'buyRent': []};
+    return {'streaming': [], 'buyRent': [], 'link': null};
   }
 
   /// Get watch providers (streaming services) for a TV show
-  /// Returns a map with 'streaming' and 'buyRent' lists of providers
-  static Future<Map<String, List<Map<String, dynamic>>>> getTVShowWatchProviders(
+  /// Returns a map with 'streaming' and 'buyRent' lists of providers, plus a 'link' to JustWatch
+  static Future<Map<String, dynamic>> getTVShowWatchProviders(
     int tmdbId, {
     required String region,
   }) async {
@@ -785,15 +789,18 @@ class TMDBApi {
         final results = data['results'] as Map<String, dynamic>?;
 
         if (results == null || results.isEmpty) {
-          return {'streaming': [], 'buyRent': []};
+          return {'streaming': [], 'buyRent': [], 'link': null};
         }
 
         final regionKey = region.toUpperCase();
         final regionData = results[regionKey] as Map<String, dynamic>?;
 
         if (regionData == null) {
-          return {'streaming': [], 'buyRent': []};
+          return {'streaming': [], 'buyRent': [], 'link': null};
         }
+
+        // Get the JustWatch link
+        final link = regionData['link'] as String?;
 
         // Get streaming providers (flatrate)
         final streamingProviders = (regionData['flatrate'] as List?)
@@ -841,13 +848,75 @@ class TMDBApi {
         return {
           'streaming': streamingProviders,
           'buyRent': buyRentProviders,
+          'link': link,
         };
       }
     } catch (e) {
       print('Error fetching TV show watch providers: $e');
     }
 
-    return {'streaming': [], 'buyRent': []};
+    return {'streaming': [], 'buyRent': [], 'link': null};
+  }
+
+  /// Build a deep link URL for a specific streaming provider
+  /// Returns the provider's app deep link or web URL based on provider_id
+  static String? buildProviderDeepLink({
+    required int providerId,
+    required String providerName,
+    required int tmdbId,
+    required String title,
+    required String mediaType, // 'movie' or 'tv'
+    String? fallbackLink,
+  }) {
+    // Provider IDs from TMDB (common ones):
+    // Netflix: 8
+    // Amazon Prime Video: 9, 119 (Prime Video, Amazon Video)
+    // Disney Plus: 337
+    // HBO Max: 384
+    // Hulu: 15
+    // Apple TV Plus: 350
+    // Paramount Plus: 531
+
+    switch (providerId) {
+      case 8: // Netflix
+        // Netflix deep link: nflx://www.netflix.com/title/search?q={title}
+        // We use search since we don't have Netflix IDs
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'nflx://www.netflix.com/search?q=$encodedTitle';
+
+      case 9: // Amazon Prime Video
+      case 119: // Amazon Video
+        // Amazon deep link for Prime Video
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'aiv://webapi/search?searchPhrase=$encodedTitle';
+
+      case 337: // Disney Plus
+        // Disney+ search - note: requires exact content ID for direct links
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'disneyplus://search/$encodedTitle';
+
+      case 15: // Hulu
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'hulu://search?query=$encodedTitle';
+
+      case 350: // Apple TV Plus
+        // Apple TV deep link
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'videos://search?term=$encodedTitle';
+
+      case 384: // HBO Max
+      case 1899: // Max
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'max://search?query=$encodedTitle';
+
+      case 531: // Paramount Plus
+        final encodedTitle = Uri.encodeComponent(title);
+        return 'paramount://search?q=$encodedTitle';
+
+      default:
+        // For unknown providers, use the fallback JustWatch link
+        return fallbackLink;
+    }
   }
 
   static String? _extractYear(String? dateString) {
