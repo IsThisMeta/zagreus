@@ -688,6 +688,168 @@ class TMDBApi {
     }
   }
 
+  /// Get watch providers (streaming services) for a movie
+  /// Returns a map with 'streaming' and 'buyRent' lists of providers
+  static Future<Map<String, List<Map<String, dynamic>>>> getMovieWatchProviders(
+    int tmdbId, {
+    required String region,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/movie/$tmdbId/watch/providers?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as Map<String, dynamic>?;
+
+        if (results == null || results.isEmpty) {
+          return {'streaming': [], 'buyRent': []};
+        }
+
+        final regionKey = region.toUpperCase();
+        final regionData = results[regionKey] as Map<String, dynamic>?;
+
+        if (regionData == null) {
+          return {'streaming': [], 'buyRent': []};
+        }
+
+        // Get streaming providers (flatrate)
+        final streamingProviders = (regionData['flatrate'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map((item) => {
+                      'provider_id': item['provider_id'],
+                      'provider_name': item['provider_name'],
+                      'logo_path': item['logo_path'],
+                      'display_priority': item['display_priority'] ?? 999,
+                    })
+                .toList() ??
+            [];
+
+        // Get buy/rent providers (combine buy and rent lists)
+        final buyProviders = (regionData['buy'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .toList() ??
+            [];
+        final rentProviders = (regionData['rent'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .toList() ??
+            [];
+
+        // Combine and deduplicate by provider_id
+        final buyRentMap = <int, Map<String, dynamic>>{};
+        for (final provider in [...buyProviders, ...rentProviders]) {
+          final id = provider['provider_id'] as int;
+          if (!buyRentMap.containsKey(id)) {
+            buyRentMap[id] = {
+              'provider_id': provider['provider_id'],
+              'provider_name': provider['provider_name'],
+              'logo_path': provider['logo_path'],
+              'display_priority': provider['display_priority'] ?? 999,
+            };
+          }
+        }
+
+        // Sort by display priority
+        streamingProviders.sort((a, b) =>
+          (a['display_priority'] as int).compareTo(b['display_priority'] as int));
+        final buyRentProviders = buyRentMap.values.toList()
+          ..sort((a, b) =>
+            (a['display_priority'] as int).compareTo(b['display_priority'] as int));
+
+        return {
+          'streaming': streamingProviders,
+          'buyRent': buyRentProviders,
+        };
+      }
+    } catch (e) {
+      print('Error fetching movie watch providers: $e');
+    }
+
+    return {'streaming': [], 'buyRent': []};
+  }
+
+  /// Get watch providers (streaming services) for a TV show
+  /// Returns a map with 'streaming' and 'buyRent' lists of providers
+  static Future<Map<String, List<Map<String, dynamic>>>> getTVShowWatchProviders(
+    int tmdbId, {
+    required String region,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/tv/$tmdbId/watch/providers?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as Map<String, dynamic>?;
+
+        if (results == null || results.isEmpty) {
+          return {'streaming': [], 'buyRent': []};
+        }
+
+        final regionKey = region.toUpperCase();
+        final regionData = results[regionKey] as Map<String, dynamic>?;
+
+        if (regionData == null) {
+          return {'streaming': [], 'buyRent': []};
+        }
+
+        // Get streaming providers (flatrate)
+        final streamingProviders = (regionData['flatrate'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map((item) => {
+                      'provider_id': item['provider_id'],
+                      'provider_name': item['provider_name'],
+                      'logo_path': item['logo_path'],
+                      'display_priority': item['display_priority'] ?? 999,
+                    })
+                .toList() ??
+            [];
+
+        // Get buy/rent providers (combine buy and rent lists)
+        final buyProviders = (regionData['buy'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .toList() ??
+            [];
+        final rentProviders = (regionData['rent'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .toList() ??
+            [];
+
+        // Combine and deduplicate by provider_id
+        final buyRentMap = <int, Map<String, dynamic>>{};
+        for (final provider in [...buyProviders, ...rentProviders]) {
+          final id = provider['provider_id'] as int;
+          if (!buyRentMap.containsKey(id)) {
+            buyRentMap[id] = {
+              'provider_id': provider['provider_id'],
+              'provider_name': provider['provider_name'],
+              'logo_path': provider['logo_path'],
+              'display_priority': provider['display_priority'] ?? 999,
+            };
+          }
+        }
+
+        // Sort by display priority
+        streamingProviders.sort((a, b) =>
+          (a['display_priority'] as int).compareTo(b['display_priority'] as int));
+        final buyRentProviders = buyRentMap.values.toList()
+          ..sort((a, b) =>
+            (a['display_priority'] as int).compareTo(b['display_priority'] as int));
+
+        return {
+          'streaming': streamingProviders,
+          'buyRent': buyRentProviders,
+        };
+      }
+    } catch (e) {
+      print('Error fetching TV show watch providers: $e');
+    }
+
+    return {'streaming': [], 'buyRent': []};
+  }
+
   static String? _extractYear(String? dateString) {
     if (dateString == null || dateString.isEmpty) return null;
     return dateString.split('-').first;

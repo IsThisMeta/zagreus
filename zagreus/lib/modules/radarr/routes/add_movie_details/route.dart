@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/routes/add_movie_details/widgets/tile_streaming_providers.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/sheets/links.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/widgets/rotten_tomatoes_tile.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
@@ -131,6 +132,9 @@ class _State extends State<AddMovieDetailsRoute>
             isExcluded: false,
           ),
           RadarrRottenTomatoesTile(
+            movie: context.read<RadarrAddMovieDetailsState>().movie,
+          ),
+          RadarrAddMovieStreamingProvidersTile(
             movie: context.read<RadarrAddMovieDetailsState>().movie,
           ),
           const RadarrAddMovieDetailsRootFolderTile(),

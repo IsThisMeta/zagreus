@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/routes/add_series_details/widgets/tile_streaming_providers.dart';
 import 'package:zagreus/modules/sonarr/routes/series_details/sheets/links.dart';
 import 'package:zagreus/modules/sonarr/routes/series_details/widgets/ratings_tile.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
@@ -132,6 +133,9 @@ class _State extends State<AddSeriesDetailsRoute>
           isExcluded: false,
         ),
         SonarrRatingsTile(
+          series: context.read<SonarrSeriesAddDetailsState>().series,
+        ),
+        SonarrAddSeriesStreamingProvidersTile(
           series: context.read<SonarrSeriesAddDetailsState>().series,
         ),
         const SonarrSeriesAddDetailsRootFolderTile(),
