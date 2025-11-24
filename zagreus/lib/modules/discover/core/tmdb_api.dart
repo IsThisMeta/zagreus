@@ -879,10 +879,10 @@ class TMDBApi {
 
     switch (providerId) {
       case 8: // Netflix
-        // Netflix deep link: nflx://www.netflix.com/title/search?q={title}
-        // We use search since we don't have Netflix IDs
+        // Netflix web URL - will open in app if installed, otherwise in browser
+        // We use search since we don't have Netflix internal content IDs
         final encodedTitle = Uri.encodeComponent(title);
-        return 'nflx://www.netflix.com/search?q=$encodedTitle';
+        return 'https://www.netflix.com/search?q=$encodedTitle';
 
       case 9: // Amazon Prime Video
       case 119: // Amazon Video
