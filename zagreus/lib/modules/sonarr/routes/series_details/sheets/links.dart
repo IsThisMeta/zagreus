@@ -14,6 +14,8 @@ class LinksSheet extends ZagBottomModalSheet {
   @override
   Widget builder(BuildContext context) {
     final imdb = ZagLinkedContent.imdb(series.imdbId);
+    final rottenTomatoes =
+        ZagLinkedContent.rottenTomatoes(series.title, LinkedContentType.SERIES);
     final tvdb =
         ZagLinkedContent.theTVDB(series.tvdbId, LinkedContentType.SERIES);
     final trakt =
@@ -27,6 +29,12 @@ class LinksSheet extends ZagBottomModalSheet {
             title: 'IMDb',
             leading: const ZagIconButton(icon: ZagIcons.IMDB),
             onTap: imdb.openLink,
+          ),
+        if (rottenTomatoes != null)
+          ZagBlock(
+            title: 'Rotten Tomatoes',
+            leading: const ZagIconButton(icon: ZagIcons.LINK),
+            onTap: rottenTomatoes.openLink,
           ),
         if (tvdb != null)
           ZagBlock(
