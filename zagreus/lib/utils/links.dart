@@ -153,6 +153,29 @@ enum ZagLinkedContent {
     }
   }
 
+  static String? metacritic(String? title, LinkedContentType type) {
+    if (title == null || title.isEmpty) return null;
+    const base = 'https://www.metacritic.com';
+
+    // Convert title to Metacritic slug format:
+    // - Lowercase
+    // - Replace spaces with hyphens
+    // - Keep alphanumeric and hyphens only
+    final slug = title
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove special chars
+        .replaceAll(RegExp(r'\s+'), '-'); // Replace spaces with hyphens
+
+    switch (type) {
+      case LinkedContentType.MOVIE:
+        return '$base/movie/$slug';
+      case LinkedContentType.SERIES:
+        return '$base/tv/$slug';
+      default:
+        throw UnsupportedError('$type content type is not supported');
+    }
+  }
+
   static String? youtube(String? id) {
     if (id == null) return null;
     const base = 'https://www.youtube.com';
