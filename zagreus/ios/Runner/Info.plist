@@ -44,6 +44,7 @@
 		<string>imdb</string>
 		<string>letterboxd</string>
 		<string>trakt</string>
+		<string>rottentomatoes</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
