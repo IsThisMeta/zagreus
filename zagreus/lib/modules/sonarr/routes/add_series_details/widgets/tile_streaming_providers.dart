@@ -281,9 +281,12 @@ class _SonarrAddSeriesStreamingProvidersTileState
     try {
       final uri = Uri.parse(deepLink);
 
-      // Try to launch the deep link directly
-      // Using mode: LaunchMode.externalApplication for app deep links
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      // Determine launch mode: open web links (e.g. JustWatch) in-app, deep links externally
+      final isWebUrl = uri.scheme == 'http' || uri.scheme == 'https';
+      final mode =
+          isWebUrl ? LaunchMode.inAppWebView : LaunchMode.externalApplication;
+
+      final launched = await launchUrl(uri, mode: mode);
 
       if (!launched) {
         // If deep link fails, try the fallback JustWatch link in an in-app browser
