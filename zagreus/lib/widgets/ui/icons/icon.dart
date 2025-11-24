@@ -61,6 +61,7 @@ class ZagIcons {
   static const IconData LETTERBOXD = SimpleIcons.letterboxd;
   static const IconData PLEX = SimpleIcons.plex;
   static const IconData REDDIT = SimpleIcons.reddit;
+  static const IconData ROTTENTOMATOES = SimpleIcons.rottentomatoes;
   static const IconData THEMOVIEDATABASE = SimpleIcons.themoviedatabase;
   static const IconData TRAKT = SimpleIcons.trakt;
   static const IconData YOUTUBE = SimpleIcons.youtube;

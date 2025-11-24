@@ -33,7 +33,7 @@ class LinksSheet extends ZagBottomModalSheet {
         if (rottenTomatoes != null)
           ZagBlock(
             title: 'Rotten Tomatoes',
-            leading: const ZagIconButton(icon: ZagIcons.LINK),
+            leading: const ZagIconButton(icon: ZagIcons.ROTTENTOMATOES),
             onTap: rottenTomatoes.openLink,
           ),
         if (tvdb != null)
