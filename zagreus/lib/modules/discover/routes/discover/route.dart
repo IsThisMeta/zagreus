@@ -4295,24 +4295,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Media type badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _getMediaTypeColor(mediaType),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            _getMediaTypeLabel(mediaType),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
                         // Title
                         Text(
                           title,
@@ -4327,23 +4309,57 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (releaseDate.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            releaseDate.split('-').first,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white.withOpacity(0.5)
-                                  : Colors.black.withOpacity(0.5),
+                        const SizedBox(height: 4),
+                        // Badge, Year, and Rating on one line
+                        Row(
+                          children: [
+                            // Badge first
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _getMediaTypeColor(mediaType),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _getMediaTypeLabel(mediaType),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
-                        if (mediaType != 'person' && voteAverage > 0) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
+                            if (releaseDate.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  releaseDate.split('-').first,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withOpacity(0.5)
+                                        : Colors.black.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (mediaType != 'person' && voteAverage > 0) ...[
+                              if (releaseDate.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: Text(
+                                    '•',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white.withOpacity(0.3)
+                                          : Colors.black.withOpacity(0.3),
+                                    ),
+                                  ),
+                                ),
                               Icon(
                                 Icons.star,
                                 size: 14,
@@ -4361,8 +4377,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                               ),
                             ],
-                          ),
-                        ],
+                          ],
+                        ),
                         if (overview.isNotEmpty && mediaType != 'person') ...[
                           const SizedBox(height: 6),
                           Text(
@@ -4374,7 +4390,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   ? Colors.white.withOpacity(0.6)
                                   : Colors.black.withOpacity(0.6),
                             ),
-                            maxLines: 2,
+                            maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
