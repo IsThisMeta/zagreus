@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/radarr.dart';
 
 class RadarrMovieDetailsOverviewDescriptionTile extends StatelessWidget {
@@ -28,6 +29,7 @@ class RadarrMovieDetailsOverviewDescriptionTile extends StatelessWidget {
       customBodyMaxLines: 3,
       onTap: () async =>
           ZagDialogs().textPreview(context, movie!.title, movie!.overview!),
+      onLongPress: () async => movie!.youTubeTrailerId?.openYouTube(),
     );
   }
 }

@@ -102,5 +102,5 @@ class _State extends State<RadarrAddMovieSearchResultTile> {
   }
 
   Future<void>? _onLongPress() async =>
-      widget.movie.tmdbId?.toString().openTmdbMovie();
+      widget.movie.youTubeTrailerId?.openYouTube();
 }
