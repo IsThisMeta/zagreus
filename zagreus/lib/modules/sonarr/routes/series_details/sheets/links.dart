@@ -34,7 +34,12 @@ class LinksSheet extends ZagBottomModalSheet {
           ZagBlock(
             title: 'Rotten Tomatoes',
             leading: const ZagIconButton(icon: ZagIcons.LINK),
-            onTap: rottenTomatoes.openLink,
+            onTap: () async {
+              rottenTomatoes.openLink();
+              // Retry after 2 seconds to handle cases where first tap doesn't work
+              await Future.delayed(const Duration(seconds: 2));
+              rottenTomatoes.openLink();
+            },
           ),
         if (tvdb != null)
           ZagBlock(
