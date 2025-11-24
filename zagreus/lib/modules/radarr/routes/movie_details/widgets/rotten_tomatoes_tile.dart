@@ -152,8 +152,8 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
                 );
                 if (link != null) {
                   link.openLink();
-                  // Retry after 2 seconds to handle cases where first tap doesn't work
-                  await Future.delayed(const Duration(seconds: 2));
+                  // Quick retry after 250ms to handle cases where first tap doesn't work
+                  await Future.delayed(const Duration(milliseconds: 250));
                   link.openLink();
                 }
               },
