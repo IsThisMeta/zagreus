@@ -280,15 +280,16 @@ class _SonarrAddSeriesStreamingProvidersTileState
 
     try {
       final uri = Uri.parse(deepLink);
-      final canLaunch = await canLaunchUrl(uri);
 
-      if (canLaunch) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        // If deep link fails, try the fallback link
+      // Try to launch the deep link directly
+      // Using mode: LaunchMode.externalApplication for app deep links
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      if (!launched) {
+        // If deep link fails, try the fallback JustWatch link in an in-app browser
         if (_fallbackLink != null) {
           final fallbackUri = Uri.parse(_fallbackLink!);
-          await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
+          await launchUrl(fallbackUri, mode: LaunchMode.inAppWebView);
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -302,14 +303,32 @@ class _SonarrAddSeriesStreamingProvidersTileState
         }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening $providerName: $e'),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      // If deep link throws an exception, try the fallback JustWatch link
+      if (_fallbackLink != null) {
+        try {
+          final fallbackUri = Uri.parse(_fallbackLink!);
+          await launchUrl(fallbackUri, mode: LaunchMode.inAppWebView);
+        } catch (fallbackError) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error opening link: $fallbackError'),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error opening $providerName: $e'),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
