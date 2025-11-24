@@ -141,7 +141,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
           if (_ratings?.rottenTomatoes != null)
             _buildRating(
               Image.asset(
-                'assets/icons/ratings/rotten_tomatoes.png',
+                _getRottenTomatoesIcon(_ratings!.rottenTomatoes!),
                 height: 20,
               ),
               _ratings!.rottenTomatoes!,
@@ -155,19 +155,28 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             ),
           if (_ratings?.metacritic != null)
             _buildRating(
-              ClipOval(
-                child: Image.asset(
-                  'assets/icons/ratings/metacritic.jpg',
-                  height: 20,
-                  width: 20,
-                  fit: BoxFit.cover,
-                ),
+              Image.asset(
+                'assets/icons/ratings/metacritic-30.png',
+                height: 20,
               ),
               _ratings!.metacritic!,
             ),
         ],
       ),
     );
+  }
+
+  String _getRottenTomatoesIcon(String rating) {
+    // Parse the percentage from the rating string (e.g., "85%" -> 85)
+    final percentStr = rating.replaceAll('%', '').trim();
+    final percent = int.tryParse(percentStr) ?? 0;
+
+    // Show fresh tomato if 60% or higher, rotten if lower
+    if (percent >= 60) {
+      return 'assets/icons/ratings/rt-fresh-30.png';
+    } else {
+      return 'assets/icons/ratings/rt-rotten-30.png';
+    }
   }
 
   Widget _buildRating(Widget icon, String value, {VoidCallback? onTap}) {
