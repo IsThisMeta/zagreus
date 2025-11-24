@@ -145,12 +145,17 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
                 height: 20,
               ),
               _ratings!.rottenTomatoes!,
-              onTap: () {
+              onTap: () async {
                 final link = ZagLinkedContent.rottenTomatoes(
                   widget.movie?.title,
                   LinkedContentType.MOVIE,
                 );
-                if (link != null) link.openLink();
+                if (link != null) {
+                  link.openLink();
+                  // Retry after 2 seconds to handle cases where first tap doesn't work
+                  await Future.delayed(const Duration(seconds: 2));
+                  link.openLink();
+                }
               },
             ),
           if (_ratings?.metacritic != null)
