@@ -57,7 +57,7 @@ class _State extends State<AddMovieDetailsRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'radarr.AddMovie'.tr(),
+      title: 'radarr.MonitorMovie'.tr(),
       scrollControllers: [scrollController],
       actions: widget.movie == null
           ? null

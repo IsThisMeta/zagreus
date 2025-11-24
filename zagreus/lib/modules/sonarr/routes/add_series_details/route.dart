@@ -53,7 +53,7 @@ class _State extends State<AddSeriesDetailsRoute>
 
   Widget _appBar() {
     return ZagAppBar(
-      title: 'sonarr.AddSeries'.tr(),
+      title: 'sonarr.MonitorSeries'.tr(),
       scrollControllers: [scrollController],
       actions: widget.series == null
           ? null
