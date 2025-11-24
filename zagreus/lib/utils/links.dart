@@ -130,13 +130,27 @@ enum ZagLinkedContent {
     }
   }
 
-  static String? rottenTomatoes(String? title) {
+  static String? rottenTomatoes(String? title, LinkedContentType type) {
     if (title == null || title.isEmpty) return null;
     const base = 'https://www.rottentomatoes.com';
 
-    // URL encode the title for the search query
-    final encodedTitle = Uri.encodeComponent(title);
-    return '$base/search?search=$encodedTitle';
+    // Convert title to RT slug format:
+    // - Lowercase
+    // - Replace spaces with underscores
+    // - Keep alphanumeric and underscores only
+    final slug = title
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove special chars
+        .replaceAll(RegExp(r'\s+'), '_'); // Replace spaces with underscores
+
+    switch (type) {
+      case LinkedContentType.MOVIE:
+        return '$base/m/$slug';
+      case LinkedContentType.SERIES:
+        return '$base/tv/$slug';
+      default:
+        throw UnsupportedError('$type content type is not supported');
+    }
   }
 
   static String? youtube(String? id) {

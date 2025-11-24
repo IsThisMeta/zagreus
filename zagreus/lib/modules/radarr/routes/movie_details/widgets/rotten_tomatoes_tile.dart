@@ -146,7 +146,10 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
               ),
               _ratings!.rottenTomatoes!,
               onTap: () {
-                final link = ZagLinkedContent.rottenTomatoes(widget.movie?.title);
+                final link = ZagLinkedContent.rottenTomatoes(
+                  widget.movie?.title,
+                  LinkedContentType.MOVIE,
+                );
                 if (link != null) link.openLink();
               },
             ),
