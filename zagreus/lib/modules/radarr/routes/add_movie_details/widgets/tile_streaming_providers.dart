@@ -216,6 +216,17 @@ class _RadarrAddMovieStreamingProvidersTileState
     final title = movie.title;
     final tmdbId = movie.tmdbId;
 
+    if (title == null || title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to open $providerName: Missing title'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     if (tmdbId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

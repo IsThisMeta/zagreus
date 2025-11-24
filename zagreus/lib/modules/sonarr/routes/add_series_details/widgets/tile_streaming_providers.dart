@@ -225,6 +225,17 @@ class _SonarrAddSeriesStreamingProvidersTileState
     final title = series.title;
     final imdbId = series.imdbId;
 
+    if (title == null || title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to open $providerName: Missing title'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     // For TV shows we need to look up TMDB ID from IMDb ID
     int? tmdbId;
     try {
