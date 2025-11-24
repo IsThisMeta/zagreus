@@ -118,8 +118,13 @@ class _State extends State<ConfigurationNavigationRoute>
           value: db.read(),
           onChanged: (value) {
             db.update(value);
-            if (!value &&
-                ZagreusDatabase.DISCOVER_DEFAULT_TAB.read() == 'modules') {
+            final currentDefault =
+                ZagreusDatabase.DISCOVER_DEFAULT_TAB.read();
+            if (value) {
+              if (currentDefault == null || currentDefault == 'movies') {
+                ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('modules');
+              }
+            } else if (currentDefault == 'modules') {
               ZagreusDatabase.DISCOVER_DEFAULT_TAB.update('movies');
             }
           },
