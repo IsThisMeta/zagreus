@@ -243,6 +243,10 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Theme.of(context).canvasColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (sheetContext) {
         return SafeArea(
           child: Consumer<ProwlarrState>(
