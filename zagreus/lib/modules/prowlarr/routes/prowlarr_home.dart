@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/prowlarr/core.dart';
+import 'package:zagreus/core.dart';
 
 /// Prowlarr home page - main search interface
 class ProwlarrHomePage extends StatefulWidget {
@@ -240,75 +241,79 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
   }
 
   void _showSearchHistorySheet() {
+    // Get explicit background color based on theme mode
+    final backgroundColor = ZagTheme.themeMode == 'light'
+        ? ZagColours.primaryLight
+        : (ZagTheme.isAMOLEDTheme ? Colors.black : ZagColours.primary);
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Theme.of(context).canvasColor,
+      backgroundColor: backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        return SafeArea(
-          child: Consumer<ProwlarrState>(
-            builder: (context, state, child) {
-              final history = state.searchHistory;
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Search History',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
+        return ListenableBuilder(
+          listenable: _state,
+          builder: (context, child) {
+            final history = _state.searchHistory;
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Search History',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        if (history.isNotEmpty)
+                          TextButton(
+                            onPressed: _state.clearSearchHistory,
+                            child: const Text('Clear All'),
                           ),
-                          const Spacer(),
-                          if (history.isNotEmpty)
-                            TextButton(
-                              onPressed: state.clearSearchHistory,
-                              child: const Text('Clear All'),
-                            ),
-                        ],
-                      ),
+                      ],
                     ),
-                    Expanded(
-                      child: history.isEmpty
-                          ? const Center(child: Text('No history yet'))
-                          : ListView.separated(
-                              itemCount: history.length,
-                              separatorBuilder: (_, __) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, index) {
-                                final query = history[index];
-                                return ListTile(
-                                  title: Text(query),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () =>
-                                        state.removeSearchFromHistory(query),
-                                  ),
-                                  onTap: () {
-                                    Navigator.of(sheetContext).pop();
-                                    _searchController.text = query;
-                                    _performSearch(query);
-                                  },
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                  Expanded(
+                    child: history.isEmpty
+                        ? const Center(child: Text('No history yet'))
+                        : ListView.separated(
+                            itemCount: history.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final query = history[index];
+                              return ListTile(
+                                title: Text(query),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () =>
+                                      _state.removeSearchFromHistory(query),
+                                ),
+                                onTap: () {
+                                  Navigator.of(sheetContext).pop();
+                                  _searchController.text = query;
+                                  _performSearch(query);
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

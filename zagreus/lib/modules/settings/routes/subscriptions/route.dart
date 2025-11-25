@@ -295,6 +295,32 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
             ),
           ),
+          if (isPro &&
+              ZagreusPro.subscriptionType.toLowerCase().contains('month')) ...[
+            const SizedBox(height: 12),
+            ZagDialog.tile(
+              icon: Icons.autorenew_rounded,
+              iconColor: ZagColours.currentAccent,
+              text: 'Switch to Yearly • \$4.99/year',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'Lock in savings vs monthly billing',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchasePro(false);
+              },
+            ),
+          ],
           if (!isPro) ...[
             ZagDialog.tile(
               icon: Icons.calendar_month_rounded,
@@ -506,6 +532,32 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
             ),
           ),
+          if (isMega &&
+              ZagreusMega.subscriptionType.toLowerCase().contains('month')) ...[
+            const SizedBox(height: 12),
+            ZagDialog.tile(
+              icon: Icons.autorenew_rounded,
+              iconColor: ZagColours.orange,
+              text: 'Switch to Yearly • \$14.99/year',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'Best value • save vs monthly',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseMega(false);
+              },
+            ),
+          ],
           if (!isMega) ...[
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
@@ -815,6 +867,32 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
             ),
           ),
+          if (isUltra &&
+              ZagreusUltra.subscriptionType.toLowerCase().contains('month')) ...[
+            const SizedBox(height: 12),
+            ZagDialog.tile(
+              icon: Icons.autorenew_rounded,
+              iconColor: ZagColours.purple,
+              text: 'Switch to Yearly • \$34.99/year',
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'Best value • save over monthly',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseUltra(false);
+              },
+            ),
+          ],
           if (!isUltra) ...[
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
