@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/widgets/sheets/download_client/button.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SearchIndexerRoute extends StatefulWidget {
   const SearchIndexerRoute({
@@ -79,8 +80,8 @@ class _State extends State<SearchIndexerRoute> with ZagScrollControllerMixin {
         submitCallback: _searchCallback,
         scrollController: scrollController,
       ),
-      actions: const [
-        DownloadClientButton(),
+      actions: [
+        if (ZagreusPro.isEnabled) const DownloadClientButton(),
       ],
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
+import 'package:zagreus/widgets/sheets/download_client/button.dart';
 
 class SearchRoute extends StatefulWidget {
   const SearchRoute({
@@ -30,11 +31,8 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
       useDrawer: true,
       title: ZagModule.SEARCH.title,
       scrollControllers: [scrollController],
-      actions: [
-        ZagIconButton(
-          icon: Icons.search_rounded,
-          onPressed: () => SearchRoutes.SEARCH.go(),
-        ),
+      actions: const [
+        DownloadClientButton(),
       ],
     );
   }
