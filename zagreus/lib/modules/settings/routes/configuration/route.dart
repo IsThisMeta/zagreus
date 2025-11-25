@@ -143,6 +143,10 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
       (module) => module == ZagModule.DISCOVER || module == ZagModule.PROWLARR,
     );
 
+    modules.sort(
+      (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+    );
+
     return modules.map(_tileFromModuleMap).toList();
   }
 

@@ -21,11 +21,16 @@ class ZagIndexer extends HiveObject {
   @HiveField(3, defaultValue: <String, String>{})
   Map<String, String> headers;
 
+  @JsonKey(defaultValue: false)
+  @HiveField(4, defaultValue: false)
+  bool isProwlarr;
+
   ZagIndexer._internal({
     required this.displayName,
     required this.host,
     required this.apiKey,
     required this.headers,
+    required this.isProwlarr,
   });
 
   factory ZagIndexer({
@@ -33,12 +38,14 @@ class ZagIndexer extends HiveObject {
     String? host,
     String? apiKey,
     Map<String, String>? headers,
+    bool? isProwlarr,
   }) {
     return ZagIndexer._internal(
       displayName: displayName ?? '',
       host: host ?? '',
       apiKey: apiKey ?? '',
       headers: headers ?? {},
+      isProwlarr: isProwlarr ?? false,
     );
   }
 

@@ -38,6 +38,11 @@ class _State extends State<ConfigurationSearchRoute>
     return ZagBottomActionBar(
       actions: [
         ZagButton.text(
+          text: 'search.AddProwlarr'.tr(),
+          icon: Icons.travel_explore_rounded,
+          onTap: SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.go,
+        ),
+        ZagButton.text(
           text: 'search.AddIndexer'.tr(),
           icon: Icons.add_rounded,
           onTap: SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER.go,

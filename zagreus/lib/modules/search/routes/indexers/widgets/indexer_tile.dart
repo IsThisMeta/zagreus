@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
+import 'package:zagreus/modules/prowlarr/routes/prowlarr_home.dart';
 
 class SearchIndexerTile extends StatelessWidget {
   final ZagIndexer? indexer;
@@ -19,8 +20,17 @@ class SearchIndexerTile extends StatelessWidget {
       body: [TextSpan(text: indexer!.host)],
       trailing: const ZagIconButton.arrow(),
       onTap: () async {
-        context.read<SearchState>().indexer = indexer!;
-        SearchRoutes.CATEGORIES.go();
+        if (indexer!.isProwlarr) {
+          // Use the richer Prowlarr UI when the indexer is marked as Prowlarr
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ProwlarrHomePage(indexer: indexer!),
+            ),
+          );
+        } else {
+          context.read<SearchState>().indexer = indexer!;
+          SearchRoutes.CATEGORIES.go();
+        }
       },
     );
   }

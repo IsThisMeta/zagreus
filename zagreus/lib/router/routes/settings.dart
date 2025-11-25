@@ -43,6 +43,7 @@ import 'package:zagreus/modules/settings/routes/configuration_sabnzbd/pages/head
 import 'package:zagreus/modules/settings/routes/configuration_sabnzbd/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_search/pages/add_indexer.dart';
 import 'package:zagreus/modules/settings/routes/configuration_search/pages/add_indexer_headers.dart';
+import 'package:zagreus/modules/settings/routes/configuration_search/pages/add_prowlarr.dart';
 import 'package:zagreus/modules/settings/routes/configuration_search/pages/edit_indexer.dart';
 import 'package:zagreus/modules/settings/routes/configuration_search/pages/edit_indexer_headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_search/route.dart';
@@ -114,6 +115,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_SABNZBD_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_SABNZBD_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_SEARCH('search'),
+  CONFIGURATION_SEARCH_ADD_PROWLARR('add_prowlarr'),
   CONFIGURATION_SEARCH_ADD_INDEXER('add_indexer'),
   CONFIGURATION_SEARCH_ADD_INDEXER_HEADERS('headers'),
   CONFIGURATION_SEARCH_EDIT_INDEXER('edit_indexer/:id'),
@@ -253,6 +255,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationSABnzbdDefaultPagesRoute());
       case SettingsRoutes.CONFIGURATION_SEARCH:
         return route(widget: const ConfigurationSearchRoute());
+      case SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR:
+        return route(widget: const ConfigurationSearchAddProwlarrRoute());
       case SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER:
         return route(widget: const ConfigurationSearchAddIndexerRoute());
       case SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER_HEADERS:
@@ -424,8 +428,13 @@ enum SettingsRoutes with ZagRoutesMixin {
         ];
       case SettingsRoutes.CONFIGURATION_SEARCH:
         return [
+          SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.routes,
           SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER.routes,
           SettingsRoutes.CONFIGURATION_SEARCH_EDIT_INDEXER.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR:
+        return [
+          SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER:
         return [
