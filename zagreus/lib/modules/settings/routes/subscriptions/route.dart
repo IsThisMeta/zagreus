@@ -207,72 +207,25 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isMega = ZagreusMega.isEnabled;
     final bool isUltra = ZagreusUltra.isEnabled;
     final bool isSupreme = ZagreusSupreme.isEnabled;
-
+    String introText;
     if (isSupreme) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Pro',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Supreme already includes every Pro feature.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
-    }
-
-    if (isUltra) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Pro',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Ultra already includes every Pro feature.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
-    }
-
-    // If user has Mega, show that Pro is included
-    if (isMega) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Pro',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Mega already includes every Pro feature.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
+      introText =
+          'Supreme already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+    } else if (isUltra) {
+      introText =
+          'Ultra already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+    } else if (isMega) {
+      introText =
+          'Mega already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+    } else if (isPro) {
+      introText =
+          "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades, the Server module, Unraid integrations, and more!";
+    } else {
+      introText = 'Zagreus Pro unlocks:\n'
+          '• Dashboard enhancements\n'
+          '• Unraid, Overseerr, and Search modules\n'
+          '• And more!\n\n'
+          'Choose a plan to get started.';
     }
 
     ZagDialog.dialog(
@@ -283,13 +236,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              isPro
-                  ? "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades, the Server module, Unraid integrations, and more!"
-                  : 'Zagreus Pro unlocks:\n'
-                      '• Dashboard enhancements\n'
-                      '• Unraid, Overseerr, and Search modules\n'
-                      '• And more!\n\n'
-                      'Choose a plan to get started.',
+              introText,
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -321,7 +268,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               },
             ),
           ],
-          if (!isPro) ...[
+          if (!isPro || isMega || isUltra || isSupreme) ...[
             ZagDialog.tile(
               icon: Icons.calendar_month_rounded,
               iconColor: ZagColours.currentAccent,
@@ -491,26 +438,21 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       return;
     }
 
-    if (isUltra) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Mega',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Ultra already includes every Mega feature.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
+    String megaIntro;
+    if (isSupreme) {
+      megaIntro =
+          'Supreme already includes every Mega feature.\n\nWant to downgrade? Pick a Mega plan below.';
+    } else if (isUltra) {
+      megaIntro =
+          'Ultra already includes every Mega feature.\n\nWant to downgrade? Pick a Mega plan below.';
+    } else if (isMega) {
+      megaIntro =
+          "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5 mini (15 messages every 12 hours).";
+    } else {
+      megaIntro = 'Zagreus Mega unlocks:\n'
+          '• Fully unlocked AI agent and Dashboard recommendations\n'
+          '• Ask Z powered by GPT-5 mini (15 messages every 12 hours)\n'
+          '• All Pro features';
     }
 
     ZagDialog.dialog(
@@ -521,12 +463,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              isMega
-                  ? "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5 mini (15 messages every 12 hours)."
-                  : 'Zagreus Mega unlocks:\n'
-                      '• Fully unlocked AI agent and Dashboard recommendations\n'
-                      '• Ask Z powered by GPT-5 mini (15 messages every 12 hours)\n'
-                      '• All Pro features',
+              megaIntro,
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -558,7 +495,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               },
             ),
           ],
-          if (!isMega) ...[
+          if (!isMega || isUltra || isSupreme) ...[
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.orange,
@@ -827,27 +764,13 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isUltra = ZagreusUltra.isEnabled;
     final bool isSupreme = ZagreusSupreme.isEnabled;
 
-    if (isSupreme) {
-      ZagDialog.dialog(
-        context: context,
-        title: 'Zagreus Ultra',
-        customContent: ZagDialog.content(
-          children: [
-            Padding(
-              padding: ZagDialog.textDialogContentPadding(),
-              child: Text(
-                'Supreme already includes every Ultra feature.',
-                style: const TextStyle(
-                  fontSize: ZagUI.FONT_SIZE_H2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        contentPadding: ZagDialog.listDialogContentPadding(),
-      );
-      return;
-    }
+    final String introText = isSupreme
+        ? 'Supreme already includes every Ultra feature.\n\nWant to downgrade? Pick an Ultra plan below.'
+        : isUltra
+            ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.1 Ask Z responses, GPT-5.1 Dashboard results, and every Mega perk."
+            : 'Zagreus Ultra unlocks:\n'
+                '• GPT-5.1 responses for Ask Z and Dashboard\n'
+                '• All Pro and Mega features';
 
     ZagDialog.dialog(
       context: context,
@@ -857,11 +780,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              isUltra
-                  ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.1 Ask Z responses, GPT-5.1 Dashboard results, and every Mega perk."
-                  : 'Zagreus Ultra unlocks:\n'
-                      '• GPT-5.1 responses for Ask Z and Dashboard\n'
-                      '• All Pro and Mega features',
+              introText,
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -893,7 +812,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               },
             ),
           ],
-          if (!isUltra) ...[
+          if (!isUltra || isSupreme) ...[
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
               iconColor: ZagColours.purple,
