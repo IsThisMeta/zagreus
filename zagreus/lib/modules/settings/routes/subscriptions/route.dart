@@ -336,7 +336,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               subtitle: showProMonthlyTrial
                   ? RichText(
                       text: TextSpan(
-                        text: '2 week free trial',
+                        text: '1 month free trial',
                         style: TextStyle(
                           color: Theme.of(context)
                               .textTheme
@@ -555,7 +555,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               subtitle: showMegaMonthlyTrial
                   ? RichText(
                       text: TextSpan(
-                        text: '1 week free trial',
+                        text: '1 month free trial',
                         style: TextStyle(
                           color: Theme.of(context)
                               .textTheme
@@ -579,7 +579,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               subtitle: showMegaYearlyTrial
                   ? RichText(
                       text: TextSpan(
-                        text: '2 week free trial',
+                        text: '1 month free trial',
                         style: TextStyle(
                           color: Theme.of(context)
                               .textTheme
