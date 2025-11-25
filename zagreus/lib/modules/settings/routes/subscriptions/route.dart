@@ -30,13 +30,10 @@ class SubscriptionsRoute extends StatefulWidget {
 class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _revokeTimer;
-  Map<String, bool> _trialEligibility = {};
-  bool _trialEligibilityLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadTrialEligibility();
   }
 
   @override
@@ -196,32 +193,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Future<void> _loadTrialEligibility() async {
-    const products = [
-      RevenueCatService.proMonthlyProductId,
-      RevenueCatService.proYearlyProductId,
-      RevenueCatService.megaMonthlyProductId,
-      RevenueCatService.megaYearlyProductId,
-    ];
-
-    try {
-      final result =
-          await RevenueCatService().getTrialEligibility(products);
-      if (!mounted) return;
-      setState(() {
-        _trialEligibility = result;
-        _trialEligibilityLoaded = true;
-      });
-    } catch (e) {
-      print('Error loading trial eligibility: $e');
-    }
-  }
-
-  bool _isTrialEligible(String productId) {
-    if (!_trialEligibilityLoaded) return true;
-    return _trialEligibility[productId] ?? true;
-  }
-
   bool _hasSharedPro() {
     // Check if user has shared Pro access (no direct subscription but has Pro enabled)
     return ZagreusPro.isEnabled &&
@@ -236,10 +207,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isMega = ZagreusMega.isEnabled;
     final bool isUltra = ZagreusUltra.isEnabled;
     final bool isSupreme = ZagreusSupreme.isEnabled;
-    final bool showProMonthlyTrial =
-        _isTrialEligible(RevenueCatService.proMonthlyProductId);
-    final bool showProYearlyTrial =
-        _isTrialEligible(RevenueCatService.proYearlyProductId);
 
     if (isSupreme) {
       ZagDialog.dialog(
@@ -333,21 +300,19 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               icon: Icons.calendar_month_rounded,
               iconColor: ZagColours.currentAccent,
               text: 'Monthly • \$0.99/month',
-              subtitle: showProMonthlyTrial
-                  ? RichText(
-                      text: TextSpan(
-                        text: '1 month free trial',
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : null,
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '1 month free trial',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _purchasePro(true);
@@ -357,21 +322,19 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               icon: Icons.stars_rounded,
               iconColor: ZagColours.currentAccent,
               text: 'Yearly • \$4.99/year',
-              subtitle: showProYearlyTrial
-                  ? RichText(
-                      text: TextSpan(
-                        text: '1 month free trial',
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : null,
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '1 month free trial',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _purchasePro(false);
@@ -479,10 +442,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isMega = ZagreusMega.isEnabled;
     final bool isUltra = ZagreusUltra.isEnabled;
     final bool isSupreme = ZagreusSupreme.isEnabled;
-    final bool showMegaMonthlyTrial =
-        _isTrialEligible(RevenueCatService.megaMonthlyProductId);
-    final bool showMegaYearlyTrial =
-        _isTrialEligible(RevenueCatService.megaYearlyProductId);
 
     if (isSupreme) {
       ZagDialog.dialog(
@@ -552,21 +511,19 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.orange,
               text: 'Monthly • \$1.99/month',
-              subtitle: showMegaMonthlyTrial
-                  ? RichText(
-                      text: TextSpan(
-                        text: '1 month free trial',
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : null,
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '1 month free trial',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _purchaseMega(true);
@@ -576,21 +533,19 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               icon: Icons.stars_rounded,
               iconColor: ZagColours.orange,
               text: 'Yearly • \$14.99/year',
-              subtitle: showMegaYearlyTrial
-                  ? RichText(
-                      text: TextSpan(
-                        text: '1 month free trial',
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.color
-                              ?.withOpacity(0.7),
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : null,
+              subtitle: RichText(
+                text: TextSpan(
+                  text: '1 month free trial',
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _purchaseMega(false);
