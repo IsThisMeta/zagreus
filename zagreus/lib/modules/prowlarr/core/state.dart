@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
+import 'package:zagreus/database/tables/search.dart';
 
 /// State management for Prowlarr module
 class ProwlarrState extends ChangeNotifier {
@@ -27,23 +28,31 @@ class ProwlarrState extends ChangeNotifier {
     notifyListeners();
   }
 
+  ProwlarrState() {
+    _searchHistory =
+        List<String>.from(SearchDatabase.PROWLARR_HISTORY.read() ?? const []);
+  }
+
   void addSearchToHistory(String query) {
     if (!_searchHistory.contains(query)) {
       _searchHistory.insert(0, query);
       if (_searchHistory.length > 20) {
         _searchHistory = _searchHistory.sublist(0, 20);
       }
+      SearchDatabase.PROWLARR_HISTORY.update(_searchHistory);
       notifyListeners();
     }
   }
 
   void clearSearchHistory() {
     _searchHistory.clear();
+    SearchDatabase.PROWLARR_HISTORY.update(_searchHistory);
     notifyListeners();
   }
 
   void removeSearchFromHistory(String query) {
     _searchHistory.remove(query);
+    SearchDatabase.PROWLARR_HISTORY.update(_searchHistory);
     notifyListeners();
   }
 
