@@ -199,6 +199,14 @@ class ZagProfile extends HiveObject {
   Map<String, String> overseerrHeaders;
 
   @JsonKey()
+  @HiveField(68, defaultValue: '')
+  String overseerrLocalHost;
+
+  @JsonKey()
+  @HiveField(69, defaultValue: '')
+  String overseerrLocalSsids;
+
+  @JsonKey()
   @HiveField(44, defaultValue: false)
   bool unraidEnabled;
 
@@ -299,6 +307,8 @@ class ZagProfile extends HiveObject {
     required this.overseerrHost,
     required this.overseerrKey,
     required this.overseerrHeaders,
+    required this.overseerrLocalHost,
+    required this.overseerrLocalSsids,
     //Unraid
     required this.unraidEnabled,
     required this.unraidHost,
@@ -368,6 +378,8 @@ class ZagProfile extends HiveObject {
     String? overseerrHost,
     String? overseerrKey,
     Map<String, String>? overseerrHeaders,
+    String? overseerrLocalHost,
+    String? overseerrLocalSsids,
     //Unraid
     bool? unraidEnabled,
     String? unraidHost,
@@ -436,6 +448,8 @@ class ZagProfile extends HiveObject {
       overseerrHost: overseerrHost ?? '',
       overseerrKey: overseerrKey ?? '',
       overseerrHeaders: overseerrHeaders ?? {},
+      overseerrLocalHost: overseerrLocalHost ?? '',
+      overseerrLocalSsids: overseerrLocalSsids ?? '',
       // Unraid
       unraidEnabled: unraidEnabled ?? false,
       unraidHost: unraidHost ?? '',
@@ -515,6 +529,12 @@ class ZagProfile extends HiveObject {
         remoteHost: tautulliHost,
         localHost: tautulliLocalHost,
         ssidList: tautulliLocalSsids,
+      );
+
+  String effectiveOverseerrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: overseerrHost,
+        localHost: overseerrLocalHost,
+        ssidList: overseerrLocalSsids,
       );
 
   String effectiveUnraidHost() => ZagLocalConnectionService().resolveHost(

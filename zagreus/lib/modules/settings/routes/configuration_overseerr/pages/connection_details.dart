@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/modules/settings.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationOverseerrConnectionDetailsRoute extends StatefulWidget {
   const ConfigurationOverseerrConnectionDetailsRoute({
@@ -16,6 +18,15 @@ class ConfigurationOverseerrConnectionDetailsRoute extends StatefulWidget {
 class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read()) {
+      // Ensure we have the latest SSID when the page opens so status renders immediately.
+      ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +55,41 @@ class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
 
   Widget _body() {
     return ZagBox.profiles.listenableBuilder(
-      builder: (context, _) => ZagListView(
-        controller: scrollController,
-        children: [
-          _host(),
-          _apiKey(),
+      builder: (context, _) => ZagBox.zagreus.listenableBuilder(
+        selectItems: const [
+          ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED,
         ],
+        builder: (context, __) {
+          final advanced =
+              ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+          return ZagListView(
+            controller: scrollController,
+            children: [
+              if (advanced) ZagHeader(text: 'settings.RemoteConnection'.tr()),
+              ..._remoteBlocks(),
+              if (advanced) ...[
+                ZagHeader(text: 'settings.LocalConnection'.tr()),
+                ..._localBlocks(),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _host() {
+  List<Widget> _remoteBlocks() => [
+        _remoteHost(),
+        _apiKey(),
+      ];
+
+  List<Widget> _localBlocks() => [
+        _localHost(),
+        _localSsids(),
+        _connectionStatus(),
+      ];
+
+  Widget _remoteHost() {
     String host = ZagProfile.current.overseerrHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
@@ -70,6 +105,106 @@ class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
           ZagProfile.current.save();
           context.read<OverseerrState>().reset();
         }
+      },
+    );
+  }
+
+  Widget _localHost() {
+    final profile = ZagProfile.current;
+    final host = profile.overseerrLocalHost;
+    return ZagBlock(
+      title: 'settings.LocalHost'.tr(),
+      body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await SettingsDialogs().editHost(
+          context,
+          prefill: host,
+        );
+        if (result.item1) {
+          profile.overseerrLocalHost = result.item2;
+          profile.save();
+          ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
+          context.read<OverseerrState>().resetProfile();
+        }
+      },
+    );
+  }
+
+  Widget _localSsids() {
+    final profile = ZagProfile.current;
+    final ssids = profile.overseerrLocalSsids;
+    return ZagBlock(
+      title: 'settings.TrustedSsids'.tr(),
+      body: [
+        TextSpan(
+          text: ssids.isEmpty ? 'settings.TrustedSsidsDescription'.tr() : ssids,
+        ),
+      ],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'settings.TrustedSsids'.tr(),
+          prefill: ssids,
+          extraText: [
+            TextSpan(text: 'settings.TrustedSsidsHint'.tr()),
+          ],
+        );
+        if (result.item1) {
+          profile.overseerrLocalSsids = result.item2;
+          profile.save();
+          await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
+          context.read<OverseerrState>().resetProfile();
+        }
+      },
+    );
+  }
+
+  Widget _connectionStatus() {
+    final localService = ZagLocalConnectionService();
+
+    return ValueListenableBuilder<String?>(
+      valueListenable: localService.currentSsid,
+      builder: (context, ssid, _) {
+        final profile = ZagProfile.current;
+        final advancedEnabled =
+            ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
+        final hasLocalHost = profile.overseerrLocalHost.isNotEmpty;
+        final hasSsids = profile.overseerrLocalSsids.trim().isNotEmpty;
+        final localConfigured = advancedEnabled && hasLocalHost && hasSsids;
+
+        final title = 'settings.ConnectionStatus'.tr();
+
+        if (!localConfigured) {
+          return ZagBlock(
+            title: title,
+            body: [
+              TextSpan(
+                text: 'settings.ConnectionStatusRemoteOnly'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          );
+        }
+
+        final effectiveHost = profile.effectiveOverseerrHost();
+        final networkLabel = ssid ?? 'network.UnknownSsid'.tr();
+        final usingLocal = effectiveHost == profile.overseerrLocalHost;
+
+        final statusText = usingLocal
+            ? 'settings.ConnectionStatusLocal'.tr(args: [networkLabel])
+            : 'settings.ConnectionStatusRemote'.tr(args: [networkLabel]);
+
+        return ZagBlock(
+          title: title,
+          body: [
+            TextSpan(
+              text: statusText,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        );
       },
     );
   }
@@ -107,10 +242,10 @@ class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         final profile = ZagProfile.current;
-        final host = profile.overseerrHost;
+        final effectiveHost = profile.effectiveOverseerrHost();
         final apiKey = profile.overseerrKey;
 
-        if (host.isEmpty) {
+        if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'
