@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/widgets/pages/invalid_route.dart';
-import 'package:zagreus/widgets/sheets/download_client/button.dart';
 
 class MovieReleasesRoute extends StatefulWidget {
   final int movieId;
@@ -44,9 +43,6 @@ class _State extends State<MovieReleasesRoute> with ZagScrollControllerMixin {
       title: 'Releases',
       scrollControllers: [scrollController],
       bottom: RadarrReleasesSearchBar(scrollController: scrollController),
-      actions: const [
-        DownloadClientButton(),
-      ],
     );
   }
 

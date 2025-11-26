@@ -270,7 +270,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           ],
           if (!isPro || isMega || isUltra || isSupreme) ...[
             ZagDialog.tile(
-              icon: Icons.calendar_month_rounded,
+              icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.currentAccent,
               text: 'Monthly • \$0.99/month',
               subtitle: RichText(
@@ -497,7 +497,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           ],
           if (!isMega || isUltra || isSupreme) ...[
             ZagDialog.tile(
-              icon: Icons.rocket_launch_rounded,
+              icon: Icons.flash_on_rounded,
               iconColor: ZagColours.orange,
               text: 'Monthly • \$1.99/month',
               subtitle: RichText(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
-import 'package:zagreus/widgets/sheets/download_client/button.dart';
 
 class ReleasesRoute extends StatefulWidget {
   final int? episodeId;
@@ -46,9 +45,6 @@ class _State extends State<ReleasesRoute> with ZagScrollControllerMixin {
       title: 'sonarr.Releases'.tr(),
       scrollControllers: [scrollController],
       bottom: SonarrReleasesSearchBar(scrollController: scrollController),
-      actions: const [
-        DownloadClientButton(),
-      ],
     );
   }
 
