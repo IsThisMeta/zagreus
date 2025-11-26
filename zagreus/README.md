@@ -4,18 +4,19 @@ Zagreus is a self-hosted media controller for Sonarr/Radarr/Lidarr and friends. 
 
 ## Highlights
 
-- Supabase auth (replaces Firebase) and APNS-first iOS notifications
-- Refined theming and AMOLED option
-- Backups, profile switching, and webhook-driven notifications
-- Integrated search (Newznab/NZBHydra2), download queue, and module drawers
+- Supabase auth (replaces Firebase) and APNS-first iOS notifications; FaceID/passcode lock; Siri shortcuts
+- Refined theming (AMOLED + optional LunaSea theme) and legibility tweaks
+- Backups, profile switching, webhook-driven notifications, and real-time in-app toasts
+- Integrated search (Newznab/NZBHydra2), download queue, swipeable module tabs, and the new download drawer
+- Tiered experience: Pro/Mega/Ultra with Z Agent, Deep Cuts, Magic sections, Pro Sharing, and yearly pricing
+- Enhanced discovery: batch ops, relevancy-ranked results, sortable sections, improved links (rent/buy, deep links), Up Next and widgets
 
 ## Supported Services
 
 - Lidarr, Radarr, Sonarr
-- NZBGet, SABnzbd
-- Newznab/NZBHydra2 searching
-- Tautulli analytics
-- Wake-on-LAN
+- Readarr, Overseerr, Prowlarr, NZBGet, SABnzbd
+- Newznab/NZBHydra2 searching and Overseerr notifications
+- Tautulli analytics (with optional syncing for Z), server module, Wake-on-LAN
 
 ## Prerequisites
 
@@ -37,6 +38,16 @@ Common tips:
 - Create a `lib/environment.dart` or flavor file with your Supabase keys and API endpoints.
 - For push notifications, deploy the companion service in `../zagreus-notification-service`.
 - Use a real device or iOS simulator with APNS configured to exercise notifications.
+
+## What's New (1.1–1.7)
+
+- Notification upgrades: no-account support, granular controls, posters, and live toasts.
+- Discover enhancements: batch operations, relevancy-ranked results, sortable sections, better links/deep links, UI fixes, and speed cube.
+- New modules and integrations: Readarr, Prowlarr, Overseerr module + notifications, server module (Pro).
+- UX and control: swipe between tabs, download drawer, slow mode for busy servers, watch history sync fixes, enhanced add links, better movie detail links.
+- Media intelligence (Pro+): TMDB/IMDb/RT/Metacritic ratings, rent/buy deep links, trailers on long press, Up Next, Deep Cuts, Magic Show/Movie/Cast & Crew sections.
+- Access and security: FaceID/password lock, Siri shortcuts, SSID-based local/remote switching, yearly pricing, Pro Sharing (1 for Mega, 5 for Ultra).
+- Visual polish: legibility passes, optional LunaSea theme, calendar defaults to 2 rows, dashboard search styling, widgets for upcoming content.
 
 ## Testing
 
