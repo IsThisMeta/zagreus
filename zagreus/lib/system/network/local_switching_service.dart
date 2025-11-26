@@ -250,6 +250,12 @@ class ZagLocalConnectionService {
         ssids: profile.tautulliLocalSsids,
       ),
       _LocalSwitchConfig(
+        module: ZagModule.OVERSEERR,
+        enabled: profile.overseerrEnabled,
+        localHost: profile.overseerrLocalHost,
+        ssids: profile.overseerrLocalSsids,
+      ),
+      _LocalSwitchConfig(
         module: ZagModule.UNRAID,
         enabled: profile.unraidEnabled,
         localHost: profile.unraidLocalHost,
