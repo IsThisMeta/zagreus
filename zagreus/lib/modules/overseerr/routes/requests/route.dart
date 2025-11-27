@@ -18,6 +18,9 @@ class _State extends State<OverseerrRequestsRoute>
       GlobalKey<RefreshIndicatorState>();
   final ScrollController _scrollController = ScrollController();
 
+  String _requestFilter = 'pending';
+  String _requestSort = 'added';
+
   @override
   bool get wantKeepAlive => true;
 
@@ -27,10 +30,19 @@ class _State extends State<OverseerrRequestsRoute>
     await _state.fetchUsers();
   }
 
+  void _loadFilterAndSort() {
+    _requestFilter = UnraidDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _requestSort = UnraidDatabase.OVERSEERR_REQUEST_SORT.read() as String;
+    OverseerrState _state = context.read<OverseerrState>();
+    _state.requestsFilter = _requestFilter;
+    _state.requestsSort = _requestSort;
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFilterAndSort();
       _refresh();
     });
   }
@@ -99,15 +111,151 @@ class _State extends State<OverseerrRequestsRoute>
         }
       });
 
-    return ZagListViewBuilder(
-      controller: _scrollController,
-      itemBuilder: (context, index) {
-        return OverseerrRequestTile(
-          request: sorted[index],
-        );
-      },
-      itemCount: sorted.length,
-      itemExtent: OverseerrRequestTile.itemExtent,
+    return Column(
+      children: [
+        _buildFilterHeader(),
+        Expanded(
+          child: ZagListViewBuilder(
+            controller: _scrollController,
+            itemBuilder: (context, index) {
+              return OverseerrRequestTile(
+                request: sorted[index],
+              );
+            },
+            itemCount: sorted.length,
+            itemExtent: OverseerrRequestTile.itemExtent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildFilterSelector(),
+          _buildSortSelector(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSelector() {
+    const filterOptions = {
+      'pending': 'Pending',
+      'approved': 'Approved',
+      'declined': 'Declined',
+      'available': 'Available',
+      'processing': 'Processing',
+      'unavailable': 'Unavailable',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          width: 1,
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: _requestFilter,
+        underline: const SizedBox(),
+        isDense: true,
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+        dropdownColor: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        icon: Icon(
+          Icons.arrow_drop_down_rounded,
+          color: ZagColours.accentColor(context),
+        ),
+        items: filterOptions.entries.map((entry) {
+          return DropdownMenuItem<String>(
+            value: entry.key,
+            child: Text(entry.value),
+          );
+        }).toList(),
+        onChanged: (newFilter) {
+          if (newFilter == null) return;
+          setState(() {
+            _requestFilter = newFilter;
+          });
+          UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
+          OverseerrState _state = context.read<OverseerrState>();
+          _state.requestsFilter = newFilter;
+        },
+      ),
+    );
+  }
+
+  Widget _buildSortSelector() {
+    const sortOptions = {
+      'added': 'Most Recent',
+      'modified': 'Last Modified',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          width: 1,
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: _requestSort,
+        underline: const SizedBox(),
+        isDense: true,
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+        dropdownColor: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        icon: Icon(
+          Icons.arrow_drop_down_rounded,
+          color: ZagColours.accentColor(context),
+        ),
+        items: sortOptions.entries.map((entry) {
+          return DropdownMenuItem<String>(
+            value: entry.key,
+            child: Text(entry.value),
+          );
+        }).toList(),
+        onChanged: (newSort) {
+          if (newSort == null) return;
+          setState(() {
+            _requestSort = newSort;
+          });
+          UnraidDatabase.OVERSEERR_REQUEST_SORT.update(newSort);
+          OverseerrState _state = context.read<OverseerrState>();
+          _state.requestsSort = newSort;
+        },
+      ),
     );
   }
 }
