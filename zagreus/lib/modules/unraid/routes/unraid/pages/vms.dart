@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/api/unraid/models.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/unraid.dart';
 
 enum _VmAction {
@@ -315,6 +316,52 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     );
   }
 
+  Future<bool> _confirmVmAction(
+    UnraidVirtualMachine vm,
+    _VmAction action,
+  ) async {
+    // Check if confirmations are enabled
+    final confirmEnabled = ZagreusDatabase.UNRAID_CONFIRM_ACTIONS.read();
+    if (!confirmEnabled) return true;
+
+    bool confirmed = false;
+
+    final actionLabel = switch (action) {
+      _VmAction.start => 'start',
+      _VmAction.stop => 'stop',
+      _VmAction.reboot => 'reboot',
+    };
+
+    final actionColor = switch (action) {
+      _VmAction.start => Colors.green,
+      _VmAction.stop => ZagColours.red,
+      _VmAction.reboot => ZagColours.orange,
+    };
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'Confirm Action',
+      buttons: [
+        ZagDialog.button(
+          text: actionLabel.substring(0, 1).toUpperCase() + actionLabel.substring(1),
+          textColor: actionColor,
+          onPressed: () {
+            confirmed = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          },
+        ),
+      ],
+      content: [
+        ZagDialog.textContent(
+          text: 'Are you sure you want to $actionLabel ${vm.name}?',
+        ),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+
+    return confirmed;
+  }
+
   Future<void> _handleVmAction(
     UnraidVirtualMachine vm,
     _VmAction action,
@@ -328,6 +375,10 @@ class _UnraidVmPageState extends State<UnraidVmPage>
       );
       return;
     }
+
+    // Show confirmation dialog
+    final confirmed = await _confirmVmAction(vm, action);
+    if (!confirmed) return;
 
     setState(() {
       _pendingActions[vm.id] = action;

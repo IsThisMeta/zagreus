@@ -213,6 +213,8 @@ class _State extends State<ConfigurationGeneralRoute>
       );
     }
 
+    widgets.add(_confirmUnraidActions());
+
     return widgets;
   }
 
@@ -352,6 +354,24 @@ class _State extends State<ConfigurationGeneralRoute>
             BIOSDatabase.BOOT_MODULE.update(result.item2!);
           }
         },
+      ),
+    );
+  }
+
+  Widget _confirmUnraidActions() {
+    const db = ZagreusDatabase.UNRAID_CONFIRM_ACTIONS;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Confirm Unraid Actions',
+        body: const [
+          TextSpan(
+            text: 'Show confirmation dialog before starting, stopping, or rebooting VMs and Docker containers',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
       ),
     );
   }
