@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
