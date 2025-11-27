@@ -125,7 +125,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DASHBOARD_SHOW_MODULES_TAB<bool>(true),
   DISCOVER_SHOW_MODULES_TAB<bool>(false),
   SHOW_CALENDAR_TAB<bool>(true),
-  SHOW_AGENT_TAB<bool>(true);
+  SHOW_AGENT_TAB<bool>(true),
+  UNRAID_CONFIRM_ACTIONS<bool>(true);
 
   @override
   ZagTable get table => ZagTable.zagreus;
