@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/unraid.dart';
 import 'package:zagreus/modules/overseerr.dart';
 
 class OverseerrRequestsRoute extends StatefulWidget {
