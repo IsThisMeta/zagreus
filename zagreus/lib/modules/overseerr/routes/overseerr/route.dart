@@ -130,7 +130,7 @@ class _State extends State<OverseerrRoute> {
   void _openWebUI() {
     final host = context.read<OverseerrState>().host;
     if (host.isNotEmpty) {
-      host.openLinkInApp();
+      host.openLink();
     }
   }
 
