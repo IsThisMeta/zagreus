@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/search/core.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationSearchRoute extends StatefulWidget {
   const ConfigurationSearchRoute({
@@ -37,11 +38,12 @@ class _State extends State<ConfigurationSearchRoute>
   Widget _bottomNavigationBar() {
     return ZagBottomActionBar(
       actions: [
-        ZagButton.text(
-          text: 'search.AddProwlarr'.tr(),
-          icon: Icons.travel_explore_rounded,
-          onTap: SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.go,
-        ),
+        if (ZagreusPro.isEnabled)
+          ZagButton.text(
+            text: 'search.AddProwlarr'.tr(),
+            icon: Icons.travel_explore_rounded,
+            onTap: SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.go,
+          ),
         ZagButton.text(
           text: 'search.AddIndexer'.tr(),
           icon: Icons.add_rounded,
