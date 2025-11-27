@@ -126,13 +126,13 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: Text(widget.indexer.displayName),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.history_rounded),
-              tooltip: 'Search History',
-              onPressed: _showSearchHistorySheet,
-            ),
-          ],
+          // actions: [
+          //   IconButton(
+          //     icon: const Icon(Icons.history_rounded),
+          //     tooltip: 'Search History',
+          //     onPressed: _showSearchHistorySheet,
+          //   ),
+          // ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
             child: Padding(
