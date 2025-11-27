@@ -23,6 +23,7 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   RadarrMovie? movie;
   PageController? _pageController;
+  ZagLoadingState _automaticLoadingState = ZagLoadingState.INACTIVE;
 
   @override
   Future<void> loadCallback() async {
@@ -61,6 +62,28 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
     );
   }
 
+  Future<void> _automatic() async {
+    setState(() => _automaticLoadingState = ZagLoadingState.ACTIVE);
+    RadarrAPIHelper()
+        .automaticSearch(
+            context: context,
+            movieId: movie!.id!,
+            title: movie!.title!)
+        .then((value) {
+      if (mounted)
+        setState(() {
+          _automaticLoadingState =
+              value ? ZagLoadingState.INACTIVE : ZagLoadingState.ERROR;
+        });
+    });
+  }
+
+  Future<void> _manual() async {
+    RadarrRoutes.MOVIE_RELEASES.go(params: {
+      'movie': movie!.id!.toString(),
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.movieId <= 0)
@@ -83,6 +106,18 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
 
     if (movie != null) {
       _actions = [
+        ZagButton(
+          type: ZagButtonType.TEXT,
+          text: 'Automatic',
+          icon: Icons.search_rounded,
+          onTap: _automatic,
+          loadingState: _automaticLoadingState,
+        ),
+        ZagButton.text(
+          text: 'Interactive',
+          icon: Icons.person_rounded,
+          onTap: _manual,
+        ),
         ZagIconButton(
           icon: ZagIcons.LINK,
           onPressed: () async {

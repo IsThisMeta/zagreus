@@ -20,6 +20,7 @@ class _State extends State<SeriesSeasonDetailsRoute>
     with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   PageController? _pageController;
+  ZagLoadingState _automaticLoadingState = ZagLoadingState.INACTIVE;
 
   @override
   void initState() {
@@ -27,6 +28,28 @@ class _State extends State<SeriesSeasonDetailsRoute>
     _pageController = PageController(
       initialPage: SonarrDatabase.NAVIGATION_INDEX_SEASON_DETAILS.read(),
     );
+  }
+
+  Future<void> _automatic() async {
+    Future<void> setLoadingState(ZagLoadingState state) async {
+      if (this.mounted) setState(() => _automaticLoadingState = state);
+    }
+
+    setLoadingState(ZagLoadingState.ACTIVE);
+    SonarrAPIController()
+        .automaticSeasonSearch(
+          context: context,
+          seriesId: widget.seriesId,
+          seasonNumber: widget.seasonNumber,
+        )
+        .whenComplete(() => setLoadingState(ZagLoadingState.INACTIVE));
+  }
+
+  Future<void> _manual() async {
+    return SonarrRoutes.RELEASES.go(queryParams: {
+      'series': widget.seriesId.toString(),
+      'season': widget.seasonNumber.toString(),
+    });
   }
 
   @override
@@ -54,10 +77,30 @@ class _State extends State<SeriesSeasonDetailsRoute>
             'sonarr.SeasonNumber'.tr(args: [widget.seasonNumber.toString()]);
         break;
     }
+
+    List<Widget>? _actions;
+    if (widget.seasonNumber >= 0) {
+      _actions = [
+        ZagButton(
+          type: ZagButtonType.TEXT,
+          text: 'sonarr.Automatic'.tr(),
+          icon: Icons.search_rounded,
+          onTap: _automatic,
+          loadingState: _automaticLoadingState,
+        ),
+        ZagButton.text(
+          text: 'sonarr.Interactive'.tr(),
+          icon: Icons.person_rounded,
+          onTap: _manual,
+        ),
+      ];
+    }
+
     return ZagAppBar(
       title: _season,
       scrollControllers: SonarrSeasonDetailsNavigationBar.scrollControllers,
       pageController: _pageController,
+      actions: _actions,
     );
   }
 

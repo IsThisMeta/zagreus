@@ -91,6 +91,11 @@ class _State extends State<AuthorBookDetailsRoute> {
       scrollControllers: ReadarrBookDetailsNavigationBar.scrollControllers,
       actions: _book != null
           ? [
+              ZagButton.text(
+                text: 'Search',
+                icon: Icons.search_rounded,
+                onTap: _manualSearch,
+              ),
               ZagIconButton(
                 icon: Icons.public_rounded,
                 onPressed: () => _openGoodreads(),
@@ -106,7 +111,6 @@ class _State extends State<AuthorBookDetailsRoute> {
       pageController: _pageController,
       book: _book!,
       authorId: widget.authorId,
-      onManualSearch: _manualSearch,
     );
   }
 
