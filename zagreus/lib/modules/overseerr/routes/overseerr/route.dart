@@ -116,20 +116,20 @@ class _State extends State<OverseerrRoute> {
   }
 
   List<Widget>? _buildAppBarActions() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return null;
+    if (!context.read<OverseerrState>().enabled) return null;
     return [
       IconButton(
-        icon: const Icon(Icons.download_rounded),
-        tooltip: 'Queue',
-        onPressed: _openDownloadsDrawer,
+        icon: const Icon(Icons.language_rounded),
+        tooltip: 'Open Web UI',
+        onPressed: _openWebUI,
       ),
     ];
   }
 
-  void _openDownloadsDrawer() {
-    final scaffoldState = _scaffoldKey.currentState;
-    if (scaffoldState?.hasEndDrawer ?? false) {
-      scaffoldState?.openEndDrawer();
+  void _openWebUI() {
+    final host = context.read<OverseerrState>().host;
+    if (host.isNotEmpty) {
+      host.openLinkInApp();
     }
   }
 
