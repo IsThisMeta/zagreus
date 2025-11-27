@@ -19,6 +19,7 @@ class _State extends State<OverseerrRequestsRoute>
   final ScrollController _scrollController = ScrollController();
 
   String _requestFilter = 'pending';
+  String _requestSort = 'added';
 
   @override
   bool get wantKeepAlive => true;
@@ -29,17 +30,19 @@ class _State extends State<OverseerrRequestsRoute>
     await _state.fetchUsers();
   }
 
-  void _loadFilter() {
+  void _loadFilterAndSort() {
     _requestFilter = UnraidDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _requestSort = UnraidDatabase.OVERSEERR_REQUEST_SORT.read() as String;
     OverseerrState _state = context.read<OverseerrState>();
     _state.requestsFilter = _requestFilter;
+    _state.requestsSort = _requestSort;
   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFilter();
+      _loadFilterAndSort();
       _refresh();
     });
   }
@@ -133,14 +136,8 @@ class _State extends State<OverseerrRequestsRoute>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Filter by Status',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
           _buildFilterSelector(),
+          _buildSortSelector(),
         ],
       ),
     );
@@ -201,6 +198,62 @@ class _State extends State<OverseerrRequestsRoute>
           UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
           OverseerrState _state = context.read<OverseerrState>();
           _state.requestsFilter = newFilter;
+        },
+      ),
+    );
+  }
+
+  Widget _buildSortSelector() {
+    const sortOptions = {
+      'added': 'Most Recent',
+      'modified': 'Last Modified',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white10
+              : Colors.black12,
+          width: 1,
+        ),
+      ),
+      child: DropdownButton<String>(
+        value: _requestSort,
+        underline: const SizedBox(),
+        isDense: true,
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+        dropdownColor: Theme.of(context).brightness == Brightness.dark
+            ? ZagColours.secondary
+            : ZagColours.secondaryLight,
+        icon: Icon(
+          Icons.arrow_drop_down_rounded,
+          color: ZagColours.accentColor(context),
+        ),
+        items: sortOptions.entries.map((entry) {
+          return DropdownMenuItem<String>(
+            value: entry.key,
+            child: Text(entry.value),
+          );
+        }).toList(),
+        onChanged: (newSort) {
+          if (newSort == null) return;
+          setState(() {
+            _requestSort = newSort;
+          });
+          UnraidDatabase.OVERSEERR_REQUEST_SORT.update(newSort);
+          OverseerrState _state = context.read<OverseerrState>();
+          _state.requestsSort = newSort;
         },
       ),
     );
