@@ -157,6 +157,5 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
   bool _requiresPro(ZagModule module) =>
       module == ZagModule.DISCOVER ||
       module == ZagModule.OVERSEERR ||
-      module == ZagModule.SEARCH ||
       module == ZagModule.UNRAID;
 }
