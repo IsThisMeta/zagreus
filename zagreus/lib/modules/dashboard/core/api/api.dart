@@ -159,6 +159,8 @@ class API {
     Response response = await _client.get('calendar', queryParameters: {
       'includeSeries': true,
       'includeEpisodeFile': true,
+      'unmonitored':
+          DashboardDatabase.CALENDAR_INCLUDE_UNMONITORED_SONARR.read(),
     });
     if (response.data.length > 0) {
       for (var entry in response.data) {

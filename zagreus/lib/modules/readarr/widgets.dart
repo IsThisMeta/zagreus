@@ -17,4 +17,5 @@ export 'widgets/navigation_bar.dart';
 export 'widgets/releases_hide_button.dart';
 export 'widgets/releases_search_bar.dart';
 export 'widgets/releases_sorting_button.dart';
+export 'widgets/releases_tile.dart';
 export 'widgets/search_result_tile.dart';

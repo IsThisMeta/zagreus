@@ -53,6 +53,7 @@ class _State extends State<ConfigurationDashboardCalendarRoute>
         _modulesLidarr(),
         _modulesRadarr(),
         _modulesSonarr(),
+        _sonarrUnmonitoredToggle(),
       ],
     );
   }
@@ -153,6 +154,20 @@ class _State extends State<ConfigurationDashboardCalendarRoute>
             ),
           )
         ],
+        trailing: ZagSwitch(
+          value: _db.read(),
+          onChanged: _db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _sonarrUnmonitoredToggle() {
+    const _db = DashboardDatabase.CALENDAR_INCLUDE_UNMONITORED_SONARR;
+    return _db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Include Unmonitored',
+        body: const [TextSpan(text: 'Show unmonitored shows in the calendar.')],
         trailing: ZagSwitch(
           value: _db.read(),
           onChanged: _db.update,
