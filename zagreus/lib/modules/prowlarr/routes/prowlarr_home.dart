@@ -4,6 +4,7 @@ import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/prowlarr/core.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 /// Prowlarr home page - main search interface
 class ProwlarrHomePage extends StatefulWidget {
@@ -74,6 +75,46 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user has Pro access
+    if (!ZagreusPro.isEnabled) {
+      return Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(widget.indexer.displayName),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.star_rounded, size: 64, color: Colors.amber),
+                const SizedBox(height: 16),
+                Text(
+                  'zagreus.Pro'.tr(),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Prowlarr search is a Pro feature. Upgrade to Pro to search with Prowlarr.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return ChangeNotifierProvider<ProwlarrState>.value(
       value: _state,
       child: Scaffold(
