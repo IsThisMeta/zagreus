@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/database/tables/unraid.dart';
+import 'package:zagreus/database/tables/ui_preferences.dart';
 import 'package:zagreus/modules/overseerr.dart';
 
 class OverseerrRequestsRoute extends StatefulWidget {
@@ -32,8 +32,8 @@ class _State extends State<OverseerrRequestsRoute>
   }
 
   void _loadFilterAndSort() {
-    _requestFilter = UnraidDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
-    _requestSort = UnraidDatabase.OVERSEERR_REQUEST_SORT.read() as String;
+    _requestFilter = UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _requestSort = UIPreferencesDatabase.OVERSEERR_REQUEST_SORT.read() as String;
     OverseerrState _state = context.read<OverseerrState>();
     _state.requestsFilter = _requestFilter;
     _state.requestsSort = _requestSort;
@@ -196,7 +196,7 @@ class _State extends State<OverseerrRequestsRoute>
           setState(() {
             _requestFilter = newFilter;
           });
-          UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
+          UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
           OverseerrState _state = context.read<OverseerrState>();
           _state.requestsFilter = newFilter;
         },
@@ -252,7 +252,7 @@ class _State extends State<OverseerrRequestsRoute>
           setState(() {
             _requestSort = newSort;
           });
-          UnraidDatabase.OVERSEERR_REQUEST_SORT.update(newSort);
+          UIPreferencesDatabase.OVERSEERR_REQUEST_SORT.update(newSort);
           OverseerrState _state = context.read<OverseerrState>();
           _state.requestsSort = newSort;
         },
