@@ -161,9 +161,8 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.SABNZBD:
         return ZagProfile.current.sabnzbdEnabled;
       case ZagModule.SEARCH:
-        // Search module is enabled if user has any indexers configured
-        // Filtering between Prowlarr and regular indexers happens in the UI
-        return !ZagBox.indexers.isEmpty;
+        // Search module is always enabled for all users
+        return true;
       case ZagModule.SONARR:
         return ZagProfile.current.sonarrEnabled;
       case ZagModule.TAUTULLI:

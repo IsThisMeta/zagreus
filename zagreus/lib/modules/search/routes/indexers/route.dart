@@ -3,7 +3,6 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
 import 'package:zagreus/widgets/sheets/download_client/button.dart';
-import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SearchRoute extends StatefulWidget {
   const SearchRoute({
