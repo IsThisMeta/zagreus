@@ -36,7 +36,7 @@ import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
 import 'package:zagreus/modules/discover/widgets/server_sections_editor.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/database/tables/unraid.dart';
+import 'package:zagreus/database/tables/ui_preferences.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/z_conversation_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
@@ -8755,7 +8755,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   @override
   void initState() {
     super.initState();
-    _overseerrRequestFilter = UnraidDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _overseerrRequestFilter = UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
     _loadData();
   }
 
@@ -9284,7 +9284,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     }
 
     // Get section order from database
-    final sectionOrder = UnraidDatabase.SECTION_ORDER.read() as List;
+    final sectionOrder = UIPreferencesDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
         : ['server_issues', 'overseerr_requests', 'tautulli_streams', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
@@ -9645,7 +9645,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           setState(() {
             _overseerrRequestFilter = newFilter;
           });
-          UnraidDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
+          UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
           _loadOverseerrRequests();
         },
       ),
