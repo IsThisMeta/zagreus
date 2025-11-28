@@ -24,10 +24,9 @@ class SearchIndexerTile extends StatelessWidget {
         if (indexer!.isProwlarr) {
           // Prowlarr search requires Pro
           if (!ZagreusPro.isEnabled) {
-            ZagDialogs().showOkDialog(
-              context: context,
+            showZagInfoSnackBar(
               title: 'zagreus.Pro'.tr(),
-              content: 'Prowlarr search is a Pro feature. Upgrade to Pro to search with Prowlarr.',
+              message: 'Prowlarr search is a Pro feature. Upgrade to Pro to search with Prowlarr.',
             );
             return;
           }
