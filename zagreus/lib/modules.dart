@@ -20,6 +20,7 @@ import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 part 'modules.g.dart';
 
@@ -160,7 +161,12 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.SABNZBD:
         return ZagProfile.current.sabnzbdEnabled;
       case ZagModule.SEARCH:
-        return !ZagBox.indexers.isEmpty;
+        // Search is enabled if there are indexers available to the user
+        // Free users can only access non-Prowlarr indexers
+        if (ZagBox.indexers.isEmpty) return false;
+        if (ZagreusPro.isEnabled) return true;
+        // For free users, check if there are any non-Prowlarr indexers
+        return ZagBox.indexers.data.any((indexer) => !indexer.isProwlarr);
       case ZagModule.SONARR:
         return ZagProfile.current.sonarrEnabled;
       case ZagModule.TAUTULLI:
