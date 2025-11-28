@@ -41,23 +41,32 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
   Widget _drawer() => ZagDrawer(page: ZagModule.SEARCH.key);
 
   Widget _body() {
-    // Filter out Prowlarr indexers for free users
-    final availableIndexers = ZagBox.indexers.data.where((indexer) {
-      if (indexer.isProwlarr && !ZagreusPro.isEnabled) {
-        return false;
-      }
-      return true;
-    }).toList();
+    return ZagBox.indexers.listenableBuilder(
+      builder: (context, _) {
+        // Filter out Prowlarr indexers for free users
+        final allIndexers = ZagBox.indexers.data.toList();
+        final availableIndexers = allIndexers.where((indexer) {
+          // Free users: hide Prowlarr indexers
+          if (!ZagreusPro.isEnabled && indexer.isProwlarr) {
+            return false;
+          }
+          // Pro users: show all indexers
+          // Free users: show non-Prowlarr indexers
+          return true;
+        }).toList();
 
-    if (availableIndexers.isEmpty) {
-      return ZagMessage.moduleNotEnabled(
-        context: context,
-        module: ZagModule.SEARCH.title,
-      );
-    }
-    return ZagListView(
-      controller: scrollController,
-      children: _buildList(availableIndexers),
+        if (availableIndexers.isEmpty) {
+          return ZagMessage.moduleNotEnabled(
+            context: context,
+            module: ZagModule.SEARCH.title,
+          );
+        }
+
+        return ZagListView(
+          controller: scrollController,
+          children: _buildList(availableIndexers),
+        );
+      },
     );
   }
 
