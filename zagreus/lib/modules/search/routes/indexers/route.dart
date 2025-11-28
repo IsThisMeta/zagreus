@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
 import 'package:zagreus/widgets/sheets/download_client/button.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SearchRoute extends StatefulWidget {
   const SearchRoute({
@@ -40,7 +41,15 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
   Widget _drawer() => ZagDrawer(page: ZagModule.SEARCH.key);
 
   Widget _body() {
-    if (ZagBox.indexers.isEmpty) {
+    // Filter out Prowlarr indexers for free users
+    final availableIndexers = ZagBox.indexers.data.where((indexer) {
+      if (indexer.isProwlarr && !ZagreusPro.isEnabled) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (availableIndexers.isEmpty) {
       return ZagMessage.moduleNotEnabled(
         context: context,
         module: ZagModule.SEARCH.title,
@@ -48,12 +57,12 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
     }
     return ZagListView(
       controller: scrollController,
-      children: _list,
+      children: _buildList(availableIndexers),
     );
   }
 
-  List<Widget> get _list {
-    final list = ZagBox.indexers.data
+  List<Widget> _buildList(List<dynamic> indexers) {
+    final list = indexers
         .map((indexer) => SearchIndexerTile(indexer: indexer))
         .toList();
     list.sort((a, b) => a.indexer!.displayName
