@@ -298,6 +298,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       ZagModule.SONARR,
       ZagModule.LIDARR,
       ZagModule.READARR,
+      ZagModule.PROWLARR,
       ZagModule.SABNZBD,
       ZagModule.NZBGET,
       ZagModule.TAUTULLI,
@@ -327,6 +328,34 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
 
     // Set as active profile
     ZagreusDatabase.ENABLED_PROFILE.update(ZagProfile.DEFAULT_PROFILE);
+
+    // Create Prowlarr indexer for search module
+    final prowlarrEnabled = demoConfig['prowlarr_enabled'] ?? true;
+    final prowlarrHost = demoConfig['prowlarr_host'] ?? 'https://prowlarr.scarletmacaw.box.ca';
+    final prowlarrKey = demoConfig['prowlarr_key'] ?? '8f0d5a060da944c1a20e4cde56692c1c';
+
+    if (prowlarrEnabled) {
+      // Clear existing indexers
+      final indexerKeys = List.of(ZagBox.indexers.keys);
+      for (final key in indexerKeys) {
+        await ZagBox.indexers.delete(key);
+      }
+
+      // Create Prowlarr indexer
+      await ZagBox.indexers.update(
+        0,
+        ZagIndexer(
+          displayName: 'Prowlarr',
+          host: prowlarrHost,
+          apiKey: prowlarrKey,
+          headers: {},
+          isProwlarr: true,
+        ),
+      );
+
+      // Enable search module
+      ZagreusDatabase.PROWLARR_MODULE_ENABLED.update(true);
+    }
 
     showZagSuccessSnackBar(
       title: 'Demo Configuration Loaded',
