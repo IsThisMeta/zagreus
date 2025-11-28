@@ -25,7 +25,7 @@ enum SearchRoutes with ZagRoutesMixin {
   ZagModule get module => ZagModule.SEARCH;
 
   @override
-  bool isModuleEnabled(BuildContext context) => ZagreusPro.isEnabled;
+  bool isModuleEnabled(BuildContext context) => ZagModule.SEARCH.isEnabled;
 
   @override
   GoRoute get routes {
