@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/database.dart';
 import 'package:zagreus/database/models/external_module.dart';
+import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -352,9 +353,6 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           isProwlarr: true,
         ),
       );
-
-      // Enable search module
-      ZagreusDatabase.PROWLARR_MODULE_ENABLED.update(true);
     }
 
     showZagSuccessSnackBar(

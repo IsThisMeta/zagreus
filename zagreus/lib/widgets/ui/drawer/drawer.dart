@@ -181,6 +181,7 @@ class ZagDrawer extends StatelessWidget {
               child: Icon(
                 module.icon,
                 color: currentPage ? selectedColor : unselectedColor,
+                size: module == ZagModule.UNRAID ? 22 : null,
               ),
               padding: ZagUI.MARGIN_DEFAULT_HORIZONTAL * 1.5,
             ),
