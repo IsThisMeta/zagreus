@@ -41,47 +41,20 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
   Widget _drawer() => ZagDrawer(page: ZagModule.SEARCH.key);
 
   Widget _body() {
-    return ZagBox.indexers.listenableBuilder(
-      builder: (context, _) {
-        final allIndexers = ZagBox.indexers.data.toList();
-
-        // Filter indexers based on Pro status
-        final availableIndexers = allIndexers.where((indexer) {
-          // Hide Prowlarr indexers for free users
-          if (!ZagreusPro.isEnabled && indexer.isProwlarr) {
-            return false;
-          }
-          return true;
-        }).toList();
-
-        // Show message if no indexers available after filtering
-        if (availableIndexers.isEmpty) {
-          final hasProwlarrOnly = allIndexers.isNotEmpty &&
-                                   allIndexers.every((i) => i.isProwlarr);
-
-          if (hasProwlarrOnly && !ZagreusPro.isEnabled) {
-            // User only has Prowlarr indexers but is on free tier
-            return ZagMessage(
-              text: 'Prowlarr search requires Zagreus Pro.\n\nAdd a regular indexer to use search, or upgrade to Pro for Prowlarr access.',
-            );
-          }
-
-          return ZagMessage.moduleNotEnabled(
-            context: context,
-            module: ZagModule.SEARCH.title,
-          );
-        }
-
-        return ZagListView(
-          controller: scrollController,
-          children: _buildList(availableIndexers),
-        );
-      },
+    if (ZagBox.indexers.isEmpty) {
+      return ZagMessage.moduleNotEnabled(
+        context: context,
+        module: ZagModule.SEARCH.title,
+      );
+    }
+    return ZagListView(
+      controller: scrollController,
+      children: _list,
     );
   }
 
-  List<Widget> _buildList(List<dynamic> indexers) {
-    final list = indexers
+  List<Widget> get _list {
+    final list = ZagBox.indexers.data
         .map((indexer) => SearchIndexerTile(indexer: indexer))
         .toList();
     list.sort((a, b) => a.indexer!.displayName
