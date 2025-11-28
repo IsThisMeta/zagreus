@@ -120,6 +120,14 @@ class OverseerrState extends ZagModuleState {
     fetchRequests();
   }
 
+  String _requestsSort = 'added';
+  String get requestsSort => _requestsSort;
+  set requestsSort(String requestsSort) {
+    _requestsSort = requestsSort;
+    notifyListeners();
+    fetchRequests();
+  }
+
   List<OverseerrRequest>? _requests;
   List<OverseerrRequest>? get requests => _requests;
 
@@ -139,7 +147,7 @@ class OverseerrState extends ZagModuleState {
     try {
       final response = await GetOverseerrRequests(_api!, Dio())(
         filter: _requestsFilter,
-        sort: 'added',
+        sort: _requestsSort,
       );
 
       // Enrich requests with media details if missing

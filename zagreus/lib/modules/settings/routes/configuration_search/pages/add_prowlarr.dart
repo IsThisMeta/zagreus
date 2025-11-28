@@ -63,10 +63,6 @@ class _State extends State<ConfigurationSearchAddProwlarrRoute>
     return ZagListView(
       controller: scrollController,
       children: [
-        ZagBlock(
-          title: 'search.ProwlarrOneClick'.tr(),
-          body: [TextSpan(text: 'search.ProwlarrOneClickDescription'.tr())],
-        ),
         _displayName(),
         _apiURL(),
         _apiKey(),

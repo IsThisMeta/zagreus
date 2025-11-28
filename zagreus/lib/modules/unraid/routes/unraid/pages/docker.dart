@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/api/unraid/unraid.dart';
 import 'package:zagreus/api/unraid/models.dart';
@@ -325,25 +326,58 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
     );
   }
 
+  Future<bool> _confirmDockerAction(UnraidDockerContainer container) async {
+    // Check if confirmations are enabled
+    final confirmEnabled = ZagreusDatabase.UNRAID_CONFIRM_ACTIONS.read();
+    if (!confirmEnabled) return true;
+
+    bool confirmed = false;
+
+    final actionLabel = container.isRunning ? 'stop' : 'start';
+    final actionColor = container.isRunning ? ZagColours.red : Colors.green;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'Confirm Action',
+      buttons: [
+        ZagDialog.button(
+          text: actionLabel.substring(0, 1).toUpperCase() + actionLabel.substring(1),
+          textColor: actionColor,
+          onPressed: () {
+            confirmed = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          },
+        ),
+      ],
+      content: [
+        ZagDialog.textContent(
+          text: 'Are you sure you want to $actionLabel ${container.name}?',
+        ),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+
+    return confirmed;
+  }
+
   Future<void> _handleToggleContainer(UnraidDockerContainer container) async {
+    final serverState = context.read<UnraidState>();
+    if (!serverState.isConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Configure your server connection first.'),
+        ),
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await _confirmDockerAction(container);
+    if (!confirmed) return;
+
     setState(() {
       _processingContainers[container.id] = true;
     });
-
-    final serverState = context.read<UnraidState>();
-    if (!serverState.isConfigured) {
-      if (mounted) {
-        setState(() {
-          _processingContainers[container.id] = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Configure your server connection first.'),
-          ),
-        );
-      }
-      return;
-    }
 
     final api = UnraidAPI(
       host: serverState.host,

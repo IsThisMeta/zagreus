@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/ui_preferences.dart';
 import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/unraid/routes/unraid/widgets/navigation_bar.dart';
 import 'package:zagreus/modules/unraid/routes/unraid/pages/system.dart';
@@ -17,7 +18,7 @@ class UnraidRoute extends StatefulWidget {
 class _State extends State<UnraidRoute> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  int _currentPage = UnraidDatabase.NAVIGATION_INDEX.read();
+  int _currentPage = UIPreferencesDatabase.NAVIGATION_INDEX.read();
 
   @override
   void initState() {
