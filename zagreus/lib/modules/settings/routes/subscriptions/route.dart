@@ -81,7 +81,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       ? 'Included with Mega'
                       : isPro
                           ? proPlanLabel!
-                          : 'Unlock advanced modules and features',
+                          : 'Unlock all modules & power features',
             )
           ],
           trailing: GestureDetector(
@@ -219,12 +219,16 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           'Mega already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
     } else if (isPro) {
       introText =
-          "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades, the Server module, Unraid integrations, and more!";
+          "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades and premium features!";
     } else {
       introText = 'Zagreus Pro unlocks:\n'
-          '• Dashboard enhancements\n'
-          '• Unraid, Overseerr, and Search modules\n'
-          '• And more!\n\n'
+          '• Premium Dashboard\n'
+          '• Unraid\n'
+          '• Overseerr\n'
+          '• Prowlarr\n'
+          '• Enhanced Cast & Crew\n'
+          '• Ratings & Links\n'
+          '• And more\n\n'
           'Choose a plan to get started.';
     }
 
