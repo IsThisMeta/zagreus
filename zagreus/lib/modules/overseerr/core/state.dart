@@ -65,6 +65,9 @@ class OverseerrState extends ZagModuleState {
     // Copy profile into state
     _enabled = _profile.overseerrEnabled;
     _host = _profile.effectiveOverseerrHost();
+    if (_host.isNotEmpty && !_host.endsWith('/')) {
+      _host += '/';
+    }
     _apiKey = _profile.overseerrKey;
     _headers = Map.unmodifiable(_profile.overseerrHeaders);
 
