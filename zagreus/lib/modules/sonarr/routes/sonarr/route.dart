@@ -84,7 +84,6 @@ class _State extends State<SonarrRoute> {
       actions = [
         const SonarrAppBarAddSeriesAction(),
         const SonarrAppBarGlobalSettingsAction(),
-        ..._buildQueueDrawerAction(),
       ];
     }
     return ZagAppBar.dropdown(
@@ -95,24 +94,6 @@ class _State extends State<SonarrRoute> {
       pageController: _pageController,
       scrollControllers: SonarrNavigationBar.scrollControllers,
     );
-  }
-
-  List<Widget> _buildQueueDrawerAction() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return [];
-    return [
-      IconButton(
-        icon: const Icon(Icons.download_rounded),
-        tooltip: 'Queue',
-        onPressed: _openQueueDrawer,
-      ),
-    ];
-  }
-
-  void _openQueueDrawer() {
-    final scaffoldState = _scaffoldKey.currentState;
-    if (scaffoldState?.hasEndDrawer ?? false) {
-      scaffoldState?.openEndDrawer();
-    }
   }
 
   Widget _body() {

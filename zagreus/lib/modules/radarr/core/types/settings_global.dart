@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/router/routes/radarr.dart';
 
 enum RadarrGlobalSettingsType {
   WEB_GUI,
@@ -9,6 +10,10 @@ enum RadarrGlobalSettingsType {
   SEARCH_ALL_MISSING,
   UPDATE_LIBRARY,
   BACKUP_DATABASE,
+  HISTORY,
+  MANUAL_IMPORT,
+  SYSTEM_STATUS,
+  TAGS,
 }
 
 extension RadarrGlobalSettingsTypeExtension on RadarrGlobalSettingsType {
@@ -24,6 +29,14 @@ extension RadarrGlobalSettingsTypeExtension on RadarrGlobalSettingsType {
         return Icons.search_rounded;
       case RadarrGlobalSettingsType.BACKUP_DATABASE:
         return Icons.save_rounded;
+      case RadarrGlobalSettingsType.HISTORY:
+        return Icons.history_rounded;
+      case RadarrGlobalSettingsType.MANUAL_IMPORT:
+        return Icons.download_done_rounded;
+      case RadarrGlobalSettingsType.SYSTEM_STATUS:
+        return Icons.computer_rounded;
+      case RadarrGlobalSettingsType.TAGS:
+        return Icons.style_rounded;
     }
   }
 
@@ -39,6 +52,14 @@ extension RadarrGlobalSettingsTypeExtension on RadarrGlobalSettingsType {
         return 'radarr.SearchAllMissing'.tr();
       case RadarrGlobalSettingsType.BACKUP_DATABASE:
         return 'radarr.BackupDatabase'.tr();
+      case RadarrGlobalSettingsType.HISTORY:
+        return 'radarr.History'.tr();
+      case RadarrGlobalSettingsType.MANUAL_IMPORT:
+        return 'radarr.ManualImport'.tr();
+      case RadarrGlobalSettingsType.SYSTEM_STATUS:
+        return 'radarr.SystemStatus'.tr();
+      case RadarrGlobalSettingsType.TAGS:
+        return 'radarr.Tags'.tr();
     }
   }
 
@@ -54,6 +75,14 @@ extension RadarrGlobalSettingsTypeExtension on RadarrGlobalSettingsType {
         return _updateLibrary(context);
       case RadarrGlobalSettingsType.BACKUP_DATABASE:
         return _backupDatabase(context);
+      case RadarrGlobalSettingsType.HISTORY:
+        return _openHistory(context);
+      case RadarrGlobalSettingsType.MANUAL_IMPORT:
+        return _openManualImport(context);
+      case RadarrGlobalSettingsType.SYSTEM_STATUS:
+        return _openSystemStatus(context);
+      case RadarrGlobalSettingsType.TAGS:
+        return _openTags(context);
     }
   }
 
@@ -76,5 +105,21 @@ extension RadarrGlobalSettingsTypeExtension on RadarrGlobalSettingsType {
 
   Future<void> _updateLibrary(BuildContext context) async {
     RadarrAPIHelper().updateLibrary(context: context);
+  }
+
+  Future<void> _openHistory(BuildContext context) async {
+    RadarrRoutes.HISTORY.go();
+  }
+
+  Future<void> _openManualImport(BuildContext context) async {
+    RadarrRoutes.MANUAL_IMPORT.go();
+  }
+
+  Future<void> _openSystemStatus(BuildContext context) async {
+    RadarrRoutes.SYSTEM_STATUS.go();
+  }
+
+  Future<void> _openTags(BuildContext context) async {
+    RadarrRoutes.TAGS.go();
   }
 }

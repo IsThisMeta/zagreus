@@ -121,7 +121,6 @@ class _State extends State<LidarrRoute> {
           icon: Icons.more_vert_rounded,
           onPressed: () async => _handlePopup(),
         ),
-        ..._buildQueueDrawerAction(),
       ];
     return ZagAppBar.dropdown(
       title: ZagModule.LIDARR.title,
@@ -134,14 +133,7 @@ class _State extends State<LidarrRoute> {
   }
 
   List<Widget> _buildQueueDrawerAction() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return [];
-    return [
-      IconButton(
-        icon: const Icon(Icons.download_rounded),
-        tooltip: 'Queue',
-        onPressed: _openQueueDrawer,
-      ),
-    ];
+    return [];
   }
 
   void _openQueueDrawer() {

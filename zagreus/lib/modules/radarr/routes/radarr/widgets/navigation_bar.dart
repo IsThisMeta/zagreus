@@ -12,14 +12,14 @@ class RadarrNavigationBar extends StatelessWidget {
     Icons.movie_rounded,
     Icons.insert_invitation_rounded,
     Icons.event_busy_rounded,
-    Icons.more_horiz_rounded,
+    Icons.live_tv_rounded,
   ];
 
   static List<String> get titles => [
         'radarr.Movies'.tr(),
         'radarr.Upcoming'.tr(),
         'radarr.Missing'.tr(),
-        'radarr.More'.tr(),
+        'radarr.Queue'.tr(),
       ];
 
   const RadarrNavigationBar({

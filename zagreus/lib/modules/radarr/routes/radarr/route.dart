@@ -101,7 +101,6 @@ class _State extends State<RadarrRoute> {
             tooltip: 'Multi-Select',
           ),
         const RadarrAppBarGlobalSettingsAction(),
-        ..._buildQueueDrawerAction(),
       ];
     }
     return ZagAppBar.dropdown(
@@ -118,7 +117,7 @@ class _State extends State<RadarrRoute> {
     if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return [];
     return [
       IconButton(
-        icon: const Icon(Icons.download_rounded),
+        icon: const Icon(Icons.live_tv_rounded),
         tooltip: 'Queue',
         onPressed: _openQueueDrawer,
       ),
@@ -161,7 +160,10 @@ class _State extends State<RadarrRoute> {
             const RadarrCatalogueRoute(),
             const RadarrUpcomingRoute(),
             RadarrMissingRoute(key: _missingRouteKey),
-            const RadarrMoreRoute(),
+            QueueRoute(
+              embedInNavigation: true,
+              scrollController: RadarrNavigationBar.scrollControllers[3],
+            ),
           ],
         );
       },
