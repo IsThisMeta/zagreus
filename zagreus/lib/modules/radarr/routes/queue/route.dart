@@ -72,6 +72,17 @@ class _State extends State<QueueRoute> with ZagLoadCallbackMixin {
   }
 
   Widget _body() {
+    final radarrState = context.read<RadarrState>();
+    final queueFuture = radarrState.queue;
+    final moviesFuture = radarrState.movies;
+
+    // Ensure data is loaded before building the list; otherwise show a loader
+    if (queueFuture == null || moviesFuture == null) {
+      radarrState.fetchMovies();
+      radarrState.fetchQueue();
+      return const ZagLoader();
+    }
+
     return ZagRefreshIndicator(
       key: _refreshKey,
       context: context,

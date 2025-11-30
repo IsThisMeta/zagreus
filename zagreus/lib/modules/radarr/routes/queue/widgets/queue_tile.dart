@@ -27,9 +27,9 @@ class RadarrQueueTile extends StatelessWidget {
             (element) => element.id == record.movieId,
           );
         return ZagExpandableListTile(
-          title: record.title!,
+          title: record.title ?? movie?.title ?? ZagUI.TEXT_EMDASH,
           collapsedSubtitles: [
-            _subtitle1(),
+            _subtitle1(movie),
             _subtitle2(),
           ],
           expandedHighlightedNodes: _highlightedNodes(),
@@ -39,16 +39,21 @@ class RadarrQueueTile extends StatelessWidget {
             icon: record.zagStatusIcon,
             color: record.zagStatusColor,
           ),
-          onLongPress: () => RadarrRoutes.MOVIE.go(params: {
-            'movie': record.movieId!.toString(),
-          }),
+          onLongPress: record.movieId != null
+              ? () => RadarrRoutes.MOVIE.go(params: {
+                    'movie': record.movieId!.toString(),
+                  })
+              : null,
         );
       },
     );
   }
 
-  TextSpan _subtitle1() {
-    return TextSpan(text: record.zagMovieTitle(movie!));
+  TextSpan _subtitle1(RadarrMovie? movie) {
+    final text = movie != null
+        ? record.zagMovieTitle(movie)
+        : (record.title ?? ZagUI.TEXT_EMDASH);
+    return TextSpan(text: text);
   }
 
   TextSpan _subtitle2() {
@@ -68,18 +73,25 @@ class RadarrQueueTile extends StatelessWidget {
   }
 
   List<ZagTableContent> _tableContent(RadarrMovie? movie) {
-    if (movie == null) return [];
+    final sizeText = record.size != null
+        ? record.size!.toInt().asBytes()
+        : ZagUI.TEXT_EMDASH;
+    final remainingText = record.sizeLeft != null
+        ? record.sizeLeft!.toInt().asBytes()
+        : ZagUI.TEXT_EMDASH;
+    final timeLeft = record.timeLeft ?? ZagUI.TEXT_EMDASH;
+
     return [
-      ZagTableContent(
-          title: 'radarr.Movie'.tr(), body: record.zagMovieTitle(movie)),
+      if (movie != null)
+        ZagTableContent(
+            title: 'radarr.Movie'.tr(), body: record.zagMovieTitle(movie)),
       ZagTableContent(
           title: 'radarr.Languages'.tr(), body: record.zagLanguage),
       ZagTableContent(title: 'Client', body: record.zagDownloadClient),
       ZagTableContent(title: 'Indexer', body: record.zagIndexer),
-      ZagTableContent(
-          title: 'radarr.Size'.tr(), body: record.size!.toInt().asBytes()),
-      ZagTableContent(
-          title: 'Time Left', body: record.timeLeft ?? ZagUI.TEXT_EMDASH),
+      ZagTableContent(title: 'radarr.Size'.tr(), body: sizeText),
+      ZagTableContent(title: 'Remaining', body: remainingText),
+      ZagTableContent(title: 'Time Left', body: timeLeft),
     ];
   }
 

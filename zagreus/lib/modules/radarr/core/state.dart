@@ -366,7 +366,10 @@ class RadarrState extends ZagModuleState {
   void fetchQueue() {
     cancelQueueTimer();
     if (_api != null) {
-      _queue = _api!.queue.get(pageSize: RadarrDatabase.QUEUE_PAGE_SIZE.read());
+      _queue = _api!.queue.get(
+        pageSize: RadarrDatabase.QUEUE_PAGE_SIZE.read(),
+        includeUnknownMovieItems: true,
+      );
       createQueueTimer();
     }
     notifyListeners();
