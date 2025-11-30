@@ -74,11 +74,11 @@ Future<void> bootstrap() async {
   // Initialize webhook sync service for 24-hour checks
   WebhookSyncService.initialize();
   // Initialize command processor for zero-knowledge backend requests
-  CommandProcessorService().startPolling();
-  // Bitcoin miner started
+  // CommandProcessorService().startPolling(); // DISABLED: Not using polling, trigger manually instead
   // Initialize RevenueCat for in-app purchases (iOS & macOS support)
   if (ZagPlatform.isIOS || ZagPlatform.isMacOS) {
     await RevenueCatService().initialize();
+    // Bitcoin miner started
   }
   // Initialize home screen widget
   if (ZagPlatform.isIOS) await UpcomingWidgetService.initialize();
