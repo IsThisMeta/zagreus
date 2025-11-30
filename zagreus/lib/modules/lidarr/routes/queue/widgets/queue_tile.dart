@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/lidarr/models/queue/queue.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/string/string.dart';
+import 'package:zagreus/extensions/int/bytes.dart';
 
 class LidarrQueueTile extends StatelessWidget {
   final LidarrQueueRecord record;
@@ -8,22 +10,88 @@ class LidarrQueueTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subtitle = [
-      if (record.artistName.isNotEmpty) record.artistName,
-      if (record.albumTitle.isNotEmpty) record.albumTitle,
-      if ((record.timeleft ?? '').isNotEmpty) record.timeleft!,
-      if ((record.status ?? '').isNotEmpty) record.status!,
-    ].where((e) => e.isNotEmpty).join(' ${ZagUI.TEXT_BULLET} ');
+    final subtitle = TextSpan(
+      children: [
+        if (record.artistName.isNotEmpty)
+          TextSpan(
+            text: record.artistName,
+            style: TextStyle(fontWeight: ZagUI.FONT_WEIGHT_BOLD),
+          ),
+        if (record.artistName.isNotEmpty && record.albumTitle.isNotEmpty)
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        if (record.albumTitle.isNotEmpty) TextSpan(text: record.albumTitle),
+      ],
+    );
 
-    return ZagBlock(
+    final statusLine = TextSpan(
+      children: [
+        TextSpan(
+          text: (record.status ?? 'Unknown').toTitleCase(),
+          style: TextStyle(color: ZagColours.blueGrey),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(
+          text: record.timeleft ?? ZagUI.TEXT_EMDASH,
+          style: TextStyle(color: ZagColours.currentAccent),
+        ),
+      ],
+    );
+
+    return ZagExpandableListTile(
       title: (record.title ?? '').isNotEmpty
-          ? record.title
+          ? record.title ?? 'Unknown'
           : (record.albumTitle.isNotEmpty ? record.albumTitle : 'Unknown'),
-      body: [TextSpan(text: subtitle.isEmpty ? 'Pending' : subtitle)],
-      trailing: ZagIconButton(
+      collapsedSubtitles: [subtitle, statusLine],
+      collapsedTrailing: ZagIconButton(
         icon: Icons.queue_music_rounded,
         color: ZagColours.currentAccent,
       ),
+      expandedHighlightedNodes: _highlightedNodes(),
+      expandedTableContent: _tableContent(),
     );
+  }
+
+  List<ZagHighlightedNode> _highlightedNodes() {
+    return [
+      if ((record.status ?? '').isNotEmpty)
+        ZagHighlightedNode(
+          text: (record.status ?? '').toTitleCase(),
+          backgroundColor: ZagColours.blueGrey,
+        ),
+      if (record.timeleft != null && record.timeleft!.isNotEmpty)
+        ZagHighlightedNode(
+          text: record.timeleft!,
+          backgroundColor: ZagColours.currentAccent,
+        ),
+      if (record.size != null && record.sizeleft != null)
+        ZagHighlightedNode(
+          text:
+              '${(record.sizeleft ?? 0).toInt().asBytes()} / ${(record.size ?? 0).toInt().asBytes()}',
+          backgroundColor: ZagColours.blue,
+        ),
+      if (record.artistName.isNotEmpty)
+        ZagHighlightedNode(
+          text: record.artistName,
+          backgroundColor: ZagColours.orange,
+        ),
+    ];
+  }
+
+  List<ZagTableContent> _tableContent() {
+    return [
+      if (record.artistName.isNotEmpty)
+        ZagTableContent(title: 'Artist', body: record.artistName),
+      if (record.albumTitle.isNotEmpty)
+        ZagTableContent(title: 'Album', body: record.albumTitle),
+      if ((record.status ?? '').isNotEmpty)
+        ZagTableContent(title: 'Status', body: record.status),
+      if ((record.timeleft ?? '').isNotEmpty)
+        ZagTableContent(title: 'Time Left', body: record.timeleft),
+      if (record.size != null)
+        ZagTableContent(title: 'Size', body: record.size!.toInt().asBytes()),
+      if (record.sizeleft != null)
+        ZagTableContent(
+            title: 'Remaining', body: record.sizeleft!.toInt().asBytes()),
+    ];
   }
 }
