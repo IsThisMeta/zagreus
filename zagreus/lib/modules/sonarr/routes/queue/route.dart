@@ -3,8 +3,13 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 
 class QueueRoute extends StatefulWidget {
+  final bool embedInNavigation;
+  final ScrollController? scrollController;
+
   const QueueRoute({
     Key? key,
+    this.embedInNavigation = false,
+    this.scrollController,
   }) : super(key: key);
 
   @override
@@ -14,6 +19,23 @@ class QueueRoute extends StatefulWidget {
 class _State extends State<QueueRoute> with ZagScrollControllerMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _refreshKey = GlobalKey<RefreshIndicatorState>();
+  ScrollController? _localScrollController;
+
+  ScrollController get _controller =>
+      widget.scrollController ?? _localScrollController ?? scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _localScrollController =
+        widget.scrollController == null ? ScrollController() : null;
+  }
+
+  @override
+  void dispose() {
+    _localScrollController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +43,8 @@ class _State extends State<QueueRoute> with ZagScrollControllerMixin {
       create: (context) => SonarrQueueState(context),
       builder: (context, _) => ZagScaffold(
         scaffoldKey: _scaffoldKey,
-        appBar: _appBar(),
+        appBar:
+            widget.embedInNavigation ? null : _appBar() as PreferredSizeWidget?,
         body: _body(context),
       ),
     );
@@ -38,7 +61,7 @@ class _State extends State<QueueRoute> with ZagScrollControllerMixin {
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'sonarr.Queue'.tr(),
-      scrollControllers: [scrollController],
+      scrollControllers: [_controller],
     );
   }
 
@@ -80,7 +103,7 @@ class _State extends State<QueueRoute> with ZagScrollControllerMixin {
       );
     }
     return ZagListViewBuilder(
-      controller: scrollController,
+      controller: _controller,
       itemCount: queue.records!.length,
       itemBuilder: (context, index) => SonarrQueueTile(
         key: ObjectKey(queue.records![index].id),

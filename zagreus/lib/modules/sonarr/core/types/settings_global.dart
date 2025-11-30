@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/router/routes/sonarr.dart';
 
 enum SonarrGlobalSettingsType {
   WEB_GUI,
@@ -9,6 +10,8 @@ enum SonarrGlobalSettingsType {
   SEARCH_ALL_MISSING,
   UPDATE_LIBRARY,
   BACKUP_DATABASE,
+  HISTORY,
+  TAGS,
 }
 
 extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
@@ -24,6 +27,10 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return Icons.search_rounded;
       case SonarrGlobalSettingsType.BACKUP_DATABASE:
         return Icons.save_rounded;
+      case SonarrGlobalSettingsType.HISTORY:
+        return Icons.history_rounded;
+      case SonarrGlobalSettingsType.TAGS:
+        return Icons.style_rounded;
     }
   }
 
@@ -39,6 +46,10 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return 'sonarr.SearchAllMissing'.tr();
       case SonarrGlobalSettingsType.BACKUP_DATABASE:
         return 'sonarr.BackupDatabase'.tr();
+      case SonarrGlobalSettingsType.HISTORY:
+        return 'sonarr.History'.tr();
+      case SonarrGlobalSettingsType.TAGS:
+        return 'sonarr.Tags'.tr();
     }
   }
 
@@ -54,6 +65,10 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return _updateLibrary(context);
       case SonarrGlobalSettingsType.BACKUP_DATABASE:
         return _backupDatabase(context);
+      case SonarrGlobalSettingsType.HISTORY:
+        return _openHistory(context);
+      case SonarrGlobalSettingsType.TAGS:
+        return _openTags(context);
     }
   }
 
@@ -70,4 +85,10 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
       SonarrAPIController().runRSSSync(context: context);
   Future<void> _updateLibrary(BuildContext context) async =>
       SonarrAPIController().updateLibrary(context: context);
+
+  Future<void> _openHistory(BuildContext context) async =>
+      SonarrRoutes.HISTORY.go();
+
+  Future<void> _openTags(BuildContext context) async =>
+      SonarrRoutes.TAGS.go();
 }

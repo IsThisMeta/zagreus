@@ -121,11 +121,14 @@ class _State extends State<SonarrRoute> {
 
         return ZagPageView(
           controller: _pageController,
-          children: const [
-            SonarrCatalogueRoute(),
-            SonarrUpcomingRoute(),
-            SonarrMissingRoute(),
-            SonarrMoreRoute(),
+          children: [
+            const SonarrCatalogueRoute(),
+            const SonarrUpcomingRoute(),
+            const SonarrMissingRoute(),
+            QueueRoute(
+              embedInNavigation: true,
+              scrollController: SonarrNavigationBar.scrollControllers[3],
+            ),
           ],
         );
       },
