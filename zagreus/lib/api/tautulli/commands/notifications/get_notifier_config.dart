@@ -5,7 +5,7 @@ Future<TautulliNotifierConfig> _commandGetNotifierConfig(
   required int notifierId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_notifier_config',
       'notifier_id': notifierId,

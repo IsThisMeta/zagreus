@@ -8,7 +8,7 @@ Future<String?> _commandGetServerID(
   bool? remote,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_server_id',
       'hostname': hostname,

@@ -5,7 +5,7 @@ Future<void> _commandDeleteMediaInfoCache(
   required int sectionId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_media_info_cache',
       'section_id': sectionId,

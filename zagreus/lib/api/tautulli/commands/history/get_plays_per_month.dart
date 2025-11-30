@@ -8,7 +8,7 @@ Future<TautulliGraphData> _commandGetPlaysPerMonth(
   TautulliGraphYAxis? yAxis,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_plays_per_month',
       if (timeRange != null && timeRange >= 1) 'time_range': timeRange,

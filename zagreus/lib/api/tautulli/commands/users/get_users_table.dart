@@ -10,7 +10,7 @@ Future<TautulliUsersTable> _commandGetUsersTable(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_users_table',
       if (grouping != null) 'grouping': grouping ? 1 : 0,

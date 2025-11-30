@@ -7,7 +7,7 @@ Future<void> _commandUpdateMetadataDetails(
   required TautulliMediaType mediaType,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'update_metadata_details',
       'old_rating_key': oldRatingKey,

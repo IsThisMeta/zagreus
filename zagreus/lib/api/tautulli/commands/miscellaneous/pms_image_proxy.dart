@@ -18,7 +18,7 @@ Future<Uint8List?> _commandPMSImageProxy(
   if (image != null)
     assert(ratingKey == null, 'image and ratingKey cannot both be defined.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'pms_image_proxy',
       if (image != null) 'img': image,

@@ -47,7 +47,7 @@ class TautulliAPI {
     // Build the HTTP client
     Dio _dio = Dio(
       BaseOptions(
-        baseUrl: host.endsWith('/') ? '${host}api/v2' : '$host/api/v2',
+        baseUrl: host.endsWith('/') ? '${host}api/v2/' : '$host/api/v2/',
         queryParameters: {
           'apikey': apiKey,
         },

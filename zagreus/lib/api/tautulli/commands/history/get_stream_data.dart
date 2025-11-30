@@ -12,7 +12,7 @@ Future<TautulliStreamData> _commandGetStreamData(
   if (sessionKey == null)
     assert(rowId != null, 'rowId and sessionKey cannot both be null.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_stream_data',
       if (rowId != null) 'row_id': rowId,

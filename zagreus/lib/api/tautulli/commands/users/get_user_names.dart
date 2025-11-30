@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<List<TautulliUserName>> _commandGetUserNames(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user_names',
     },

@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<List<TautulliLibraryName>> _commandGetLibraryNames(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_library_names',
     },

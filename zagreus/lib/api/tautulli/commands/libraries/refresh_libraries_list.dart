@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<void> _commandRefreshLibrariesList(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'refresh_libraries_list',
     },

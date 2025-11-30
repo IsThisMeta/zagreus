@@ -6,7 +6,7 @@ Future<void> _commandNotifyRecentlyAdded(
   int? notifierId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'notify_recently_added',
       'rating_key': ratingKey,

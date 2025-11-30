@@ -8,7 +8,7 @@ Future<TautulliGraphData> _commandGetPlaysByTopTenPlatforms(
   TautulliGraphYAxis? yAxis,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_plays_by_top_10_platforms',
       if (timeRange != null && timeRange >= 1) 'time_range': timeRange,

@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<TautulliUpdateCheck> _commandUpdateCheck(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'update_check',
     },

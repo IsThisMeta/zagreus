@@ -20,7 +20,7 @@ Future<TautulliLibraryMediaInfo> _commandGetLibraryMediaInfo(
   if (ratingKey == null)
     assert(sectionId != null, 'sectionId and ratingKey cannot both be null.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_library_media_info',
       if (sectionId != null) 'section_id': sectionId,

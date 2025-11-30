@@ -5,7 +5,7 @@ Future<void> _commandSql(
   required String query,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'sql',
       'query': query,

@@ -9,7 +9,7 @@ Future<TautulliNotificationLogs> _commandGetNotificationLog(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_notification_log',
       if (orderColumn != null &&

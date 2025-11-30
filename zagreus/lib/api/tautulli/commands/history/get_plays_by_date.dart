@@ -8,7 +8,7 @@ Future<TautulliGraphData> _commandGetPlaysByDate(
   TautulliGraphYAxis? yAxis,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_plays_by_date',
       if (timeRange != null && timeRange >= 1) 'time_range': timeRange,

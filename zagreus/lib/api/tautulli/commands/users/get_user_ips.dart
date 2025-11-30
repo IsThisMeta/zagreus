@@ -10,7 +10,7 @@ Future<TautulliUserIPs> _commandGetUserIPs(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user_ips',
       'user_id': userId,

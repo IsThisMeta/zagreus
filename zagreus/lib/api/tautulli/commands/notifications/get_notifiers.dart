@@ -5,7 +5,7 @@ Future<List<TautulliNotifier>> _commandGetNotifiers(
   String? notifyAction,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_notifiers',
       if (notifyAction != null) 'notify_action': notifyAction,

@@ -10,7 +10,7 @@ Future<TautulliUserLogins> _commandGetUserLogins(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user_logins',
       if (userId != null) 'user_id': userId,

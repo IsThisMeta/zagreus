@@ -5,7 +5,7 @@ Future<TautulliWHOISInfo> _commandGetWHOISLookup(
   required String ipAddress,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_whois_lookup',
       'ip_address': ipAddress,

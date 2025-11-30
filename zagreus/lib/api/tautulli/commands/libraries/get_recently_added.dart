@@ -8,7 +8,7 @@ Future<List<TautulliRecentlyAdded>> _commandGetRecentlyAdded(
   int? sectionId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_recently_added',
       'count': count,

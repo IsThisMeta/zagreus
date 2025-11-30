@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<void> _commandDeleteNewsletterLog(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_newsletter_log',
     },

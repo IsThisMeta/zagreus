@@ -5,7 +5,7 @@ Future<TautulliGeolocationInfo> _commandGetGeoIPLookup(
   required String ipAddress,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_geoip_lookup',
       'ip_address': ipAddress,

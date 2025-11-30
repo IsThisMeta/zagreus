@@ -10,7 +10,7 @@ Future<TautulliLibrariesTable> _commandGetLibrariesTable(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_libraries_table',
       if (grouping != null) 'grouping': grouping ? 1 : 0,

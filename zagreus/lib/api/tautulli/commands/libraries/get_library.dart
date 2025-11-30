@@ -5,7 +5,7 @@ Future<TautulliSingleLibrary> _commandGetLibrary(
   required int sectionId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_library',
       'section_id': sectionId,

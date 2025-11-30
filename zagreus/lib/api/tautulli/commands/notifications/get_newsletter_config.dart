@@ -5,7 +5,7 @@ Future<TautulliNewsletterConfig> _commandGetNewsletterConfig(
   required int newsletterId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_newsletter_config',
       'newsletter_id': newsletterId,

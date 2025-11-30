@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<String?> _commandGetServerFriendlyName(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_server_friendly_name',
     },

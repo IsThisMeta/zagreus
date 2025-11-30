@@ -6,7 +6,7 @@ Future<List<TautulliLibraryUserStats>> _commandGetLibraryUserStats(
   bool? grouping,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_library_user_stats',
       'section_id': sectionId,

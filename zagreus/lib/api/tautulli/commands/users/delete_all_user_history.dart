@@ -6,7 +6,7 @@ Future<void> _commandDeleteAllUserHistory(
   List<int>? rowIds,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_all_user_history',
       'user_id': userId,

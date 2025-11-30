@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<void> _commandBackupDB(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'backup_db',
     },

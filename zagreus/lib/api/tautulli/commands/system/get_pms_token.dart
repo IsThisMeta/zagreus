@@ -6,7 +6,7 @@ Future<String?> _commandGetPMSToken(
   required String password,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_pms_token',
       'username': username,

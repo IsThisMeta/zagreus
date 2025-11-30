@@ -8,7 +8,7 @@ Future<void> _commandNotifyNewsletter(
   String? message,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'notify_newsletter',
       'newsletter_id': newsletterId,

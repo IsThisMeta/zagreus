@@ -6,7 +6,7 @@ Future<void> _commandDeleteHistory(
 }) async {
   assert(rowIds.isNotEmpty, 'rowIds cannot be empty.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_history',
       'row_ids': rowIds.join(","),

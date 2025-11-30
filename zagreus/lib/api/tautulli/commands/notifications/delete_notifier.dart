@@ -5,7 +5,7 @@ Future<void> _commandDeleteNotifier(
   required int notifierId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_notifier',
       'notifier_id': notifierId,

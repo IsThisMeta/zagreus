@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<TautulliPMSUpdate> _commandGetPMSUpdate(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_pms_update',
     },

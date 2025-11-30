@@ -5,7 +5,7 @@ Future<Map<String, dynamic>?> _commandGetSettings(
   String? key,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_settings',
       if (key != null) 'key': key,

@@ -7,7 +7,7 @@ Future<void> _commandDeleteHostedImages(
   bool? deleteAll,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_hosted_images',
       if (ratingKey != null) 'rating_key': ratingKey,

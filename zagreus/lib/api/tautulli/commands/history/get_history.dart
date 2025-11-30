@@ -20,7 +20,7 @@ Future<TautulliHistory> _commandGetHistory(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_history',
       if (grouping != null) 'grouping': grouping ? 1 : 0,

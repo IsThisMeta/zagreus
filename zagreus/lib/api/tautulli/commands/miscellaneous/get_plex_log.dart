@@ -6,7 +6,7 @@ Future<List<TautulliPlexLog>> _commandGetPlexLog(
   TautulliPlexLogType? logType,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_plex_log',
       if (window != null) 'window': window,

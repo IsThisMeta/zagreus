@@ -6,7 +6,7 @@ Future<void> _commandUndeleteLibrary(
   required String sectionName,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'undelete_library',
       'section_id': sectionId,

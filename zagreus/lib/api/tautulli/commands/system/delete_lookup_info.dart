@@ -7,7 +7,7 @@ Future<void> _commandDeleteLookupInfo(
   bool? deleteAll,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_lookup_info',
       if (ratingKey != null) 'rating_key': ratingKey,

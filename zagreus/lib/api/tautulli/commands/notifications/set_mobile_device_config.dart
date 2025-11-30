@@ -6,7 +6,7 @@ Future<void> _commandSetMobileDeviceConfig(
   String? friendlyName,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'set_mobile_device_config',
       'mobile_device_id': mobileDeviceId,

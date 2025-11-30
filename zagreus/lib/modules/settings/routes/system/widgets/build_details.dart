@@ -128,6 +128,7 @@ class _State extends State<BuildDetails> {
       );
     } else {
       return ZagButton.text(
+        icon: null,
         color: ZagColours.orange,
         text: 'Update Available: v$latestVersion',
         onTap: () => 'https://zagreus.app/changelog'.openLink(),

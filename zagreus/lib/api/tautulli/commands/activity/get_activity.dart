@@ -9,7 +9,7 @@ Future<TautulliActivity?> _commandGetActivity(
     assert(
         sessionId == null, 'sessionKey and sessionId both cannot be defined.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_activity',
       if (sessionKey != null) 'session_key': sessionKey,

@@ -6,7 +6,7 @@ Future<List<TautulliSyncedItem>> _commandGetSyncedItems(
   int? userId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_synced_items',
       if (machineId != null) 'machine_id': machineId,

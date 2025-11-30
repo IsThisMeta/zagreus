@@ -6,7 +6,7 @@ Future<List<TautulliUserPlayerStats>> _commandGetUserPlayerStats(
   bool? grouping,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user_player_stats',
       'user_id': userId,

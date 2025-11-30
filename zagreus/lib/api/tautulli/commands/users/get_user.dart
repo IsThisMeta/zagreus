@@ -5,7 +5,7 @@ Future<TautulliUser> _commandGetUser(
   required int userId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user',
       'user_id': userId,

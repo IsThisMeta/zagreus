@@ -7,7 +7,7 @@ Future<void> _commandSetNewsletterConfig(
   required Map<String, dynamic> newsletterOptions,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'set_newsletter_config',
       'agent_id': agentId,

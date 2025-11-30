@@ -5,7 +5,7 @@ Future<String?> _commandAddNewsletterConfig(
   required int agentId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'add_newsletter_config',
       'agent_id': agentId,

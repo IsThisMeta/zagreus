@@ -5,7 +5,7 @@ Future<void> _commandDeleteMobileDevice(
   required int mobileDeviceId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_mobile_device',
       'mobile_device_id': mobileDeviceId,

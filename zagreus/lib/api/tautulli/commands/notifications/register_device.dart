@@ -7,7 +7,7 @@ Future<void> _commandRegisterDevice(
   String? friendlyName,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'register_device',
       'device_name': deviceName,

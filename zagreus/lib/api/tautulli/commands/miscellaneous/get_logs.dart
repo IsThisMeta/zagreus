@@ -10,7 +10,7 @@ Future<List<TautulliLog>> _commandGetLogs(
   int? end,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_logs',
       if (search != null) 'search': search,

@@ -9,7 +9,7 @@ Future<void> _commandNotify(
   String? scriptArgs,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'notify',
       'notifier_id': notifierId,

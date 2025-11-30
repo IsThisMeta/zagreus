@@ -7,7 +7,7 @@ Future<List<TautulliUserWatchTimeStats>> _commandGetUserWatchTimeStats(
   List<int>? queryDays,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_user_watch_time_stats',
       'user_id': userId,

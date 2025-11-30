@@ -6,7 +6,7 @@ Future<TautulliSearch> _commandSearch(
   int? limit,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'search',
       'query': query,

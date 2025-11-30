@@ -7,7 +7,7 @@ Future<List<TautulliLibraryWatchTimeStats>> _commandGetLibraryWatchTimeStats(
   List<int>? queryDays,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_library_watch_time_stats',
       'section_id': sectionId,

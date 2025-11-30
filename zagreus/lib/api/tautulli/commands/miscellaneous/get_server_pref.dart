@@ -5,7 +5,7 @@ Future<dynamic> _commandGetServerPref(
   required String preference,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_server_pref',
       'pref': preference,

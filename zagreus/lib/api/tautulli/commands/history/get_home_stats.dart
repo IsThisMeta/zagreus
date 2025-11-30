@@ -8,7 +8,7 @@ Future<List<TautulliHomeStats>> _commandGetHomeStats(
   int? statsCount,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_home_stats',
       if (grouping != null) 'grouping': grouping ? 1 : 0,

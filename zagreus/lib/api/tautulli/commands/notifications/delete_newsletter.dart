@@ -5,7 +5,7 @@ Future<void> _commandDeleteNewsletter(
   required int newsletterId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'delete_newsletter',
       'newsletter_id': newsletterId,

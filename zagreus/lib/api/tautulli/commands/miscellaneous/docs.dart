@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<Map<String, dynamic>?> _commandDocs(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'docs',
     },

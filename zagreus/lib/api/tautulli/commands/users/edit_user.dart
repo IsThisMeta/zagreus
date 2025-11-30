@@ -9,7 +9,7 @@ Future<void> _commandEditUser(
   bool? allowGuest,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'edit_user',
       'user_id': userId,

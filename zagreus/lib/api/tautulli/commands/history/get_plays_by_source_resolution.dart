@@ -8,7 +8,7 @@ Future<TautulliGraphData> _commandGetPlaysBySourceResolution(
   TautulliGraphYAxis? yAxis,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_plays_by_source_resolution',
       if (timeRange != null && timeRange >= 1) 'time_range': timeRange,

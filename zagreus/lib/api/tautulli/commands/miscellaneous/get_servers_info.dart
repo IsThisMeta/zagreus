@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<List<TautulliServerInfo>> _commandGetServersInfo(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_servers_info',
     },

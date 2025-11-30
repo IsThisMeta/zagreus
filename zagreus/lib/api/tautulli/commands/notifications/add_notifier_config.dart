@@ -5,7 +5,7 @@ Future<String?> _commandAddNotifierConfig(
   required int agentId,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'add_notifier_config',
       'agent_id': agentId,

@@ -8,7 +8,7 @@ Future<void> _commandEditLibrary(
   bool? keepHistory,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'edit_library',
       'section_id': sectionId,

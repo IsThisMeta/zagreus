@@ -6,7 +6,7 @@ Future<void> _commandUndeleteUser(
   required String username,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'undelete_user',
       'user_id': userId,

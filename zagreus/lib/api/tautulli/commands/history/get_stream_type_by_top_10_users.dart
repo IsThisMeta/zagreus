@@ -8,7 +8,7 @@ Future<TautulliGraphData> _commandGetStreamTypeByTopTenUsers(
   TautulliGraphYAxis? yAxis,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_stream_type_by_top_10_users',
       if (timeRange != null && timeRange >= 1) 'time_range': timeRange,

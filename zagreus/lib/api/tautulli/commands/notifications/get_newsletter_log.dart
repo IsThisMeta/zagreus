@@ -9,7 +9,7 @@ Future<TautulliNewsletterLogs> _commandGetNewsletterLog(
   String? search,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_newsletter_log',
       if (orderColumn != null &&

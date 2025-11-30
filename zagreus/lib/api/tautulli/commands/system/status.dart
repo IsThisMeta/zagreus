@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<String?> _commandStatus(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'status',
       'check': 'database',

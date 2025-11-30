@@ -14,7 +14,7 @@ Future<void> _commandTerminateSession(
   if (sessionId == null)
     assert(sessionKey != null, 'sessionKey and sessionId cannot both be null.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'terminate_session',
       if (sessionKey != null) 'session_key': sessionKey,

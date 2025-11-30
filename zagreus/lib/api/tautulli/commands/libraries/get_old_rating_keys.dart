@@ -7,7 +7,7 @@ Future<Map<String, dynamic>?> _commandGetOldRatingKeys(
 }) async {
   assert(mediaType != TautulliMediaType.NULL, 'mediaType cannot be null.');
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_old_rating_keys',
       'rating_key': ratingKey,

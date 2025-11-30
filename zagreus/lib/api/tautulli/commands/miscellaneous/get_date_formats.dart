@@ -2,7 +2,7 @@ part of tautulli_commands;
 
 Future<TautulliDateFormat> _commandGetDateFormats(Dio client) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_date_formats',
     },

@@ -5,7 +5,7 @@ Future<TautulliMetadata> _commandGetMetadata(
   required int ratingKey,
 }) async {
   Response response = await client.get(
-    '/',
+    '',
     queryParameters: {
       'cmd': 'get_metadata',
       'rating_key': ratingKey,
