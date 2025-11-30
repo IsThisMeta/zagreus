@@ -12,7 +12,7 @@ class SonarrNavigationBar extends StatelessWidget {
     Icons.live_tv_rounded,
     Icons.insert_invitation_rounded,
     Icons.event_busy_rounded,
-    Icons.live_tv_rounded,
+    Icons.schedule_rounded,
   ];
 
   static List<String> get titles => [
