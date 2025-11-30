@@ -41,14 +41,36 @@ class LidarrQueueTile extends StatelessWidget {
       title: (record.title ?? '').isNotEmpty
           ? record.title ?? 'Unknown'
           : (record.albumTitle.isNotEmpty ? record.albumTitle : 'Unknown'),
-      collapsedSubtitles: [subtitle, statusLine],
+      collapsedSubtitles: [
+        if (record.albumTitle.isNotEmpty) TextSpan(text: record.albumTitle),
+        subtitle,
+        statusLine,
+      ],
       collapsedTrailing: ZagIconButton(
-        icon: Icons.queue_music_rounded,
-        color: ZagColours.currentAccent,
+        icon: _statusIcon,
+        color: _statusColor,
       ),
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
     );
+  }
+
+  IconData get _statusIcon {
+    final status = (record.status ?? '').toLowerCase();
+    if (status.contains('paused')) return Icons.pause_rounded;
+    if (status.contains('queued')) return Icons.schedule_rounded;
+    if (status.contains('down')) return Icons.download_rounded;
+    if (status.contains('completed')) return Icons.check_circle_rounded;
+    return Icons.queue_music_rounded;
+  }
+
+  Color get _statusColor {
+    final status = (record.status ?? '').toLowerCase();
+    if (status.contains('paused')) return ZagColours.blueGrey;
+    if (status.contains('queued')) return ZagColours.currentAccent;
+    if (status.contains('down')) return ZagColours.currentAccent;
+    if (status.contains('completed')) return ZagColours.orange;
+    return ZagColours.currentAccent;
   }
 
   List<ZagHighlightedNode> _highlightedNodes() {
