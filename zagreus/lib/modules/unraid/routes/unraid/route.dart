@@ -62,14 +62,9 @@ class _State extends State<UnraidRoute> {
   }
 
   List<Widget>? _buildAppBarActions() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return null;
-    return [
-      IconButton(
-        icon: const Icon(Icons.download_rounded),
-        tooltip: 'Queue',
-        onPressed: _openQueueDrawer,
-      ),
-    ];
+    // Keep the downloads drawer accessible via the end-drawer gesture, but hide the action icon.
+    // Providing a placeholder action prevents Flutter from auto-inserting the end-drawer icon.
+    return const [SizedBox.shrink()];
   }
 
   void _openQueueDrawer() {
