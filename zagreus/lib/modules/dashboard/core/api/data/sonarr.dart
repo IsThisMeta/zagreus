@@ -17,6 +17,7 @@ class CalendarSonarrData extends CalendarData {
   String airTime;
   bool hasFile;
   String? fileQualityProfile;
+  bool monitored;
 
   CalendarSonarrData({
     required int id,
@@ -28,6 +29,7 @@ class CalendarSonarrData extends CalendarData {
     required this.airTime,
     required this.hasFile,
     required this.fileQualityProfile,
+    required this.monitored,
   }) : super(id, title);
 
   @override
@@ -50,10 +52,18 @@ class CalendarSonarrData extends CalendarData {
       ),
       if (!hasFile)
         TextSpan(
-          text: released ? 'sonarr.Missing'.tr() : 'sonarr.Unaired'.tr(),
+          text: !monitored
+              ? 'sonarr.Unmonitored'.tr()
+              : released
+                  ? 'sonarr.Missing'.tr()
+                  : 'sonarr.Unaired'.tr(),
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: released ? ZagColours.red : ZagColours.blue,
+            color: !monitored
+                ? ZagColours.blueGrey
+                : released
+                    ? ZagColours.red
+                    : ZagColours.blue,
           ),
         ),
       if (hasFile)

@@ -180,6 +180,8 @@ class API {
             fileQualityProfile: entry['hasFile']
                 ? entry['episodeFile']['quality']['quality']['name']
                 : '',
+            monitored:
+                entry['monitored'] ?? entry['series']?['monitored'] ?? true,
           ));
           map[date] = day;
         }

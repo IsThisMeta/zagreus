@@ -1721,6 +1721,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (_isSearchActive) {
       return [
         IconButton(
+          key: const ValueKey('discover_action_close_search'),
           icon: const Icon(Icons.close_rounded),
           tooltip: 'Close Search',
           onPressed: _closeSearchOverlay,
@@ -1736,34 +1737,40 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       return [
         IconButton(
+          key: const ValueKey('discover_action_agent_info'),
           icon: const Icon(Icons.info_outline),
           onPressed: _showZAgentQuickSetup,
           tooltip: 'Z Agent setup',
         ),
         IconButton(
+          key: const ValueKey('discover_action_agent_settings'),
           icon: const Icon(Icons.tune),
           onPressed: _showZAssistantSettings,
           tooltip: 'Z Assistant Settings',
         ),
         if (persistLocal && !supabaseSync)
           IconButton(
+            key: const ValueKey('discover_action_agent_clear_chat'),
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _agentChatKey.currentState?.clearChat(),
             tooltip: 'Clear chat',
           ),
         if (supabaseSync)
           IconButton(
+            key: const ValueKey('discover_action_agent_new_conversation'),
             icon: const Icon(Icons.add),
             onPressed: () => _agentChatKey.currentState?.startNewConversation(),
             tooltip: 'New conversation',
           ),
         if (_lastZAssistantStageId != null)
           IconButton(
+            key: const ValueKey('discover_action_agent_return_results'),
             icon: const Icon(Icons.arrow_forward),
             onPressed: _navigateToLastZAssistantResults,
             tooltip: 'Return to Z Assistant Results',
           ),
         IconButton(
+          key: const ValueKey('discover_action_agent_close'),
           icon: const Icon(Icons.close_rounded),
           tooltip: 'Close Agent',
           onPressed: _closeAgentOverlay,
@@ -1790,6 +1797,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         if (showAgentTab) {
           actions.add(
             IconButton(
+              key: const ValueKey('discover_action_agent'),
               icon: const Icon(Icons.smart_toy),
               tooltip: 'Z Agent',
               onPressed: _openAgentOverlay,
@@ -1798,6 +1806,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
         actions.add(
           IconButton(
+            key: const ValueKey('discover_action_search_modules'),
             icon: const Icon(Icons.search_rounded),
             tooltip: 'Search',
             onPressed: _openSearchOverlay,
@@ -1807,6 +1816,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Pro: Show only Search
         actions.add(
           IconButton(
+            key: const ValueKey('discover_action_search_modules_pro'),
             icon: const Icon(Icons.search_rounded),
             tooltip: 'Search',
             onPressed: _openSearchOverlay,
@@ -1823,6 +1833,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (showAgentTab) {
         actions.add(
           IconButton(
+            key: const ValueKey('discover_action_agent_movies'),
             icon: const Icon(Icons.smart_toy),
             tooltip: 'Z Agent',
             onPressed: _openAgentOverlay,
@@ -1831,6 +1842,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
       actions.add(
         IconButton(
+          key: const ValueKey('discover_action_search_movies'),
           icon: const Icon(Icons.search_rounded),
           tooltip: 'Search',
           onPressed: _openSearchOverlay,
@@ -3209,52 +3221,44 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Turn on these caches so the agent has library and watch history context. We send media path names and Tautulli usernames, which could be sensitive, but your credentials are never used — all server commands are sent back to your device and processed locally.',
+                        'Turn on these caches so the agent has library and watch history context. Your credentials are never used — all server commands are sent back to your device and processed locally. We also send media path names (including *nix paths), which could potentially be sensitive.',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 16),
-                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                          .listenableBuilder(
+                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
                         builder: (context, _) {
-                          final enabled = ZagreusDatabase
-                              .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                              .read();
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: ZagBlock(
-                              title: 'Library Cache',
-                              body: [
-                                TextSpan(
-                                  text: enabled
-                                      ? 'Library is synced to Z Agent'
-                                      : 'Let Z Agent analyze your library',
-                                ),
-                              ],
-                              trailing: ZagSwitch(
-                                value: enabled,
-                                onChanged: (value) {
-                                  ZagreusDatabase
-                                      .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
-                                      .update(value);
-                                  if (value) {
-                                    showZagInfoSnackBar(
-                                      title: 'Library Cache Enabled',
-                                      message:
-                                          'Z Agent will now sync your library periodically',
-                                    );
-                                  } else {
-                                    showZagInfoSnackBar(
-                                      title: 'Library Cache Disabled',
-                                      message:
-                                          'Z Agent will no longer sync your library',
-                                    );
-                                  }
-                                },
+                          final enabled =
+                              ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                          return ZagBlock(
+                            title: 'Library Cache',
+                            body: [
+                              TextSpan(
+                                text: enabled
+                                    ? 'Library is synced to Z Agent'
+                                    : 'Let Z Agent analyze your library',
                               ),
+                            ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(value);
+                                if (value) {
+                                  showZagInfoSnackBar(
+                                    title: 'Library Cache Enabled',
+                                    message: 'Z Agent will now sync your library periodically',
+                                  );
+                                } else {
+                                  showZagInfoSnackBar(
+                                    title: 'Library Cache Disabled',
+                                    message: 'Z Agent will no longer sync your library',
+                                  );
+                                }
+                              },
                             ),
                           );
                         },
                       ),
+                      const SizedBox(height: 12),
                       ZagreusDatabase.Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
                           .listenableBuilder(
                         builder: (context, _) {
@@ -3300,6 +3304,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           );
                         },
                       ),
+                      const SizedBox(height: 12),
                       ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
                           .listenableBuilder(
                         builder: (context, _) {
