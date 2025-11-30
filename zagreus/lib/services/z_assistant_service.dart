@@ -244,7 +244,10 @@ class ZAssistantService {
       }
     } on dio.DioException catch (e, stack) {
       ZagLogger().error('Z Assistant API error', e, stack);
-      if (e.type == dio.DioExceptionType.connectionTimeout) {
+      // Check for rate limit (429)
+      if (e.response?.statusCode == 429) {
+        throw Exception('Rate Limit Reached');
+      } else if (e.type == dio.DioExceptionType.connectionTimeout) {
         throw Exception(
             'Connection timeout - Z Assistant took too long to respond');
       } else if (e.type == dio.DioExceptionType.receiveTimeout) {
@@ -287,7 +290,10 @@ class ZAssistantService {
       }
     } on dio.DioException catch (e, stack) {
       ZagLogger().error('Explore API error', e, stack);
-      if (e.type == dio.DioExceptionType.connectionTimeout) {
+      // Check for rate limit (429)
+      if (e.response?.statusCode == 429) {
+        throw Exception('Rate Limit Reached');
+      } else if (e.type == dio.DioExceptionType.connectionTimeout) {
         throw Exception('Connection timeout - search took too long');
       } else if (e.type == dio.DioExceptionType.receiveTimeout) {
         throw Exception('Receive timeout - search took too long');

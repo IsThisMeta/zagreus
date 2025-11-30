@@ -91,7 +91,7 @@ class OverseerrState extends ZagModuleState {
           sendTimeout: const Duration(seconds: 60),
         ));
 
-        _api = OverseerrAPI(dio, baseUrl: _host);
+        _api = OverseerrAPI(dio, baseUrl: '${_host}api/');
         ZagLogger().debug('Overseerr API instance created successfully');
       } catch (e, stackTrace) {
         ZagLogger()

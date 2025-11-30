@@ -1,6 +1,6 @@
 name: zagreus
 description: Self-Hosted Controller
-version: 11.8.0+1
+version: 11.9.0+1
 publish_to: "none"
 environment:
   sdk: ">=3.0.0 <4.0.0"
