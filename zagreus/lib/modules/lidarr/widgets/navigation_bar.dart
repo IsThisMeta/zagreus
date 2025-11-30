@@ -10,12 +10,14 @@ class LidarrNavigationBar extends StatelessWidget {
     Icons.people_rounded,
     Icons.event_busy_rounded,
     Icons.history_rounded,
+    Icons.schedule_rounded,
   ];
 
   static List<String> get titles => [
         'Artists',
         'Missing',
         'History',
+        'Queue',
       ];
 
   const LidarrNavigationBar({

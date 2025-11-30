@@ -1,5 +1,6 @@
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/lidarr.dart';
+import 'package:zagreus/api/lidarr/models/queue/queue.dart';
 
 class LidarrAPI {
   final Dio _dio;
@@ -198,6 +199,31 @@ class LidarrAPI {
       return Future.error(error);
     } catch (error, stack) {
       logError('Failed to edit artist ($artistID)', error, stack);
+      return Future.error(error);
+    }
+  }
+
+  Future<LidarrQueuePage> getQueue({
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final response = await _dio.get(
+        'queue',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'sortDirection': 'ascending',
+          'sortKey': 'timeleft',
+          'includeUnknownArtistItems': true,
+        },
+      );
+      return LidarrQueuePage.fromJson(response.data);
+    } on DioException catch (error, stack) {
+      logError('Failed to fetch queue', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to fetch queue', error, stack);
       return Future.error(error);
     }
   }

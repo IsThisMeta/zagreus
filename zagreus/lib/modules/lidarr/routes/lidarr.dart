@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/lidarr.dart';
 import 'package:zagreus/router/routes/lidarr.dart';
+import 'package:zagreus/modules/lidarr/routes/queue.dart';
 
 class LidarrRoute extends StatefulWidget {
   const LidarrRoute({
@@ -20,6 +21,7 @@ class _State extends State<LidarrRoute> {
   LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
 
   final List _refreshKeys = [
+    GlobalKey<RefreshIndicatorState>(),
     GlobalKey<RefreshIndicatorState>(),
     GlobalKey<RefreshIndicatorState>(),
     GlobalKey<RefreshIndicatorState>(),
@@ -99,6 +101,11 @@ class _State extends State<LidarrRoute> {
         LidarrHistory(
           refreshIndicatorKey: _refreshKeys[2],
           refreshAllPages: _refreshAllPages,
+        ),
+        LidarrQueueRoute(
+          embedInNavigation: true,
+          scrollController: LidarrNavigationBar.scrollControllers[3],
+          openDownloadsDrawer: _openQueueDrawer,
         ),
       ],
     );

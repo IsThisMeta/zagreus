@@ -8,3 +8,4 @@ export 'routes/history.dart';
 export 'routes/lidarr.dart';
 export 'routes/missing.dart';
 export 'routes/search_results.dart';
+export 'routes/queue.dart';
