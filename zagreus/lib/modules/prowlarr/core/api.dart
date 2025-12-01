@@ -19,8 +19,8 @@ class ProwlarrAPIWrapper {
   Future<List<dynamic>> getCategories() async {
     try {
       return await api.getCategories();
-    } on DioException catch (e) {
-      throw Exception('Failed to fetch categories: ${e.message}');
+    } catch (e) {
+      throw Exception('Failed to fetch categories: $e');
     }
   }
 
@@ -28,8 +28,8 @@ class ProwlarrAPIWrapper {
   Future<List<dynamic>> search(String query, {int? categoryId}) async {
     try {
       return await api.performSearch(query, categoryId: categoryId);
-    } on DioException catch (e) {
-      throw Exception('Search failed: ${e.message}');
+    } catch (e) {
+      throw Exception('Search failed: $e');
     }
   }
 

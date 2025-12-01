@@ -44,12 +44,16 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
     _state.setLoading(true);
     try {
       final categories = await _apiWrapper.getCategories();
+      if (!mounted) return;
       _state.setCategories(categories.cast<ProwlarrCategory>());
       _state.clearError();
     } catch (e) {
+      if (!mounted) return;
       _state.setError(e.toString());
     } finally {
-      _state.setLoading(false);
+      if (mounted) {
+        _state.setLoading(false);
+      }
     }
   }
 
@@ -64,12 +68,16 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
         query,
         categoryId: _state.selectedCategory?.id,
       );
+      if (!mounted) return;
       _state.setSearchResults(results.cast<ProwlarrItem>());
       _state.clearError();
     } catch (e) {
+      if (!mounted) return;
       _state.setError(e.toString());
     } finally {
-      _state.setLoading(false);
+      if (mounted) {
+        _state.setLoading(false);
+      }
     }
   }
 
@@ -157,40 +165,42 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
             ),
           ),
         ),
-        body: Consumer<ProwlarrState>(
-          builder: (context, state, child) {
-            if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        body: SafeArea(
+          child: Consumer<ProwlarrState>(
+            builder: (context, state, child) {
+              if (state.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            if (state.error != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error: ${state.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadCategories,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
+              if (state.error != null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error: ${state.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadCategories,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-            if (state.searchResults.isEmpty && _searchController.text.isEmpty) {
-              return _buildCategoriesView(state.categories);
-            }
+              if (state.searchResults.isEmpty && _searchController.text.isEmpty) {
+                return _buildCategoriesView(state.categories);
+              }
 
-            return _buildSearchResults(state.searchResults);
-          },
+              return _buildSearchResults(state.searchResults);
+            },
+          ),
         ),
       ),
     );
