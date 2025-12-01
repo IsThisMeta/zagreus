@@ -52,18 +52,12 @@ class CalendarSonarrData extends CalendarData {
       ),
       if (!hasFile)
         TextSpan(
-          text: !monitored
-              ? 'sonarr.Unmonitored'.tr()
-              : released
-                  ? 'sonarr.Missing'.tr()
-                  : 'sonarr.Unaired'.tr(),
+          text: released ? 'sonarr.Missing'.tr() : 'sonarr.Unaired'.tr(),
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: !monitored
-                ? ZagColours.blueGrey
-                : released
-                    ? ZagColours.red
-                    : ZagColours.blue,
+            color: (released ? ZagColours.red : ZagColours.blue).withOpacity(
+              monitored ? 1.0 : ZagUI.OPACITY_DISABLED,
+            ),
           ),
         ),
       if (hasFile)

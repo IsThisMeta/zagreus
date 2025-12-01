@@ -109,14 +109,10 @@ class API {
                 .floor();
         DateTime? digitalRelease =
             DateTime.tryParse(entry['digitalRelease'] ?? '')?.toLocal().floor();
-        DateTime? release;
         if (physicalRelease != null || digitalRelease != null) {
-          if (physicalRelease == null) release = digitalRelease;
-          if (digitalRelease == null) release = physicalRelease;
-          release ??= digitalRelease!.isBefore(physicalRelease!)
-              ? digitalRelease
-              : physicalRelease;
-          if (_isDateWithinBounds(release, today)) {
+          // Prefer digital release date when available; fallback to physical
+          final release = digitalRelease ?? physicalRelease;
+          if (release != null && _isDateWithinBounds(release, today)) {
             List<CalendarData> day = map[release] ?? [];
             day.add(CalendarRadarrData(
               id: entry['id'] ?? 0,
@@ -129,6 +125,7 @@ class API {
               runtime: entry['runtime'] ?? 0,
               studio: entry['studio'] ?? ZagUI.TEXT_EMDASH,
               releaseDate: release,
+              monitored: entry['monitored'] ?? true,
             ));
             map[release] = day;
           }

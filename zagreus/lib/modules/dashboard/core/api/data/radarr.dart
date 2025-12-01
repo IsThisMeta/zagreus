@@ -15,6 +15,7 @@ class CalendarRadarrData extends CalendarData {
   int runtime;
   String studio;
   DateTime releaseDate;
+  bool monitored;
 
   CalendarRadarrData({
     required int id,
@@ -25,6 +26,7 @@ class CalendarRadarrData extends CalendarData {
     required this.runtime,
     required this.studio,
     required this.releaseDate,
+    required this.monitored,
   }) : super(id, title);
 
   bool get hasReleased => DateTime.now().isAfter(releaseDate);
@@ -46,7 +48,9 @@ class CalendarRadarrData extends CalendarData {
           text: released ? 'radarr.Missing'.tr() : 'radarr.Unreleased'.tr(),
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            color: released ? ZagColours.red : ZagColours.blue,
+            color: (released ? ZagColours.red : ZagColours.blue).withOpacity(
+              monitored ? 1.0 : ZagUI.OPACITY_DISABLED,
+            ),
           ),
         ),
       if (hasFile)

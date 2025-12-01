@@ -14,6 +14,7 @@ class ContentBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headers = getHeaders();
+    final disabled = _isDisabled();
     return ZagBlock(
       title: data.title,
       body: data.body,
@@ -24,6 +25,7 @@ class ContentBlock extends StatelessWidget {
       backgroundUrl: data.backgroundUrl(context),
       trailing: data.trailing(context),
       onTap: () async => data.enterContent(context),
+      disabled: disabled,
     );
   }
 
@@ -37,6 +39,17 @@ class ContentBlock extends StatelessWidget {
         return ZagProfile.current.sonarrHeaders;
       default:
         return const {};
+    }
+  }
+
+  bool _isDisabled() {
+    switch (data.runtimeType) {
+      case CalendarRadarrData:
+        return !(data as CalendarRadarrData).monitored;
+      case CalendarSonarrData:
+        return !(data as CalendarSonarrData).monitored;
+      default:
+        return false;
     }
   }
 }

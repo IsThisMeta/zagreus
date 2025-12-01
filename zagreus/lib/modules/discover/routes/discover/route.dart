@@ -4351,20 +4351,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ),
                             ],
                             if (mediaType != 'person' && voteAverage > 0) ...[
-                              if (releaseDate.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child: Text(
-                                    '•',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white.withOpacity(0.3)
-                                          : Colors.black.withOpacity(0.3),
-                                    ),
-                                  ),
-                                ),
                               Icon(
                                 Icons.star,
                                 size: 14,

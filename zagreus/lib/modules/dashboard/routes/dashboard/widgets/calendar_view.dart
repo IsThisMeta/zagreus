@@ -207,7 +207,9 @@ class _State extends State<CalendarView> {
           if (!(event as CalendarLidarrData).hasAllFiles) counter++;
           break;
         case CalendarRadarrData:
-          if (!(event as CalendarRadarrData).hasFile) counter++;
+          final _event = event as CalendarRadarrData;
+          if (!_event.monitored) break;
+          if (!_event.hasFile) counter++;
           break;
         case CalendarSonarrData:
           CalendarSonarrData _event = event;
