@@ -118,6 +118,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_SEARCH_ADD_PROWLARR('add_prowlarr'),
   CONFIGURATION_SEARCH_ADD_INDEXER('add_indexer'),
   CONFIGURATION_SEARCH_ADD_INDEXER_HEADERS('headers'),
+  CONFIGURATION_SEARCH_ADD_PROWLARR_HEADERS('headers'),
   CONFIGURATION_SEARCH_EDIT_INDEXER('edit_indexer/:id'),
   CONFIGURATION_SEARCH_EDIT_INDEXER_HEADERS('headers'),
   CONFIGURATION_SONARR('sonarr'),
@@ -264,6 +265,12 @@ enum SettingsRoutes with ZagRoutesMixin {
           final indexer = state.extra as ZagIndexer?;
           return ConfigurationSearchAddIndexerHeadersRoute(indexer: indexer);
         });
+      case SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR_HEADERS:
+        return route(
+          builder: (_, state) => const ConfigurationSearchAddIndexerHeadersRoute(
+            indexer: null,
+          ),
+        );
       case SettingsRoutes.CONFIGURATION_SEARCH_EDIT_INDEXER:
         return route(builder: (_, state) {
           final id = int.tryParse(state.pathParameters['id']!) ?? -1;
@@ -434,7 +441,7 @@ enum SettingsRoutes with ZagRoutesMixin {
         ];
       case SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR:
         return [
-          SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER_HEADERS.routes,
+          SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_SEARCH_ADD_INDEXER:
         return [
