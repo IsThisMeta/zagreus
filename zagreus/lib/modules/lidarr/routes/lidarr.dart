@@ -129,8 +129,14 @@ class _State extends State<LidarrRoute> {
           onPressed: () async => _handlePopup(),
         ),
       ];
+    
+    final instanceName = ZagProfile.getActiveInstanceName('lidarr');
+    final title = instanceName != null 
+        ? '${ZagModule.LIDARR.title} $instanceName'
+        : ZagModule.LIDARR.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.LIDARR.title,
+      title: title,
       useDrawer: true,
       profiles: profiles,
       actions: actions,

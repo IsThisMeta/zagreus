@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/api/sonarr/models/manual_import/manual_import.dart';
+import 'package:zagreus/api/sonarr/models/manual_import/manual_import_file.dart';
 
 class SonarrAPIController {
   Future<bool> downloadRelease({
@@ -917,5 +919,79 @@ class SonarrAPIController {
       });
     }
     return false;
+  }
+
+  Future<bool> triggerManualImport({
+    required BuildContext context,
+    required List<SonarrManualImportFile> files,
+    bool showSnackbar = true,
+  }) async {
+    if (files.isEmpty) {
+      showZagInfoSnackBar(
+        title: 'Nothing Selected',
+        message: 'Please select at least one file to import',
+      );
+      return false;
+    }
+    if (context.read<SonarrState>().enabled) {
+      return context
+          .read<SonarrState>()
+          .api!
+          .manualImport
+          .import(files: files)
+          .then((_) {
+        if (showSnackbar) {
+          showZagSuccessSnackBar(
+            title: 'sonarr.ManualImport'.tr(),
+            message: '${files.length} files queued for import',
+          );
+        }
+        return true;
+      }).catchError((error, stack) {
+        ZagLogger().error('Failed to trigger Sonarr manual import', error, stack);
+        if (showSnackbar) {
+          showZagErrorSnackBar(
+            title: 'sonarr.FailedToImport'.tr(),
+            error: error,
+          );
+        }
+        return false;
+      });
+    }
+    return false;
+  }
+
+  /// Given a [SonarrManualImport] instance, create a [SonarrManualImportFile]
+  /// which is sent within the manual import call.
+  Tuple2<SonarrManualImportFile?, String?> buildManualImportFile({
+    required SonarrManualImport import,
+  }) {
+    if (import.series?.id == null) {
+      return const Tuple2(null, 'All selections must have a series set');
+    }
+    final episodeIds =
+        import.episodes?.map((episode) => episode.id).whereType<int>().toList() ??
+            [];
+    if (episodeIds.isEmpty) {
+      return const Tuple2(null, 'All selections must have at least one episode');
+    }
+    if (import.quality == null ||
+        (import.quality?.quality?.id ?? -1) < 0 ||
+        import.languages == null ||
+        import.languages!.isEmpty) {
+      return const Tuple2(null, 'Quality and language are required');
+    }
+    return Tuple2(
+      SonarrManualImportFile(
+        path: import.path,
+        seriesId: import.series!.id,
+        episodeIds: episodeIds,
+        quality: import.quality,
+        languages: import.languages,
+        releaseGroup: import.releaseGroup,
+        downloadId: import.downloadId,
+      ),
+      null,
+    );
   }
 }

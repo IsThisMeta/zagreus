@@ -31,6 +31,10 @@ export 'models/history/history_record.dart';
 
 /// Import List
 export 'models/import_list/exclusion.dart';
+/// Manual Import
+export 'models/manual_import/manual_import.dart';
+export 'models/manual_import/manual_import_file.dart';
+export 'models/manual_import/manual_import_rejection.dart';
 
 /// Notification
 export 'models/notification/notification.dart';
