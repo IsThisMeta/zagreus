@@ -93,7 +93,6 @@ class _RadarrAddMovieStreamingProvidersTileState
               _streamingProviders,
               isLoading: _loading,
               hasError: _hasError,
-              alignLeft: true,
             ),
           ),
           const SizedBox(width: 24),
@@ -104,7 +103,6 @@ class _RadarrAddMovieStreamingProvidersTileState
               _buyRentProviders,
               isLoading: _loading,
               hasError: _hasError,
-              alignLeft: false,
             ),
           ),
         ],
@@ -117,7 +115,6 @@ class _RadarrAddMovieStreamingProvidersTileState
     List<Map<String, dynamic>> providers, {
     required bool isLoading,
     required bool hasError,
-    required bool alignLeft,
   }) {
     final visibleProviders = providers.take(_maxVisibleIcons).toList();
     final hasMore = providers.length > _maxVisibleIcons;
@@ -125,7 +122,7 @@ class _RadarrAddMovieStreamingProvidersTileState
     final isEmpty = providers.isEmpty;
 
     return Column(
-      crossAxisAlignment: alignLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
@@ -139,14 +136,14 @@ class _RadarrAddMovieStreamingProvidersTileState
         SizedBox(
           height: 36,
           child: isLoading
-              ? Align(
-                  alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
-                  child: const _ThreeDotsLoading(),
+              ? const Align(
+                  alignment: Alignment.centerLeft,
+                  child: _ThreeDotsLoading(),
                 )
               : (hasError || isEmpty)
-                  ? Align(
-                      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
-                      child: const Text(
+                  ? const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
                         'N/A',
                         style: TextStyle(
                           fontSize: 14,
@@ -155,33 +152,35 @@ class _RadarrAddMovieStreamingProvidersTileState
                       ),
                     )
                   : Wrap(
-                      alignment: alignLeft ? WrapAlignment.start : WrapAlignment.end,
+                      alignment: WrapAlignment.start,
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        ...visibleProviders.map((provider) {
-                          final logoPath = provider['logo_path'] as String?;
-                          if (logoPath == null || logoPath.isEmpty) {
-                            return const SizedBox.shrink();
-                          }
-                          return GestureDetector(
-                            onTap: () => _openProvider(provider),
-                            child: Tooltip(
-                              message: provider['provider_name'] ?? '',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.network(
-                                  TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                                  width: 36,
-                                  height: 36,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const SizedBox.shrink(),
+                        ...visibleProviders
+                            .where((provider) {
+                              final logoPath = provider['logo_path'] as String?;
+                              return logoPath != null && logoPath.isNotEmpty;
+                            })
+                            .map((provider) {
+                              final logoPath = provider['logo_path'] as String;
+                              return GestureDetector(
+                                onTap: () => _openProvider(provider),
+                                child: Tooltip(
+                                  message: provider['provider_name'] ?? '',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                      width: 36,
+                                      height: 36,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox.shrink(),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }),
+                              );
+                            }),
                         if (hasMore)
                           GestureDetector(
                             onTap: () => _showAllProviders(title, providers),
