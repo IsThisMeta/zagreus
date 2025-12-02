@@ -37,10 +37,8 @@ class ZagDrawer extends StatelessWidget {
       print('[DEBUG] moduleOrderedList - stored modules: $storedModules');
       final modules = (storedModules ?? const [])
           .whereType<ZagModule>()
-          .where(_shouldDisplayModule)
           .toList();
-      final missing =
-          ZagModule.active.where(_shouldDisplayModule).toList();
+      final missing = ZagModule.active.toList();
 
       missing.retainWhere((m) => !modules.contains(m));
       modules.addAll(missing);
