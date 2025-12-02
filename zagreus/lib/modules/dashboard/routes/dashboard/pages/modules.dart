@@ -11,6 +11,7 @@ import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/services/settings_lock_service.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 
+
 class ModulesPage extends StatefulWidget {
   final ScrollController? controller;
   const ModulesPage({
@@ -59,6 +60,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
   List<Widget> _buildAlphabeticalList() {
     List<Widget> modules = [];
     int index = 0;
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    
     ZagModule.active
       ..sort((a, b) => a.title.toLowerCase().compareTo(
             b.title.toLowerCase(),
@@ -81,6 +84,16 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
             modules.add(_buildFromZagModule(context, module, index));
           }
           index++;
+          
+          // Add shadow instances for this module
+          final instances = ZagProfile.getInstancesForModule(currentProfile, module.key);
+          for (final instanceKey in instances) {
+            final displayName = ZagProfile.getInstanceDisplayName(instanceKey);
+            if (displayName != null) {
+              modules.add(_buildInstanceModule(context, module, instanceKey, displayName, index));
+              index++;
+            }
+          }
         }
       });
     modules.add(_buildFromZagModule(context, ZagModule.SETTINGS, index));
@@ -90,6 +103,8 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
   List<Widget> _buildManuallyOrderedList() {
     List<Widget> modules = [];
     int index = 0;
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    
     ZagDrawer.moduleOrderedList().forEach((module) {
       // Skip premium modules if not Pro
       if (_requiresPro(module) && !ZagreusPro.isEnabled) {
@@ -108,6 +123,16 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
           modules.add(_buildFromZagModule(context, module, index));
         }
         index++;
+        
+        // Add shadow instances for this module
+        final instances = ZagProfile.getInstancesForModule(currentProfile, module.key);
+        for (final instanceKey in instances) {
+          final displayName = ZagProfile.getInstanceDisplayName(instanceKey);
+          if (displayName != null) {
+            modules.add(_buildInstanceModule(context, module, instanceKey, displayName, index));
+            index++;
+          }
+        }
       }
     });
     modules.add(_buildFromZagModule(context, ZagModule.SETTINGS, index));
@@ -124,6 +149,9 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
       };
     } else {
       onTap = () {
+        // Clear any active instance to use the main profile
+        ZagInstanceContext().clearActiveInstance(module.key);
+        module.state(context)?.reset();
         module.launch(restore: false);
       };
     }
@@ -151,6 +179,27 @@ class _State extends State<ModulesPage> with AutomaticKeepAliveClientMixin {
         color: ZagModule.WAKE_ON_LAN.color,
       ),
       onTap: () async => ZagWakeOnLAN().wake(),
+    );
+  }
+
+  Widget _buildInstanceModule(
+    BuildContext context,
+    ZagModule module,
+    String instanceKey,
+    String displayName,
+    int listIndex,
+  ) {
+    return ZagBlock(
+      title: '${module.title} $displayName',
+      body: [TextSpan(text: module.description)],
+      trailing: ZagIconButton(icon: module.icon, color: module.color),
+      onTap: () {
+        // Set the active instance before launching
+        ZagInstanceContext().setActiveInstance(module.key, instanceKey);
+        // Reset the module state to pick up the new profile
+        module.state(context)?.reset();
+        module.launch(restore: false);
+      },
     );
   }
 
