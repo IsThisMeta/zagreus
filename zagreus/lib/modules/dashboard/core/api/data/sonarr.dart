@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/database/box.dart';
+import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
@@ -32,7 +34,8 @@ class CalendarSonarrData extends CalendarData {
     required this.fileQualityProfile,
     required this.monitored,
     this.runtime = 0,
-  }) : super(id, title);
+    String? instanceKey,
+  }) : super(id, title, instanceKey: instanceKey);
 
   @override
   List<TextSpan> get body {
@@ -99,6 +102,14 @@ class CalendarSonarrData extends CalendarData {
 
   @override
   Future<void> enterContent(BuildContext context) async {
+    // Set instance context before navigating
+    if (instanceKey != null) {
+      ZagInstanceContext().setActiveInstance('sonarr', instanceKey);
+    } else {
+      ZagInstanceContext().clearActiveInstance('sonarr');
+    }
+    // Reset state to load from correct profile
+    context.read<SonarrState>().reset();
     SonarrRoutes.SERIES.go(params: {'series': seriesID.toString()});
   }
 
@@ -156,11 +167,39 @@ class CalendarSonarrData extends CalendarData {
 
   @override
   String? backgroundUrl(BuildContext context) {
+    // For shadow instances, we need to build URL from the instance profile
+    if (instanceKey != null) {
+      final profile = ZagBox.profiles.read(instanceKey!);
+      if (profile != null) {
+        return _buildFanartUrl(profile);
+      }
+    }
     return context.read<SonarrState>().getFanartURL(this.seriesID);
   }
 
   @override
   String? posterUrl(BuildContext context) {
+    // For shadow instances, we need to build URL from the instance profile
+    if (instanceKey != null) {
+      final profile = ZagBox.profiles.read(instanceKey!);
+      if (profile != null) {
+        return _buildPosterUrl(profile);
+      }
+    }
     return context.read<SonarrState>().getPosterURL(this.seriesID);
+  }
+  
+  String? _buildFanartUrl(ZagProfile profile) {
+    final host = profile.effectiveSonarrHost();
+    final key = profile.sonarrKey;
+    if (host.isEmpty) return null;
+    return '$host/api/v3/mediacover/$seriesID/fanart.jpg?apikey=$key';
+  }
+  
+  String? _buildPosterUrl(ZagProfile profile) {
+    final host = profile.effectiveSonarrHost();
+    final key = profile.sonarrKey;
+    if (host.isEmpty) return null;
+    return '$host/api/v3/mediacover/$seriesID/poster.jpg?apikey=$key';
   }
 }

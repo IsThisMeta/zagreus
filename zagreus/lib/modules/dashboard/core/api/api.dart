@@ -38,7 +38,7 @@ class API {
     
     // Radarr - check main and instances
     if (DashboardDatabase.CALENDAR_ENABLE_RADARR.read()) {
-      // Main Radarr
+      // Main Radarr (null instanceKey = main)
       if (profile.radarrEnabled && (showAll || filter.contains('radarr:main'))) {
         await _getRadarrUpcoming(_upcoming, today, profile);
       }
@@ -49,7 +49,7 @@ class API {
         if (showAll || filter.contains('radarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.radarrEnabled) {
-            await _getRadarrUpcoming(_upcoming, today, instanceProfile);
+            await _getRadarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
           }
         }
       }
@@ -57,7 +57,7 @@ class API {
     
     // Sonarr - check main and instances
     if (DashboardDatabase.CALENDAR_ENABLE_SONARR.read()) {
-      // Main Sonarr
+      // Main Sonarr (null instanceKey = main)
       if (profile.sonarrEnabled && (showAll || filter.contains('sonarr:main'))) {
         await _getSonarrUpcoming(_upcoming, today, profile);
       }
@@ -68,7 +68,7 @@ class API {
         if (showAll || filter.contains('sonarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.sonarrEnabled) {
-            await _getSonarrUpcoming(_upcoming, today, instanceProfile);
+            await _getSonarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
           }
         }
       }
@@ -126,8 +126,9 @@ class API {
   Future<void> _getRadarrUpcoming(
     Map<DateTime, List<CalendarData>> map,
     DateTime today,
-    ZagProfile useProfile,
-  ) async {
+    ZagProfile useProfile, {
+    String? instanceKey,
+  }) async {
     Dio _client = Dio(
       BaseOptions(
         baseUrl: '${useProfile.effectiveRadarrHost()}/api/v3/',
@@ -169,6 +170,7 @@ class API {
               studio: entry['studio'] ?? ZagUI.TEXT_EMDASH,
               releaseDate: release,
               monitored: entry['monitored'] ?? true,
+              instanceKey: instanceKey,
             ));
             map[release] = day;
           }
@@ -180,8 +182,9 @@ class API {
   Future<void> _getSonarrUpcoming(
     Map<DateTime, List<CalendarData>> map,
     DateTime today,
-    ZagProfile useProfile,
-  ) async {
+    ZagProfile useProfile, {
+    String? instanceKey,
+  }) async {
     Dio _client = Dio(
       BaseOptions(
         baseUrl: '${useProfile.effectiveSonarrHost()}/api/v3/',
@@ -224,6 +227,7 @@ class API {
             monitored:
                 entry['monitored'] ?? entry['series']?['monitored'] ?? true,
             runtime: entry['series']?['runtime'] ?? 0,
+            instanceKey: instanceKey,
           ));
           map[date] = day;
         }

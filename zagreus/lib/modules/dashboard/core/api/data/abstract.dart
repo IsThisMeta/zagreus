@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 abstract class CalendarData {
   int id;
   String title;
+  String? instanceKey; // null = main instance, otherwise shadow profile key
   List<TextSpan> get body;
 
   String? backgroundUrl(BuildContext context);
@@ -15,6 +16,7 @@ abstract class CalendarData {
 
   CalendarData(
     this.id,
-    this.title,
-  );
+    this.title, {
+    this.instanceKey,
+  });
 }

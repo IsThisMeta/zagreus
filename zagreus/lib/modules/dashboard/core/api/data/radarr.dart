@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/database/box.dart';
+import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/extensions/int/duration.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/router/routes/radarr.dart';
@@ -27,7 +29,8 @@ class CalendarRadarrData extends CalendarData {
     required this.studio,
     required this.releaseDate,
     required this.monitored,
-  }) : super(id, title);
+    String? instanceKey,
+  }) : super(id, title, instanceKey: instanceKey);
 
   bool get hasReleased => DateTime.now().isAfter(releaseDate);
 
@@ -66,6 +69,14 @@ class CalendarRadarrData extends CalendarData {
 
   @override
   Future<void> enterContent(BuildContext context) async {
+    // Set instance context before navigating
+    if (instanceKey != null) {
+      ZagInstanceContext().setActiveInstance('radarr', instanceKey);
+    } else {
+      ZagInstanceContext().clearActiveInstance('radarr');
+    }
+    // Reset state to load from correct profile
+    context.read<RadarrState>().reset();
     RadarrRoutes.MOVIE.go(params: {
       'movie': id.toString(),
     });
@@ -93,11 +104,39 @@ class CalendarRadarrData extends CalendarData {
 
   @override
   String? backgroundUrl(BuildContext context) {
+    // For shadow instances, build URL from the instance profile
+    if (instanceKey != null) {
+      final profile = ZagBox.profiles.read(instanceKey!);
+      if (profile != null) {
+        return _buildFanartUrl(profile);
+      }
+    }
     return context.read<RadarrState>().getFanartURL(this.id);
   }
 
   @override
   String? posterUrl(BuildContext context) {
+    // For shadow instances, build URL from the instance profile
+    if (instanceKey != null) {
+      final profile = ZagBox.profiles.read(instanceKey!);
+      if (profile != null) {
+        return _buildPosterUrl(profile);
+      }
+    }
     return context.read<RadarrState>().getPosterURL(this.id);
+  }
+  
+  String? _buildFanartUrl(ZagProfile profile) {
+    final host = profile.effectiveRadarrHost();
+    final key = profile.radarrKey;
+    if (host.isEmpty) return null;
+    return '$host/api/v3/mediacover/$id/fanart.jpg?apikey=$key';
+  }
+  
+  String? _buildPosterUrl(ZagProfile profile) {
+    final host = profile.effectiveRadarrHost();
+    final key = profile.radarrKey;
+    if (host.isEmpty) return null;
+    return '$host/api/v3/mediacover/$id/poster.jpg?apikey=$key';
   }
 }
