@@ -89,7 +89,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
       ];
 
   Widget _remoteHost() {
-    String host = ZagProfile.current.readarrHost;
+    String host = ZagProfile.forModule('readarr').readarrHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -100,8 +100,8 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
           prefill: host,
         );
         if (result.item1) {
-          ZagProfile.current.readarrHost = result.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('readarr').readarrHost = result.item2;
+          ZagProfile.forModule('readarr').save();
           context.read<ReadarrState>().reset();
         }
       },
@@ -109,7 +109,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
   }
 
   Widget _localHost() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('readarr');
     final host = profile.readarrLocalHost;
     return ZagBlock(
       title: 'settings.LocalHost'.tr(),
@@ -131,7 +131,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
   }
 
   Widget _localSsids() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('readarr');
     final ssids = profile.readarrLocalSsids;
     return ZagBlock(
       title: 'settings.TrustedSsids'.tr(),
@@ -164,7 +164,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
     return ValueListenableBuilder<String?>(
       valueListenable: localService.currentSsid,
       builder: (context, ssid, _) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('readarr');
         final advancedEnabled =
             ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
         final hasLocalHost = profile.readarrLocalHost.isNotEmpty;
@@ -207,7 +207,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
   }
 
   Widget _apiKey() {
-    String apiKey = ZagProfile.current.readarrKey;
+    String apiKey = ZagProfile.forModule('readarr').readarrKey;
     return ZagBlock(
       title: 'settings.ApiKey'.tr(),
       body: [
@@ -225,8 +225,8 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
           prefill: apiKey,
         );
         if (result.item1) {
-          ZagProfile.current.readarrKey = result.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('readarr').readarrKey = result.item2;
+          ZagProfile.forModule('readarr').save();
           context.read<ReadarrState>().reset();
         }
       },
@@ -238,7 +238,7 @@ class _State extends State<ConfigurationReadarrConnectionDetailsRoute>
       text: 'settings.TestConnection'.tr(),
       icon: Icons.wifi_tethering_rounded,
       onTap: () async {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('readarr');
         if (profile.readarrHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),

@@ -121,8 +121,14 @@ class _State extends State<ReadarrRoute> {
           onPressed: () async => _handlePopup(),
         ),
       ];
+    
+    final instanceName = ZagProfile.getActiveInstanceName('readarr');
+    final title = instanceName != null 
+        ? '${ZagModule.READARR.title} $instanceName'
+        : ZagModule.READARR.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.READARR.title,
+      title: title,
       useDrawer: true,
       profiles: profiles,
       actions: actions,

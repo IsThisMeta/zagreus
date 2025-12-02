@@ -26,13 +26,71 @@ class _State extends State<ConfigurationReadarrRoute>
   }
 
   Widget _appBar() {
+    final instanceName = ZagProfile.getActiveInstanceName('readarr');
+    final title = instanceName != null
+        ? '${ZagModule.READARR.title} $instanceName'
+        : ZagModule.READARR.title;
+    
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'readarr');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
       scrollControllers: [scrollController],
-      title: ZagModule.READARR.title,
+      title: title,
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+      ],
     );
   }
 
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'readarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('readarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.READARR.title
+                : '${ZagModule.READARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.READARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    final didSelect = result != null || (result == null && currentInstance != null);
+    if (didSelect && result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('readarr', result);
+      setState(() {});
+    }
+  }
+
   Widget _body() {
+    final instanceName = ZagProfile.getActiveInstanceName('readarr');
+    final isInstance = instanceName != null;
+    
     return ZagListView(
       controller: scrollController,
       children: [
@@ -41,19 +99,27 @@ class _State extends State<ConfigurationReadarrRoute>
         _connectionDetailsPage(),
         ZagDivider(),
         _defaultPagesPage(),
+        ZagDivider(),
+        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
       ],
     );
   }
 
   Widget _enabledToggle() {
+    final instanceName = ZagProfile.getActiveInstanceName('readarr');
+    final displayName = instanceName != null
+        ? '${ZagModule.READARR.title} $instanceName'
+        : ZagModule.READARR.title;
+    
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.READARR.title]),
+        title: 'settings.EnableModule'.tr(args: [displayName]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.readarrEnabled,
+          value: ZagProfile.forModule('readarr').readarrEnabled,
           onChanged: (value) {
-            ZagProfile.current.readarrEnabled = value;
-            ZagProfile.current.save();
+            final profile = ZagProfile.forModule('readarr');
+            profile.readarrEnabled = value;
+            profile.save();
             context.read<ReadarrState>().reset();
           },
         ),
@@ -82,6 +148,128 @@ class _State extends State<ConfigurationReadarrRoute>
       body: [TextSpan(text: 'settings.DefaultPagesDescription'.tr())],
       trailing: const ZagIconButton.arrow(),
       onTap: SettingsRoutes.CONFIGURATION_READARR_DEFAULT_PAGES.go,
+    );
+  }
+
+  Widget _addDuplicateInstance() {
+    return ZagBlock(
+      title: 'Add Duplicate Instance',
+      body: [
+        TextSpan(
+          text: 'Create another ${ZagModule.READARR.title} instance with separate connection details',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.ADD),
+      onTap: () async {
+        final controller = TextEditingController();
+        final result = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Instance Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., Audiobooks, eBooks',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+
+        if (result == null || result.isEmpty) return;
+
+        if (result.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+        final shadowKey = await ZagProfile.createInstance(
+          moduleKey: ZagModule.READARR.key,
+          instanceName: result,
+          parentProfile: currentProfile,
+        );
+
+        if (shadowKey == null) {
+          showZagErrorSnackBar(
+            title: 'Failed to Create Instance',
+            message: 'An instance with that name may already exist',
+          );
+          return;
+        }
+
+        showZagSuccessSnackBar(
+          title: 'Instance Created',
+          message: '${ZagModule.READARR.title} $result has been added',
+        );
+
+        ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _deleteInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('readarr');
+    final instanceKey = ZagInstanceContext().getActiveInstance('readarr');
+    
+    return ZagBlock(
+      title: 'Delete Instance',
+      body: [
+        TextSpan(
+          text: 'Remove ${ZagModule.READARR.title} $instanceName and its settings',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.DELETE),
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Instance?'),
+            content: Text(
+              'Are you sure you want to delete ${ZagModule.READARR.title} $instanceName? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm != true || instanceKey == null) return;
+
+        await ZagProfile.deleteInstance(instanceKey);
+        ZagInstanceContext().clearActiveInstance('readarr');
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Deleted',
+          message: '${ZagModule.READARR.title} $instanceName has been removed',
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      },
     );
   }
 }
