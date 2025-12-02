@@ -202,7 +202,7 @@ class _State extends State<ConfigurationSonarrRoute>
       // Only sync if user is authenticated
       if (ZagSupabase.isSupported &&
           ZagSupabase.client.auth.currentUser != null) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('sonarr');
 
         final effectiveHost = profile.effectiveSonarrHost();
         if (profile.sonarrEnabled &&

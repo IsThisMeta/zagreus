@@ -218,7 +218,7 @@ class _State extends State<ConfigurationRadarrRoute>
       // Only sync if user is authenticated
       if (ZagSupabase.isSupported &&
           ZagSupabase.client.auth.currentUser != null) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('radarr');
 
         final effectiveHost = profile.effectiveRadarrHost();
         if (profile.radarrEnabled &&

@@ -94,7 +94,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
       ];
 
   Widget _remoteHost() {
-    String host = ZagProfile.current.radarrHost;
+    String host = ZagProfile.forModule('radarr').radarrHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -105,8 +105,8 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
           prefill: host,
         );
         if (_values.item1) {
-          ZagProfile.current.radarrHost = _values.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('radarr').radarrHost = _values.item2;
+          ZagProfile.forModule('radarr').save();
           context.read<RadarrState>().reset();
           // Sync webhook if user is authenticated
           _syncWebhook();
@@ -116,7 +116,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
   }
 
   Widget _localHost() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('radarr');
     final host = profile.radarrLocalHost;
     return ZagBlock(
       title: 'settings.LocalHost'.tr(),
@@ -138,7 +138,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
   }
 
   Widget _localSsids() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('radarr');
     final ssids = profile.radarrLocalSsids;
     return ZagBlock(
       title: 'settings.TrustedSsids'.tr(),
@@ -173,7 +173,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
     return ValueListenableBuilder<String?>(
       valueListenable: localService.currentSsid,
       builder: (context, ssid, _) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('radarr');
         final advancedEnabled =
             ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
         final hasLocalHost = profile.radarrLocalHost.isNotEmpty;
@@ -216,7 +216,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
   }
 
   Widget _apiKey() {
-    String apiKey = ZagProfile.current.radarrKey;
+    String apiKey = ZagProfile.forModule('radarr').radarrKey;
     return ZagBlock(
       title: 'settings.ApiKey'.tr(),
       body: [
@@ -234,8 +234,8 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
           prefill: apiKey,
         );
         if (_values.item1) {
-          ZagProfile.current.radarrKey = _values.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('radarr').radarrKey = _values.item2;
+          ZagProfile.forModule('radarr').save();
           context.read<RadarrState>().reset();
           // Sync webhook if user is authenticated
           _syncWebhook();
@@ -249,7 +249,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
       text: 'settings.TestConnection'.tr(),
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
-        ZagProfile _profile = ZagProfile.current;
+        ZagProfile _profile = ZagProfile.forModule('radarr');
         final effectiveHost = _profile.effectiveRadarrHost();
         if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
@@ -312,7 +312,7 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
       // Only sync if user is authenticated
       if (ZagSupabase.isSupported &&
           ZagSupabase.client.auth.currentUser != null) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('radarr');
         final effectiveHost = profile.effectiveRadarrHost();
         if (profile.radarrEnabled &&
             effectiveHost.isNotEmpty &&
