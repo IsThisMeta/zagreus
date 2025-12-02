@@ -129,7 +129,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   UNRAID_CONFIRM_ACTIONS<bool>(true),
   // Multi-instance support: maps parent profile -> list of shadow profile keys
   // e.g. {"default": ["__radarr__4k__default", "__sonarr__kids__default"]}
-  PROFILE_INSTANCES<Map>({});
+  PROFILE_INSTANCES<Map>({}),
+  // Calendar instance filter: list of instance keys to show (null = all, empty = none selected shows all)
+  // e.g. [null, "__radarr__4k__default"] means show main + 4k radarr
+  CALENDAR_INSTANCE_FILTER<List>([]);
 
   @override
   ZagTable get table => ZagTable.zagreus;

@@ -1,5 +1,7 @@
+import 'package:zagreus/database/box.dart';
 import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/database/tables/dashboard.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/extensions/datetime.dart';
 import 'package:zagreus/modules/dashboard/core/api/data/abstract.dart';
 import 'package:zagreus/modules/dashboard/core/api/data/lidarr.dart';
@@ -21,36 +23,76 @@ class API {
 
   Future<Map<DateTime, List<CalendarData>>> getUpcoming(DateTime today) async {
     Map<DateTime, List<CalendarData>> _upcoming = {};
+    
+    // Get calendar instance filter
+    final filter = List<String>.from(
+      ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []
+    );
+    final hasFilter = filter.isNotEmpty;
+    
+    // Lidarr (no multi-instance support yet, always use main)
     if (profile.lidarrEnabled &&
         DashboardDatabase.CALENDAR_ENABLE_LIDARR.read()) {
-      await _getLidarrUpcoming(_upcoming, today);
+      await _getLidarrUpcoming(_upcoming, today, profile);
     }
-    if (profile.radarrEnabled &&
-        DashboardDatabase.CALENDAR_ENABLE_RADARR.read()) {
-      await _getRadarrUpcoming(_upcoming, today);
+    
+    // Radarr - check main and instances
+    if (DashboardDatabase.CALENDAR_ENABLE_RADARR.read()) {
+      // Main Radarr
+      if (profile.radarrEnabled && (!hasFilter || filter.contains('radarr:main'))) {
+        await _getRadarrUpcoming(_upcoming, today, profile);
+      }
+      // Radarr instances
+      final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+      final radarrInstances = ZagProfile.getInstancesForModule(currentProfileKey, 'radarr');
+      for (final instanceKey in radarrInstances) {
+        if (!hasFilter || filter.contains('radarr:$instanceKey')) {
+          final instanceProfile = ZagBox.profiles.read(instanceKey);
+          if (instanceProfile != null && instanceProfile.radarrEnabled) {
+            await _getRadarrUpcoming(_upcoming, today, instanceProfile);
+          }
+        }
+      }
     }
-    if (profile.sonarrEnabled &&
-        DashboardDatabase.CALENDAR_ENABLE_SONARR.read()) {
-      await _getSonarrUpcoming(_upcoming, today);
+    
+    // Sonarr - check main and instances
+    if (DashboardDatabase.CALENDAR_ENABLE_SONARR.read()) {
+      // Main Sonarr
+      if (profile.sonarrEnabled && (!hasFilter || filter.contains('sonarr:main'))) {
+        await _getSonarrUpcoming(_upcoming, today, profile);
+      }
+      // Sonarr instances
+      final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+      final sonarrInstances = ZagProfile.getInstancesForModule(currentProfileKey, 'sonarr');
+      for (final instanceKey in sonarrInstances) {
+        if (!hasFilter || filter.contains('sonarr:$instanceKey')) {
+          final instanceProfile = ZagBox.profiles.read(instanceKey);
+          if (instanceProfile != null && instanceProfile.sonarrEnabled) {
+            await _getSonarrUpcoming(_upcoming, today, instanceProfile);
+          }
+        }
+      }
     }
+    
     return _upcoming;
   }
 
   Future<void> _getLidarrUpcoming(
     Map<DateTime, List<CalendarData>> map,
     DateTime today,
+    ZagProfile useProfile,
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.effectiveLidarrHost()}/api/v1/',
+        baseUrl: '${useProfile.effectiveLidarrHost()}/api/v1/',
         queryParameters: {
-          if (profile.lidarrKey != '') 'apikey': profile.lidarrKey,
+          if (useProfile.lidarrKey != '') 'apikey': useProfile.lidarrKey,
           'start': _startDate(today),
           'end': _endDate(today),
         },
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        headers: profile.lidarrHeaders,
+        headers: useProfile.lidarrHeaders,
         followRedirects: true,
         maxRedirects: 5,
       ),
@@ -84,18 +126,19 @@ class API {
   Future<void> _getRadarrUpcoming(
     Map<DateTime, List<CalendarData>> map,
     DateTime today,
+    ZagProfile useProfile,
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.effectiveRadarrHost()}/api/v3/',
+        baseUrl: '${useProfile.effectiveRadarrHost()}/api/v3/',
         queryParameters: {
-          if (profile.radarrKey != '') 'apikey': profile.radarrKey,
+          if (useProfile.radarrKey != '') 'apikey': useProfile.radarrKey,
           'start': _startDate(today),
           'end': _endDate(today),
         },
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        headers: profile.radarrHeaders,
+        headers: useProfile.radarrHeaders,
         followRedirects: true,
         maxRedirects: 5,
       ),
@@ -137,18 +180,19 @@ class API {
   Future<void> _getSonarrUpcoming(
     Map<DateTime, List<CalendarData>> map,
     DateTime today,
+    ZagProfile useProfile,
   ) async {
     Dio _client = Dio(
       BaseOptions(
-        baseUrl: '${profile.effectiveSonarrHost()}/api/v3/',
+        baseUrl: '${useProfile.effectiveSonarrHost()}/api/v3/',
         queryParameters: {
-          if (profile.sonarrKey != '') 'apikey': profile.sonarrKey,
+          if (useProfile.sonarrKey != '') 'apikey': useProfile.sonarrKey,
           'start': _startDate(today),
           'end': _endDate(today),
         },
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        headers: profile.sonarrHeaders,
+        headers: useProfile.sonarrHeaders,
         followRedirects: true,
         maxRedirects: 5,
       ),

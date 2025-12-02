@@ -1779,7 +1779,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     if (calendarIndex != null && _currentPageIndex == calendarIndex) {
+      final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+      final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+      final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+      final hasInstances = radarrInstances.isNotEmpty || sonarrInstances.isNotEmpty;
+      
       return [
+        if (hasInstances)
+          IconButton(
+            key: const ValueKey('discover_action_calendar_filter'),
+            icon: const Icon(Icons.filter_list_rounded),
+            tooltip: 'Filter Instances',
+            onPressed: _showCalendarInstanceFilter,
+          ),
         SwitchViewAction(
           pageController: _pageController,
           calendarPageIndex: calendarIndex,
@@ -2031,6 +2043,74 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _syncMagicShowsIfNeeded();
     _syncMagicShowsCastCrewIfNeeded();
     _syncUpNextIfNeeded();
+  }
+
+  void _showCalendarInstanceFilter() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    
+    // Build list of all options: main profiles + instances
+    final options = <_CalendarFilterOption>[
+      // Main Radarr
+      _CalendarFilterOption(
+        key: 'radarr:main',
+        name: ZagModule.RADARR.title,
+        module: ZagModule.RADARR,
+        instanceKey: null,
+      ),
+      // Radarr instances
+      ...radarrInstances.map((key) => _CalendarFilterOption(
+        key: 'radarr:$key',
+        name: '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
+        module: ZagModule.RADARR,
+        instanceKey: key,
+      )),
+      // Main Sonarr
+      _CalendarFilterOption(
+        key: 'sonarr:main',
+        name: ZagModule.SONARR.title,
+        module: ZagModule.SONARR,
+        instanceKey: null,
+      ),
+      // Sonarr instances
+      ...sonarrInstances.map((key) => _CalendarFilterOption(
+        key: 'sonarr:$key',
+        name: '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
+        module: ZagModule.SONARR,
+        instanceKey: key,
+      )),
+    ];
+    
+    // Get current filter state
+    final currentFilter = List<String>.from(
+      ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []
+    );
+    
+    // If empty, default to just main radarr and sonarr (not all instances)
+    final selectedKeys = currentFilter.isEmpty 
+        ? {'radarr:main', 'sonarr:main'}
+        : currentFilter.toSet();
+    
+    await showDialog(
+      context: context,
+      builder: (ctx) => _CalendarFilterDialog(
+        options: options,
+        selectedKeys: selectedKeys,
+        onSave: (newSelection) {
+          // Save the selection (empty means use default: main only)
+          final defaultKeys = {'radarr:main', 'sonarr:main'};
+          if (newSelection.length == defaultKeys.length && 
+              newSelection.containsAll(defaultKeys) &&
+              defaultKeys.containsAll(newSelection)) {
+            ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update([]);
+          } else {
+            ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update(newSelection.toList());
+          }
+          setState(() {});
+        },
+      ),
+    );
   }
 
   Widget _moviesPage() {
@@ -2491,10 +2571,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _calendarTab() {
     return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
-      builder: (context, _) => CalendarPage(
-        key: ValueKey(
-          'discover_calendar_${ZagreusDatabase.ENABLED_PROFILE.read()}',
-        ),
+      builder: (context, _) => ZagreusDatabase.CALENDAR_INSTANCE_FILTER.listenableBuilder(
+        builder: (context, _) {
+          // Force rebuild when filter changes
+          final filterKey = (ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []).join(',');
+          return CalendarPage(
+            key: ValueKey(
+              'discover_calendar_${ZagreusDatabase.ENABLED_PROFILE.read()}_$filterKey',
+            ),
+          );
+        },
       ),
     );
   }
@@ -10044,3 +10130,115 @@ class _ServerIssue {
     required this.color,
   });
 }
+
+
+class _CalendarFilterOption {
+  final String key;
+  final String name;
+  final ZagModule module;
+  final String? instanceKey;
+  
+  _CalendarFilterOption({
+    required this.key,
+    required this.name,
+    required this.module,
+    this.instanceKey,
+  });
+}
+
+class _CalendarFilterDialog extends StatefulWidget {
+  final List<_CalendarFilterOption> options;
+  final Set<String> selectedKeys;
+  final void Function(Set<String>) onSave;
+  
+  const _CalendarFilterDialog({
+    required this.options,
+    required this.selectedKeys,
+    required this.onSave,
+  });
+  
+  @override
+  State<_CalendarFilterDialog> createState() => _CalendarFilterDialogState();
+}
+
+class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
+  late Set<String> _selected;
+  
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.selectedKeys);
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    final allSelected = _selected.length == widget.options.length;
+    
+    return AlertDialog(
+      title: const Text('Calendar Instances'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Select All button (only when not all selected)
+            if (!allSelected)
+              ListTile(
+                title: const Text('Select All'),
+                leading: Icon(
+                  Icons.select_all,
+                  color: ZagColours.currentAccent,
+                ),
+                onTap: () {
+                  setState(() {
+                    _selected = widget.options.map((o) => o.key).toSet();
+                  });
+                },
+              ),
+            if (!allSelected) const Divider(),
+            // Instance list
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.options.length,
+                itemBuilder: (context, index) {
+                  final option = widget.options[index];
+                  final isSelected = _selected.contains(option.key);
+                  return CheckboxListTile(
+                    title: Text(option.name),
+                    secondary: Icon(option.module.icon, color: option.module.color),
+                    value: isSelected,
+                    activeColor: option.module.color,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value == true) {
+                          _selected.add(option.key);
+                        } else {
+                          _selected.remove(option.key);
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.onSave(_selected);
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+
