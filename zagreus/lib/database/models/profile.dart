@@ -698,26 +698,50 @@ class ZagProfile extends HiveObject {
 
   /// Rename a shadow profile
   static Future<String?> renameInstance(String oldKey, String newName) async {
+    print('🔍 renameInstance: oldKey=$oldKey, newName=$newName');
     final parsed = parseShadowKey(oldKey);
+    print('🔍 renameInstance: parsed=$parsed');
     if (parsed == null) return null;
 
     // Validate new name
     final sanitized = newName.trim().replaceAll(' ', '-');
+    print('🔍 renameInstance: sanitized=$sanitized');
     if (sanitized.isEmpty || sanitized.contains('_')) return null;
 
     // Get old profile data
     final oldProfile = ZagBox.profiles.read(oldKey);
+    print('🔍 renameInstance: oldProfile=$oldProfile');
     if (oldProfile == null) return null;
 
     // Create new key
     final newKey = '__${parsed.module}__${sanitized}__${parsed.parent}';
+    print('🔍 renameInstance: newKey=$newKey');
     
     // Skip if key is the same
     if (newKey == oldKey) return oldKey;
 
+    // Create a fresh copy of the profile via JSON to avoid Hive same-instance error
+    final profileCopy = ZagProfile.fromJson(oldProfile.toJson());
+
     // Save profile with new key
-    await ZagBox.profiles.update(newKey, oldProfile);
-    await ZagBox.profiles.delete(oldKey);
+    print('🔍 renameInstance: saving new key...');
+    try {
+      await ZagBox.profiles.update(newKey, profileCopy);
+      print('🔍 renameInstance: saved new key');
+    } catch (e, st) {
+      print('🔍 renameInstance: FAILED to save new key: $e');
+      print('🔍 renameInstance: stack: $st');
+      return null;
+    }
+    print('🔍 renameInstance: deleting old key...');
+    try {
+      await ZagBox.profiles.delete(oldKey);
+      print('🔍 renameInstance: deleted old key');
+    } catch (e, st) {
+      print('🔍 renameInstance: FAILED to delete old key: $e');
+      print('🔍 renameInstance: stack: $st');
+    }
+    print('🔍 renameInstance: profile moved successfully');
 
     // Update instances list
     final dynamic currentInstances = ZagreusDatabase.PROFILE_INSTANCES.read();
@@ -734,11 +758,14 @@ class ZagProfile extends HiveObject {
     
     final list = instances[parsed.parent] ?? [];
     final idx = list.indexOf(oldKey);
+    print('🔍 renameInstance: instances list=$list, idx=$idx');
     if (idx >= 0) {
       list[idx] = newKey;
     }
     instances[parsed.parent] = list;
+    print('🔍 renameInstance: updating PROFILE_INSTANCES...');
     ZagreusDatabase.PROFILE_INSTANCES.update(instances);
+    print('🔍 renameInstance: done, returning $newKey');
 
     return newKey;
   }
