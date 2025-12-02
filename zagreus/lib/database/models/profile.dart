@@ -662,7 +662,7 @@ class ZagProfile extends HiveObject {
 
     final shadowKey = buildShadowKey(
       module: moduleKey,
-      name: instanceName.toLowerCase().replaceAll(' ', '-'),
+      name: instanceName.replaceAll(' ', '-'),
       parent: parentProfile,
     );
 
@@ -722,10 +722,7 @@ class ZagProfile extends HiveObject {
   static String? getInstanceDisplayName(String shadowKey) {
     final parsed = parseShadowKey(shadowKey);
     if (parsed == null) return null;
-    // Convert kebab-case back to Title Case
-    return parsed.name
-        .split('-')
-        .map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}')
-        .join(' ');
+    // Convert dashes back to spaces
+    return parsed.name.replaceAll('-', ' ');
   }
 }

@@ -85,9 +85,22 @@ class _State extends State<RadarrRoute> {
         return value;
       },
     );
+    
+    // Get instances for the current profile
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final hasInstances = instances.isNotEmpty;
+    
     List<Widget>? actions;
     if (context.watch<RadarrState>().enabled) {
       actions = [
+        // Instance selector - only show if there are instances
+        if (hasInstances)
+          IconButton(
+            icon: const Icon(Icons.swap_horiz_rounded),
+            tooltip: 'Switch Instance',
+            onPressed: _showInstanceSelector,
+          ),
         const RadarrAppBarAddMoviesAction(),
         if (_currentPage == 2) // Missing tab
           IconButton(
@@ -117,6 +130,48 @@ class _State extends State<RadarrRoute> {
       pageController: _pageController,
       scrollControllers: RadarrNavigationBar.scrollControllers,
     );
+  }
+
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('radarr');
+    
+    // Build list: Main + all instances
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.RADARR.title
+                : '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.RADARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(context, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    // null means dialog was dismissed, empty string would mean "Main" was selected
+    if (!mounted) return;
+    
+    // Check if selection changed
+    if (result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('radarr', result);
+      context.read<RadarrState>().reset();
+      setState(() {}); // Refresh app bar title
+    }
   }
 
   List<Widget> _buildQueueDrawerAction() {
