@@ -15,7 +15,6 @@ class SonarrAPI {
     required this.healthCheck,
     required this.history,
     required this.importList,
-    required this.manualImport,
     required this.notification,
     required this.profile,
     required this.queue,
@@ -64,7 +63,6 @@ class SonarrAPI {
       healthCheck: SonarrControllerHealthCheck(_dio),
       history: SonarrControllerHistory(_dio),
       importList: SonarrControllerImportList(_dio),
-      manualImport: SonarrControllerManualImport(_dio),
       notification: SonarrControllerNotification(_dio),
       profile: SonarrControllerProfile(_dio),
       queue: SonarrControllerQueue(_dio),
@@ -91,7 +89,6 @@ class SonarrAPI {
       healthCheck: SonarrControllerHealthCheck(client),
       history: SonarrControllerHistory(client),
       importList: SonarrControllerImportList(client),
-      manualImport: SonarrControllerManualImport(client),
       notification: SonarrControllerNotification(client),
       profile: SonarrControllerProfile(client),
       queue: SonarrControllerQueue(client),
@@ -115,7 +112,6 @@ class SonarrAPI {
   final SonarrControllerHealthCheck healthCheck;
   final SonarrControllerHistory history;
   final SonarrControllerImportList importList;
-  final SonarrControllerManualImport manualImport;
   final SonarrControllerNotification notification;
   final SonarrControllerProfile profile;
   final SonarrControllerQueue queue;

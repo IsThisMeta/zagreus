@@ -52,9 +52,6 @@ part 'controllers/history/get_history_by_series.dart';
 part 'controllers/import_list.dart';
 part 'controllers/import_list/get_exclusion_list.dart';
 
-// Manual Import
-part 'controllers/manual_import.dart';
-
 // Notification
 part 'controllers/notification.dart';
 
