@@ -24,11 +24,11 @@ class API {
   Future<Map<DateTime, List<CalendarData>>> getUpcoming(DateTime today) async {
     Map<DateTime, List<CalendarData>> _upcoming = {};
     
-    // Get calendar instance filter
+    // Get calendar instance filter (empty = show all)
     final filter = List<String>.from(
       ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []
     );
-    final hasFilter = filter.isNotEmpty;
+    final showAll = filter.isEmpty;
     
     // Lidarr (no multi-instance support yet, always use main)
     if (profile.lidarrEnabled &&
@@ -39,14 +39,14 @@ class API {
     // Radarr - check main and instances
     if (DashboardDatabase.CALENDAR_ENABLE_RADARR.read()) {
       // Main Radarr
-      if (profile.radarrEnabled && (!hasFilter || filter.contains('radarr:main'))) {
+      if (profile.radarrEnabled && (showAll || filter.contains('radarr:main'))) {
         await _getRadarrUpcoming(_upcoming, today, profile);
       }
       // Radarr instances
       final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
       final radarrInstances = ZagProfile.getInstancesForModule(currentProfileKey, 'radarr');
       for (final instanceKey in radarrInstances) {
-        if (!hasFilter || filter.contains('radarr:$instanceKey')) {
+        if (showAll || filter.contains('radarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.radarrEnabled) {
             await _getRadarrUpcoming(_upcoming, today, instanceProfile);
@@ -58,14 +58,14 @@ class API {
     // Sonarr - check main and instances
     if (DashboardDatabase.CALENDAR_ENABLE_SONARR.read()) {
       // Main Sonarr
-      if (profile.sonarrEnabled && (!hasFilter || filter.contains('sonarr:main'))) {
+      if (profile.sonarrEnabled && (showAll || filter.contains('sonarr:main'))) {
         await _getSonarrUpcoming(_upcoming, today, profile);
       }
       // Sonarr instances
       final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
       final sonarrInstances = ZagProfile.getInstancesForModule(currentProfileKey, 'sonarr');
       for (final instanceKey in sonarrInstances) {
-        if (!hasFilter || filter.contains('sonarr:$instanceKey')) {
+        if (showAll || filter.contains('sonarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.sonarrEnabled) {
             await _getSonarrUpcoming(_upcoming, today, instanceProfile);

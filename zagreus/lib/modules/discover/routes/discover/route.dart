@@ -2087,9 +2087,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []
     );
     
-    // If empty, default to just main radarr and sonarr (not all instances)
+    // If empty, default to all instances selected
     final selectedKeys = currentFilter.isEmpty 
-        ? {'radarr:main', 'sonarr:main'}
+        ? options.map((o) => o.key).toSet()
         : currentFilter.toSet();
     
     await showDialog(
@@ -2098,11 +2098,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         options: options,
         selectedKeys: selectedKeys,
         onSave: (newSelection) {
-          // Save the selection (empty means use default: main only)
-          final defaultKeys = {'radarr:main', 'sonarr:main'};
-          if (newSelection.length == defaultKeys.length && 
-              newSelection.containsAll(defaultKeys) &&
-              defaultKeys.containsAll(newSelection)) {
+          // If all selected, save empty list (means "all")
+          final allKeys = options.map((o) => o.key).toSet();
+          if (newSelection.length == allKeys.length) {
             ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update([]);
           } else {
             ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update(newSelection.toList());
