@@ -103,8 +103,14 @@ class _State extends State<SABnzbdRoute> {
           onPressed: () async => _handlePopup(),
         ),
       ];
+    
+    final instanceName = ZagProfile.getActiveInstanceName('sabnzbd');
+    final title = instanceName != null 
+        ? '${ZagModule.SABNZBD.title} $instanceName'
+        : ZagModule.SABNZBD.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.SABNZBD.title,
+      title: title,
       useDrawer: widget.showDrawer,
       hideLeading: !widget.showDrawer,
       profiles: profiles,
