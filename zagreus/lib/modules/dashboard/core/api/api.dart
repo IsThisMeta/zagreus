@@ -74,6 +74,17 @@ class API {
       }
     }
     
+    // Dedupe: if same title appears in multiple instances, keep only the first (main profile preferred)
+    for (final date in _upcoming.keys) {
+      final seen = <String>{};
+      _upcoming[date] = _upcoming[date]!.where((item) {
+        final key = '${item.runtimeType}:${item.title}';
+        if (seen.contains(key)) return false;
+        seen.add(key);
+        return true;
+      }).toList();
+    }
+    
     return _upcoming;
   }
 
