@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zagreus/widgets/ui/colors.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/services/subscription_service.dart';
@@ -26,8 +27,8 @@ class _SonarrAddSeriesStreamingProvidersTileState
   bool _hasError = false;
   late final bool _isPremium;
 
-  // Max icons to show before "+" overflow indicator
-  static const int _maxVisibleIcons = 6;
+  // Max icons per section (side by side layout)
+  static const int _maxVisibleIcons = 4;
 
   @override
   void initState() {
@@ -91,21 +92,29 @@ class _SonarrAddSeriesStreamingProvidersTileState
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildProviderSection(
-            'Streaming On',
-            _streamingProviders,
-            isLoading: _loading,
-            hasError: _hasError,
+          // Streaming On (left side)
+          Expanded(
+            child: _buildProviderSection(
+              'Streaming On',
+              _streamingProviders,
+              isLoading: _loading,
+              hasError: _hasError,
+              alignLeft: true,
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildProviderSection(
-            'Buy/Rent On',
-            _buyRentProviders,
-            isLoading: _loading,
-            hasError: _hasError,
+          const SizedBox(width: 24),
+          // Buy/Rent On (right side)
+          Expanded(
+            child: _buildProviderSection(
+              'Buy/Rent On',
+              _buyRentProviders,
+              isLoading: _loading,
+              hasError: _hasError,
+              alignLeft: false,
+            ),
           ),
         ],
       ),
@@ -117,6 +126,7 @@ class _SonarrAddSeriesStreamingProvidersTileState
     List<Map<String, dynamic>> providers, {
     required bool isLoading,
     required bool hasError,
+    required bool alignLeft,
   }) {
     final visibleProviders = providers.take(_maxVisibleIcons).toList();
     final hasMore = providers.length > _maxVisibleIcons;
@@ -124,7 +134,7 @@ class _SonarrAddSeriesStreamingProvidersTileState
     final isEmpty = providers.isEmpty;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: alignLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
       children: [
         Text(
           title,
@@ -136,20 +146,16 @@ class _SonarrAddSeriesStreamingProvidersTileState
         ),
         const SizedBox(height: 6),
         SizedBox(
-          height: 32,
+          height: 36,
           child: isLoading
-              ? const Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+              ? Align(
+                  alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+                  child: const _ThreeDotsLoading(),
                 )
               : (hasError || isEmpty)
-                  ? const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
+                  ? Align(
+                      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+                      child: const Text(
                         'N/A',
                         style: TextStyle(
                           fontSize: 14,
@@ -157,68 +163,55 @@ class _SonarrAddSeriesStreamingProvidersTileState
                         ),
                       ),
                     )
-                  : Row(
+                  : Wrap(
+                      alignment: alignLeft ? WrapAlignment.start : WrapAlignment.end,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        Expanded(
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount:
-                                visibleProviders.length + (hasMore ? 1 : 0),
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              if (hasMore && index == visibleProviders.length) {
-                                // Show "+N more" indicator
-                                return GestureDetector(
-                                  onTap: () =>
-                                      _showAllProviders(title, providers),
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '+$hiddenCount',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              final provider = visibleProviders[index];
-                              final logoPath = provider['logo_path'] as String?;
-
-                              if (logoPath == null || logoPath.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-
-                              return GestureDetector(
-                                onTap: () => _openProvider(provider),
-                                child: Tooltip(
-                                  message: provider['provider_name'] ?? '',
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.network(
-                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                                      width: 32,
-                                      height: 32,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox.shrink(),
-                                    ),
+                        ...visibleProviders.map((provider) {
+                          final logoPath = provider['logo_path'] as String?;
+                          if (logoPath == null || logoPath.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return GestureDetector(
+                            onTap: () => _openProvider(provider),
+                            child: Tooltip(
+                              message: provider['provider_name'] ?? '',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.network(
+                                  TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                  width: 36,
+                                  height: 36,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const SizedBox.shrink(),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        if (hasMore)
+                          GestureDetector(
+                            onTap: () => _showAllProviders(title, providers),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '+$hiddenCount',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
-                        ),
                       ],
                     ),
         ),
@@ -359,5 +352,74 @@ class _SonarrAddSeriesStreamingProvidersTileState
         }
       }
     }
+  }
+}
+
+/// Three bouncing dots loading indicator
+class _ThreeDotsLoading extends StatelessWidget {
+  const _ThreeDotsLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: EdgeInsets.only(left: index == 0 ? 0 : 4),
+          child: _BouncingDot(delay: index * 200),
+        ),
+      ),
+    );
+  }
+}
+
+class _BouncingDot extends StatefulWidget {
+  final int delay;
+
+  const _BouncingDot({required this.delay});
+
+  @override
+  State<_BouncingDot> createState() => _BouncingDotState();
+}
+
+class _BouncingDotState extends State<_BouncingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) {
+        _controller.repeat(reverse: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _controller,
+      child: Container(
+        width: 6,
+        height: 6,
+        decoration: BoxDecoration(
+          color: ZagColours.currentAccent,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
   }
 }
