@@ -10170,8 +10170,6 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
   
   @override
   Widget build(BuildContext context) {
-    final allSelected = _selected.length == widget.options.length;
-    
     return AlertDialog(
       title: const Text('Calendar Instances'),
       content: SizedBox(
@@ -10179,21 +10177,6 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Select All button (only when not all selected)
-            if (!allSelected)
-              ListTile(
-                title: const Text('Select All'),
-                leading: Icon(
-                  Icons.select_all,
-                  color: ZagColours.currentAccent,
-                ),
-                onTap: () {
-                  setState(() {
-                    _selected = widget.options.map((o) => o.key).toSet();
-                  });
-                },
-              ),
-            if (!allSelected) const Divider(),
             // Instance list
             Flexible(
               child: ListView.builder(
