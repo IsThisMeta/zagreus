@@ -26,13 +26,71 @@ class _State extends State<ConfigurationTautulliRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    final instanceName = ZagProfile.getActiveInstanceName('tautulli');
+    final title = instanceName != null
+        ? '${ZagModule.TAUTULLI.title} $instanceName'
+        : ZagModule.TAUTULLI.title;
+    
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'tautulli');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
-      title: ZagModule.TAUTULLI.title,
+      title: title,
       scrollControllers: [scrollController],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+      ],
     );
   }
 
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'tautulli');
+    final currentInstance = ZagInstanceContext().getActiveInstance('tautulli');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.TAUTULLI.title
+                : '${ZagModule.TAUTULLI.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.TAUTULLI.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    final didSelect = result != null || (result == null && currentInstance != null);
+    if (didSelect && result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('tautulli', result);
+      setState(() {});
+    }
+  }
+
   Widget _body() {
+    final instanceName = ZagProfile.getActiveInstanceName('tautulli');
+    final isInstance = instanceName != null;
+    
     return ZagListView(
       controller: scrollController,
       children: [
@@ -44,19 +102,27 @@ class _State extends State<ConfigurationTautulliRoute>
         _defaultPagesPage(),
         _defaultTerminationMessage(),
         _statisticsItemCount(),
+        ZagDivider(),
+        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
       ],
     );
   }
 
   Widget _enabledToggle() {
+    final instanceName = ZagProfile.getActiveInstanceName('tautulli');
+    final displayName = instanceName != null
+        ? '${ZagModule.TAUTULLI.title} $instanceName'
+        : ZagModule.TAUTULLI.title;
+    
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.TAUTULLI.title]),
+        title: 'settings.EnableModule'.tr(args: [displayName]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.tautulliEnabled,
+          value: ZagProfile.forModule('tautulli').tautulliEnabled,
           onChanged: (value) {
-            ZagProfile.current.tautulliEnabled = value;
-            ZagProfile.current.save();
+            final profile = ZagProfile.forModule('tautulli');
+            profile.tautulliEnabled = value;
+            profile.save();
             context.read<TautulliState>().reset();
           },
         ),
@@ -144,6 +210,128 @@ class _State extends State<ConfigurationTautulliRoute>
             if (_values[0]) _db.update(_values[1]);
           },
         );
+      },
+    );
+  }
+
+  Widget _addDuplicateInstance() {
+    return ZagBlock(
+      title: 'Add Duplicate Instance',
+      body: [
+        TextSpan(
+          text: 'Create another ${ZagModule.TAUTULLI.title} instance with separate connection details',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.ADD),
+      onTap: () async {
+        final controller = TextEditingController();
+        final result = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Instance Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., Home, Remote',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+
+        if (result == null || result.isEmpty) return;
+
+        if (result.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+        final shadowKey = await ZagProfile.createInstance(
+          moduleKey: ZagModule.TAUTULLI.key,
+          instanceName: result,
+          parentProfile: currentProfile,
+        );
+
+        if (shadowKey == null) {
+          showZagErrorSnackBar(
+            title: 'Failed to Create Instance',
+            message: 'An instance with that name may already exist',
+          );
+          return;
+        }
+
+        showZagSuccessSnackBar(
+          title: 'Instance Created',
+          message: '${ZagModule.TAUTULLI.title} $result has been added',
+        );
+
+        ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _deleteInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('tautulli');
+    final instanceKey = ZagInstanceContext().getActiveInstance('tautulli');
+    
+    return ZagBlock(
+      title: 'Delete Instance',
+      body: [
+        TextSpan(
+          text: 'Remove ${ZagModule.TAUTULLI.title} $instanceName and its settings',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.DELETE),
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Instance?'),
+            content: Text(
+              'Are you sure you want to delete ${ZagModule.TAUTULLI.title} $instanceName? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm != true || instanceKey == null) return;
+
+        await ZagProfile.deleteInstance(instanceKey);
+        ZagInstanceContext().clearActiveInstance('tautulli');
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Deleted',
+          message: '${ZagModule.TAUTULLI.title} $instanceName has been removed',
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       },
     );
   }

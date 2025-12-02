@@ -90,7 +90,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
       ];
 
   Widget _remoteHost() {
-    String host = ZagProfile.current.tautulliHost;
+    String host = ZagProfile.forModule('tautulli').tautulliHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -98,11 +98,11 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
       onTap: () async {
         Tuple2<bool, String> _values = await SettingsDialogs().editHost(
           context,
-          prefill: ZagProfile.current.tautulliHost,
+          prefill: ZagProfile.forModule('tautulli').tautulliHost,
         );
         if (_values.item1) {
-          ZagProfile.current.tautulliHost = _values.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('tautulli').tautulliHost = _values.item2;
+          ZagProfile.forModule('tautulli').save();
           context.read<TautulliState>().reset();
         }
       },
@@ -110,7 +110,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
   }
 
   Widget _localHost() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('tautulli');
     final host = profile.tautulliLocalHost;
     return ZagBlock(
       title: 'settings.LocalHost'.tr(),
@@ -132,7 +132,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
   }
 
   Widget _localSsids() {
-    final profile = ZagProfile.current;
+    final profile = ZagProfile.forModule('tautulli');
     final ssids = profile.tautulliLocalSsids;
     return ZagBlock(
       title: 'settings.TrustedSsids'.tr(),
@@ -165,7 +165,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
     return ValueListenableBuilder<String?>(
       valueListenable: localService.currentSsid,
       builder: (context, ssid, _) {
-        final profile = ZagProfile.current;
+        final profile = ZagProfile.forModule('tautulli');
         final advancedEnabled =
             ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
         final hasLocalHost = profile.tautulliLocalHost.isNotEmpty;
@@ -208,7 +208,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
   }
 
   Widget _apiKey() {
-    String apiKey = ZagProfile.current.tautulliKey;
+    String apiKey = ZagProfile.forModule('tautulli').tautulliKey;
     return ZagBlock(
       title: 'settings.ApiKey'.tr(),
       body: [
@@ -223,11 +223,11 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
         Tuple2<bool, String> _values = await ZagDialogs().editText(
           context,
           'settings.ApiKey'.tr(),
-          prefill: ZagProfile.current.tautulliKey,
+          prefill: ZagProfile.forModule('tautulli').tautulliKey,
         );
         if (_values.item1) {
-          ZagProfile.current.tautulliKey = _values.item2;
-          ZagProfile.current.save();
+          ZagProfile.forModule('tautulli').tautulliKey = _values.item2;
+          ZagProfile.forModule('tautulli').save();
           context.read<TautulliState>().reset();
         }
       },
@@ -239,7 +239,7 @@ class _State extends State<ConfigurationTautulliConnectionDetailsRoute>
       text: 'settings.TestConnection'.tr(),
       icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
-        ZagProfile _profile = ZagProfile.current;
+        ZagProfile _profile = ZagProfile.forModule('tautulli');
         if (_profile.tautulliHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),

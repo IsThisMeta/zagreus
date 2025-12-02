@@ -76,8 +76,14 @@ class _State extends State<TautulliRoute> {
       actions = [
         const TautulliAppBarGlobalSettingsAction(),
       ];
+    
+    final instanceName = ZagProfile.getActiveInstanceName('tautulli');
+    final title = instanceName != null 
+        ? '${ZagModule.TAUTULLI.title} $instanceName'
+        : ZagModule.TAUTULLI.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.TAUTULLI.title,
+      title: title,
       useDrawer: true,
       profiles: profiles,
       actions: actions,

@@ -79,8 +79,14 @@ class _State extends State<OverseerrRoute> {
         return value;
       },
     );
+    
+    final instanceName = ZagProfile.getActiveInstanceName('overseerr');
+    final title = instanceName != null 
+        ? '${ZagModule.OVERSEERR.title} $instanceName'
+        : ZagModule.OVERSEERR.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.OVERSEERR.title,
+      title: title,
       useDrawer: true,
       actions: _buildAppBarActions(),
       profiles: profiles,
