@@ -1946,11 +1946,34 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
     
     if (!mounted) return;
+    if (result == currentInstance) return; // No change
     
-    // Always update even if same (user explicitly selected)
+    // Update instance and reset state
     ZagInstanceContext().setActiveInstance('radarr', result);
     context.read<RadarrState>().reset();
+    
+    // Clear cached data and reload everything for Movies tab
+    _recentlyDownloaded = [];
+    _recommendedMovies = [];
+    _missingMovies = [];
+    _downloadingSoon = [];
+    _magicMoviesFuture = null;
+    _magicMoviesCastCrewFuture = null;
+    _magicMoviesSyncInitialized = false;
+    _magicMoviesCastCrewSyncInitialized = false;
+    _deepCutsFuture = null;
+    _deepCutsSyncInitialized = false;
+    
     setState(() {});
+    
+    // Reload all Radarr-dependent data
+    _loadRecentlyDownloaded();
+    _loadRecommendedMovies();
+    _loadMissingMovies();
+    _loadDownloadingSoon();
+    _syncMagicMoviesIfNeeded();
+    _syncMagicMoviesCastCrewIfNeeded();
+    _syncDeepCutsIfNeeded();
   }
 
   void _showSonarrInstanceSelector() async {
@@ -1984,11 +2007,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
     
     if (!mounted) return;
+    if (result == currentInstance) return; // No change
     
-    // Always update even if same (user explicitly selected)
+    // Update instance and reset state
     ZagInstanceContext().setActiveInstance('sonarr', result);
     context.read<SonarrState>().reset();
+    
+    // Clear cached data and reload everything for Shows tab
+    _recentlyDownloadedShows = [];
+    _airingNextShows = [];
+    _magicShowsFuture = null;
+    _magicShowsCastCrewFuture = null;
+    _magicShowsSyncInitialized = false;
+    _magicShowsCastCrewSyncInitialized = false;
+    _upNextFuture = null;
+    _upNextSyncInitialized = false;
+    
     setState(() {});
+    
+    // Reload all Sonarr-dependent data
+    _loadRecentlyDownloadedShows();
+    _loadSonarrAiringNext();
+    _syncMagicShowsIfNeeded();
+    _syncMagicShowsCastCrewIfNeeded();
+    _syncUpNextIfNeeded();
   }
 
   Widget _moviesPage() {
