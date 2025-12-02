@@ -13,12 +13,8 @@ class ZagDrawer extends StatelessWidget {
     required this.page,
   }) : super(key: key);
 
-  static bool _shouldDisplayModule(ZagModule module) =>
-      module != ZagModule.PROWLARR;
-
   static List<ZagModule> moduleAlphabeticalList() {
-    final modules =
-        ZagModule.active.where(_shouldDisplayModule).toList()
+    final modules = ZagModule.active.toList()
           ..sort((a, b) =>
               a.title.toLowerCase().compareTo(b.title.toLowerCase()));
     return modules;

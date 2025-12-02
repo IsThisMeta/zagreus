@@ -38,7 +38,6 @@ const MODULE_TAUTULLI_KEY = 'tautulli';
 const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
 const MODULE_UNRAID_KEY = 'unraid';
-const MODULE_PROWLARR_KEY = 'prowlarr';
 const MODULE_READARR_KEY = 'readarr';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
@@ -71,8 +70,6 @@ enum ZagModule {
   DISCOVER(MODULE_DISCOVER_KEY),
   @HiveField(13)
   UNRAID(MODULE_UNRAID_KEY),
-  @HiveField(14)
-  PROWLARR(MODULE_PROWLARR_KEY),
   @HiveField(15)
   READARR(MODULE_READARR_KEY);
 
@@ -109,8 +106,6 @@ enum ZagModule {
         return ZagModule.DISCOVER;
       case MODULE_UNRAID_KEY:
         return ZagModule.UNRAID;
-      case MODULE_PROWLARR_KEY:
-        return ZagModule.PROWLARR;
       case MODULE_READARR_KEY:
         return ZagModule.READARR;
     }
@@ -137,8 +132,6 @@ extension ZagModuleEnablementExtension on ZagModule {
         return true;
       case ZagModule.UNRAID:
         return true;
-      case ZagModule.PROWLARR:
-        return false;
       default:
         return true;
     }
@@ -176,8 +169,6 @@ extension ZagModuleEnablementExtension on ZagModule {
         return true;
       case ZagModule.UNRAID:
         return ZagProfile.current.unraidEnabled;
-      case ZagModule.PROWLARR:
-        return !ZagBox.indexers.isEmpty;
       case ZagModule.READARR:
         return ZagProfile.current.readarrEnabled;
     }
@@ -215,8 +206,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'zagreus.Dashboard'.tr();
       case ZagModule.UNRAID:
         return 'Unraid';
-      case ZagModule.PROWLARR:
-        return 'Prowlarr';
       case ZagModule.READARR:
         return 'Readarr';
     }
@@ -252,8 +241,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.home_rounded;
       case ZagModule.UNRAID:
         return ZagIcons.UNRAID;
-      case ZagModule.PROWLARR:
-        return Icons.travel_explore_rounded;
       case ZagModule.READARR:
         return ZagIcons.READARR;
     }
@@ -289,8 +276,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagColours.currentAccent;
       case ZagModule.UNRAID:
         return const Color(0xFFEA472B); // Updated Unraid brand orange
-      case ZagModule.PROWLARR:
-        return const Color(0xFF0087FF); // Prowlarr blue
       case ZagModule.READARR:
         return const Color(0xFF8E2222); // Readarr red (142, 34, 34)
     }
@@ -326,8 +311,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.UNRAID:
         return 'https://unraid.net';
-      case ZagModule.PROWLARR:
-        return 'https://prowlarr.com';
       case ZagModule.READARR:
         return 'https://readarr.com';
     }
@@ -363,8 +346,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.UNRAID:
         return null;
-      case ZagModule.PROWLARR:
-        return 'https://github.com/Prowlarr/Prowlarr';
       case ZagModule.READARR:
         return 'https://github.com/Readarr/Readarr';
     }
@@ -400,8 +381,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Browse movies, shows, and calendar views';
       case ZagModule.UNRAID:
         return 'Manage Your Unraid Server';
-      case ZagModule.PROWLARR:
-        return 'Search Indexers and Manage Downloads';
       case ZagModule.READARR:
         return 'Manage Books and Audiobooks';
     }
@@ -437,8 +416,6 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Discover new movies and TV shows, browse what\'s trending, see what\'s coming soon, and explore your recently downloaded content.';
       case ZagModule.UNRAID:
         return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
-      case ZagModule.PROWLARR:
-        return 'Prowlarr is an indexer manager/proxy built on the popular *arr .net/reactjs base stack to integrate with your various PVR apps. It supports management of both Torrent Trackers and Usenet Indexers, providing a unified search interface and download capabilities.';
       case ZagModule.READARR:
         return 'Readarr is an ebook and audiobook collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new books from your favorite authors and will grab, sort, and organize them. It can also be configured to automatically upgrade the quality of existing files in your library when a better quality format becomes available.';
     }
@@ -476,8 +453,6 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.discover.root.path;
       case ZagModule.UNRAID:
         return ZagRoutes.unraid.root.path;
-      case ZagModule.PROWLARR:
-        return ZagRoutes.search.root.path; // Use search route for now
       case ZagModule.READARR:
         return ZagRoutes.readarr.root.path;
     }
@@ -513,8 +488,6 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_DASHBOARD_SECTIONS;
       case ZagModule.UNRAID:
         return SettingsRoutes.CONFIGURATION_UNRAID;
-      case ZagModule.PROWLARR:
-        return SettingsRoutes.CONFIGURATION_SEARCH; // Use search settings for now
       case ZagModule.READARR:
         return SettingsRoutes.CONFIGURATION_READARR;
     }
@@ -663,8 +636,6 @@ extension ZagModuleExtension on ZagModule {
         return null;
       case ZagModule.UNRAID:
         return context.read<UnraidState>();
-      case ZagModule.PROWLARR:
-        return null;
       case ZagModule.READARR:
         return context.read<ReadarrState>();
     }

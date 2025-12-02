@@ -7,6 +7,18 @@ class OverseerrState extends ZagModuleState {
     reset();
   }
 
+  /// Trim whitespace, drop accidental /api suffixes, and ensure trailing slash.
+  String _normalizeHost(String host) {
+    var value = host.trim();
+    if (value.isEmpty) return value;
+
+    // Remove trailing slashes and accidental /api suffixes so we can append our own.
+    value = value.replaceAll(RegExp(r'/+$'), '');
+    value = value.replaceFirst(RegExp(r'/api/?$'), '');
+
+    return '$value/';
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -64,10 +76,7 @@ class OverseerrState extends ZagModuleState {
     ZagProfile _profile = ZagProfile.current;
     // Copy profile into state
     _enabled = _profile.overseerrEnabled;
-    _host = _profile.effectiveOverseerrHost();
-    if (_host.isNotEmpty && !_host.endsWith('/')) {
-      _host += '/';
-    }
+    _host = _normalizeHost(_profile.effectiveOverseerrHost());
     _apiKey = _profile.overseerrKey;
     _headers = Map.unmodifiable(_profile.overseerrHeaders);
 
@@ -81,7 +90,7 @@ class OverseerrState extends ZagModuleState {
 
         // Create Dio client with custom headers and API key
         final dio = Dio(BaseOptions(
-          baseUrl: _host,
+          baseUrl: '$_host/api/',
           headers: {
             'X-Api-Key': _apiKey,
             ..._headers,
@@ -91,7 +100,7 @@ class OverseerrState extends ZagModuleState {
           sendTimeout: const Duration(seconds: 60),
         ));
 
-        _api = OverseerrAPI(dio, baseUrl: '${_host}api/');
+        _api = OverseerrAPI(dio);
         ZagLogger().debug('Overseerr API instance created successfully');
       } catch (e, stackTrace) {
         ZagLogger()

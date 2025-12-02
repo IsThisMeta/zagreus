@@ -6,6 +6,17 @@ class TautulliState extends ZagModuleState {
     reset();
   }
 
+  /// Trim whitespace, drop trailing slashes, and strip existing /api(/v2) suffixes.
+  String _normalizeHost(String host) {
+    var value = host.trim();
+    if (value.isEmpty) return value;
+
+    value = value.replaceAll(RegExp(r'/+$'), '');
+    value = value.replaceFirst(RegExp(r'/api(/v2)?/?$'), '');
+
+    return '$value/';
+  }
+
   @override
   void dispose() {
     _getActivityTimer?.cancel();
@@ -86,7 +97,7 @@ class TautulliState extends ZagModuleState {
     ZagProfile _profile = ZagProfile.current;
     // Copy profile into state
     _enabled = _profile.tautulliEnabled;
-    _host = _profile.effectiveTautulliHost();
+    _host = _normalizeHost(_profile.effectiveTautulliHost());
     _apiKey = _profile.tautulliKey;
     _headers = _profile.tautulliHeaders;
     // Create the API instance if Tautulli is enabled

@@ -299,7 +299,6 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       ZagModule.SONARR,
       ZagModule.LIDARR,
       ZagModule.READARR,
-      ZagModule.PROWLARR,
       ZagModule.SABNZBD,
       ZagModule.NZBGET,
       ZagModule.TAUTULLI,
