@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
-import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 
 class ZagDrawer extends StatelessWidget {
   final String page;
@@ -125,33 +123,102 @@ class ZagDrawer extends StatelessWidget {
   }
 
   List<Widget> _moduleList(BuildContext context, List<ZagModule> modules) {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    
     return <Widget>[
       ..._sharedHeader(context),
-      ...modules.map((module) {
+      ...modules.expand((module) {
         if (ZagreusPro.isEnabled && module == ZagModule.DISCOVER) {
-          return const SizedBox(height: 0.0);
+          return <Widget>[];
         }
         if (ZagreusPro.isEnabled && module == ZagModule.DASHBOARD) {
-          return const SizedBox(height: 0.0);
+          return <Widget>[];
         }
         // Hide premium modules when the user is not Pro
         if ((module == ZagModule.DISCOVER ||
                 module == ZagModule.OVERSEERR ||
                 module == ZagModule.UNRAID) &&
             !ZagreusPro.isEnabled) {
-          return const SizedBox(height: 0.0);
+          return <Widget>[];
         }
 
-        if (module.isEnabled) {
-          return _buildEntry(
-            context: context,
-            module: module,
-            onTap: module == ZagModule.WAKE_ON_LAN ? _wakeOnLAN : null,
-          );
+        if (!module.isEnabled) {
+          return <Widget>[];
         }
-        return const SizedBox(height: 0.0);
+
+        final entries = <Widget>[];
+        
+        // Add main module entry
+        entries.add(_buildEntry(
+          context: context,
+          module: module,
+          onTap: module == ZagModule.WAKE_ON_LAN ? _wakeOnLAN : null,
+        ));
+
+        // Add shadow instance entries for this module
+        final instances = ZagProfile.getInstancesForModule(currentProfile, module.key);
+        for (final instanceKey in instances) {
+          final displayName = ZagProfile.getInstanceDisplayName(instanceKey);
+          if (displayName != null) {
+            entries.add(_buildInstanceEntry(
+              context: context,
+              module: module,
+              instanceKey: instanceKey,
+              displayName: displayName,
+            ));
+          }
+        }
+
+        return entries;
       }),
     ];
+  }
+
+  Widget _buildInstanceEntry({
+    required BuildContext context,
+    required ZagModule module,
+    required String instanceKey,
+    required String displayName,
+  }) {
+    // For instances, we never mark as "current page" since they use shadow profiles
+    final theme = Theme.of(context);
+    final isLightTheme = theme.brightness == Brightness.light;
+    final unselectedColor = isLightTheme ? Colors.black87 : ZagColours.white;
+
+    return SizedBox(
+      height: ZagTextInputBar.defaultAppBarHeight,
+      child: InkWell(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              child: Icon(
+                module.icon,
+                color: unselectedColor,
+                size: module == ZagModule.UNRAID ? 22 : null,
+              ),
+              padding: ZagUI.MARGIN_DEFAULT_HORIZONTAL * 1.5,
+            ),
+            Text(
+              '${module.title} $displayName',
+              style: TextStyle(
+                color: unselectedColor,
+                fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+              ),
+            ),
+          ],
+        ),
+        onTap: () async {
+          Navigator.of(context).pop();
+          ZagGlobalCubeManager.instance.trackModuleLaunch(module.key);
+          // Set the active instance before launching
+          ZagInstanceContext().setActiveInstance(module.key, instanceKey);
+          // Reset the module state to pick up the new profile
+          module.state(context)?.reset();
+          module.launch(restore: false);
+        },
+      ),
+    );
   }
 
   Widget _buildEntry({
@@ -193,6 +260,9 @@ class ZagDrawer extends StatelessWidget {
               Navigator.of(context).pop();
               if (!currentPage) {
                 ZagGlobalCubeManager.instance.trackModuleLaunch(module.key);
+                // Clear any active instance to use the main profile
+                ZagInstanceContext().clearActiveInstance(module.key);
+                module.state(context)?.reset();
                 module.launch(restore: false);
               }
             },

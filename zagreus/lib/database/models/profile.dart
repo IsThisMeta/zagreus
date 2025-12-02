@@ -6,6 +6,35 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 
 part 'profile.g.dart';
 
+/// Tracks which shadow profile (instance) is active for each module.
+/// When null, the main profile is used.
+class ZagInstanceContext {
+  static final ZagInstanceContext _instance = ZagInstanceContext._();
+  factory ZagInstanceContext() => _instance;
+  ZagInstanceContext._();
+
+  /// Maps module key -> active shadow profile key (or null for main)
+  final Map<String, String?> _activeInstances = {};
+
+  /// Get the active instance for a module (null = main profile)
+  String? getActiveInstance(String moduleKey) => _activeInstances[moduleKey];
+
+  /// Set the active instance for a module
+  void setActiveInstance(String moduleKey, String? instanceKey) {
+    _activeInstances[moduleKey] = instanceKey;
+  }
+
+  /// Clear the active instance for a module (revert to main)
+  void clearActiveInstance(String moduleKey) {
+    _activeInstances.remove(moduleKey);
+  }
+
+  /// Clear all active instances
+  void clearAll() {
+    _activeInstances.clear();
+  }
+}
+
 @JsonSerializable()
 @HiveType(typeId: 0, adapterName: 'ZagProfileAdapter')
 class ZagProfile extends HiveObject {
@@ -14,6 +43,26 @@ class ZagProfile extends HiveObject {
   static ZagProfile get current {
     final enabled = ZagreusDatabase.ENABLED_PROFILE.read();
     return ZagBox.profiles.read(enabled) ?? ZagProfile();
+  }
+
+  /// Get the effective profile for a module, considering active instances.
+  /// If an instance is active for this module, returns that shadow profile.
+  /// Otherwise returns the current main profile.
+  static ZagProfile forModule(String moduleKey) {
+    final instanceKey = ZagInstanceContext().getActiveInstance(moduleKey);
+    if (instanceKey != null) {
+      final instanceProfile = ZagBox.profiles.read(instanceKey);
+      if (instanceProfile != null) return instanceProfile;
+    }
+    return current;
+  }
+
+  /// Get the display name for the current instance of a module.
+  /// Returns null if using the main profile.
+  static String? getActiveInstanceName(String moduleKey) {
+    final instanceKey = ZagInstanceContext().getActiveInstance(moduleKey);
+    if (instanceKey == null) return null;
+    return getInstanceDisplayName(instanceKey);
   }
 
   static List<String> get list {
@@ -548,4 +597,135 @@ class ZagProfile extends HiveObject {
         localHost: readarrLocalHost,
         ssidList: readarrLocalSsids,
       );
+
+  // ============== Multi-Instance (Shadow Profile) Support ==============
+
+  /// Shadow profile key format: `__<module>__<name>__<parentProfile>`
+  static const String _shadowPrefix = '__';
+  static const String _shadowDelimiter = '__';
+
+  /// Check if a profile key is a shadow profile
+  static bool isShadowProfile(String profileKey) {
+    return profileKey.startsWith(_shadowPrefix);
+  }
+
+  /// Get visible profiles (filters out shadow profiles)
+  static List<String> get visibleList {
+    return list.where((key) => !isShadowProfile(key)).toList();
+  }
+
+  /// Parse shadow profile key into components
+  static ({String module, String name, String parent})? parseShadowKey(
+      String key) {
+    if (!isShadowProfile(key)) return null;
+    final parts = key.substring(_shadowPrefix.length).split(_shadowDelimiter);
+    if (parts.length != 3) return null;
+    return (module: parts[0], name: parts[1], parent: parts[2]);
+  }
+
+  /// Build a shadow profile key
+  static String buildShadowKey({
+    required String module,
+    required String name,
+    required String parent,
+  }) {
+    return '$_shadowPrefix$module$_shadowDelimiter$name$_shadowDelimiter$parent';
+  }
+
+  /// Get all shadow profiles for a parent profile
+  static List<String> getInstancesForProfile(String parentProfile) {
+    final dynamic instances = ZagreusDatabase.PROFILE_INSTANCES.read();
+    if (instances == null || instances is! Map) return [];
+    final dynamic list = instances[parentProfile];
+    if (list == null || list is! List) return [];
+    return list.cast<String>();
+  }
+
+  /// Get shadow profiles for a specific module under a parent
+  static List<String> getInstancesForModule(String parentProfile, String moduleKey) {
+    return getInstancesForProfile(parentProfile).where((key) {
+      final parsed = parseShadowKey(key);
+      return parsed != null && parsed.module == moduleKey;
+    }).toList();
+  }
+
+  /// Create a new shadow profile for a module
+  static Future<String?> createInstance({
+    required String moduleKey,
+    required String instanceName,
+    required String parentProfile,
+  }) async {
+    // Validate no underscores in name
+    if (instanceName.contains('_')) {
+      return null; // Caller should show toast
+    }
+
+    final shadowKey = buildShadowKey(
+      module: moduleKey,
+      name: instanceName.toLowerCase().replaceAll(' ', '-'),
+      parent: parentProfile,
+    );
+
+    // Check if already exists
+    if (ZagBox.profiles.contains(shadowKey)) {
+      return null;
+    }
+
+    // Create empty profile (only the specific module will be configured)
+    final profile = ZagProfile();
+    await ZagBox.profiles.update(shadowKey, profile);
+
+    // Add to instances list
+    final dynamic currentInstances = ZagreusDatabase.PROFILE_INSTANCES.read();
+    final Map<String, List<String>> instances = {};
+    if (currentInstances is Map) {
+      for (final entry in currentInstances.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (value is List) {
+          instances[key] = value.cast<String>();
+        }
+      }
+    }
+    instances.putIfAbsent(parentProfile, () => []);
+    instances[parentProfile]!.add(shadowKey);
+    ZagreusDatabase.PROFILE_INSTANCES.update(instances);
+
+    return shadowKey;
+  }
+
+  /// Delete a shadow profile
+  static Future<void> deleteInstance(String shadowKey) async {
+    final parsed = parseShadowKey(shadowKey);
+    if (parsed == null) return;
+
+    // Remove from profiles box
+    await ZagBox.profiles.delete(shadowKey);
+
+    // Remove from instances list
+    final dynamic currentInstances = ZagreusDatabase.PROFILE_INSTANCES.read();
+    final Map<String, List<String>> instances = {};
+    if (currentInstances is Map) {
+      for (final entry in currentInstances.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (value is List) {
+          instances[key] = value.cast<String>();
+        }
+      }
+    }
+    instances[parsed.parent]?.remove(shadowKey);
+    ZagreusDatabase.PROFILE_INSTANCES.update(instances);
+  }
+
+  /// Get display name for a shadow profile
+  static String? getInstanceDisplayName(String shadowKey) {
+    final parsed = parseShadowKey(shadowKey);
+    if (parsed == null) return null;
+    // Convert kebab-case back to Title Case
+    return parsed.name
+        .split('-')
+        .map((word) => word.isEmpty ? '' : '${word[0].toUpperCase()}${word.substring(1)}')
+        .join(' ');
+  }
 }

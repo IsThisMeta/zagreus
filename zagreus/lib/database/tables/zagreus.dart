@@ -126,7 +126,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_SHOW_MODULES_TAB<bool>(false),
   SHOW_CALENDAR_TAB<bool>(true),
   SHOW_AGENT_TAB<bool>(true),
-  UNRAID_CONFIRM_ACTIONS<bool>(true);
+  UNRAID_CONFIRM_ACTIONS<bool>(true),
+  // Multi-instance support: maps parent profile -> list of shadow profile keys
+  // e.g. {"default": ["__radarr__4k__default", "__sonarr__kids__default"]}
+  PROFILE_INSTANCES<Map>({});
 
   @override
   ZagTable get table => ZagTable.zagreus;

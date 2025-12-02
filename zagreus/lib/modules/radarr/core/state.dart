@@ -74,7 +74,7 @@ class RadarrState extends ZagModuleState {
   /// Reset the profile data, reinitializes API instance
   void resetProfile() {
     ZagLogger().debug('RadarrState.resetProfile called');
-    ZagProfile _profile = ZagProfile.current;
+    ZagProfile _profile = ZagProfile.forModule('radarr');
     // Copy profile into state
     _enabled = _profile.radarrEnabled;
     _host = _profile.effectiveRadarrHost();

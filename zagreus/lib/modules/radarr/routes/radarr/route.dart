@@ -103,8 +103,14 @@ class _State extends State<RadarrRoute> {
         const RadarrAppBarGlobalSettingsAction(),
       ];
     }
+    // Build title with instance name if active
+    final instanceName = ZagProfile.getActiveInstanceName('radarr');
+    final title = instanceName != null 
+        ? '${ZagModule.RADARR.title} $instanceName'
+        : ZagModule.RADARR.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.RADARR.title,
+      title: title,
       useDrawer: true,
       profiles: profiles,
       actions: actions,

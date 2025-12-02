@@ -54,6 +54,8 @@ class _State extends State<ConfigurationRadarrRoute>
         _defaultPagesPage(),
         _discoverUseRadarrSuggestionsToggle(),
         _queueSize(),
+        ZagDivider(),
+        _addDuplicateInstance(),
       ],
     );
   }
@@ -166,5 +168,77 @@ class _State extends State<ConfigurationRadarrRoute>
     } catch (e, stack) {
       ZagLogger().error('Failed to sync webhook on page load', e, stack);
     }
+  }
+
+  Widget _addDuplicateInstance() {
+    return ZagBlock(
+      title: 'Add Duplicate Instance',
+      body: [
+        TextSpan(
+          text: 'Create another ${ZagModule.RADARR.title} instance with separate connection details',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.ADD),
+      onTap: () async {
+        final controller = TextEditingController();
+        final result = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Instance Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., 4K, Anime, Kids',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+
+        if (result == null || result.isEmpty) return;
+
+        if (result.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+        final shadowKey = await ZagProfile.createInstance(
+          moduleKey: ZagModule.RADARR.key,
+          instanceName: result,
+          parentProfile: currentProfile,
+        );
+
+        if (shadowKey == null) {
+          showZagErrorSnackBar(
+            title: 'Failed to Create Instance',
+            message: 'An instance with that name may already exist',
+          );
+          return;
+        }
+
+        showZagSuccessSnackBar(
+          title: 'Instance Created',
+          message: '${ZagModule.RADARR.title} $result has been added',
+        );
+
+        // Refresh drawer
+        ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
   }
 }

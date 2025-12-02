@@ -52,7 +52,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
       onTap: () async {
         final dialogs = SettingsDialogs();
         final context = ZagState.context;
-        final profiles = ZagProfile.list;
+        final profiles = ZagProfile.visibleList;
 
         final selected = await dialogs.addProfile(context, profiles);
         if (selected.item1) {
@@ -70,7 +70,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
       onTap: () async {
         final dialogs = SettingsDialogs();
         final context = ZagState.context;
-        final profiles = ZagProfile.list;
+        final profiles = ZagProfile.visibleList;
 
         final selected = await dialogs.renameProfile(context, profiles);
         if (selected.item1) {
@@ -92,7 +92,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
           final dialogs = SettingsDialogs();
           final enabledProfile = ZagreusDatabase.ENABLED_PROFILE.read();
           final context = ZagState.context;
-          final profiles = ZagProfile.list;
+          final profiles = ZagProfile.visibleList;
           profiles.removeWhere((p) => p == enabledProfile);
 
           if (profiles.isEmpty) {
@@ -121,7 +121,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
           final dialogs = SettingsDialogs();
           final enabledProfile = ZagreusDatabase.ENABLED_PROFILE.read();
           final context = ZagState.context;
-          final profiles = ZagProfile.list;
+          final profiles = ZagProfile.visibleList;
           profiles.removeWhere((p) => p == enabledProfile);
 
           if (profiles.isEmpty) {
