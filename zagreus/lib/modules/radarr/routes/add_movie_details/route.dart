@@ -56,18 +56,65 @@ class _State extends State<AddMovieDetailsRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
       title: 'radarr.MonitorMovie'.tr(),
       scrollControllers: [scrollController],
-      actions: widget.movie == null
-          ? null
-          : [
-              ZagIconButton(
-                icon: ZagIcons.LINK,
-                onPressed: () => LinksSheet(movie: widget.movie!).show(),
-              ),
-            ],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+        if (widget.movie != null)
+          ZagIconButton(
+            icon: ZagIcons.LINK,
+            onPressed: () => LinksSheet(movie: widget.movie!).show(),
+          ),
+      ],
     );
+  }
+
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('radarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add to which Radarr?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.RADARR.title
+                : '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.RADARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    ZagInstanceContext().setActiveInstance('radarr', result);
+    context.read<RadarrState>().reset();
+    // Reload the data for new instance
+    loadCallback();
+    setState(() {});
   }
 
   Widget _body() {

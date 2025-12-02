@@ -1826,10 +1826,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Defensive fallback: Discover is Pro-only, so this shouldn't be reached
         // No app bar actions needed here
       }
-    } else if (_currentPageIndex == moviesTabIndex ||
-        _currentPageIndex == showsTabIndex ||
-        _currentPageIndex == serverIndex) {
-      // Movies, Shows, and Server tabs
+    } else if (_currentPageIndex == moviesTabIndex) {
+      // Movies tab - add Radarr instance swap if instances exist
+      final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+      final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+      if (radarrInstances.isNotEmpty) {
+        actions.add(
+          IconButton(
+            key: const ValueKey('discover_action_radarr_instance'),
+            icon: const Icon(Icons.swap_horiz_rounded),
+            tooltip: 'Switch Radarr Instance',
+            onPressed: () => _showRadarrInstanceSelector(),
+          ),
+        );
+      }
       if (showAgentTab) {
         actions.add(
           IconButton(
@@ -1848,9 +1858,137 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onPressed: _openSearchOverlay,
         ),
       );
+    } else if (_currentPageIndex == showsTabIndex) {
+      // Shows tab - add Sonarr instance swap if instances exist
+      final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+      final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+      if (sonarrInstances.isNotEmpty) {
+        actions.add(
+          IconButton(
+            key: const ValueKey('discover_action_sonarr_instance'),
+            icon: const Icon(Icons.swap_horiz_rounded),
+            tooltip: 'Switch Sonarr Instance',
+            onPressed: () => _showSonarrInstanceSelector(),
+          ),
+        );
+      }
+      if (showAgentTab) {
+        actions.add(
+          IconButton(
+            key: const ValueKey('discover_action_agent_shows'),
+            icon: const Icon(Icons.smart_toy),
+            tooltip: 'Z Agent',
+            onPressed: _openAgentOverlay,
+          ),
+        );
+      }
+      actions.add(
+        IconButton(
+          key: const ValueKey('discover_action_search_shows'),
+          icon: const Icon(Icons.search_rounded),
+          tooltip: 'Search',
+          onPressed: _openSearchOverlay,
+        ),
+      );
+    } else if (_currentPageIndex == serverIndex) {
+      // Server tab
+      if (showAgentTab) {
+        actions.add(
+          IconButton(
+            key: const ValueKey('discover_action_agent_server'),
+            icon: const Icon(Icons.smart_toy),
+            tooltip: 'Z Agent',
+            onPressed: _openAgentOverlay,
+          ),
+        );
+      }
+      actions.add(
+        IconButton(
+          key: const ValueKey('discover_action_search_server'),
+          icon: const Icon(Icons.search_rounded),
+          tooltip: 'Search',
+          onPressed: _openSearchOverlay,
+        ),
+      );
     }
 
     return actions.isEmpty ? null : actions;
+  }
+
+  void _showRadarrInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('radarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Radarr Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.RADARR.title
+                : '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.RADARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    // Always update even if same (user explicitly selected)
+    ZagInstanceContext().setActiveInstance('radarr', result);
+    context.read<RadarrState>().reset();
+    setState(() {});
+  }
+
+  void _showSonarrInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('sonarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Sonarr Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.SONARR.title
+                : '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.SONARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    // Always update even if same (user explicitly selected)
+    ZagInstanceContext().setActiveInstance('sonarr', result);
+    context.read<SonarrState>().reset();
+    setState(() {});
   }
 
   Widget _moviesPage() {

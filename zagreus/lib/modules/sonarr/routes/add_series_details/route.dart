@@ -52,18 +52,65 @@ class _State extends State<AddSeriesDetailsRoute>
   }
 
   Widget _appBar() {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
       title: 'sonarr.MonitorSeries'.tr(),
       scrollControllers: [scrollController],
-      actions: widget.series == null
-          ? null
-          : [
-              ZagIconButton(
-                icon: ZagIcons.LINK,
-                onPressed: () => LinksSheet(series: widget.series!).show(),
-              ),
-            ],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+        if (widget.series != null)
+          ZagIconButton(
+            icon: ZagIcons.LINK,
+            onPressed: () => LinksSheet(series: widget.series!).show(),
+          ),
+      ],
     );
+  }
+
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('sonarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add to which Sonarr?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.SONARR.title
+                : '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.SONARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    ZagInstanceContext().setActiveInstance('sonarr', result);
+    context.read<SonarrState>().reset();
+    // Reload the data for new instance
+    loadCallback();
+    setState(() {});
   }
 
   Widget _body(BuildContext context) {
