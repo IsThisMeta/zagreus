@@ -180,9 +180,13 @@ class ZagDrawer extends StatelessWidget {
     required String instanceKey,
     required String displayName,
   }) {
-    // For instances, we never mark as "current page" since they use shadow profiles
+    // Check if this instance is currently active
+    final activeInstance = ZagInstanceContext().getActiveInstance(module.key);
+    final isCurrentPage = page == module.key.toLowerCase() && activeInstance == instanceKey;
+    
     final theme = Theme.of(context);
     final isLightTheme = theme.brightness == Brightness.light;
+    final selectedColor = module.color;
     final unselectedColor = isLightTheme ? Colors.black87 : ZagColours.white;
 
     return SizedBox(
@@ -194,7 +198,7 @@ class ZagDrawer extends StatelessWidget {
             Padding(
               child: Icon(
                 module.icon,
-                color: unselectedColor,
+                color: isCurrentPage ? selectedColor : unselectedColor,
                 size: module == ZagModule.UNRAID ? 22 : null,
               ),
               padding: ZagUI.MARGIN_DEFAULT_HORIZONTAL * 1.5,
@@ -202,7 +206,7 @@ class ZagDrawer extends StatelessWidget {
             Text(
               '${module.title} $displayName',
               style: TextStyle(
-                color: unselectedColor,
+                color: isCurrentPage ? selectedColor : unselectedColor,
                 fontWeight: ZagUI.FONT_WEIGHT_BOLD,
               ),
             ),
@@ -226,7 +230,9 @@ class ZagDrawer extends StatelessWidget {
     required ZagModule module,
     void Function()? onTap,
   }) {
-    bool currentPage = page == module.key.toLowerCase();
+    // Only show as current if on this page AND no instance is active
+    final activeInstance = ZagInstanceContext().getActiveInstance(module.key);
+    bool currentPage = page == module.key.toLowerCase() && activeInstance == null;
     final theme = Theme.of(context);
     final isLightTheme = theme.brightness == Brightness.light;
     final selectedColor = module.color;
