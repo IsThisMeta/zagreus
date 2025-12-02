@@ -62,7 +62,7 @@ class SonarrState extends ZagModuleState {
 
   /// Reset the profile data, reinitializes API instance
   void resetProfile() {
-    ZagProfile _profile = ZagProfile.current;
+    ZagProfile _profile = ZagProfile.forModule('sonarr');
     // Copy profile into state
     _api = null;
     _enabled = _profile.sonarrEnabled;

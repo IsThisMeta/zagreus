@@ -86,8 +86,14 @@ class _State extends State<SonarrRoute> {
         const SonarrAppBarGlobalSettingsAction(),
       ];
     }
+    
+    final instanceName = ZagProfile.getActiveInstanceName('sonarr');
+    final title = instanceName != null 
+        ? '${ZagModule.SONARR.title} $instanceName'
+        : ZagModule.SONARR.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.SONARR.title,
+      title: title,
       useDrawer: true,
       profiles: profiles,
       actions: actions,

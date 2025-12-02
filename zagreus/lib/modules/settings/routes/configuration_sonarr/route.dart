@@ -36,13 +36,72 @@ class _State extends State<ConfigurationSonarrRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    final instanceName = ZagProfile.getActiveInstanceName('sonarr');
+    final title = instanceName != null
+        ? '${ZagModule.SONARR.title} $instanceName'
+        : ZagModule.SONARR.title;
+    
+    // Check if there are instances to switch between
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
-      title: ZagModule.SONARR.title,
+      title: title,
       scrollControllers: [scrollController],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+      ],
     );
   }
 
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('sonarr');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.SONARR.title
+                : '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.SONARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    final didSelect = result != null || (result == null && currentInstance != null);
+    if (didSelect && result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('sonarr', result);
+      setState(() {});
+    }
+  }
+
   Widget _body() {
+    final instanceName = ZagProfile.getActiveInstanceName('sonarr');
+    final isInstance = instanceName != null;
+    
     return ZagListView(
       controller: scrollController,
       children: [
@@ -53,19 +112,27 @@ class _State extends State<ConfigurationSonarrRoute>
         _defaultOptionsPage(),
         _defaultPagesPage(),
         _queueSize(),
+        ZagDivider(),
+        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
       ],
     );
   }
 
   Widget _enabledToggle() {
+    final instanceName = ZagProfile.getActiveInstanceName('sonarr');
+    final displayName = instanceName != null
+        ? '${ZagModule.SONARR.title} $instanceName'
+        : ZagModule.SONARR.title;
+    
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.SONARR.title]),
+        title: 'settings.EnableModule'.tr(args: [displayName]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.sonarrEnabled,
+          value: ZagProfile.forModule('sonarr').sonarrEnabled,
           onChanged: (value) {
-            ZagProfile.current.sonarrEnabled = value;
-            ZagProfile.current.save();
+            final profile = ZagProfile.forModule('sonarr');
+            profile.sonarrEnabled = value;
+            profile.save();
             context.read<SonarrState>().reset();
           },
         ),
@@ -153,5 +220,127 @@ class _State extends State<ConfigurationSonarrRoute>
     } catch (e, stack) {
       ZagLogger().error('Failed to sync webhook on page load', e, stack);
     }
+  }
+
+  Widget _addDuplicateInstance() {
+    return ZagBlock(
+      title: 'Add Duplicate Instance',
+      body: [
+        TextSpan(
+          text: 'Create another ${ZagModule.SONARR.title} instance with separate connection details',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.ADD),
+      onTap: () async {
+        final controller = TextEditingController();
+        final result = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Instance Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., 4K, Anime, Kids',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+
+        if (result == null || result.isEmpty) return;
+
+        if (result.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+        final shadowKey = await ZagProfile.createInstance(
+          moduleKey: ZagModule.SONARR.key,
+          instanceName: result,
+          parentProfile: currentProfile,
+        );
+
+        if (shadowKey == null) {
+          showZagErrorSnackBar(
+            title: 'Failed to Create Instance',
+            message: 'An instance with that name may already exist',
+          );
+          return;
+        }
+
+        showZagSuccessSnackBar(
+          title: 'Instance Created',
+          message: '${ZagModule.SONARR.title} $result has been added',
+        );
+
+        ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _deleteInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('sonarr');
+    final instanceKey = ZagInstanceContext().getActiveInstance('sonarr');
+    
+    return ZagBlock(
+      title: 'Delete Instance',
+      body: [
+        TextSpan(
+          text: 'Remove ${ZagModule.SONARR.title} $instanceName and its settings',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.DELETE),
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Instance?'),
+            content: Text(
+              'Are you sure you want to delete ${ZagModule.SONARR.title} $instanceName? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm != true || instanceKey == null) return;
+
+        await ZagProfile.deleteInstance(instanceKey);
+        ZagInstanceContext().clearActiveInstance('sonarr');
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Deleted',
+          message: '${ZagModule.SONARR.title} $instanceName has been removed',
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+    );
   }
 }
