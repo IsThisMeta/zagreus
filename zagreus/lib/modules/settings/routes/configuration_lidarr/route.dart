@@ -100,7 +100,10 @@ class _State extends State<ConfigurationLidarrRoute>
         ZagDivider(),
         _defaultPagesPage(),
         ZagDivider(),
-        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
+        if (isInstance) ...[
+          _renameInstance(),
+          _deleteInstance(),
+        ] else _addDuplicateInstance(),
       ],
     );
   }
@@ -217,6 +220,82 @@ class _State extends State<ConfigurationLidarrRoute>
         );
 
         ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _renameInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('lidarr');
+    final instanceKey = ZagInstanceContext().getActiveInstance('lidarr');
+    
+    return ZagBlock(
+      title: 'Rename Instance',
+      body: [
+        TextSpan(
+          text: 'Change the name of ${ZagModule.LIDARR.title} $instanceName',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: Icons.edit_rounded),
+      onTap: () async {
+        final controller = TextEditingController(text: instanceName);
+        
+        final newName = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Rename Instance'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Instance Name',
+                hintText: 'e.g. FLAC, Lossy',
+              ),
+              onSubmitted: (value) => Navigator.pop(context, value),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Rename'),
+              ),
+            ],
+          ),
+        );
+
+        if (newName == null || newName.trim().isEmpty || instanceKey == null) return;
+        
+        if (newName.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final newKey = await ZagProfile.renameInstance(instanceKey, newName);
+        if (newKey == null) {
+          showZagErrorSnackBar(
+            title: 'Rename Failed',
+            message: 'Could not rename the instance',
+          );
+          return;
+        }
+        
+        // Update active instance to new key
+        ZagInstanceContext().setActiveInstance('lidarr', newKey);
+        
+        // Refresh drawer
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Renamed',
+          message: '${ZagModule.LIDARR.title} is now "$newName"',
+        );
+
         setState(() {});
       },
     );

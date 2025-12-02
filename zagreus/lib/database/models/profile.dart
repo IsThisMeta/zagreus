@@ -696,6 +696,53 @@ class ZagProfile extends HiveObject {
     return shadowKey;
   }
 
+  /// Rename a shadow profile
+  static Future<String?> renameInstance(String oldKey, String newName) async {
+    final parsed = parseShadowKey(oldKey);
+    if (parsed == null) return null;
+
+    // Validate new name
+    final sanitized = newName.trim().replaceAll(' ', '-');
+    if (sanitized.isEmpty || sanitized.contains('_')) return null;
+
+    // Get old profile data
+    final oldProfile = ZagBox.profiles.read(oldKey);
+    if (oldProfile == null) return null;
+
+    // Create new key
+    final newKey = '__${parsed.module}__${sanitized}__${parsed.parent}';
+    
+    // Skip if key is the same
+    if (newKey == oldKey) return oldKey;
+
+    // Save profile with new key
+    await ZagBox.profiles.update(newKey, oldProfile);
+    await ZagBox.profiles.delete(oldKey);
+
+    // Update instances list
+    final dynamic currentInstances = ZagreusDatabase.PROFILE_INSTANCES.read();
+    final Map<String, List<String>> instances = {};
+    if (currentInstances is Map) {
+      for (final entry in currentInstances.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (value is List) {
+          instances[key] = value.cast<String>();
+        }
+      }
+    }
+    
+    final list = instances[parsed.parent] ?? [];
+    final idx = list.indexOf(oldKey);
+    if (idx >= 0) {
+      list[idx] = newKey;
+    }
+    instances[parsed.parent] = list;
+    ZagreusDatabase.PROFILE_INSTANCES.update(instances);
+
+    return newKey;
+  }
+
   /// Delete a shadow profile
   static Future<void> deleteInstance(String shadowKey) async {
     final parsed = parseShadowKey(shadowKey);
