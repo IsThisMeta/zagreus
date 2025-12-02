@@ -41,13 +41,14 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   Widget _enabledProfile() {
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) {
-        if (ZagBox.profiles.size < 2) return const SizedBox();
+        final visibleProfiles = ZagProfile.visibleList;
+        if (visibleProfiles.length < 2) return const SizedBox();
         return ZagIconButton(
           icon: Icons.switch_account_rounded,
           onPressed: () async {
             final dialogs = SettingsDialogs();
             final enabledProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-            final profiles = ZagProfile.list;
+            final profiles = List<String>.from(visibleProfiles);
             profiles.removeWhere((p) => p == enabledProfile);
 
             if (profiles.isEmpty) {

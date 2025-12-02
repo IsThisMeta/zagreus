@@ -36,13 +36,74 @@ class _State extends State<ConfigurationRadarrRoute>
   }
 
   Widget _appBar() {
+    final instanceName = ZagProfile.getActiveInstanceName('radarr');
+    final title = instanceName != null
+        ? '${ZagModule.RADARR.title} $instanceName'
+        : ZagModule.RADARR.title;
+    
+    // Check if there are instances to switch between
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
-      title: ZagModule.RADARR.title,
+      title: title,
       scrollControllers: [scrollController],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+      ],
     );
   }
 
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final currentInstance = ZagInstanceContext().getActiveInstance('radarr');
+    
+    // Build list: Main + all instances
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.RADARR.title
+                : '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.RADARR.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    // Check if selection changed (result is the new selection, could be null for "Main")
+    final didSelect = result != null || (result == null && currentInstance != null);
+    if (didSelect && result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('radarr', result);
+      setState(() {}); // Refresh the page with new instance context
+    }
+  }
+
   Widget _body() {
+    final instanceName = ZagProfile.getActiveInstanceName('radarr');
+    final isInstance = instanceName != null;
+    
     return ZagListView(
       controller: scrollController,
       children: [
@@ -55,20 +116,27 @@ class _State extends State<ConfigurationRadarrRoute>
         _discoverUseRadarrSuggestionsToggle(),
         _queueSize(),
         ZagDivider(),
-        _addDuplicateInstance(),
+        // Show "Add Duplicate Instance" on main, "Delete Instance" on shadows
+        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
       ],
     );
   }
 
   Widget _enabledToggle() {
+    final instanceName = ZagProfile.getActiveInstanceName('radarr');
+    final displayName = instanceName != null
+        ? '${ZagModule.RADARR.title} $instanceName'
+        : ZagModule.RADARR.title;
+    
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.RADARR.title]),
+        title: 'settings.EnableModule'.tr(args: [displayName]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.radarrEnabled,
+          value: ZagProfile.forModule('radarr').radarrEnabled,
           onChanged: (value) {
-            ZagProfile.current.radarrEnabled = value;
-            ZagProfile.current.save();
+            final profile = ZagProfile.forModule('radarr');
+            profile.radarrEnabled = value;
+            profile.save();
             context.read<RadarrState>().reset();
           },
         ),
@@ -238,6 +306,63 @@ class _State extends State<ConfigurationRadarrRoute>
         // Refresh drawer
         ZagDrawer.clearModuleOrderCache();
         setState(() {});
+      },
+    );
+  }
+
+  Widget _deleteInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('radarr');
+    final instanceKey = ZagInstanceContext().getActiveInstance('radarr');
+    
+    return ZagBlock(
+      title: 'Delete Instance',
+      body: [
+        TextSpan(
+          text: 'Remove ${ZagModule.RADARR.title} $instanceName and its settings',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.DELETE),
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Instance?'),
+            content: Text(
+              'Are you sure you want to delete ${ZagModule.RADARR.title} $instanceName? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm != true || instanceKey == null) return;
+
+        // Delete the instance
+        await ZagProfile.deleteInstance(instanceKey);
+        
+        // Clear active instance and go back to main
+        ZagInstanceContext().clearActiveInstance('radarr');
+        
+        // Refresh drawer
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Deleted',
+          message: '${ZagModule.RADARR.title} $instanceName has been removed',
+        );
+
+        // Navigate back
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       },
     );
   }
