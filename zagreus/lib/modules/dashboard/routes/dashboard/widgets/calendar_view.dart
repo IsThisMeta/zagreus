@@ -214,6 +214,8 @@ class _State extends State<CalendarView> {
         case CalendarSonarrData:
           CalendarSonarrData _event = event;
           if (!_event.monitored) break;
+          // Don't count as missing if currently on air
+          if (_event.isOnAir) break;
           DateTime? _airTime = _event.airTimeObject?.toLocal();
           bool _isAired = _airTime?.isBefore(DateTime.now()) ?? false;
           if (!_event.hasFile && _isAired) counter++;

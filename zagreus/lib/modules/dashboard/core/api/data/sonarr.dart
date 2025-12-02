@@ -18,6 +18,7 @@ class CalendarSonarrData extends CalendarData {
   bool hasFile;
   String? fileQualityProfile;
   bool monitored;
+  int runtime;
 
   CalendarSonarrData({
     required int id,
@@ -30,11 +31,13 @@ class CalendarSonarrData extends CalendarData {
     required this.hasFile,
     required this.fileQualityProfile,
     required this.monitored,
+    this.runtime = 0,
   }) : super(id, title);
 
   @override
   List<TextSpan> get body {
     final released = hasAired;
+    final onAir = isOnAir;
     return [
       TextSpan(
         children: [
@@ -50,7 +53,17 @@ class CalendarSonarrData extends CalendarData {
         ),
         text: episodeTitle,
       ),
-      if (!hasFile)
+      if (!hasFile && onAir)
+        TextSpan(
+          text: 'sonarr.OnAir'.tr(),
+          style: TextStyle(
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            color: ZagColours.orange.withOpacity(
+              monitored ? 1.0 : ZagUI.OPACITY_DISABLED,
+            ),
+          ),
+        ),
+      if (!hasFile && !onAir)
         TextSpan(
           text: released ? 'sonarr.Missing'.tr() : 'sonarr.Unaired'.tr(),
           style: TextStyle(
@@ -74,6 +87,14 @@ class CalendarSonarrData extends CalendarData {
   bool get hasAired {
     if (airTimeObject != null) return DateTime.now().isAfter(airTimeObject!);
     return false;
+  }
+
+  /// Returns true if the episode is currently airing (between start and end time)
+  bool get isOnAir {
+    if (airTimeObject == null || runtime <= 0) return false;
+    final now = DateTime.now();
+    final endTime = airTimeObject!.add(Duration(minutes: runtime));
+    return now.isAfter(airTimeObject!) && now.isBefore(endTime);
   }
 
   @override

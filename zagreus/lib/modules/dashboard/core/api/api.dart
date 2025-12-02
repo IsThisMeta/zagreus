@@ -179,6 +179,7 @@ class API {
                 : '',
             monitored:
                 entry['monitored'] ?? entry['series']?['monitored'] ?? true,
+            runtime: entry['series']?['runtime'] ?? 0,
           ));
           map[date] = day;
         }
