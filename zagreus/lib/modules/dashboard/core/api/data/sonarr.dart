@@ -193,13 +193,19 @@ class CalendarSonarrData extends CalendarData {
     final host = profile.effectiveSonarrHost();
     final key = profile.sonarrKey;
     if (host.isEmpty) return null;
-    return '$host/api/v3/mediacover/$seriesID/fanart.jpg?apikey=$key';
+    final baseUrl = host.endsWith('/') 
+        ? '${host}api/v3/MediaCover' 
+        : '$host/api/v3/MediaCover';
+    return '$baseUrl/$seriesID/fanart-360.jpg?apikey=$key';
   }
   
   String? _buildPosterUrl(ZagProfile profile) {
     final host = profile.effectiveSonarrHost();
     final key = profile.sonarrKey;
     if (host.isEmpty) return null;
-    return '$host/api/v3/mediacover/$seriesID/poster.jpg?apikey=$key';
+    final baseUrl = host.endsWith('/') 
+        ? '${host}api/v3/MediaCover' 
+        : '$host/api/v3/MediaCover';
+    return '$baseUrl/$seriesID/poster-500.jpg?apikey=$key';
   }
 }
