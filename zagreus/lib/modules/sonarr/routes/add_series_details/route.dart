@@ -105,12 +105,20 @@ class _State extends State<AddSeriesDetailsRoute>
     );
     
     if (!mounted) return;
+    if (result == currentInstance) return; // No change
     
     ZagInstanceContext().setActiveInstance('sonarr', result);
     context.read<SonarrState>().reset();
-    // Reload the data for new instance
-    loadCallback();
-    setState(() {});
+    
+    // Pop and re-push to get fresh state with new instance's root folders
+    Navigator.of(context).pop();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddSeriesDetailsRoute(
+          series: widget.series,
+        ),
+      ),
+    );
   }
 
   Widget _body(BuildContext context) {

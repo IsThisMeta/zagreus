@@ -109,12 +109,21 @@ class _State extends State<AddMovieDetailsRoute>
     );
     
     if (!mounted) return;
+    if (result == currentInstance) return; // No change
     
     ZagInstanceContext().setActiveInstance('radarr', result);
     context.read<RadarrState>().reset();
-    // Reload the data for new instance
-    loadCallback();
-    setState(() {});
+    
+    // Pop and re-push to get fresh state with new instance's root folders
+    Navigator.of(context).pop();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddMovieDetailsRoute(
+          movie: widget.movie,
+          isDiscovery: widget.isDiscovery,
+        ),
+      ),
+    );
   }
 
   Widget _body() {
