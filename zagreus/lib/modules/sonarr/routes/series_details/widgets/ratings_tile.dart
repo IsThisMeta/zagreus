@@ -81,6 +81,9 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
     }
   }
 
+  // Fixed height for the ratings row to prevent layout jumps
+  static const double _ratingsHeight = 30.0;
+
   @override
   Widget build(BuildContext context) {
     // Only show for Pro/Mega/Ultra users (checked once in initState)
@@ -88,9 +91,27 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
       return const SizedBox.shrink();
     }
 
-    // Don't show anything if still loading or has error
-    if (_loading ||
-        _hasError ||
+    // Show loading indicator while fetching ratings (fixed height to prevent jumps)
+    if (_loading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: SizedBox(
+          height: _ratingsHeight,
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Don't show anything if error or no ratings available
+    if (_hasError ||
         (_ratings == null && _tmdbRating == null) ||
         (_ratings != null && !_ratings!.hasRatings && _tmdbRating == null)) {
       return const SizedBox.shrink();
@@ -101,42 +122,45 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
     // TV shows have IMDb and TMDb ratings
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (_ratings?.imdbRating != null && imdbId != null)
-            _buildRating(
-              SvgPicture.asset(
-                'assets/icons/ratings/imdb.svg',
-                height: 17,
+      child: SizedBox(
+        height: _ratingsHeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_ratings?.imdbRating != null && imdbId != null)
+              _buildRating(
+                SvgPicture.asset(
+                  'assets/icons/ratings/imdb.svg',
+                  height: 17,
+                ),
+                _ratings!.imdbRating!,
+                onTap: () {
+                  // Use imdb:// deep link on mobile, https on web
+                  final link = ZagPlatform.isMobile
+                      ? ZagLinkedContent.imdb(imdbId)
+                      : 'https://www.imdb.com/title/$imdbId';
+                  if (link != null) link.openLink();
+                },
               ),
-              _ratings!.imdbRating!,
-              onTap: () {
-                // Use imdb:// deep link on mobile, https on web
-                final link = ZagPlatform.isMobile
-                    ? ZagLinkedContent.imdb(imdbId)
-                    : 'https://www.imdb.com/title/$imdbId';
-                if (link != null) link.openLink();
-              },
-            ),
-          if (_tmdbRating != null)
-            _buildRating(
-              Image.asset(
-                'assets/icons/ratings/tmdb.png',
-                height: 30,
+            if (_tmdbRating != null)
+              _buildRating(
+                Image.asset(
+                  'assets/icons/ratings/tmdb.png',
+                  height: 30,
+                ),
+                _tmdbRating!.toStringAsFixed(1),
+                onTap: _tmdbId != null
+                    ? () {
+                        final link = ZagLinkedContent.theMovieDB(
+                          _tmdbId,
+                          LinkedContentType.SERIES,
+                        );
+                        if (link != null) link.openLink();
+                      }
+                    : null,
               ),
-              _tmdbRating!.toStringAsFixed(1),
-              onTap: _tmdbId != null
-                  ? () {
-                      final link = ZagLinkedContent.theMovieDB(
-                        _tmdbId,
-                        LinkedContentType.SERIES,
-                      );
-                      if (link != null) link.openLink();
-                    }
-                  : null,
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -85,10 +85,7 @@ class _SonarrAddSeriesStreamingProvidersTileState
 
   @override
   Widget build(BuildContext context) {
-    if (!_isPremium ||
-        _loading ||
-        _hasError ||
-        (_streamingProviders.isEmpty && _buyRentProviders.isEmpty)) {
+    if (!_isPremium) {
       return const SizedBox.shrink();
     }
 
@@ -97,18 +94,19 @@ class _SonarrAddSeriesStreamingProvidersTileState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_streamingProviders.isNotEmpty) ...[
-            _buildProviderSection(
-              'Streaming On',
-              _streamingProviders,
-            ),
-            if (_buyRentProviders.isNotEmpty) const SizedBox(height: 12),
-          ],
-          if (_buyRentProviders.isNotEmpty)
-            _buildProviderSection(
-              'Buy/Rent On',
-              _buyRentProviders,
-            ),
+          _buildProviderSection(
+            'Streaming On',
+            _streamingProviders,
+            isLoading: _loading,
+            hasError: _hasError,
+          ),
+          const SizedBox(height: 12),
+          _buildProviderSection(
+            'Buy/Rent On',
+            _buyRentProviders,
+            isLoading: _loading,
+            hasError: _hasError,
+          ),
         ],
       ),
     );
@@ -116,11 +114,14 @@ class _SonarrAddSeriesStreamingProvidersTileState
 
   Widget _buildProviderSection(
     String title,
-    List<Map<String, dynamic>> providers,
-  ) {
+    List<Map<String, dynamic>> providers, {
+    required bool isLoading,
+    required bool hasError,
+  }) {
     final visibleProviders = providers.take(_maxVisibleIcons).toList();
     final hasMore = providers.length > _maxVisibleIcons;
     final hiddenCount = providers.length - _maxVisibleIcons;
+    final isEmpty = providers.isEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,66 +137,90 @@ class _SonarrAddSeriesStreamingProvidersTileState
         const SizedBox(height: 6),
         SizedBox(
           height: 32,
-          child: Row(
-            children: [
-              Expanded(
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: visibleProviders.length + (hasMore ? 1 : 0),
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    if (hasMore && index == visibleProviders.length) {
-                      // Show "+N more" indicator
-                      return GestureDetector(
-                        onTap: () => _showAllProviders(title, providers),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '+$hiddenCount',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final provider = visibleProviders[index];
-                    final logoPath = provider['logo_path'] as String?;
-
-                    if (logoPath == null || logoPath.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return GestureDetector(
-                      onTap: () => _openProvider(provider),
-                      child: Tooltip(
-                        message: provider['provider_name'] ?? '',
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.network(
-                            TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                            width: 32,
-                            height: 32,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                          ),
+          child: isLoading
+              ? const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : (hasError || isEmpty)
+                  ? const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'N/A',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount:
+                                visibleProviders.length + (hasMore ? 1 : 0),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              if (hasMore && index == visibleProviders.length) {
+                                // Show "+N more" indicator
+                                return GestureDetector(
+                                  onTap: () =>
+                                      _showAllProviders(title, providers),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '+$hiddenCount',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final provider = visibleProviders[index];
+                              final logoPath = provider['logo_path'] as String?;
+
+                              if (logoPath == null || logoPath.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+
+                              return GestureDetector(
+                                onTap: () => _openProvider(provider),
+                                child: Tooltip(
+                                  message: provider['provider_name'] ?? '',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                      width: 32,
+                                      height: 32,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox.shrink(),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
         ),
       ],
     );
