@@ -7,49 +7,62 @@ import 'package:zagreus/database/table.dart';
 
 class ZagConfig {
   Future<void> import(BuildContext context, String data) async {
-    await ZagDatabase().clear();
-
     try {
-      Map<String, dynamic> config = json.decode(data);
-
-      // Debug: Check what's in the config for zagreus/lunasea table
-      print('[DEBUG] Config import - table data:');
-      print('[DEBUG] Available tables in backup: ${config.keys.toList()}');
-
-      // Check both possible table names (lunasea from old backups, zagreus from new)
-      final zagreusData = config['zagreus'] as Map<String, dynamic>?;
-      final lunaseaData = config['lunasea'] as Map<String, dynamic>?;
-
-      if (zagreusData != null) {
-        print('[DEBUG] Found "zagreus" table');
-        print('[DEBUG] DRAWER_AUTOMATIC_MANAGE in backup: ${zagreusData['DRAWER_AUTOMATIC_MANAGE']}');
-        print('[DEBUG] DRAWER_MANUAL_ORDER in backup: ${zagreusData['DRAWER_MANUAL_ORDER']}');
+      // Parse JSON first before clearing to avoid wiping data on invalid backup
+      final decoded = json.decode(data);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('Backup payload is not a JSON object');
       }
-      if (lunaseaData != null) {
-        print('[DEBUG] Found "lunasea" table with keys: ${lunaseaData.keys.toList()}');
-        print('[DEBUG] DRAWER_AUTOMATIC_MANAGE in backup: ${lunaseaData['DRAWER_AUTOMATIC_MANAGE']}');
-        print('[DEBUG] DRAWER_MANUAL_ORDER in backup: ${lunaseaData['DRAWER_MANUAL_ORDER']}');
+      final Map<String, dynamic> config = decoded;
 
-        // Check with LUNASEA_ prefix too
-        print('[DEBUG] LUNASEA_DRAWER_AUTOMATIC_MANAGE in backup: ${lunaseaData['LUNASEA_DRAWER_AUTOMATIC_MANAGE']}');
-        print('[DEBUG] LUNASEA_DRAWER_MANUAL_ORDER in backup: ${lunaseaData['LUNASEA_DRAWER_MANUAL_ORDER']}');
+      // Now that we know the backup is valid JSON, clear the database
+      await ZagDatabase().clear();
+
+      // Helper to safely import sections without failing the whole import
+      void safeImport(String label, void Function() fn) {
+        try {
+          fn();
+        } catch (error, stack) {
+          ZagLogger().error('Failed to import $label', error, stack);
+        }
       }
 
-      _setProfiles(config[ZagBox.profiles.key]);
-      _setIndexers(config[ZagBox.indexers.key]);
-      _setExternalModules(config[ZagBox.externalModules.key]);
+      safeImport('profiles', () => _setProfiles(config[ZagBox.profiles.key]));
+      safeImport('indexers', () => _setIndexers(config[ZagBox.indexers.key]));
+      safeImport(
+        'external modules',
+        () => _setExternalModules(config[ZagBox.externalModules.key]),
+      );
+
       for (final table in ZagTable.values) {
-        print('[DEBUG] Importing table: ${table.key}');
         // Handle both new format (zagreus) and old format (lunasea)
         dynamic tableData = config[table.key];
 
         // Special handling for the main settings table - map lunasea -> zagreus
         if (table.key == 'zagreus' && tableData == null && config['lunasea'] != null) {
-          print('[DEBUG] Mapping lunasea table to zagreus table');
           tableData = config['lunasea'];
         }
 
-        table.import(tableData);
+        if (tableData == null) continue;
+
+        safeImport('table ${table.key}', () => table.import(tableData));
+      }
+
+      // Gracefully ignore unknown tables (from newer app versions or future modules)
+      final knownKeys = {
+        ...ZagTable.values.map((t) => t.key),
+        'lunasea', // Legacy table name
+        ZagBox.externalModules.key,
+        ZagBox.indexers.key,
+        ZagBox.profiles.key,
+      };
+      final unknownTables = config.keys
+          .where((key) => !knownKeys.contains(key))
+          .toList(growable: false);
+      if (unknownTables.isNotEmpty) {
+        ZagLogger().debug(
+          'Ignoring unknown tables in backup: ${unknownTables.join(', ')}',
+        );
       }
 
       if (!ZagProfile.list.contains(ZagreusDatabase.ENABLED_PROFILE.read())) {

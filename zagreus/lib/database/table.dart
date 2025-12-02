@@ -74,21 +74,21 @@ enum ZagTable<T extends ZagTableMixin> {
       // replace LUNASEA_ with ZAGREUS_
       if (key.startsWith('LUNASEA_') && this.key == 'zagreus') {
         normalizedKey = key.replaceFirst('LUNASEA_', 'ZAGREUS_');
-        print('[DEBUG] Replacing LUNASEA_ with ZAGREUS_: $key -> $normalizedKey');
       }
       // For other tables, ensure the key has the correct prefix
       else if (!key.startsWith(expectedPrefix)) {
         normalizedKey = '$expectedPrefix$key';
-        print('[DEBUG] Adding expected prefix: $key -> $normalizedKey');
       }
 
       final db = _itemFromKey(normalizedKey);
       if (db != null) {
-        print('[DEBUG] Importing $normalizedKey with value: ${table[key]}');
-        db.import(table[key]);
-      } else {
-        print('[DEBUG] No database item found for key: $normalizedKey');
+        try {
+          db.import(table[key]);
+        } catch (_) {
+          // Silently skip keys that fail to import (e.g., type mismatches)
+        }
       }
+      // Unknown keys are silently ignored
     }
   }
 }
