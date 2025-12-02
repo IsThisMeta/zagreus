@@ -105,8 +105,14 @@ class _State extends State<NZBGetRoute> {
           onPressed: () async => _handlePopup(),
         ),
       ];
+    
+    final instanceName = ZagProfile.getActiveInstanceName('nzbget');
+    final title = instanceName != null 
+        ? '${ZagModule.NZBGET.title} $instanceName'
+        : ZagModule.NZBGET.title;
+    
     return ZagAppBar.dropdown(
-      title: ZagModule.NZBGET.title,
+      title: title,
       useDrawer: widget.showDrawer,
       hideLeading: !widget.showDrawer,
       profiles: profiles,

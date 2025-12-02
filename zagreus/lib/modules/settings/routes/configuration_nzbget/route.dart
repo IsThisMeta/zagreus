@@ -26,13 +26,71 @@ class _State extends State<ConfigurationNZBGetRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    final instanceName = ZagProfile.getActiveInstanceName('nzbget');
+    final title = instanceName != null
+        ? '${ZagModule.NZBGET.title} $instanceName'
+        : ZagModule.NZBGET.title;
+    
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'nzbget');
+    final hasInstances = instances.isNotEmpty;
+    
     return ZagAppBar(
-      title: ZagModule.NZBGET.title,
+      title: title,
       scrollControllers: [scrollController],
+      actions: [
+        if (hasInstances)
+          ZagIconButton(
+            icon: Icons.swap_horiz_rounded,
+            onPressed: _showInstanceSelector,
+          ),
+      ],
     );
   }
 
+  void _showInstanceSelector() async {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'nzbget');
+    final currentInstance = ZagInstanceContext().getActiveInstance('nzbget');
+    
+    final options = <String?>[null, ...instances];
+    
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Select Instance'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((instanceKey) {
+            final isSelected = instanceKey == currentInstance;
+            final name = instanceKey == null 
+                ? ZagModule.NZBGET.title
+                : '${ZagModule.NZBGET.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
+            return ListTile(
+              title: Text(name),
+              leading: isSelected 
+                  ? Icon(Icons.check, color: ZagModule.NZBGET.color)
+                  : const SizedBox(width: 24),
+              onTap: () => Navigator.pop(ctx, instanceKey),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+    
+    if (!mounted) return;
+    
+    final didSelect = result != null || (result == null && currentInstance != null);
+    if (didSelect && result != currentInstance) {
+      ZagInstanceContext().setActiveInstance('nzbget', result);
+      setState(() {});
+    }
+  }
+
   Widget _body() {
+    final instanceName = ZagProfile.getActiveInstanceName('nzbget');
+    final isInstance = instanceName != null;
+    
     return ZagListView(
       controller: scrollController,
       children: [
@@ -41,20 +99,27 @@ class _State extends State<ConfigurationNZBGetRoute>
         _connectionDetailsPage(),
         ZagDivider(),
         _defaultPagesPage(),
-        //_defaultPagesPage(),
+        ZagDivider(),
+        if (isInstance) _deleteInstance() else _addDuplicateInstance(),
       ],
     );
   }
 
   Widget _enabledToggle() {
+    final instanceName = ZagProfile.getActiveInstanceName('nzbget');
+    final displayName = instanceName != null
+        ? '${ZagModule.NZBGET.title} $instanceName'
+        : ZagModule.NZBGET.title;
+    
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'settings.EnableModule'.tr(args: [ZagModule.NZBGET.title]),
+        title: 'settings.EnableModule'.tr(args: [displayName]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.nzbgetEnabled,
+          value: ZagProfile.forModule('nzbget').nzbgetEnabled,
           onChanged: (value) {
-            ZagProfile.current.nzbgetEnabled = value;
-            ZagProfile.current.save();
+            final profile = ZagProfile.forModule('nzbget');
+            profile.nzbgetEnabled = value;
+            profile.save();
             context.read<NZBGetState>().reset();
           },
         ),
@@ -82,6 +147,128 @@ class _State extends State<ConfigurationNZBGetRoute>
       body: [TextSpan(text: 'settings.DefaultPagesDescription'.tr())],
       trailing: const ZagIconButton.arrow(),
       onTap: SettingsRoutes.CONFIGURATION_NZBGET_DEFAULT_PAGES.go,
+    );
+  }
+
+  Widget _addDuplicateInstance() {
+    return ZagBlock(
+      title: 'Add Duplicate Instance',
+      body: [
+        TextSpan(
+          text: 'Create another ${ZagModule.NZBGET.title} instance with separate connection details',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.ADD),
+      onTap: () async {
+        final controller = TextEditingController();
+        final result = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Instance Name'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., Primary, Secondary',
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+
+        if (result == null || result.isEmpty) return;
+
+        if (result.contains('_')) {
+          showZagErrorSnackBar(
+            title: 'Invalid Name',
+            message: 'Instance names cannot contain underscores',
+          );
+          return;
+        }
+
+        final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+        final shadowKey = await ZagProfile.createInstance(
+          moduleKey: ZagModule.NZBGET.key,
+          instanceName: result,
+          parentProfile: currentProfile,
+        );
+
+        if (shadowKey == null) {
+          showZagErrorSnackBar(
+            title: 'Failed to Create Instance',
+            message: 'An instance with that name may already exist',
+          );
+          return;
+        }
+
+        showZagSuccessSnackBar(
+          title: 'Instance Created',
+          message: '${ZagModule.NZBGET.title} $result has been added',
+        );
+
+        ZagDrawer.clearModuleOrderCache();
+        setState(() {});
+      },
+    );
+  }
+
+  Widget _deleteInstance() {
+    final instanceName = ZagProfile.getActiveInstanceName('nzbget');
+    final instanceKey = ZagInstanceContext().getActiveInstance('nzbget');
+    
+    return ZagBlock(
+      title: 'Delete Instance',
+      body: [
+        TextSpan(
+          text: 'Remove ${ZagModule.NZBGET.title} $instanceName and its settings',
+        ),
+      ],
+      trailing: const ZagIconButton(icon: ZagIcons.DELETE),
+      onTap: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Instance?'),
+            content: Text(
+              'Are you sure you want to delete ${ZagModule.NZBGET.title} $instanceName? This cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm != true || instanceKey == null) return;
+
+        await ZagProfile.deleteInstance(instanceKey);
+        ZagInstanceContext().clearActiveInstance('nzbget');
+        ZagDrawer.clearModuleOrderCache();
+        
+        showZagSuccessSnackBar(
+          title: 'Instance Deleted',
+          message: '${ZagModule.NZBGET.title} $instanceName has been removed',
+        );
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      },
     );
   }
 }
