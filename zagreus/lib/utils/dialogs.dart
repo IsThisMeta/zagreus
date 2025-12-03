@@ -87,9 +87,13 @@ class ZagDialogs {
   /// Show a text preview dialog with Add button instead of Copy.
   ///
   /// Used for adding media items to Radarr/Sonarr with saved settings.
+  /// If [onSettings] is provided, a tune icon will be shown in the lower left
+  /// corner to configure quick add settings.
   Future<void> textPreviewWithAdd(
       BuildContext context, String? dialogTitle, String text,
-      {required VoidCallback onAdd, bool alignLeft = false}) async {
+      {required VoidCallback onAdd,
+      VoidCallback? onSettings,
+      bool alignLeft = false}) async {
     await ZagDialog.dialog(
       context: context,
       title: dialogTitle,
@@ -107,6 +111,23 @@ class ZagDialogs {
           text: text,
           textAlign: alignLeft ? TextAlign.start : TextAlign.center,
         ),
+        if (onSettings != null) ...[
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: const Icon(Icons.tune_rounded, size: 20),
+              tooltip: 'Quick Add Settings',
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                onSettings();
+              },
+              style: IconButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
+            ),
+          ),
+        ],
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );

@@ -4119,6 +4119,301 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  /// Show just the Radarr quick add settings in a bottom sheet
+  void _showRadarrQuickAddSettings() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final profiles = await radarrState.api!.qualityProfile.getAll();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setState(() {
+                              _radarrQualityProfileId = profile.id;
+                              _radarrQualityProfileName = profile.name;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                                .update(profile.id);
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                                .update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final folders = await radarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setState(() {
+                              _radarrRootFolder = folder.path;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                                .update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setState(() {
+                    _radarrSearchForMissing = value;
+                  });
+                  setModalState(() {});
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                      .update(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show just the Sonarr quick add settings in a bottom sheet
+  void _showSonarrQuickAddSettings() {
+    final currentMonitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
+
+    final currentSeriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Quick Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.high_quality),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final sonarrState = context.read<SonarrState>();
+                  final profiles = await sonarrState.api!.profile.getQualityProfiles();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setState(() {
+                              _sonarrQualityProfileId = profile.id;
+                              _sonarrQualityProfileName = profile.name;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                                .update(profile.id);
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                                .update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_sonarrRootFolder ?? 'Not selected'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final sonarrState = context.read<SonarrState>();
+                  final folders = await sonarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setState(() {
+                              _sonarrRootFolder = folder.path;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+                                .update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.monitor),
+                title: const Text('Monitor Type'),
+                subtitle: Text(currentMonitorType.zagName),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: SonarrSeriesMonitorType.values.length,
+                      itemBuilder: (context, index) {
+                        final type = SonarrSeriesMonitorType.values[index];
+                        return ListTile(
+                          title: Text(type.zagName),
+                          onTap: () {
+                            setState(() {
+                              _sonarrMonitorType = type.value;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE
+                                .update(type.value);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.tv),
+                title: const Text('Series Type'),
+                subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'Standard'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: SonarrSeriesType.values.length,
+                      itemBuilder: (context, index) {
+                        final type = SonarrSeriesType.values[index];
+                        return ListTile(
+                          title: Text(type.value?.toUpperCase() ?? 'Unknown'),
+                          onTap: () {
+                            setState(() {
+                              _sonarrSeriesType = type.value;
+                            });
+                            setModalState(() {});
+                            ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE
+                                .update(type.value);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.search),
+                title: const Text('Start search for missing'),
+                value: _sonarrSearchForMissing,
+                onChanged: (value) {
+                  setState(() {
+                    _sonarrSearchForMissing = value;
+                  });
+                  setModalState(() {});
+                  ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING
+                      .update(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSonarrSettings() {
     // Helper to get monitor type enum from string
     final currentMonitorType =
@@ -6288,6 +6583,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       title,
       overview,
       onAdd: () => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6309,6 +6605,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       title,
       overview,
       onAdd: () => _openTVShowInSonarr(tmdbId: tmdbId, title: title),
+      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6323,6 +6620,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6337,6 +6635,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6351,6 +6650,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6365,6 +6665,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6379,6 +6680,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
     );
   }
@@ -6393,6 +6695,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
     );
   }
