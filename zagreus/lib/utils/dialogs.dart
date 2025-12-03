@@ -420,69 +420,74 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                 ),
               ),
               const SizedBox(height: 8),
-              // Quality Profile row
-              InkWell(
-                onTap: _showQualityProfilePicker,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                    borderRadius: BorderRadius.circular(8),
+              // Quality Profile and Series Type row
+              Row(
+                children: [
+                  // Quality Profile (left half, or full width if no series types)
+                  Expanded(
+                    child: InkWell(
+                      onTap: _showQualityProfilePicker,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.high_quality_outlined, size: 18, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _qualityProfile ?? 'Quality',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: _qualityProfile != null ? null : Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.high_quality_outlined, size: 18, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _qualityProfile ?? 'Select Quality Profile',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: _qualityProfile != null ? null : Colors.grey,
-                            fontSize: 13,
+                  // Series Type (right half, only for Sonarr)
+                  if (widget.seriesTypes != null && widget.seriesTypes!.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: InkWell(
+                        onTap: _showSeriesTypePicker,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.category_outlined, size: 18, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _seriesType ?? 'Type',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: _seriesType != null ? null : Colors.grey,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      Icon(Icons.chevron_right, size: 18, color: Colors.grey),
-                    ],
-                  ),
-                ),
+                    ),
+                  ],
+                ],
               ),
-              // Series Type row (only for Sonarr)
-              if (widget.seriesTypes != null && widget.seriesTypes!.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: _showSeriesTypePicker,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.category_outlined, size: 18, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _seriesType ?? 'Select Series Type',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: _seriesType != null ? null : Colors.grey,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.chevron_right, size: 18, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ] else if (widget.onSettings != null) ...[
               const SizedBox(height: 16),
               Align(
