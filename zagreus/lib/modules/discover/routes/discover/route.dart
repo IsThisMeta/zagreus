@@ -5324,6 +5324,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Could navigate to a detail view or add to Radarr
           _handlePopularMovieTap(movie);
         },
+        onLongPress: () => _showMoviePreview(movie),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -5558,6 +5559,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Could navigate to a detail view or add to Radarr
           _handleRecentlyReleasedMovieTap(movie);
         },
+        onLongPress: () => _showMoviePreview(movie),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -5794,6 +5796,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Could navigate to a detail view or add to Sonarr
           _handlePopularTVShowTap(show);
         },
+        onLongPress: () => _showTVShowPreview(show),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -6034,6 +6037,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Could navigate to a detail view or add to Sonarr
           _handleTrendingNewTVShowTap(show);
         },
+        onLongPress: () => _showTVShowPreview(show),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -6256,6 +6260,132 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         type: ZagSnackbarType.ERROR,
       );
     }
+  }
+
+  /// Show movie preview with Add button on long press (for non-library items)
+  Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
+    final bool inLibrary = movie['inLibrary'] ?? false;
+    if (inLibrary) return; // Don't show for items already in library
+
+    final title = movie['title'] as String? ?? 'Movie';
+    final overview = movie['overview'] as String? ?? 'No overview available.';
+    final tmdbId = movie['tmdbId'] as int?;
+
+    if (tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      title,
+      overview,
+      onAdd: () => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show TV show preview with Add button on long press (for non-library items)
+  Future<void> _showTVShowPreview(Map<String, dynamic> show) async {
+    final bool inLibrary = show['inLibrary'] ?? false;
+    if (inLibrary) return; // Don't show for items already in library
+
+    final title = show['title'] as String? ?? show['name'] as String? ?? 'TV Show';
+    final overview = show['overview'] as String? ?? 'No overview available.';
+    final tmdbId = show['tmdbId'] as int?;
+
+    if (tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      title,
+      overview,
+      onAdd: () => _openTVShowInSonarr(tmdbId: tmdbId, title: title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed MagicMovie with Add button
+  Future<void> _showMagicMoviePreview(MagicMovie movie) async {
+    if (movie.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      movie.title,
+      movie.reason,
+      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed DeepCutMovie with Add button
+  Future<void> _showDeepCutMoviePreview(DeepCutMovie movie) async {
+    if (movie.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      movie.title,
+      movie.reason,
+      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed MagicShow with Add button
+  Future<void> _showMagicShowPreview(MagicShow show) async {
+    if (show.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      show.title,
+      show.reason,
+      onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed UpNextShow with Add button
+  Future<void> _showUpNextShowPreview(UpNextShow show) async {
+    if (show.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      show.title,
+      show.reason,
+      onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed MagicMovieCastCrew with Add button
+  Future<void> _showMagicMovieCastCrewPreview(MagicMovieCastCrew movie) async {
+    if (movie.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      movie.title,
+      movie.reason,
+      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      alignLeft: true,
+    );
+  }
+
+  /// Show preview for typed MagicShowCastCrew with Add button
+  Future<void> _showMagicShowCastCrewPreview(MagicShowCastCrew show) async {
+    if (show.tmdbId == null) return;
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      show.title,
+      show.reason,
+      onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
+      alignLeft: true,
+    );
   }
 
   Future<void> _showRadarrMovieActions(RadarrMovie movie) async {
@@ -6535,6 +6665,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         onTap: () {
           _handleMostAnticipatedShowTap(show);
         },
+        onLongPress: () => _showTVShowPreview(show),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -6758,6 +6889,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         onTap: () {
           _handleMostAnticipatedMovieTap(movie);
         },
+        onLongPress: () => _showMoviePreview(movie),
         child: Container(
           width: _posterWidth,
           child: Column(
@@ -7213,6 +7345,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             }
           }
         },
+        onLongPress: () => _showDeepCutMoviePreview(movie),
         child: Container(
           width: 160,
           child: Column(
@@ -7526,6 +7659,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             }
           }
         },
+        onLongPress: () => _showUpNextShowPreview(show),
         child: Container(
           width: 160,
           child: Column(
@@ -7687,22 +7821,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _buildMagicMovieCard(MagicMovie movie) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
-      child: Container(
-        width: 160,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ZagColours.purple.withOpacity(0.2),
-                image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+      child: GestureDetector(
+        onTap: () async {
+          if (movie.tmdbId != null) {
+            await _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title);
+          }
+        },
+        onLongPress: () => _showMagicMoviePreview(movie),
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
-          ],
+              const SizedBox(height: 8),
+              Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
@@ -7778,22 +7920,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _buildMagicMovieCastCrewCard(MagicMovieCastCrew movie) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
-      child: Container(
-        width: 160,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ZagColours.purple.withOpacity(0.2),
-                image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+      child: GestureDetector(
+        onTap: () async {
+          if (movie.tmdbId != null) {
+            await _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title);
+          }
+        },
+        onLongPress: () => _showMagicMovieCastCrewPreview(movie),
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
-          ],
+              const SizedBox(height: 8),
+              Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
@@ -7869,22 +8019,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _buildMagicShowCard(MagicShow show) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
-      child: Container(
-        width: 160,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ZagColours.purple.withOpacity(0.2),
-                image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+      child: GestureDetector(
+        onTap: () async {
+          if (show.tmdbId != null) {
+            await _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title);
+          }
+        },
+        onLongPress: () => _showMagicShowPreview(show),
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
-          ],
+              const SizedBox(height: 8),
+              Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
@@ -7960,22 +8118,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _buildMagicShowCastCrewCard(MagicShowCastCrew show) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
-      child: Container(
-        width: 160,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ZagColours.purple.withOpacity(0.2),
-                image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+      child: GestureDetector(
+        onTap: () async {
+          if (show.tmdbId != null) {
+            await _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title);
+          }
+        },
+        onLongPress: () => _showMagicShowCastCrewPreview(show),
+        child: Container(
+          width: 160,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: ZagColours.purple.withOpacity(0.2),
+                  image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
-          ],
+              const SizedBox(height: 8),
+              Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
