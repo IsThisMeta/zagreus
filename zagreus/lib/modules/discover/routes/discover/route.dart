@@ -6566,6 +6566,60 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  // Helper to get Radarr inline options for quick add
+  Future<List<String>> _getRadarrRootFolders() async {
+    final radarrState = context.read<RadarrState>();
+    final folders = await radarrState.rootFolders;
+    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+  }
+
+  Future<List<({int id, String name})>> _getRadarrQualityProfiles() async {
+    final radarrState = context.read<RadarrState>();
+    final profiles = await radarrState.api!.qualityProfile.getAll();
+    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+  }
+
+  void _onRadarrRootFolderChanged(String path) {
+    setState(() => _radarrRootFolder = path);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(path);
+  }
+
+  void _onRadarrQualityProfileChanged(int id, String name) {
+    setState(() {
+      _radarrQualityProfileId = id;
+      _radarrQualityProfileName = name;
+    });
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(id);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(name);
+  }
+
+  // Helper to get Sonarr inline options for quick add
+  Future<List<String>> _getSonarrRootFolders() async {
+    final sonarrState = context.read<SonarrState>();
+    final folders = await sonarrState.rootFolders;
+    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+  }
+
+  Future<List<({int id, String name})>> _getSonarrQualityProfiles() async {
+    final sonarrState = context.read<SonarrState>();
+    final profiles = await sonarrState.api!.profile.getQualityProfiles();
+    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+  }
+
+  void _onSonarrRootFolderChanged(String path) {
+    setState(() => _sonarrRootFolder = path);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(path);
+  }
+
+  void _onSonarrQualityProfileChanged(int id, String name) {
+    setState(() {
+      _sonarrQualityProfileId = id;
+      _sonarrQualityProfileName = name;
+    });
+    ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(id);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(name);
+  }
+
   /// Show movie preview with Add button on long press (for non-library items)
   Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
@@ -6583,8 +6637,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       title,
       overview,
       onAdd: () => _openMovieInRadarr(tmdbId: tmdbId, title: title),
-      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
     );
   }
 
@@ -6605,8 +6664,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       title,
       overview,
       onAdd: () => _openTVShowInSonarr(tmdbId: tmdbId, title: title),
-      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _sonarrRootFolder,
+      qualityProfileValue: _sonarrQualityProfileName,
+      getRootFolders: _getSonarrRootFolders,
+      getQualityProfiles: _getSonarrQualityProfiles,
+      onRootFolderChanged: _onSonarrRootFolderChanged,
+      onQualityProfileChanged: _onSonarrQualityProfileChanged,
     );
   }
 
@@ -6620,8 +6684,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
-      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
     );
   }
 
@@ -6635,8 +6704,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
-      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
     );
   }
 
@@ -6650,8 +6724,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
-      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _sonarrRootFolder,
+      qualityProfileValue: _sonarrQualityProfileName,
+      getRootFolders: _getSonarrRootFolders,
+      getQualityProfiles: _getSonarrQualityProfiles,
+      onRootFolderChanged: _onSonarrRootFolderChanged,
+      onQualityProfileChanged: _onSonarrQualityProfileChanged,
     );
   }
 
@@ -6665,8 +6744,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
-      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _sonarrRootFolder,
+      qualityProfileValue: _sonarrQualityProfileName,
+      getRootFolders: _getSonarrRootFolders,
+      getQualityProfiles: _getSonarrQualityProfiles,
+      onRootFolderChanged: _onSonarrRootFolderChanged,
+      onQualityProfileChanged: _onSonarrQualityProfileChanged,
     );
   }
 
@@ -6680,8 +6764,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       movie.title,
       movie.reason,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
-      onSettings: _showRadarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
     );
   }
 
@@ -6695,8 +6784,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       show.title,
       show.reason,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
-      onSettings: _showSonarrQuickAddSettings,
       alignLeft: true,
+      rootFolderValue: _sonarrRootFolder,
+      qualityProfileValue: _sonarrQualityProfileName,
+      getRootFolders: _getSonarrRootFolders,
+      getQualityProfiles: _getSonarrQualityProfiles,
+      onRootFolderChanged: _onSonarrRootFolderChanged,
+      onQualityProfileChanged: _onSonarrQualityProfileChanged,
     );
   }
 

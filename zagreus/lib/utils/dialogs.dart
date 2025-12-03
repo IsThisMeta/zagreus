@@ -93,43 +93,33 @@ class ZagDialogs {
       BuildContext context, String? dialogTitle, String text,
       {required VoidCallback onAdd,
       VoidCallback? onSettings,
-      bool alignLeft = false}) async {
-    await ZagDialog.dialog(
+      bool alignLeft = false,
+      // Inline quick add options
+      String? rootFolderValue,
+      String? qualityProfileValue,
+      Future<List<String>> Function()? getRootFolders,
+      Future<List<({int id, String name})>> Function()? getQualityProfiles,
+      void Function(String path)? onRootFolderChanged,
+      void Function(int id, String name)? onQualityProfileChanged,
+      }) async {
+    final hasInlineOptions = getRootFolders != null && getQualityProfiles != null;
+    
+    await showDialog(
       context: context,
-      title: dialogTitle,
-      cancelButtonText: 'Close',
-      buttons: [
-        ZagDialog.button(
-            text: 'Add',
-            onPressed: () {
-              Navigator.of(context, rootNavigator: true).pop();
-              onAdd();
-            }),
-      ],
-      content: [
-        ZagDialog.textContent(
-          text: text,
-          textAlign: alignLeft ? TextAlign.start : TextAlign.center,
-        ),
-        if (onSettings != null) ...[
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: const Icon(Icons.tune_rounded, size: 20),
-              tooltip: 'Quick Add Settings',
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                onSettings();
-              },
-              style: IconButton.styleFrom(
-                foregroundColor: Colors.grey,
-              ),
-            ),
-          ),
-        ],
-      ],
-      contentPadding: ZagDialog.textDialogContentPadding(),
+      builder: (dialogContext) => _QuickAddDialog(
+        title: dialogTitle,
+        text: text,
+        alignLeft: alignLeft,
+        onAdd: onAdd,
+        onSettings: onSettings,
+        hasInlineOptions: hasInlineOptions,
+        rootFolderValue: rootFolderValue,
+        qualityProfileValue: qualityProfileValue,
+        getRootFolders: getRootFolders,
+        getQualityProfiles: getQualityProfiles,
+        onRootFolderChanged: onRootFolderChanged,
+        onQualityProfileChanged: onQualityProfileChanged,
+      ),
     );
   }
 
@@ -244,5 +234,218 @@ class ZagDialogs {
     );
 
     return module;
+  }
+}
+
+class _QuickAddDialog extends StatefulWidget {
+  final String? title;
+  final String text;
+  final bool alignLeft;
+  final VoidCallback onAdd;
+  final VoidCallback? onSettings;
+  final bool hasInlineOptions;
+  final String? rootFolderValue;
+  final String? qualityProfileValue;
+  final Future<List<String>> Function()? getRootFolders;
+  final Future<List<({int id, String name})>> Function()? getQualityProfiles;
+  final void Function(String path)? onRootFolderChanged;
+  final void Function(int id, String name)? onQualityProfileChanged;
+
+  const _QuickAddDialog({
+    this.title,
+    required this.text,
+    this.alignLeft = false,
+    required this.onAdd,
+    this.onSettings,
+    this.hasInlineOptions = false,
+    this.rootFolderValue,
+    this.qualityProfileValue,
+    this.getRootFolders,
+    this.getQualityProfiles,
+    this.onRootFolderChanged,
+    this.onQualityProfileChanged,
+  });
+
+  @override
+  State<_QuickAddDialog> createState() => _QuickAddDialogState();
+}
+
+class _QuickAddDialogState extends State<_QuickAddDialog> {
+  String? _rootFolder;
+  String? _qualityProfile;
+
+  @override
+  void initState() {
+    super.initState();
+    _rootFolder = widget.rootFolderValue;
+    _qualityProfile = widget.qualityProfileValue;
+  }
+
+  void _showRootFolderPicker() async {
+    if (widget.getRootFolders == null) return;
+    
+    final folders = await widget.getRootFolders!();
+    if (!mounted || folders.isEmpty) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: folders.length,
+        itemBuilder: (ctx, index) {
+          final folder = folders[index];
+          return ListTile(
+            title: Text(
+              folder,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            onTap: () {
+              setState(() => _rootFolder = folder);
+              widget.onRootFolderChanged?.call(folder);
+              Navigator.pop(ctx);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showQualityProfilePicker() async {
+    if (widget.getQualityProfiles == null) return;
+    
+    final profiles = await widget.getQualityProfiles!();
+    if (!mounted || profiles.isEmpty) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: profiles.length,
+        itemBuilder: (ctx, index) {
+          final profile = profiles[index];
+          return ListTile(
+            title: Text(profile.name),
+            onTap: () {
+              setState(() => _qualityProfile = profile.name);
+              widget.onQualityProfileChanged?.call(profile.id, profile.name);
+              Navigator.pop(ctx);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: widget.title != null ? Text(widget.title!) : null,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: widget.alignLeft ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Text(
+              widget.text,
+              textAlign: widget.alignLeft ? TextAlign.start : TextAlign.center,
+            ),
+            if (widget.hasInlineOptions) ...[
+              const SizedBox(height: 16),
+              // Root Folder row
+              InkWell(
+                onTap: _showRootFolderPicker,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.folder_outlined, size: 18, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _rootFolder ?? 'Select Root Folder',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _rootFolder != null ? null : Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Quality Profile row
+              InkWell(
+                onTap: _showQualityProfilePicker,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.high_quality_outlined, size: 18, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _qualityProfile ?? 'Select Quality Profile',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: _qualityProfile != null ? null : Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            ] else if (widget.onSettings != null) ...[
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.tune_rounded, size: 20),
+                  tooltip: 'Quick Add Settings',
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    widget.onSettings!();
+                  },
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+          child: const Text('Close'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context, rootNavigator: true).pop();
+            widget.onAdd();
+          },
+          child: const Text('Add'),
+        ),
+      ],
+    );
   }
 }
