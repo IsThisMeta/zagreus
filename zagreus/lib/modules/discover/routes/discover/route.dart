@@ -4849,6 +4849,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final item = items[index];
                 return GestureDetector(
                   onTap: () => _handleHeroTap(item),
+                  onLongPress: item['inLibrary'] != true
+                      ? () {
+                          if (isMovieTab) {
+                            _showMoviePreview(item);
+                          } else {
+                            _showTVShowPreview(item);
+                          }
+                        }
+                      : null,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -8548,8 +8557,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             );
           }
         },
-        onLongPress:
-            movie.id != null ? () => _showRadarrMovieActions(movie) : null,
+        onLongPress: movie.id != null
+            ? () => _showRadarrMovieActions(movie)
+            : (movie.tmdbId != null
+                ? () => _showMoviePreview({
+                      'title': movie.title ?? '',
+                      'overview': movie.overview ?? '',
+                      'tmdbId': movie.tmdbId,
+                      'inLibrary': false,
+                    })
+                : null),
         child: Container(
           width: _posterWidth,
           child: Column(
