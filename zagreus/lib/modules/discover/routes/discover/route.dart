@@ -224,6 +224,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String? _sonarrSeriesType;
   bool _sonarrSearchForMissing = true;
   bool _sonarrSearchForCutoffUnmet = false;
+  Set<int> _sonarrSelectedSeasons = {};
 
   // Z Assistant user selection
   List<_UserOption> _availableUsers = [];
@@ -6629,6 +6630,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return ['Standard', 'Daily', 'Anime'];
   }
 
+  /// Fetch seasons for a TV show via Sonarr lookup by TMDB ID
+  Future<List<({int seasonNumber, int episodeCount})>> _getSonarrSeasons(int tmdbId) async {
+    try {
+      final sonarrState = context.read<SonarrState>();
+      if (!sonarrState.enabled || sonarrState.api == null) return [];
+      
+      final results = await sonarrState.api!.seriesLookup.get(term: 'tmdb:$tmdbId');
+      if (results.isEmpty) return [];
+      
+      final series = results.first;
+      if (series.seasons == null || series.seasons!.isEmpty) return [];
+      
+      return series.seasons!.map((s) => (
+        seasonNumber: s.seasonNumber ?? 0,
+        episodeCount: s.statistics?.totalEpisodeCount ?? s.statistics?.episodeCount ?? 0,
+      )).toList();
+    } catch (e) {
+      ZagLogger().debug('Failed to fetch seasons: $e');
+      return [];
+    }
+  }
+
+  void _onSonarrSeasonsChanged(Set<int> seasons) {
+    _sonarrSelectedSeasons = seasons;
+  }
+
   /// Show movie preview with Add button on long press (for non-library items)
   Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
@@ -6668,6 +6695,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (tmdbId == null) return;
 
     HapticFeedback.lightImpact();
+    
+    // Fetch seasons in parallel with showing dialog
+    final seasonsFuture = _getSonarrSeasons(tmdbId);
+    final seasons = await seasonsFuture;
+    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    
+    if (!mounted) return;
+    
     await ZagDialogs().textPreviewWithAdd(
       context,
       title,
@@ -6683,6 +6718,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
       onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
+      seasons: seasons,
+      selectedSeasons: _sonarrSelectedSeasons,
+      onSeasonsChanged: _onSonarrSeasonsChanged,
     );
   }
 
@@ -6731,6 +6769,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (show.tmdbId == null) return;
 
     HapticFeedback.lightImpact();
+    
+    final seasons = await _getSonarrSeasons(show.tmdbId!);
+    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    
+    if (!mounted) return;
+    
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
@@ -6746,6 +6790,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
       onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
+      seasons: seasons,
+      selectedSeasons: _sonarrSelectedSeasons,
+      onSeasonsChanged: _onSonarrSeasonsChanged,
     );
   }
 
@@ -6754,6 +6801,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (show.tmdbId == null) return;
 
     HapticFeedback.lightImpact();
+    
+    final seasons = await _getSonarrSeasons(show.tmdbId!);
+    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    
+    if (!mounted) return;
+    
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
@@ -6769,6 +6822,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
       onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
+      seasons: seasons,
+      selectedSeasons: _sonarrSelectedSeasons,
+      onSeasonsChanged: _onSonarrSeasonsChanged,
     );
   }
 

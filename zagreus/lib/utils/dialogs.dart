@@ -104,6 +104,10 @@ class ZagDialogs {
       void Function(String path)? onRootFolderChanged,
       void Function(int id, String name)? onQualityProfileChanged,
       void Function(String type)? onSeriesTypeChanged,
+      // Seasons support (Sonarr)
+      List<({int seasonNumber, int episodeCount})>? seasons,
+      Set<int>? selectedSeasons,
+      void Function(Set<int> seasons)? onSeasonsChanged,
       }) async {
     final hasInlineOptions = getRootFolders != null && getQualityProfiles != null;
     
@@ -125,6 +129,9 @@ class ZagDialogs {
         onRootFolderChanged: onRootFolderChanged,
         onQualityProfileChanged: onQualityProfileChanged,
         onSeriesTypeChanged: onSeriesTypeChanged,
+        seasons: seasons,
+        selectedSeasons: selectedSeasons,
+        onSeasonsChanged: onSeasonsChanged,
       ),
     );
   }
@@ -259,6 +266,10 @@ class _QuickAddDialog extends StatefulWidget {
   final void Function(String path)? onRootFolderChanged;
   final void Function(int id, String name)? onQualityProfileChanged;
   final void Function(String type)? onSeriesTypeChanged;
+  // Seasons support
+  final List<({int seasonNumber, int episodeCount})>? seasons;
+  final Set<int>? selectedSeasons;
+  final void Function(Set<int> seasons)? onSeasonsChanged;
 
   const _QuickAddDialog({
     this.title,
@@ -276,6 +287,9 @@ class _QuickAddDialog extends StatefulWidget {
     this.onRootFolderChanged,
     this.onQualityProfileChanged,
     this.onSeriesTypeChanged,
+    this.seasons,
+    this.selectedSeasons,
+    this.onSeasonsChanged,
   });
 
   @override
@@ -286,6 +300,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
   String? _rootFolder;
   String? _qualityProfile;
   String? _seriesType;
+  late Set<int> _selectedSeasons;
 
   @override
   void initState() {
@@ -293,6 +308,8 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
     _rootFolder = widget.rootFolderValue;
     _qualityProfile = widget.qualityProfileValue;
     _seriesType = widget.seriesTypeValue;
+    _selectedSeasons = widget.selectedSeasons ?? 
+        (widget.seasons?.map((s) => s.seasonNumber).toSet() ?? {});
   }
 
   void _showRootFolderPicker() async {
@@ -368,6 +385,87 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
               widget.onSeriesTypeChanged?.call(type);
               Navigator.pop(ctx);
             },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSeasonPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final allSelected = _selectedSeasons.length == widget.seasons!.length;
+          return DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.3,
+            maxChildSize: 0.8,
+            expand: false,
+            builder: (ctx, scrollController) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Select Seasons',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          setSheetState(() {
+                            if (allSelected) {
+                              _selectedSeasons.clear();
+                            } else {
+                              _selectedSeasons = widget.seasons!.map((s) => s.seasonNumber).toSet();
+                            }
+                          });
+                          setState(() {});
+                          widget.onSeasonsChanged?.call(_selectedSeasons);
+                        },
+                        child: Text(allSelected ? 'Deselect All' : 'Select All'),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: widget.seasons!.length,
+                    itemBuilder: (ctx, index) {
+                      final season = widget.seasons![index];
+                      final isSelected = _selectedSeasons.contains(season.seasonNumber);
+                      final seasonLabel = season.seasonNumber == 0 
+                          ? 'Specials' 
+                          : 'Season ${season.seasonNumber}';
+                      return CheckboxListTile(
+                        value: isSelected,
+                        title: Text(seasonLabel),
+                        subtitle: Text(
+                          '${season.episodeCount} episode${season.episodeCount == 1 ? '' : 's'}',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        ),
+                        onChanged: (val) {
+                          setSheetState(() {
+                            if (val == true) {
+                              _selectedSeasons.add(season.seasonNumber);
+                            } else {
+                              _selectedSeasons.remove(season.seasonNumber);
+                            }
+                          });
+                          setState(() {});
+                          widget.onSeasonsChanged?.call(_selectedSeasons);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -488,6 +586,40 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                   ],
                 ],
               ),
+              // Seasons selector (only for Sonarr)
+              if (widget.seasons != null && widget.seasons!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _showSeasonPicker,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.format_list_numbered_rounded, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Seasons',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${_selectedSeasons.length} selected',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ] else if (widget.onSettings != null) ...[
               const SizedBox(height: 16),
               Align(
