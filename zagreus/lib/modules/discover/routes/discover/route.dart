@@ -291,6 +291,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _syncMagicMoviesCastCrewIfNeeded();
     _syncMagicShowsIfNeeded();
     _syncMagicShowsCastCrewIfNeeded();
+    // Listen for instance context changes (e.g. from add pages)
+    ZagInstanceContext().addListener(_onInstanceContextChanged);
   }
 
   void _refreshQuickSetupModal() {
@@ -435,6 +437,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   @override
   void dispose() {
+    ZagInstanceContext().removeListener(_onInstanceContextChanged);
     _autoScrollTimer?.cancel();
     for (final controller in _sectionScrollControllers.values) {
       controller.dispose();
@@ -443,6 +446,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _tvHeroPageController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onInstanceContextChanged() {
+    // Reload instance-specific data when the global context changes
+    _loadRecentlyDownloaded();
+    _loadRecentlyDownloadedShows();
+    _loadRecommendedMovies();
+    _loadMissingMovies();
+    _loadDownloadingSoon();
+    _syncDeepCutsIfNeeded();
+    _syncUpNextIfNeeded();
+    _syncMagicMoviesIfNeeded();
+    _syncMagicMoviesCastCrewIfNeeded();
+    _syncMagicShowsIfNeeded();
+    _syncMagicShowsCastCrewIfNeeded();
+    if (mounted) setState(() {});
   }
 
   ScrollController _sectionScrollController(String key) {

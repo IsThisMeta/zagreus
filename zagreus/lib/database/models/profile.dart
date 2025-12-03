@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:zagreus/database/box.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
@@ -8,7 +9,7 @@ part 'profile.g.dart';
 
 /// Tracks which shadow profile (instance) is active for each module.
 /// When null, the main profile is used.
-class ZagInstanceContext {
+class ZagInstanceContext extends ChangeNotifier {
   static final ZagInstanceContext _instance = ZagInstanceContext._();
   factory ZagInstanceContext() => _instance;
   ZagInstanceContext._();
@@ -22,16 +23,19 @@ class ZagInstanceContext {
   /// Set the active instance for a module
   void setActiveInstance(String moduleKey, String? instanceKey) {
     _activeInstances[moduleKey] = instanceKey;
+    notifyListeners();
   }
 
   /// Clear the active instance for a module (revert to main)
   void clearActiveInstance(String moduleKey) {
     _activeInstances.remove(moduleKey);
+    notifyListeners();
   }
 
   /// Clear all active instances
   void clearAll() {
     _activeInstances.clear();
+    notifyListeners();
   }
 }
 
