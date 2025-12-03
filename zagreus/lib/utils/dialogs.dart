@@ -97,10 +97,13 @@ class ZagDialogs {
       // Inline quick add options
       String? rootFolderValue,
       String? qualityProfileValue,
+      String? seriesTypeValue,
       Future<List<String>> Function()? getRootFolders,
       Future<List<({int id, String name})>> Function()? getQualityProfiles,
+      List<String>? seriesTypes,
       void Function(String path)? onRootFolderChanged,
       void Function(int id, String name)? onQualityProfileChanged,
+      void Function(String type)? onSeriesTypeChanged,
       }) async {
     final hasInlineOptions = getRootFolders != null && getQualityProfiles != null;
     
@@ -115,10 +118,13 @@ class ZagDialogs {
         hasInlineOptions: hasInlineOptions,
         rootFolderValue: rootFolderValue,
         qualityProfileValue: qualityProfileValue,
+        seriesTypeValue: seriesTypeValue,
         getRootFolders: getRootFolders,
         getQualityProfiles: getQualityProfiles,
+        seriesTypes: seriesTypes,
         onRootFolderChanged: onRootFolderChanged,
         onQualityProfileChanged: onQualityProfileChanged,
+        onSeriesTypeChanged: onSeriesTypeChanged,
       ),
     );
   }
@@ -246,10 +252,13 @@ class _QuickAddDialog extends StatefulWidget {
   final bool hasInlineOptions;
   final String? rootFolderValue;
   final String? qualityProfileValue;
+  final String? seriesTypeValue;
   final Future<List<String>> Function()? getRootFolders;
   final Future<List<({int id, String name})>> Function()? getQualityProfiles;
+  final List<String>? seriesTypes;
   final void Function(String path)? onRootFolderChanged;
   final void Function(int id, String name)? onQualityProfileChanged;
+  final void Function(String type)? onSeriesTypeChanged;
 
   const _QuickAddDialog({
     this.title,
@@ -260,10 +269,13 @@ class _QuickAddDialog extends StatefulWidget {
     this.hasInlineOptions = false,
     this.rootFolderValue,
     this.qualityProfileValue,
+    this.seriesTypeValue,
     this.getRootFolders,
     this.getQualityProfiles,
+    this.seriesTypes,
     this.onRootFolderChanged,
     this.onQualityProfileChanged,
+    this.onSeriesTypeChanged,
   });
 
   @override
@@ -273,12 +285,14 @@ class _QuickAddDialog extends StatefulWidget {
 class _QuickAddDialogState extends State<_QuickAddDialog> {
   String? _rootFolder;
   String? _qualityProfile;
+  String? _seriesType;
 
   @override
   void initState() {
     super.initState();
     _rootFolder = widget.rootFolderValue;
     _qualityProfile = widget.qualityProfileValue;
+    _seriesType = widget.seriesTypeValue;
   }
 
   void _showRootFolderPicker() async {
@@ -329,6 +343,29 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
             onTap: () {
               setState(() => _qualityProfile = profile.name);
               widget.onQualityProfileChanged?.call(profile.id, profile.name);
+              Navigator.pop(ctx);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSeriesTypePicker() {
+    if (widget.seriesTypes == null || widget.seriesTypes!.isEmpty) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: widget.seriesTypes!.length,
+        itemBuilder: (ctx, index) {
+          final type = widget.seriesTypes![index];
+          return ListTile(
+            title: Text(type),
+            onTap: () {
+              setState(() => _seriesType = type);
+              widget.onSeriesTypeChanged?.call(type);
               Navigator.pop(ctx);
             },
           );
@@ -413,6 +450,39 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                   ),
                 ),
               ),
+              // Series Type row (only for Sonarr)
+              if (widget.seriesTypes != null && widget.seriesTypes!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _showSeriesTypePicker,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.category_outlined, size: 18, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _seriesType ?? 'Select Series Type',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: _seriesType != null ? null : Colors.grey,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ] else if (widget.onSettings != null) ...[
               const SizedBox(height: 16),
               Align(

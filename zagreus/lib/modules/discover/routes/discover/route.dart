@@ -6620,6 +6620,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(name);
   }
 
+  void _onSonarrSeriesTypeChanged(String type) {
+    setState(() => _sonarrSeriesType = type);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type);
+  }
+
+  List<String> _getSonarrSeriesTypes() {
+    return ['Standard', 'Daily', 'Anime'];
+  }
+
   /// Show movie preview with Add button on long press (for non-library items)
   Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
@@ -6667,10 +6676,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
+      seriesTypeValue: _sonarrSeriesType,
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
+      seriesTypes: _getSonarrSeriesTypes(),
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
+      onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
     );
   }
 
@@ -6727,10 +6739,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
+      seriesTypeValue: _sonarrSeriesType,
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
+      seriesTypes: _getSonarrSeriesTypes(),
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
+      onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
     );
   }
 
@@ -6747,10 +6762,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
+      seriesTypeValue: _sonarrSeriesType,
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
+      seriesTypes: _getSonarrSeriesTypes(),
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
+      onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
     );
   }
 
@@ -6787,10 +6805,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
+      seriesTypeValue: _sonarrSeriesType,
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
+      seriesTypes: _getSonarrSeriesTypes(),
       onRootFolderChanged: _onSonarrRootFolderChanged,
       onQualityProfileChanged: _onSonarrQualityProfileChanged,
+      onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
     );
   }
 
