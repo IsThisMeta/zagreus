@@ -70,15 +70,16 @@ class _State extends State<OverseerrRoute> {
   }
 
   Widget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold(
-      [],
-      (value, element) {
-        if (ZagBox.profiles.read(element)?.overseerrEnabled ?? false) {
-          value.add(element);
-        }
-        return value;
-      },
-    );
+    // Get current profile and its overseerr instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'overseerr');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.overseerrEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
     
     final instanceName = ZagProfile.getActiveInstanceName('overseerr');
     final title = instanceName != null 
@@ -92,6 +93,16 @@ class _State extends State<OverseerrRoute> {
       profiles: profiles,
       pageController: _pageController,
       scrollControllers: OverseerrNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('overseerr', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('overseerr');
+        }
+        setState(() {});
+        context.read<OverseerrState>().reset();
+      },
     );
   }
 

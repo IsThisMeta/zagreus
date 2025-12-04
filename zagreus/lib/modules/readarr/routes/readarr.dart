@@ -104,11 +104,17 @@ class _State extends State<ReadarrRoute> {
   }
 
   Widget _appBar() {
-    const db = ZagBox.profiles;
-    final profiles = db.keys.fold<List<String>>([], (arr, key) {
-      if (ZagBox.profiles.read(key)?.readarrEnabled ?? false) arr.add(key);
-      return arr;
-    });
+    // Get current profile and its readarr instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'readarr');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.readarrEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (ZagProfile.current.readarrEnabled)
       actions = [
@@ -134,6 +140,16 @@ class _State extends State<ReadarrRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: ReadarrNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('readarr', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('readarr');
+        }
+        setState(() {});
+        context.read<ReadarrState>().reset();
+      },
     );
   }
 

@@ -76,15 +76,16 @@ class _State extends State<RadarrRoute> {
   }
 
   Widget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold(
-      [],
-      (value, element) {
-        if (ZagBox.profiles.read(element)?.radarrEnabled ?? false) {
-          value.add(element);
-        }
-        return value;
-      },
-    );
+    // Get current profile and its radarr instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.radarrEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
     
     List<Widget>? actions;
     if (context.watch<RadarrState>().enabled) {
@@ -117,6 +118,21 @@ class _State extends State<RadarrRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: RadarrNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        // Handle instance switching
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          // Shadow instance selected
+          ZagInstanceContext().setActiveInstance('radarr', selected);
+        } else {
+          // Main profile selected - clear instance
+          ZagInstanceContext().clearActiveInstance('radarr');
+        }
+        // Refresh the page
+        setState(() {});
+        // Reinitialize the Radarr state with the new profile
+        context.read<RadarrState>().reset();
+      },
     );
   }
 

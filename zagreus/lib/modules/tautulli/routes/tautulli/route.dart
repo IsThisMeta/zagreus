@@ -66,11 +66,17 @@ class _State extends State<TautulliRoute> {
   }
 
   PreferredSizeWidget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold([], (value, element) {
-      if (ZagBox.profiles.read(element)?.tautulliEnabled ?? false)
-        value.add(element);
-      return value;
-    });
+    // Get current profile and its tautulli instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'tautulli');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.tautulliEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (context.watch<TautulliState>().enabled)
       actions = [
@@ -89,6 +95,16 @@ class _State extends State<TautulliRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: TautulliNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('tautulli', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('tautulli');
+        }
+        setState(() {});
+        context.read<TautulliState>().reset();
+      },
     );
   }
 

@@ -112,11 +112,17 @@ class _State extends State<LidarrRoute> {
   }
 
   Widget _appBar() {
-    const db = ZagBox.profiles;
-    final profiles = db.keys.fold<List<String>>([], (arr, key) {
-      if (ZagBox.profiles.read(key)?.lidarrEnabled ?? false) arr.add(key);
-      return arr;
-    });
+    // Get current profile and its lidarr instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'lidarr');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.lidarrEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (ZagProfile.current.lidarrEnabled)
       actions = [
@@ -142,6 +148,16 @@ class _State extends State<LidarrRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: LidarrNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('lidarr', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('lidarr');
+        }
+        setState(() {});
+        context.read<LidarrState>().reset();
+      },
     );
   }
 

@@ -70,15 +70,17 @@ class _State extends State<SonarrRoute> {
   }
 
   PreferredSizeWidget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold(
-      [],
-      (value, element) {
-        if (ZagBox.profiles.read(element)?.sonarrEnabled ?? false) {
-          value.add(element);
-        }
-        return value;
-      },
-    );
+    // Get current profile and its sonarr instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.sonarrEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (context.watch<SonarrState>().enabled) {
       actions = [
@@ -99,6 +101,16 @@ class _State extends State<SonarrRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: SonarrNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('sonarr', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('sonarr');
+        }
+        setState(() {});
+        context.read<SonarrState>().reset();
+      },
     );
   }
 

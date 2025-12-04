@@ -87,11 +87,17 @@ class _State extends State<NZBGetRoute> {
   }
 
   Widget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold([], (value, element) {
-      if (ZagBox.profiles.read(element)?.nzbgetEnabled ?? false)
-        value.add(element);
-      return value;
-    });
+    // Get current profile and its nzbget instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'nzbget');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.nzbgetEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (ZagProfile.current.nzbgetEnabled)
       actions = [
@@ -119,6 +125,16 @@ class _State extends State<NZBGetRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: NZBGetNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('nzbget', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('nzbget');
+        }
+        setState(() {});
+        context.read<NZBGetState>().reset();
+      },
     );
   }
 

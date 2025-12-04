@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/extensions/scroll_controller.dart';
 import 'package:zagreus/router/router.dart';
 import 'package:zagreus/utils/profile_tools.dart';
@@ -26,6 +27,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PageController? pageController;
   final List<ScrollController>? scrollControllers;
   final Color? backgroundColor;
+  final void Function(String)? onProfileSelected;
 
   @override
   Size get preferredSize {
@@ -47,6 +49,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.scrollControllers,
     this.hideLeading = false,
     this.backgroundColor,
+    this.onProfileSelected,
   });
 
   /// Create a new [AppBar] widget pre-styled for Zagreus.
@@ -125,6 +128,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     List<ScrollController>? scrollControllers,
     PreferredSizeWidget? bottom,
     Color? backgroundColor,
+    void Function(String)? onProfileSelected,
   }) {
     if (pageController != null)
       assert(scrollControllers != null,
@@ -151,6 +155,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
       pageController: pageController,
       scrollControllers: scrollControllers,
       backgroundColor: backgroundColor,
+      onProfileSelected: onProfileSelected,
       type: _AppBarType.DROPDOWN,
     );
   }
@@ -297,7 +302,11 @@ class _State extends State<ZagAppBar> {
         ),
         onSelected: (result) {
           HapticFeedback.selectionClick();
-          ZagProfileTools().changeTo(result, popToRootRoute: true);
+          if (widget.onProfileSelected != null) {
+            widget.onProfileSelected!(result);
+          } else {
+            ZagProfileTools().changeTo(result, popToRootRoute: true);
+          }
         },
         itemBuilder: (context) {
           return <PopupMenuEntry<String>>[
@@ -305,7 +314,8 @@ class _State extends State<ZagAppBar> {
               PopupMenuItem<String>(
                 value: profile,
                 child: Text(
-                  profile!,
+                  // Show friendly name for shadow profiles
+                  ZagProfile.getInstanceDisplayName(profile!) ?? profile,
                   style: TextStyle(
                     fontSize: ZagUI.FONT_SIZE_H3,
                     color: ZagreusDatabase.ENABLED_PROFILE.read() == profile

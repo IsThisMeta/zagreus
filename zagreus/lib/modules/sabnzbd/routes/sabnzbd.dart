@@ -85,11 +85,17 @@ class _State extends State<SABnzbdRoute> {
   }
 
   Widget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold([], (value, element) {
-      if (ZagBox.profiles.read(element)?.sabnzbdEnabled ?? false)
-        value.add(element);
-      return value;
-    });
+    // Get current profile and its sabnzbd instances only
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sabnzbd');
+    
+    // Build list: main profile first, then shadow instances
+    List<String> profiles = [];
+    if (ZagBox.profiles.read(currentProfile)?.sabnzbdEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(instances);
+    
     List<Widget>? actions;
     if (ZagProfile.current.sabnzbdEnabled)
       actions = [
@@ -117,6 +123,16 @@ class _State extends State<SABnzbdRoute> {
       actions: actions,
       pageController: _pageController,
       scrollControllers: SABnzbdNavigationBar.scrollControllers,
+      onProfileSelected: (selected) {
+        final parsed = ZagProfile.parseShadowKey(selected);
+        if (parsed != null) {
+          ZagInstanceContext().setActiveInstance('sabnzbd', selected);
+        } else {
+          ZagInstanceContext().clearActiveInstance('sabnzbd');
+        }
+        setState(() {});
+        context.read<SABnzbdState>().reset();
+      },
     );
   }
 
