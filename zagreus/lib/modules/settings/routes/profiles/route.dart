@@ -51,8 +51,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
       title: 'Migrate to Multi-Instance',
       body: [
         const TextSpan(
-          text:
-              'Convert all profiles into a single profile with multiple instances per module. This combines all your setups into one unified profile.',
+          text: 'Convert all profiles into a single profile',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ARROW_RIGHT),
@@ -62,6 +61,17 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
           showZagInfoSnackBar(
             title: 'Nothing to Migrate',
             message: 'You only have one profile. Add more profiles first.',
+          );
+          return;
+        }
+
+        // Check if shadow instances already exist
+        final allKeys = ZagBox.profiles.keys.toList();
+        final hasShadow = allKeys.any((key) => ZagProfile.isShadowProfile(key));
+        if (hasShadow) {
+          showZagInfoSnackBar(
+            title: 'Cannot Migrate',
+            message: 'You already have multi-instance setups. Remove them first.',
           );
           return;
         }
