@@ -76,6 +76,7 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/calendar.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/overseerr/routes/requests/widgets/request_tile.dart';
+import 'package:zagreus/database/tables/dashboard.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -3020,6 +3021,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       });
 
       print('🔍 Found ${results.length} results');
+      
+      // Compute library badges in background
+      _computeLibraryBadgesForResults();
     } catch (e) {
       print('❌ Search error: $e');
       setState(() {
@@ -4818,6 +4822,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _buildSearchResults() {
+    final showBadges = DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read();
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _searchResults.length,
@@ -4831,6 +4838,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         final releaseDate =
             item['release_date'] ?? item['first_air_date'] ?? '';
         final voteAverage = (item['vote_average'] ?? 0).toDouble();
+        final tmdbId = item['id'] as int?;
 
         // Get appropriate image path
         String? imagePath;
@@ -4844,6 +4852,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ? 'https://image.tmdb.org/t/p/w185$imagePath'
             : null;
 
+        // Build library badges if enabled
+        List<_LibraryBadgeInfo> libraryBadges = [];
+        if (showBadges && tmdbId != null && mediaType != 'person') {
+          libraryBadges = _getLibraryBadges(mediaType, tmdbId, currentProfile);
+        }
+
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
@@ -4855,7 +4869,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              _handleSearchResultTap(item);
+              if (libraryBadges.isNotEmpty) {
+                // Go to first instance that has it
+                _handleSearchResultTapWithInstance(item, libraryBadges.first);
+              } else {
+                _handleSearchResultTap(item);
+              }
             },
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -4959,6 +4978,36 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ],
                           ],
                         ),
+                        // Library badges row
+                        if (libraryBadges.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: libraryBadges.map((badge) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  badge.displayName,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                         if (overview.isNotEmpty && mediaType != 'person') ...[
                           const SizedBox(height: 6),
                           Text(
@@ -4970,7 +5019,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   ? Colors.white.withOpacity(0.6)
                                   : Colors.black.withOpacity(0.6),
                             ),
-                            maxLines: 4,
+                            maxLines: libraryBadges.isNotEmpty ? 3 : 4,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -4984,6 +5033,168 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         );
       },
     );
+  }
+
+  List<_LibraryBadgeInfo> _getLibraryBadges(String? mediaType, int tmdbId, String currentProfile) {
+    final List<_LibraryBadgeInfo> badges = [];
+    
+    // We'll use the cached library info that was pre-computed when search was performed
+    final cachedInfo = _searchLibraryCache[tmdbId];
+    if (cachedInfo != null) {
+      return cachedInfo;
+    }
+    
+    return badges;
+  }
+
+  // Cache for library lookup results
+  final Map<int, List<_LibraryBadgeInfo>> _searchLibraryCache = {};
+
+  Future<void> _computeLibraryBadgesForResults() async {
+    if (!DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read()) return;
+    
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    _searchLibraryCache.clear();
+    
+    // Get all movie tmdb IDs from search results
+    final movieTmdbIds = _searchResults
+        .where((r) => r['media_type'] == 'movie')
+        .map((r) => r['id'] as int)
+        .toSet();
+    
+    // Get all show tmdb IDs from search results  
+    final showTmdbIds = _searchResults
+        .where((r) => r['media_type'] == 'tv')
+        .map((r) => r['id'] as int)
+        .toSet();
+    
+    // Check main Radarr instance
+    final radarrState = context.read<RadarrState>();
+    if (radarrState.enabled && radarrState.movies != null) {
+      try {
+        final movies = await radarrState.movies!;
+        for (final movie in movies) {
+          if (movie.tmdbId != null && movieTmdbIds.contains(movie.tmdbId)) {
+            _searchLibraryCache.putIfAbsent(movie.tmdbId!, () => []);
+            _searchLibraryCache[movie.tmdbId!]!.add(_LibraryBadgeInfo(
+              instanceKey: null,
+              displayName: 'Radarr',
+              moduleType: 'radarr',
+              itemId: movie.id,
+            ));
+          }
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+    
+    // Check shadow Radarr instances
+    final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    for (final instanceKey in radarrInstances) {
+      final profile = ZagBox.profiles.read(instanceKey);
+      if (profile != null && profile.radarrEnabled && profile.radarrHost.isNotEmpty) {
+        try {
+          final parsed = ZagProfile.parseShadowKey(instanceKey);
+          final instanceName = parsed?.name ?? instanceKey;
+          final api = RadarrAPI(
+            host: profile.radarrHost,
+            apiKey: profile.radarrKey,
+            headers: profile.radarrHeaders.cast<String, dynamic>(),
+          );
+          final movies = await api.movie.getAll();
+          for (final movie in movies) {
+            if (movie.tmdbId != null && movieTmdbIds.contains(movie.tmdbId)) {
+              _searchLibraryCache.putIfAbsent(movie.tmdbId!, () => []);
+              _searchLibraryCache[movie.tmdbId!]!.add(_LibraryBadgeInfo(
+                instanceKey: instanceKey,
+                displayName: 'Radarr $instanceName',
+                moduleType: 'radarr',
+                itemId: movie.id,
+              ));
+            }
+          }
+        } catch (e) {
+          // Skip this instance on error
+        }
+      }
+    }
+    
+    // Check main Sonarr instance
+    final sonarrState = context.read<SonarrState>();
+    if (sonarrState.enabled && sonarrState.series != null) {
+      try {
+        final seriesMap = await sonarrState.series!;
+        for (final show in seriesMap.values) {
+          if (show.tvdbId != null && showTmdbIds.contains(show.tvdbId)) {
+            _searchLibraryCache.putIfAbsent(show.tvdbId!, () => []);
+            _searchLibraryCache[show.tvdbId!]!.add(_LibraryBadgeInfo(
+              instanceKey: null,
+              displayName: 'Sonarr',
+              moduleType: 'sonarr',
+              itemId: show.id,
+            ));
+          }
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+    
+    // Check shadow Sonarr instances
+    final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    for (final instanceKey in sonarrInstances) {
+      final profile = ZagBox.profiles.read(instanceKey);
+      if (profile != null && profile.sonarrEnabled && profile.sonarrHost.isNotEmpty) {
+        try {
+          final parsed = ZagProfile.parseShadowKey(instanceKey);
+          final instanceName = parsed?.name ?? instanceKey;
+          final api = SonarrAPI(
+            host: profile.sonarrHost,
+            apiKey: profile.sonarrKey,
+            headers: profile.sonarrHeaders.cast<String, dynamic>(),
+          );
+          final series = await api.series.getAll();
+          for (final show in series) {
+            if (show.tvdbId != null && showTmdbIds.contains(show.tvdbId)) {
+              _searchLibraryCache.putIfAbsent(show.tvdbId!, () => []);
+              _searchLibraryCache[show.tvdbId!]!.add(_LibraryBadgeInfo(
+                instanceKey: instanceKey,
+                displayName: 'Sonarr $instanceName',
+                moduleType: 'sonarr',
+                itemId: show.id,
+              ));
+            }
+          }
+        } catch (e) {
+          // Skip this instance on error
+        }
+      }
+    }
+    
+    // Trigger rebuild to show badges
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _handleSearchResultTapWithInstance(Map<String, dynamic> item, _LibraryBadgeInfo badge) {
+    final mediaType = item['media_type'] as String?;
+    
+    if (badge.instanceKey != null) {
+      ZagInstanceContext().setActiveInstance(badge.moduleType, badge.instanceKey);
+    } else {
+      ZagInstanceContext().clearActiveInstance(badge.moduleType);
+    }
+    
+    if (mediaType == 'movie' && badge.itemId != null) {
+      RadarrRoutes.MOVIE.go(params: {'movie': badge.itemId!.toString()});
+    } else if (mediaType == 'tv' && badge.itemId != null) {
+      SonarrRoutes.SERIES.go(params: {'series': badge.itemId!.toString()});
+    } else {
+      // Fall back to normal tap behavior
+      _handleSearchResultTap(item);
+    }
   }
 
   Widget _searchResultPlaceholder(String? mediaType) {
@@ -11000,3 +11211,18 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
   }
 }
 
+
+
+class _LibraryBadgeInfo {
+  final String? instanceKey;
+  final String displayName;
+  final String moduleType;
+  final int? itemId;
+
+  _LibraryBadgeInfo({
+    required this.instanceKey,
+    required this.displayName,
+    required this.moduleType,
+    required this.itemId,
+  });
+}

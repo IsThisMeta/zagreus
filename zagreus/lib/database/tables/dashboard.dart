@@ -14,7 +14,8 @@ enum DashboardDatabase<T> with ZagTableMixin<T> {
   CALENDAR_ENABLE_SONARR<bool>(true),
   CALENDAR_INCLUDE_UNMONITORED_SONARR<bool>(false),
   CALENDAR_DAYS_PAST<int>(14),
-  CALENDAR_DAYS_FUTURE<int>(14);
+  CALENDAR_DAYS_FUTURE<int>(14),
+  SEARCH_SHOW_LIBRARY_BADGES<bool>(true);
 
   @override
   ZagTable get table => ZagTable.dashboard;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/dashboard.dart';
 import 'package:zagreus/router/routes/settings.dart';
 
 class ConfigurationDashboardRoute extends StatefulWidget {
@@ -36,7 +37,36 @@ class _State extends State<ConfigurationDashboardRoute>
       controller: scrollController,
       children: [
         _calendarSettingsPage(),
+        _searchSettingsSection(),
         _defaultPagesPage(),
+      ],
+    );
+  }
+
+  Widget _searchSettingsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ZagHeader(text: 'Search'),
+        DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.listenableBuilder(
+          builder: (context, _) {
+            final enabled = DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read();
+            return ZagBlock(
+              title: 'Show Library Badges',
+              body: [
+                TextSpan(
+                  text: 'Show badges indicating which libraries contain the search result',
+                ),
+              ],
+              trailing: ZagSwitch(
+                value: enabled,
+                onChanged: (value) {
+                  DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.update(value);
+                },
+              ),
+            );
+          },
+        ),
       ],
     );
   }
