@@ -8,6 +8,7 @@ import 'package:zagreus/modules/dashboard/core/api/data/lidarr.dart';
 import 'package:zagreus/modules/dashboard/core/api/data/radarr.dart';
 import 'package:zagreus/modules/dashboard/core/api/data/sonarr.dart';
 import 'package:zagreus/widgets/ui.dart';
+import 'package:zagreus/core/logger.dart';
 import 'package:zagreus/vendor.dart';
 
 class API {
@@ -33,14 +34,30 @@ class API {
     // Lidarr (no multi-instance support yet, always use main)
     if (profile.lidarrEnabled &&
         DashboardDatabase.CALENDAR_ENABLE_LIDARR.read()) {
-      await _getLidarrUpcoming(_upcoming, today, profile);
+      try {
+        await _getLidarrUpcoming(_upcoming, today, profile);
+      } catch (error, stack) {
+        ZagLogger().error(
+          'Failed to fetch Lidarr calendar data',
+          error,
+          stack,
+        );
+      }
     }
     
     // Radarr - check main and instances
     if (DashboardDatabase.CALENDAR_ENABLE_RADARR.read()) {
       // Main Radarr (null instanceKey = main)
       if (profile.radarrEnabled && (showAll || filter.contains('radarr:main'))) {
-        await _getRadarrUpcoming(_upcoming, today, profile);
+        try {
+          await _getRadarrUpcoming(_upcoming, today, profile);
+        } catch (error, stack) {
+          ZagLogger().error(
+            'Failed to fetch Radarr calendar data (main)',
+            error,
+            stack,
+          );
+        }
       }
       // Radarr instances
       final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -49,7 +66,15 @@ class API {
         if (showAll || filter.contains('radarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.radarrEnabled) {
-            await _getRadarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
+            try {
+              await _getRadarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
+            } catch (error, stack) {
+              ZagLogger().error(
+                'Failed to fetch Radarr calendar data (instance: $instanceKey)',
+                error,
+                stack,
+              );
+            }
           }
         }
       }
@@ -59,7 +84,15 @@ class API {
     if (DashboardDatabase.CALENDAR_ENABLE_SONARR.read()) {
       // Main Sonarr (null instanceKey = main)
       if (profile.sonarrEnabled && (showAll || filter.contains('sonarr:main'))) {
-        await _getSonarrUpcoming(_upcoming, today, profile);
+        try {
+          await _getSonarrUpcoming(_upcoming, today, profile);
+        } catch (error, stack) {
+          ZagLogger().error(
+            'Failed to fetch Sonarr calendar data (main)',
+            error,
+            stack,
+          );
+        }
       }
       // Sonarr instances
       final currentProfileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -68,7 +101,15 @@ class API {
         if (showAll || filter.contains('sonarr:$instanceKey')) {
           final instanceProfile = ZagBox.profiles.read(instanceKey);
           if (instanceProfile != null && instanceProfile.sonarrEnabled) {
-            await _getSonarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
+            try {
+              await _getSonarrUpcoming(_upcoming, today, instanceProfile, instanceKey: instanceKey);
+            } catch (error, stack) {
+              ZagLogger().error(
+                'Failed to fetch Sonarr calendar data (instance: $instanceKey)',
+                error,
+                stack,
+              );
+            }
           }
         }
       }
