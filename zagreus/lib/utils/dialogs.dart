@@ -603,6 +603,21 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: _showSeasonPicker,
+                  onLongPress: () {
+                    // Select all non-specials
+                    setState(() {
+                      _selectedSeasons = widget.seasons!
+                          .where((s) => s.seasonNumber != 0)
+                          .map((s) => s.seasonNumber)
+                          .toSet();
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('All seasons selected'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     decoration: BoxDecoration(
