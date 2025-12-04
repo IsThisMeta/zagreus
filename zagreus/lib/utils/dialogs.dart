@@ -308,8 +308,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
     _rootFolder = widget.rootFolderValue;
     _qualityProfile = widget.qualityProfileValue;
     _seriesType = widget.seriesTypeValue;
-    _selectedSeasons = widget.selectedSeasons ?? 
-        (widget.seasons?.map((s) => s.seasonNumber).toSet() ?? {});
+    _selectedSeasons = widget.selectedSeasons ?? {};
   }
 
   void _showRootFolderPicker() async {
@@ -392,6 +391,14 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
   }
 
   void _showSeasonPicker() {
+    // Sort seasons: regular seasons first (1, 2, 3...), specials (0) at the bottom
+    final sortedSeasons = List.of(widget.seasons!)
+      ..sort((a, b) {
+        if (a.seasonNumber == 0) return 1; // Specials go to bottom
+        if (b.seasonNumber == 0) return -1;
+        return a.seasonNumber.compareTo(b.seasonNumber);
+      });
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -435,9 +442,9 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                 Expanded(
                   child: ListView.builder(
                     controller: scrollController,
-                    itemCount: widget.seasons!.length,
+                    itemCount: sortedSeasons.length,
                     itemBuilder: (ctx, index) {
-                      final season = widget.seasons![index];
+                      final season = sortedSeasons[index];
                       final isSelected = _selectedSeasons.contains(season.seasonNumber);
                       final seasonLabel = season.seasonNumber == 0 
                           ? 'Specials' 

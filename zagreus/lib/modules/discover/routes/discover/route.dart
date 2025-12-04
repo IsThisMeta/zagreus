@@ -6699,7 +6699,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Fetch seasons in parallel with showing dialog
     final seasonsFuture = _getSonarrSeasons(tmdbId);
     final seasons = await seasonsFuture;
-    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    _sonarrSelectedSeasons = {}; // Start with none selected
     
     if (!mounted) return;
     
@@ -6771,7 +6771,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     HapticFeedback.lightImpact();
     
     final seasons = await _getSonarrSeasons(show.tmdbId!);
-    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    _sonarrSelectedSeasons = {}; // Start with none selected
     
     if (!mounted) return;
     
@@ -6803,7 +6803,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     HapticFeedback.lightImpact();
     
     final seasons = await _getSonarrSeasons(show.tmdbId!);
-    _sonarrSelectedSeasons = seasons.map((s) => s.seasonNumber).toSet();
+    _sonarrSelectedSeasons = {}; // Start with none selected
     
     if (!mounted) return;
     
