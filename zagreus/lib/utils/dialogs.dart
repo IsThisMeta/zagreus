@@ -611,11 +611,10 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                           .map((s) => s.seasonNumber)
                           .toSet();
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('All seasons selected'),
-                        duration: Duration(seconds: 1),
-                      ),
+                    widget.onSeasonsChanged?.call(_selectedSeasons);
+                    showZagSuccessSnackBar(
+                      title: 'All Seasons Selected',
+                      message: '${_selectedSeasons.length} seasons',
                     );
                   },
                   child: Container(
