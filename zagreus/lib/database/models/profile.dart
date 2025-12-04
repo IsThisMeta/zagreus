@@ -805,4 +805,98 @@ class ZagProfile extends HiveObject {
     // Convert dashes back to spaces
     return parsed.name.replaceAll('-', ' ');
   }
+
+  /// Migrate all profiles to a single multi-instance profile.
+  /// Takes all enabled modules from each profile and creates shadow instances.
+  /// Returns the target profile name or null if migration failed.
+  static Future<String?> migrateToMultiInstance({
+    required String targetProfileName,
+  }) async {
+    final profiles = visibleList;
+    if (profiles.length < 2) return null; // Need at least 2 profiles to migrate
+
+    // Determine which profile is the "default" / target
+    final targetProfile = profiles.contains(targetProfileName) 
+        ? targetProfileName 
+        : profiles.first;
+
+    // Module keys we support for multi-instance
+    final supportedModules = ['radarr', 'sonarr', 'lidarr', 'readarr', 'sabnzbd', 'nzbget', 'tautulli', 'overseerr'];
+    
+    // Track created instances for the target profile
+    final List<String> newInstances = [];
+
+    for (final profileKey in profiles) {
+      if (profileKey == targetProfile) continue; // Skip the target profile itself
+      
+      final profile = ZagBox.profiles.read(profileKey);
+      if (profile == null) continue;
+
+      // Check each module - if enabled, create a shadow instance
+      for (final moduleKey in supportedModules) {
+        final isEnabled = _isModuleEnabled(profile, moduleKey);
+        if (!isEnabled) continue;
+
+        // Create instance name from profile name (skip if profile name is 'default')
+        final instanceName = profileKey == 'default' ? moduleKey : profileKey;
+        
+        // Build shadow key
+        final shadowKey = buildShadowKey(
+          module: moduleKey,
+          name: instanceName.replaceAll(' ', '-'),
+          parent: targetProfile,
+        );
+
+        // Skip if already exists
+        if (ZagBox.profiles.contains(shadowKey)) continue;
+
+        // Clone the profile data
+        final shadowProfile = ZagProfile.fromJson(profile.toJson());
+        await ZagBox.profiles.update(shadowKey, shadowProfile);
+        newInstances.add(shadowKey);
+      }
+    }
+
+    // Update the instances registry
+    final dynamic currentInstances = ZagreusDatabase.PROFILE_INSTANCES.read();
+    final Map<String, List<String>> instances = {};
+    if (currentInstances is Map) {
+      for (final entry in currentInstances.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+        if (value is List) {
+          instances[key] = value.cast<String>();
+        }
+      }
+    }
+    instances.putIfAbsent(targetProfile, () => []);
+    instances[targetProfile]!.addAll(newInstances);
+    ZagreusDatabase.PROFILE_INSTANCES.update(instances);
+
+    // Delete the old profiles (except target)
+    for (final profileKey in profiles) {
+      if (profileKey == targetProfile) continue;
+      await ZagBox.profiles.delete(profileKey);
+    }
+
+    // Switch to target profile
+    ZagreusDatabase.ENABLED_PROFILE.update(targetProfile);
+
+    return targetProfile;
+  }
+
+  /// Helper to check if a module is enabled in a profile
+  static bool _isModuleEnabled(ZagProfile profile, String moduleKey) {
+    switch (moduleKey) {
+      case 'radarr': return profile.radarrEnabled;
+      case 'sonarr': return profile.sonarrEnabled;
+      case 'lidarr': return profile.lidarrEnabled;
+      case 'readarr': return profile.readarrEnabled;
+      case 'sabnzbd': return profile.sabnzbdEnabled;
+      case 'nzbget': return profile.nzbgetEnabled;
+      case 'tautulli': return profile.tautulliEnabled;
+      case 'overseerr': return profile.overseerrEnabled;
+      default: return false;
+    }
+  }
 }
