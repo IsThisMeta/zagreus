@@ -1249,6 +1249,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     (show['title'] as String).toLowerCase(),
               );
               show['serviceItemId'] = series.id;
+              show['tvdbId'] = series.tvdbId;
             }
           }
         } catch (e) {
@@ -1303,6 +1304,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     (show['title'] as String).toLowerCase(),
               );
               show['serviceItemId'] = series.id;
+              show['tvdbId'] = series.tvdbId;
             }
           }
         } catch (e) {
@@ -1382,6 +1384,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     s.title?.toLowerCase() == title.toLowerCase(),
               );
               show['serviceItemId'] = series.id;
+              show['tvdbId'] = series.tvdbId;
             }
           }
         } catch (e) {
