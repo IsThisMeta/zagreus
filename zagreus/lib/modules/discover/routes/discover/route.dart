@@ -4869,8 +4869,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              if (libraryBadges.isNotEmpty) {
-                // Go to first instance that has it
+              if (libraryBadges.length > 1) {
+                // Show dialog to select instance
+                _showInstanceSelectionDialog(item, libraryBadges);
+              } else if (libraryBadges.length == 1) {
+                // Go to the only instance that has it
                 _handleSearchResultTapWithInstance(item, libraryBadges.first);
               } else {
                 _handleSearchResultTap(item);
@@ -5195,6 +5198,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       // Fall back to normal tap behavior
       _handleSearchResultTap(item);
     }
+  }
+
+  void _showInstanceSelectionDialog(Map<String, dynamic> item, List<_LibraryBadgeInfo> badges) {
+    final title = item['title'] ?? item['name'] ?? 'Unknown';
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Select Instance',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Divider(),
+              ...badges.map((badge) {
+                return ListTile(
+                  leading: Icon(
+                    badge.moduleType == 'radarr' ? Icons.movie : Icons.tv,
+                    color: ZagColours.accent,
+                  ),
+                  title: Text(badge.displayName),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleSearchResultTapWithInstance(item, badge);
+                  },
+                );
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _searchResultPlaceholder(String? mediaType) {
