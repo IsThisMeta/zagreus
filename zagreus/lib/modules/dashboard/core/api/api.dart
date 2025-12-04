@@ -9,7 +9,6 @@ import 'package:zagreus/modules/dashboard/core/api/data/radarr.dart';
 import 'package:zagreus/modules/dashboard/core/api/data/sonarr.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/widgets/ui.dart';
-import 'package:zagreus/core/logger.dart';
 import 'package:zagreus/vendor.dart';
 
 class API {
