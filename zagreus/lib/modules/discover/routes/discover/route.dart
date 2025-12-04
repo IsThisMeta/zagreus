@@ -577,7 +577,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           final movies = await radarrState.movies!;
           for (final item in movieItems) {
             final tmdbId = item['tmdbId'] as int;
-            item['inLibrary'] = movies.any((m) => m.tmdbId == tmdbId);
+            final match = movies.where((m) => m.tmdbId == tmdbId).firstOrNull;
+            item['inLibrary'] = match != null;
+            if (match != null) {
+              item['radarrId'] = match.id;
+            }
           }
         }
 
@@ -589,10 +593,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             for (final item in tvItems) {
               final title = item['title'] as String;
               // Check if this show is in Sonarr library by title match
-              final inLibrary = sonarrSeries.any((series) {
+              final match = sonarrSeries.where((series) {
                 return series.title?.toLowerCase() == title.toLowerCase();
-              });
-              item['inLibrary'] = inLibrary;
+              }).firstOrNull;
+              item['inLibrary'] = match != null;
+              if (match != null) {
+                item['sonarrId'] = match.id;
+              }
             }
           } catch (e) {
             print('📺 Error checking Sonarr library for trending: $e');
@@ -5145,15 +5152,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final item = items[index];
                 return GestureDetector(
                   onTap: () => _handleHeroTap(item),
-                  onLongPress: item['inLibrary'] != true
-                      ? () {
-                          if (isMovieTab) {
-                            _showMoviePreview(item);
-                          } else {
-                            _showTVShowPreview(item);
-                          }
+                  onLongPress: () {
+                    if (item['inLibrary'] == true) {
+                      // Show manage dialog for in-library items
+                      if (isMovieTab) {
+                        final radarrId = item['radarrId'];
+                        if (radarrId is int) {
+                          _showRadarrMovieActionsById(radarrId);
                         }
-                      : null,
+                      } else {
+                        final sonarrId = item['sonarrId'];
+                        if (sonarrId is int) {
+                          _showSonarrSeriesActions(
+                            seriesId: sonarrId,
+                            seriesTitle: item['title'] as String?,
+                          );
+                        }
+                      }
+                    } else {
+                      // Show quick add for items not in library
+                      if (isMovieTab) {
+                        _showMoviePreview(item);
+                      } else {
+                        _showTVShowPreview(item);
+                      }
+                    }
+                  },
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -6659,13 +6683,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   /// Show movie preview with Add button on long press (for non-library items)
   Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
-    if (inLibrary) return; // Don't show for items already in library
-
-    final title = movie['title'] as String? ?? 'Movie';
-    final overview = movie['overview'] as String? ?? 'No overview available.';
     final tmdbId = movie['tmdbId'] as int?;
 
     if (tmdbId == null) return;
+
+    // If in library, show manage dialog instead
+    if (inLibrary) {
+      final radarrState = context.read<RadarrState>();
+      if (radarrState.enabled && radarrState.movies != null) {
+        final movies = await radarrState.movies!;
+        final radarrMovie = movies.firstWhere(
+          (m) => m.tmdbId == tmdbId,
+          orElse: () => RadarrMovie(),
+        );
+        if (radarrMovie.id != null && radarrMovie.id! > 0) {
+          await _showRadarrMovieActions(radarrMovie);
+          return;
+        }
+      }
+      return;
+    }
+
+    final title = movie['title'] as String? ?? 'Movie';
+    final overview = movie['overview'] as String? ?? 'No overview available.';
 
     HapticFeedback.lightImpact();
     await ZagDialogs().textPreviewWithAdd(
@@ -6686,13 +6726,37 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   /// Show TV show preview with Add button on long press (for non-library items)
   Future<void> _showTVShowPreview(Map<String, dynamic> show) async {
     final bool inLibrary = show['inLibrary'] ?? false;
-    if (inLibrary) return; // Don't show for items already in library
+    final tmdbId = show['tmdbId'] as int?;
+    final tvdbId = show['tvdbId'] as int?;
+
+    if (tmdbId == null) return;
+
+    // If in library, show manage dialog instead
+    if (inLibrary) {
+      final sonarrState = context.read<SonarrState>();
+      if (sonarrState.enabled && sonarrState.series != null) {
+        final seriesMap = await sonarrState.series!;
+        // Find series by tvdbId (Sonarr uses tvdbId, not tmdbId)
+        SonarrSeries? matchedSeries;
+        for (final series in seriesMap.values) {
+          if (tvdbId != null && series.tvdbId == tvdbId) {
+            matchedSeries = series;
+            break;
+          }
+        }
+        if (matchedSeries != null && matchedSeries.id != null) {
+          await _showSonarrSeriesActions(
+            seriesId: matchedSeries.id!,
+            seriesTitle: matchedSeries.title,
+          );
+          return;
+        }
+      }
+      return;
+    }
 
     final title = show['title'] as String? ?? show['name'] as String? ?? 'TV Show';
     final overview = show['overview'] as String? ?? 'No overview available.';
-    final tmdbId = show['tmdbId'] as int?;
-
-    if (tmdbId == null) return;
 
     HapticFeedback.lightImpact();
     
@@ -6886,6 +6950,40 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       showZagSnackBar(
         title: movie.title ?? 'Radarr',
         message: 'Unable to open Radarr actions right now.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<void> _showRadarrMovieActionsById(int movieId) async {
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled || radarrState.api == null) {
+      showZagSnackBar(
+        title: 'Radarr',
+        message: 'Connect Radarr to manage movies from Dashboard.',
+        type: ZagSnackbarType.INFO,
+      );
+      return;
+    }
+
+    try {
+      RadarrMovie? movie;
+      if (radarrState.movies != null) {
+        final cached = await radarrState.movies!;
+        movie = cached.firstWhere((m) => m.id == movieId, orElse: () => RadarrMovie());
+      }
+      if (movie == null || movie.id == null) {
+        movie = await radarrState.api!.movie.get(movieId: movieId);
+      }
+      if (!mounted) return;
+      if (movie.id != null) {
+        await _showRadarrMovieActions(movie);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to fetch movie $movieId for actions', error, stack);
+      showZagSnackBar(
+        title: 'Radarr',
+        message: 'Unable to open movie actions right now.',
         type: ZagSnackbarType.ERROR,
       );
     }
