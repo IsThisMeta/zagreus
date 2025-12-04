@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/widgets/ui/colors.dart';
 
 class ZagDialogs {
   /// Show an an edit text prompt.
@@ -427,7 +428,11 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                             if (allSelected) {
                               _selectedSeasons.clear();
                             } else {
-                              _selectedSeasons = widget.seasons!.map((s) => s.seasonNumber).toSet();
+                              // Select all except specials (season 0)
+                              _selectedSeasons = widget.seasons!
+                                  .where((s) => s.seasonNumber != 0)
+                                  .map((s) => s.seasonNumber)
+                                  .toSet();
                             }
                           });
                           setState(() {});
@@ -650,14 +655,15 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-          child: const Text('Close'),
+          child: const Text('Close', style: TextStyle(color: Colors.white)),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context, rootNavigator: true).pop();
             widget.onAdd();
           },
-          child: const Text('Add'),
+          child: Text('Add',
+              style: TextStyle(color: ZagColours.accentColor(context))),
         ),
       ],
     );
