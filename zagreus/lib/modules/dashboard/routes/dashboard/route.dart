@@ -36,6 +36,7 @@ class _State extends State<DashboardRoute> {
   final _agentChatKey = GlobalKey<ZChatPageState>();
   ZagPageController? _pageController;
   bool _isAgentActive = false;
+  int? _currentPage;
 
   @override
   void initState() {
@@ -51,10 +52,19 @@ class _State extends State<DashboardRoute> {
     }
 
     _pageController = ZagPageController(initialPage: page);
+    _currentPage = page;
 
     // Add listener to rebuild app bar when page changes
+    // Only rebuild when the page index actually changes, not during animation
     _pageController?.addListener(() {
-      if (mounted) setState(() {});
+      if (mounted) {
+        final newPage = _pageController!.page?.round();
+        if (newPage != null && newPage != _currentPage) {
+          setState(() {
+            _currentPage = newPage;
+          });
+        }
+      }
     });
 
     // Inject global cube overlay
