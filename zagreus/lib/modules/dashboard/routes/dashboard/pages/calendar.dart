@@ -36,36 +36,41 @@ class _State extends State<CalendarPage>
       context: context,
       key: _refreshKey,
       onRefresh: loadCallback,
-      child: FutureBuilder(
-        future: context.watch<DashboardState>().upcoming,
-        builder: (
-          BuildContext context,
-          AsyncSnapshot<Map<DateTime, List<CalendarData>>> snapshot,
-        ) {
-          if (snapshot.hasError) {
-            ZagLogger().error(
-              'Failed to fetch unified calendar data',
-              snapshot.error,
-              snapshot.stackTrace,
-            );
-            return ZagMessage.error(onTap: _refreshKey.currentState!.show);
-          }
+      child: Selector<DashboardState, Future<Map<DateTime, List<CalendarData>>>?>(
+        selector: (_, state) => state.upcoming,
+        builder: (context, upcomingFuture, _) {
+          return FutureBuilder(
+            future: upcomingFuture,
+            builder: (
+              BuildContext context,
+              AsyncSnapshot<Map<DateTime, List<CalendarData>>> snapshot,
+            ) {
+              if (snapshot.hasError) {
+                ZagLogger().error(
+                  'Failed to fetch unified calendar data',
+                  snapshot.error,
+                  snapshot.stackTrace,
+                );
+                return ZagMessage.error(onTap: _refreshKey.currentState!.show);
+              }
 
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            final events = snapshot.data!;
-            return Selector<DashboardState, CalendarStartingType>(
-              selector: (_, s) => s.calendarType,
-              builder: (context, type, _) {
-                if (type == CalendarStartingType.CALENDAR)
-                  return CalendarView(events: events);
-                else
-                  return ScheduleView(events: events);
-              },
-            );
-          }
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData) {
+                final events = snapshot.data!;
+                return Selector<DashboardState, CalendarStartingType>(
+                  selector: (_, s) => s.calendarType,
+                  builder: (context, type, _) {
+                    if (type == CalendarStartingType.CALENDAR)
+                      return CalendarView(events: events);
+                    else
+                      return ScheduleView(events: events);
+                  },
+                );
+              }
 
-          return const ZagLoader();
+              return const ZagLoader();
+            },
+          );
         },
       ),
     );
