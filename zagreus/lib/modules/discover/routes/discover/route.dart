@@ -5462,13 +5462,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Backdrop image
+                      // Backdrop image - no fade for smooth carousel transitions
                       CachedNetworkImage(
                         imageUrl: item['backdrop'] as String,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey.shade800,
-                        ),
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
+                        placeholder: (context, url) => const SizedBox.shrink(),
                         errorWidget: (context, url, error) {
                           return Container(
                             color: Colors.grey.shade800,
