@@ -2216,7 +2216,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget> _buildMovieSections() {
-    // Default section order
+    // Default section order - keep in sync with _defaultMovieSections in discover_sections_editor.dart
     const defaultOrder = [
       'recently_downloaded',
       'recommended',
@@ -2227,6 +2227,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'most_anticipated_movies',
       'popular_people',
       'deep_cuts',
+      'magic_movies',
+      'magic_movies_cast_crew',
     ];
 
     // Get saved order or use default
@@ -2363,7 +2365,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   List<Widget> _buildTVSections() {
-    // Default section order
+    // Default section order - keep in sync with _defaultTVSections in discover_sections_editor.dart
     const defaultOrder = [
       'recently_downloaded_shows',
       'airing_next',
@@ -2371,6 +2373,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'trending_new_tv_shows',
       'most_anticipated',
       'up_next',
+      'magic_shows',
+      'magic_shows_cast_crew',
     ];
 
     // Get saved order or use default
