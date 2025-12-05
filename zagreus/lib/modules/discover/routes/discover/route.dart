@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -4899,10 +4900,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: imageUrl != null
-                          ? Image.network(
-                              imageUrl,
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              errorWidget: (context, url, error) {
                                 return _searchResultPlaceholder(mediaType);
                               },
                             )
@@ -5461,10 +5463,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fit: StackFit.expand,
                     children: [
                       // Backdrop image
-                      Image.network(
-                        item['backdrop'] as String,
+                      CachedNetworkImage(
+                        imageUrl: item['backdrop'] as String,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey.shade800,
+                        ),
+                        errorWidget: (context, url, error) {
                           return Container(
                             color: Colors.grey.shade800,
                             child: Center(
@@ -5950,10 +5955,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        movie['poster'] ?? '',
+                      child: CachedNetworkImage(
+                        imageUrl: movie['poster'] ?? '',
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        errorWidget: (context, url, error) {
                           return Center(
                             child: Icon(
                               Icons.movie_rounded,
@@ -6185,10 +6191,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        movie['poster'] ?? '',
+                      child: CachedNetworkImage(
+                        imageUrl: movie['poster'] ?? '',
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        errorWidget: (context, url, error) {
                           return Center(
                             child: Icon(
                               Icons.movie_rounded,
@@ -6423,10 +6430,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: show['poster'] != null && show['poster'] != ''
-                          ? Image.network(
-                              show['poster'],
+                          ? CachedNetworkImage(
+                              imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
                             )
@@ -6664,10 +6672,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: show['poster'] != null && show['poster'] != ''
-                          ? Image.network(
-                              show['poster'],
+                          ? CachedNetworkImage(
+                              imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
                             )
@@ -7544,10 +7553,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: show['poster'] != null && show['poster'] != ''
-                          ? Image.network(
-                              show['poster'],
+                          ? CachedNetworkImage(
+                              imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
                             )
@@ -7767,10 +7777,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: movie['poster'] != null && movie['poster'] != ''
-                          ? Image.network(
-                              movie['poster'],
+                          ? CachedNetworkImage(
+                              imageUrl: movie['poster'],
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              errorWidget: (context, url, error) {
                                 return _mostAnticipatedMoviePlaceholder();
                               },
                             )
@@ -9039,10 +9050,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               child: ClipOval(
                 child: person['profilePath'] != null
-                    ? Image.network(
-                        person['profilePath'],
+                    ? CachedNetworkImage(
+                        imageUrl: person['profilePath'],
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        errorWidget: (context, url, error) {
                           return _personPlaceholder();
                         },
                       )
@@ -9515,11 +9527,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     final headers = context.read<RadarrState>().headers;
 
-    return Image.network(
-      posterUrl,
+    return CachedNetworkImage(
+      imageUrl: posterUrl,
       fit: BoxFit.cover,
-      headers: headers.isNotEmpty ? headers : null,
-      errorBuilder: (context, error, stackTrace) {
+      httpHeaders: headers.isNotEmpty ? headers : null,
+      placeholder: (context, url) => Container(color: Colors.grey.shade800),
+      errorWidget: (context, url, error) {
         return _posterPlaceholder(movie);
       },
     );
@@ -9725,10 +9738,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       bottomLeft: Radius.circular(12),
                     ),
                     child: episode['thumbnail'] != null
-                        ? Image.network(
-                            episode['thumbnail'],
+                        ? CachedNetworkImage(
+                            imageUrl: episode['thumbnail'],
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
+                            placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                            errorWidget: (context, url, error) {
                               return Center(
                                 child: Icon(
                                   Icons.tv_rounded,
@@ -9882,10 +9896,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       topLeft: Radius.circular(12),
                       bottomLeft: Radius.circular(12),
                     ),
-                    child: Image.network(
-                      episode['thumbnail'],
+                    child: CachedNetworkImage(
+                      imageUrl: episode['thumbnail'],
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                      errorWidget: (context, url, error) {
                         return Center(
                           child: Icon(
                             Icons.tv_rounded,
