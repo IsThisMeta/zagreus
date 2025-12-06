@@ -8982,14 +8982,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 180, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 260, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 150, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  return Container(height: 220, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 200,
+                  height: 260,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicPeople),
@@ -9053,7 +9053,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             const SizedBox(height: 8),
             // Name
             Container(
-              width: 110,
+              width: 150,
               child: Text(
                 person.name,
                 style: TextStyle(
@@ -9082,7 +9082,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             const SizedBox(height: 4),
             // Reason (truncated)
             Container(
-              width: 130,
+              width: 150,
               child: Text(
                 person.reason,
                 style: TextStyle(
@@ -9091,7 +9091,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.85),
                 ),
-                maxLines: 7,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
