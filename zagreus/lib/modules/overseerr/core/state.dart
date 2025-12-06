@@ -99,6 +99,14 @@ class OverseerrState extends ZagModuleState {
           receiveTimeout: const Duration(seconds: 60),
           sendTimeout: const Duration(seconds: 60),
         ));
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onError: (DioException e, handler) {
+              _logDioError('request', e);
+              handler.next(e);
+            },
+          ),
+        );
 
         _api = OverseerrAPI(dio);
         ZagLogger().debug('Overseerr API instance created successfully');
@@ -317,7 +325,11 @@ class OverseerrState extends ZagModuleState {
         }
       }
     } catch (e, stackTrace) {
-      ZagLogger().error('Failed to fetch Overseerr requests', e, stackTrace);
+      if (e is DioException) {
+        _logDioError('getRequests', e);
+      } else {
+        ZagLogger().error('Failed to fetch Overseerr requests', e, stackTrace);
+      }
       _requestsError = e.toString();
     } finally {
       _requestsLoading = false;
@@ -488,7 +500,11 @@ class OverseerrState extends ZagModuleState {
       _issues = enrichedIssues;
       _issuesError = null;
     } catch (e, stackTrace) {
-      ZagLogger().error('Failed to fetch Overseerr issues', e, stackTrace);
+      if (e is DioException) {
+        _logDioError('getIssues', e);
+      } else {
+        ZagLogger().error('Failed to fetch Overseerr issues', e, stackTrace);
+      }
       _issuesError = e.toString();
     } finally {
       _issuesLoading = false;
@@ -523,7 +539,11 @@ class OverseerrState extends ZagModuleState {
       _users = response.results;
       _usersError = null;
     } catch (e, stackTrace) {
-      ZagLogger().error('Failed to fetch Overseerr users', e, stackTrace);
+      if (e is DioException) {
+        _logDioError('getUsers', e);
+      } else {
+        ZagLogger().error('Failed to fetch Overseerr users', e, stackTrace);
+      }
       _usersError = e.toString();
     } finally {
       _usersLoading = false;
@@ -631,5 +651,30 @@ class OverseerrState extends ZagModuleState {
       ZagLogger().error('Failed to add comment to Overseerr issue', e, stackTrace);
       return false;
     }
+  }
+
+  void _logDioError(String operation, DioException e) {
+    final status = e.response?.statusCode;
+    final reason = e.response?.statusMessage;
+    final uri = e.requestOptions.uri;
+    final method = e.requestOptions.method;
+    final msg = StringBuffer('Overseerr $operation failed: $method $uri');
+    if (status != null) msg.write(' status=$status');
+    if (reason?.isNotEmpty ?? false) msg.write(' reason=$reason');
+    if (e.message?.isNotEmpty ?? false) msg.write(' message=${e.message}');
+    ZagLogger().error(msg.toString(), e, e.stackTrace);
+
+    final data = e.response?.data;
+    if (data != null) {
+      ZagLogger().debug(
+        'Overseerr $operation response body: ${_safeDataPreview(data)}',
+      );
+    }
+  }
+
+  String _safeDataPreview(dynamic data, {int limit = 400}) {
+    final text = data.toString();
+    if (text.length <= limit) return text;
+    return '${text.substring(0, limit)}...';
   }
 }

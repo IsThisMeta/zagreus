@@ -5,6 +5,7 @@ import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
+import 'package:zagreus/router/routes/settings.dart';
 
 class ConfigurationOverseerrConnectionDetailsRoute extends StatefulWidget {
   const ConfigurationOverseerrConnectionDetailsRoute({

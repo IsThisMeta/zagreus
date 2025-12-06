@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/tautulli.dart';
 
@@ -100,14 +101,27 @@ class TautulliState extends ZagModuleState {
     _host = _normalizeHost(_profile.effectiveTautulliHost());
     _apiKey = _profile.tautulliKey;
     _headers = _profile.tautulliHeaders;
+    ZagLogger().debug(
+        'Tautulli config - Enabled: $_enabled, Host: $_host, Has API Key: ${_apiKey.isNotEmpty}');
+
     // Create the API instance if Tautulli is enabled
-    _api = _enabled
-        ? TautulliAPI(
-            host: _host,
-            apiKey: _apiKey,
-            headers: Map<String, dynamic>.from(_headers),
-          )
-        : null;
+    if (_enabled && _host.isNotEmpty && _apiKey.isNotEmpty) {
+      _api = TautulliAPI(
+        host: _host,
+        apiKey: _apiKey,
+        headers: Map<String, dynamic>.from(_headers),
+      );
+      _api!.httpClient.interceptors.add(
+        InterceptorsWrapper(
+          onError: (DioException e, handler) {
+            _logTautulliDioError('request', e);
+            handler.next(e);
+          },
+        ),
+      );
+    } else {
+      _api = null;
+    }
   }
 
   ////////////////
@@ -679,5 +693,30 @@ class TautulliState extends ZagModuleState {
       '&img=$path',
       '&width=$width',
     ].join();
+  }
+
+  void _logTautulliDioError(String operation, DioException e) {
+    final status = e.response?.statusCode;
+    final reason = e.response?.statusMessage;
+    final uri = e.requestOptions.uri;
+    final method = e.requestOptions.method;
+    final msg = StringBuffer('Tautulli $operation failed: $method $uri');
+    if (status != null) msg.write(' status=$status');
+    if (reason?.isNotEmpty ?? false) msg.write(' reason=$reason');
+    if (e.message?.isNotEmpty ?? false) msg.write(' message=${e.message}');
+    ZagLogger().error(msg.toString(), e, e.stackTrace);
+
+    final data = e.response?.data;
+    if (data != null) {
+      ZagLogger().debug(
+        'Tautulli $operation response body: ${_safeDataPreview(data)}',
+      );
+    }
+  }
+
+  String _safeDataPreview(dynamic data, {int limit = 400}) {
+    final text = data.toString();
+    if (text.length <= limit) return text;
+    return '${text.substring(0, limit)}...';
   }
 }
