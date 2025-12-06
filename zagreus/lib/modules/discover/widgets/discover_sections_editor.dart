@@ -72,7 +72,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
-  double _posterHeight = 200.0;
+  double _posterHeight = 210.0;
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
