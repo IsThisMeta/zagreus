@@ -7193,15 +7193,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Future<String> _fetchTmdbOverview({required int tmdbId, required bool isMovie}) async {
+    try {
+      final details = isMovie
+          ? await TMDBApi.getMovieDetails(tmdbId)
+          : await TMDBApi.getTVShowDetails(tmdbId);
+      final overview = details?[isMovie ? 'overview' : 'overview'] as String?;
+      if (overview != null && overview.trim().isNotEmpty) {
+        return overview.trim();
+      }
+    } catch (_) {}
+    return '';
+  }
+
   /// Show preview for typed MagicMovie with Add button
   Future<void> _showMagicMoviePreview(MagicMovie movie) async {
     if (movie.tmdbId == null) return;
+
+    final overview = await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
+    final previewText = overview.isNotEmpty ? overview : movie.reason;
 
     HapticFeedback.lightImpact();
     await ZagDialogs().textPreviewWithAdd(
       context,
       movie.title,
-      movie.reason,
+      previewText,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
       alignLeft: true,
       rootFolderValue: _radarrRootFolder,
@@ -7238,7 +7254,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (show.tmdbId == null) return;
 
     HapticFeedback.lightImpact();
-    
+
+    final overview = await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
+    final previewText = overview.isNotEmpty ? overview : show.reason;
+
     final seasons = await _getSonarrSeasons(show.tmdbId!);
     _sonarrSelectedSeasons = {}; // Start with none selected
     
@@ -7247,7 +7266,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
-      show.reason,
+      previewText,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
@@ -7301,11 +7320,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showMagicMovieCastCrewPreview(MagicMovieCastCrew movie) async {
     if (movie.tmdbId == null) return;
 
+    final overview = await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
+    final previewText = overview.isNotEmpty ? overview : movie.reason;
+
     HapticFeedback.lightImpact();
     await ZagDialogs().textPreviewWithAdd(
       context,
       movie.title,
-      movie.reason,
+      previewText,
       onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
       alignLeft: true,
       rootFolderValue: _radarrRootFolder,
@@ -7321,11 +7343,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showMagicShowCastCrewPreview(MagicShowCastCrew show) async {
     if (show.tmdbId == null) return;
 
+    final overview = await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
+    final previewText = overview.isNotEmpty ? overview : show.reason;
+
     HapticFeedback.lightImpact();
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
-      show.reason,
+      previewText,
       onAdd: () => _openTVShowInSonarr(tmdbId: show.tmdbId!, title: show.title),
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
@@ -8159,7 +8184,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    height: 320,
+                    height: 400,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -8175,7 +8200,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final recommendations = futureSnapshot.data!.recommendations!;
 
                 return Container(
-                  height: 320,
+                  height: 400,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _deepCutsListKey,
@@ -8346,7 +8371,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           : Colors.black)
                       .withOpacity(0.7),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -8456,7 +8481,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    height: 320,
+                    height: 400,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -8472,7 +8497,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final recommendations = futureSnapshot.data!.recommendations!;
 
                 return Container(
-                  height: 320,
+                  height: 400,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _upNextListKey,
@@ -8642,7 +8667,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           : Colors.black)
                       .withOpacity(0.7),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -8727,14 +8752,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 320, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 320,
+                  height: 400,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicMovies),
@@ -8795,7 +8820,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.9),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -8847,14 +8872,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 320, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 320,
+                  height: 400,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicMoviesCastCrew),
@@ -8915,7 +8940,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.9),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -9199,14 +9224,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 320, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 320,
+                  height: 400,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicShows),
