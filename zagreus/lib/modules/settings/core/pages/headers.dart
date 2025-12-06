@@ -97,21 +97,22 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
   }
 
   Map<String, String> _headers() {
+    final profile = ZagProfile.forModule(widget.module.key);
     switch (widget.module) {
       case ZagModule.DASHBOARD:
         throw Exception('Dashboard does not have a headers page');
       case ZagModule.EXTERNAL_MODULES:
         throw Exception('External modules do not have a headers page');
       case ZagModule.LIDARR:
-        return ZagProfile.current.lidarrHeaders;
+        return profile.lidarrHeaders;
       case ZagModule.RADARR:
-        return ZagProfile.current.radarrHeaders;
+        return profile.radarrHeaders;
       case ZagModule.SONARR:
-        return ZagProfile.current.sonarrHeaders;
+        return profile.sonarrHeaders;
       case ZagModule.SABNZBD:
-        return ZagProfile.current.sabnzbdHeaders;
+        return profile.sabnzbdHeaders;
       case ZagModule.NZBGET:
-        return ZagProfile.current.nzbgetHeaders;
+        return profile.nzbgetHeaders;
       case ZagModule.SEARCH:
         throw Exception('Search does not have a headers page');
       case ZagModule.SETTINGS:
@@ -119,15 +120,15 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
       case ZagModule.WAKE_ON_LAN:
         throw Exception('Wake on LAN does not have a headers page');
       case ZagModule.OVERSEERR:
-        return ZagProfile.current.overseerrHeaders;
+        return profile.overseerrHeaders;
       case ZagModule.TAUTULLI:
-        return ZagProfile.current.tautulliHeaders;
+        return profile.tautulliHeaders;
       case ZagModule.UNRAID:
-        return ZagProfile.current.unraidHeaders;
+        return profile.unraidHeaders;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a headers page');
       case ZagModule.READARR:
-        return ZagProfile.current.readarrHeaders;
+        return profile.readarrHeaders;
     }
   }
 

@@ -73,7 +73,7 @@ class OverseerrState extends ZagModuleState {
   /// Reset the profile data, reinitializes API instance
   void resetProfile() {
     ZagLogger().debug('OverseerrState.resetProfile called');
-    ZagProfile _profile = ZagProfile.current;
+    ZagProfile _profile = ZagProfile.forModule('overseerr');
     // Copy profile into state
     _enabled = _profile.overseerrEnabled;
     _host = _normalizeHost(_profile.effectiveOverseerrHost());
