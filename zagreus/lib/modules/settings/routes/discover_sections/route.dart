@@ -19,7 +19,7 @@ class _State extends State<DashboardSectionsRoute> {
     return ZagScaffold(
       scaffoldKey: GlobalKey<ScaffoldState>(),
       appBar: ZagAppBar(
-        title: 'Dashboard Sections',
+        title: 'Dashboard Settings',
         actions: [
           if (_hasChanges)
             IconButton(
