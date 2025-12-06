@@ -8274,58 +8274,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           width: 2,
                         )
                       : null,
-                  image: movie.posterUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(movie.posterUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                 ),
-                child: movie.posterUrl == null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.movie_filter_rounded,
-                              size: 48,
-                              color: ZagColours.purple.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text(
-                                movie.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${movie.year}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black)
-                                    .withOpacity(0.6),
-                              ),
-                            ),
-                          ],
+                child: movie.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: movie.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) {
+                            return _deepCutPosterPlaceholder(movie);
+                          },
                         ),
                       )
-                    : null,
+                    : _deepCutPosterPlaceholder(movie),
               ),
               const SizedBox(height: 8),
               // Reason
@@ -8344,6 +8307,49 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _deepCutPosterPlaceholder(DeepCutMovie movie) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.movie_filter_rounded,
+            size: 48,
+            color: ZagColours.purple.withOpacity(0.5),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              movie.title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${movie.year}',
+            style: TextStyle(
+              fontSize: 12,
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.6),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -8588,58 +8594,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           width: 2,
                         )
                       : null,
-                  image: show.posterUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(show.posterUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                 ),
-                child: show.posterUrl == null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.live_tv_rounded,
-                              size: 48,
-                              color: ZagColours.purple.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text(
-                                show.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${show.year}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black)
-                                    .withOpacity(0.6),
-                              ),
-                            ),
-                          ],
+                child: show.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: show.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) =>
+                              _upNextPosterPlaceholder(show),
                         ),
                       )
-                    : null,
+                    : _upNextPosterPlaceholder(show),
               ),
               const SizedBox(height: 8),
               // Reason
@@ -8658,6 +8626,49 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _upNextPosterPlaceholder(UpNextShow show) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.live_tv_rounded,
+            size: 48,
+            color: ZagColours.purple.withOpacity(0.5),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              show.title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${show.year}',
+            style: TextStyle(
+              fontSize: 12,
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.6),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -8749,14 +8760,36 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: ZagColours.purple.withOpacity(0.2),
-                  image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
                 ),
+                child: movie.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: movie.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) =>
+                              _magicMoviePosterPlaceholder(movie),
+                        ),
+                      )
+                    : _magicMoviePosterPlaceholder(movie),
               ),
               const SizedBox(height: 8),
               Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _magicMoviePosterPlaceholder(dynamic movie) {
+    return Center(
+      child: Icon(
+        Icons.movie_rounded,
+        size: 40,
+        color: Colors.grey.shade600,
       ),
     );
   }
@@ -8848,8 +8881,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: ZagColours.purple.withOpacity(0.2),
-                  image: movie.posterUrl != null ? DecorationImage(image: NetworkImage(movie.posterUrl!), fit: BoxFit.cover) : null,
                 ),
+                child: movie.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: movie.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) =>
+                              _magicMoviePosterPlaceholder(movie),
+                        ),
+                      )
+                    : _magicMoviePosterPlaceholder(movie),
               ),
               const SizedBox(height: 8),
               Text(movie.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
@@ -9198,14 +9243,36 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: ZagColours.purple.withOpacity(0.2),
-                  image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
                 ),
+                child: show.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: show.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) =>
+                              _magicShowPosterPlaceholder(show),
+                        ),
+                      )
+                    : _magicShowPosterPlaceholder(show),
               ),
               const SizedBox(height: 8),
               Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _magicShowPosterPlaceholder(dynamic show) {
+    return Center(
+      child: Icon(
+        Icons.live_tv_rounded,
+        size: 40,
+        color: Colors.grey.shade600,
       ),
     );
   }
@@ -9297,8 +9364,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: ZagColours.purple.withOpacity(0.2),
-                  image: show.posterUrl != null ? DecorationImage(image: NetworkImage(show.posterUrl!), fit: BoxFit.cover) : null,
                 ),
+                child: show.posterUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: show.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) =>
+                              _magicShowPosterPlaceholder(show),
+                        ),
+                      )
+                    : _magicShowPosterPlaceholder(show),
               ),
               const SizedBox(height: 8),
               Text(show.reason, style: TextStyle(fontSize: 12), maxLines: 4, overflow: TextOverflow.ellipsis),
