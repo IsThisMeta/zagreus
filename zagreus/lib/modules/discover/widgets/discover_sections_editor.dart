@@ -921,7 +921,7 @@ Future<bool?> showDashboardSectionsEditorSheet(BuildContext context) {
                       child: Row(
                         children: [
                           Text(
-                            'Dashboard settings',
+                            'Dashboard Settings',
                             style: Theme.of(sheetContext)
                                 .textTheme
                                 .titleMedium
