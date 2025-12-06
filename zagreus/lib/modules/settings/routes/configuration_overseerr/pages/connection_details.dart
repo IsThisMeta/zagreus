@@ -81,6 +81,7 @@ class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
   List<Widget> _remoteBlocks() => [
         _remoteHost(),
         _apiKey(),
+        _customHeaders(),
       ];
 
   List<Widget> _localBlocks() => [
@@ -233,6 +234,15 @@ class _State extends State<ConfigurationOverseerrConnectionDetailsRoute>
           context.read<OverseerrState>().reset();
         }
       },
+    );
+  }
+
+  Widget _customHeaders() {
+    return ZagBlock(
+      title: 'settings.CustomHeaders'.tr(),
+      body: [TextSpan(text: 'settings.CustomHeadersDescription'.tr())],
+      trailing: const ZagIconButton.arrow(),
+      onTap: SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS_HEADERS.go,
     );
   }
 
