@@ -9292,7 +9292,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.9),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -9344,14 +9344,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 320, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 320,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicShowsCastCrew),
@@ -9412,7 +9412,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.9),
                 ),
-                maxLines: 4,
+                maxLines: 10,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
