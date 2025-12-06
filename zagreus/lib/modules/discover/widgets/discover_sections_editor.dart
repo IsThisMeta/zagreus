@@ -247,37 +247,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
   Widget _buildConfigTab() {
     final theme = Theme.of(context);
-    final infoRow = Row(
-      children: [
-        Icon(
-          Icons.info_outline,
-          size: 16,
-          color: theme.brightness == Brightness.dark
-              ? Colors.white54
-              : Colors.black54,
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            'Changes to these layout settings take effect after restarting the app.',
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black54,
-            ),
-          ),
-        ),
-      ],
-    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          infoRow,
-          const SizedBox(height: 16),
           Text(
             'Poster Height',
             style: TextStyle(
@@ -449,7 +424,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Toggle titles on or off for movie and show posters. Restart required.',
+            'Toggle titles on or off for movie and show posters.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -485,7 +460,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Display rating badges in white instead of colored. Restart required.',
+            'Display rating badges in white instead of colored.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
