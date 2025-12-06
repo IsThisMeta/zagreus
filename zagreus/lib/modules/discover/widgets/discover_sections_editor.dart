@@ -27,6 +27,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'deep_cuts',
     'magic_movies',
     'magic_movies_cast_crew',
+    'magic_people',
   ];
 
   static const List<String> _defaultTVSections = [
@@ -59,6 +60,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'deep_cuts': 'Deep Cuts',
     'magic_movies': 'Magic Movies',
     'magic_movies_cast_crew': 'Magic Movies: Cast & Crew',
+    'magic_people': 'Magic People',
     'recently_downloaded_shows': 'Recently Downloaded',
     'airing_next': 'Airing Next',
     'popular_tv_shows': 'Popular TV Shows',
@@ -846,6 +848,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.auto_fix_high_rounded;
       case 'magic_movies_cast_crew':
         return Icons.groups_rounded;
+      case 'magic_people':
+        return Icons.person_search_rounded;
       case 'airing_next':
         return Icons.live_tv_rounded;
       case 'trending_new_tv_shows':

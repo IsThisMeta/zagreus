@@ -53,6 +53,7 @@ import 'package:zagreus/services/magic_movies_service.dart';
 import 'package:zagreus/services/magic_movies_cast_crew_service.dart';
 import 'package:zagreus/services/magic_shows_service.dart';
 import 'package:zagreus/services/magic_shows_cast_crew_service.dart';
+import 'package:zagreus/services/magic_people_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
@@ -125,6 +126,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   static const _scrollIdMagicMoviesCastCrew = 'magic_movies_cast_crew_recommendations';
   static const _scrollIdMagicShows = 'magic_shows_recommendations';
   static const _scrollIdMagicShowsCastCrew = 'magic_shows_cast_crew_recommendations';
+  static const _scrollIdMagicPeople = 'magic_people_recommendations';
 
   static const _recentlyDownloadedListKey =
       PageStorageKey<String>('discover_recently_downloaded_movies');
@@ -264,6 +266,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicShowsCastCrewResult>? _magicShowsCastCrewFuture;
   bool _magicShowsCastCrewSyncInitialized = false;
 
+  // Magic People future
+  Future<MagicPeopleResult>? _magicPeopleFuture;
+  bool _magicPeopleSyncInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -294,6 +300,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _syncMagicMoviesCastCrewIfNeeded();
     _syncMagicShowsIfNeeded();
     _syncMagicShowsCastCrewIfNeeded();
+    _syncMagicPeopleIfNeeded();
     // Listen for instance context changes (e.g. from add pages)
     ZagInstanceContext().addListener(_onInstanceContextChanged);
   }
@@ -438,6 +445,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
+  Future<void> _syncMagicPeopleIfNeeded() async {
+    if (_magicPeopleSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicPeopleSyncInitialized = true;
+
+    try {
+      final service = MagicPeopleService();
+      final fetchResult = await service.fetchRecommendations();
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic People need regeneration - triggering...');
+        service.generateRecommendations();
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic People sync check failed', e, stack);
+    }
+  }
+
   @override
   void dispose() {
     ZagInstanceContext().removeListener(_onInstanceContextChanged);
@@ -464,6 +489,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _syncMagicMoviesCastCrewIfNeeded();
     _syncMagicShowsIfNeeded();
     _syncMagicShowsCastCrewIfNeeded();
+    _syncMagicPeopleIfNeeded();
     if (mounted) setState(() {});
   }
 
@@ -2230,6 +2256,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'deep_cuts',
       'magic_movies',
       'magic_movies_cast_crew',
+      'magic_people',
     ];
 
     // Get saved order or use default
@@ -2261,6 +2288,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Migration: Add 'magic_movies_cast_crew' to existing saved orders if missing
     if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_movies_cast_crew')) {
       sectionOrder.add('magic_movies_cast_crew');
+      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
+    }
+
+    // Migration: Add 'magic_people' to existing saved orders if missing
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_people')) {
+      sectionOrder.add('magic_people');
       ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
     }
 
@@ -2315,6 +2348,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'magic_movies_cast_crew': () => ZagreusMega.isEnabled
           ? Column(children: [
               _magicMoviesCastCrewSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
+      'magic_people': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicPeopleSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
@@ -8817,6 +8856,257 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
         ),
       ),
+    );
+  }
+
+  // Magic People Section
+  Widget _magicPeopleSection() {
+    final service = MagicPeopleService();
+    _magicPeopleFuture ??= service.fetchRecommendations();
+
+    return FutureBuilder<MagicPeopleResult>(
+      future: _magicPeopleFuture,
+      builder: (context, snapshot) {
+        final canRefresh = !snapshot.hasData ||
+            !snapshot.data!.success ||
+            (snapshot.data!.nextGenerationAt != null &&
+                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
+
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.person_search_rounded, color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Z', style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold, color: ZagColours.purple)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                  ),
+                  if (canRefresh)
+                    IconButton(
+                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
+                      onPressed: () async {
+                        await service.generateRecommendations(force: true);
+                        if (mounted) setState(() => _magicPeopleFuture = service.fetchRecommendations());
+                      },
+                    ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(height: 180, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                  return Container(height: 150, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                }
+                final recommendations = snapshot.data!.recommendations!;
+                return Container(
+                  height: 200,
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ListView.builder(
+                    controller: _sectionScrollController(_scrollIdMagicPeople),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) => _buildMagicPersonCard(recommendations[index]),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMagicPersonCard(MagicPerson person) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: GestureDetector(
+        onTap: () {
+          if (person.tmdbId != null) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PersonDetailsRoute(
+                  personId: person.tmdbId!,
+                  personName: person.name,
+                ),
+              ),
+            );
+          }
+        },
+        onLongPress: () => _showMagicPersonPreview(person),
+        child: Column(
+          children: [
+            // Circular avatar
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: ZagColours.purple.withOpacity(0.2),
+                border: Border.all(
+                  color: ZagColours.purple.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: ClipOval(
+                child: person.profileUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: person.profileUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: ZagColours.purple.withOpacity(0.2)),
+                        errorWidget: (context, url, error) {
+                          return _personPlaceholder();
+                        },
+                      )
+                    : _personPlaceholder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Name
+            Container(
+              width: 90,
+              child: Text(
+                person.name,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Known for (department)
+            Text(
+              person.knownFor,
+              style: TextStyle(
+                fontSize: 10,
+                color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                    .withOpacity(0.5),
+              ),
+            ),
+            const SizedBox(height: 4),
+            // Reason (truncated)
+            Container(
+              width: 90,
+              child: Text(
+                person.reason,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: ZagColours.purple.withOpacity(0.8),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMagicPersonPreview(MagicPerson person) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (person.profileUrl != null)
+                    ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: person.profileUrl!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ZagColours.purple.withOpacity(0.2),
+                      ),
+                      child: Icon(Icons.person_rounded, size: 30, color: ZagColours.purple),
+                    ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          person.name,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          person.knownFor,
+                          style: TextStyle(fontSize: 14, color: ZagColours.purple),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Why we recommend:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: ZagColours.purple),
+              ),
+              const SizedBox(height: 4),
+              Text(person.reason, style: const TextStyle(fontSize: 14)),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ZagColours.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    if (person.tmdbId != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PersonDetailsRoute(
+                            personId: person.tmdbId!,
+                            personName: person.name,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('View Filmography'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
