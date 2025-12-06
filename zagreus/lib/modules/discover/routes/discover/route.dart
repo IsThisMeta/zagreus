@@ -8282,7 +8282,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) {
                             return _deepCutPosterPlaceholder(movie);
                           },
@@ -8602,7 +8602,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _upNextPosterPlaceholder(show),
                         ),
@@ -8768,7 +8768,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicMoviePosterPlaceholder(movie),
                         ),
@@ -8889,7 +8889,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicMoviePosterPlaceholder(movie),
                         ),
@@ -9251,7 +9251,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicShowPosterPlaceholder(show),
                         ),
@@ -9372,7 +9372,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
-                              Container(color: Colors.grey.shade800),
+                              Container(color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicShowPosterPlaceholder(show),
                         ),
