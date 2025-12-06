@@ -669,7 +669,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (url == null || url.isEmpty) return;
     if (_precachedHeroBackdrops.contains(url)) return;
     _precachedHeroBackdrops.add(url);
-    precacheImage(NetworkImage(url), context);
+    precacheImage(CachedNetworkImageProvider(url), context);
   }
 
   Future<void> _loadRecentlyDownloaded({bool showGlobalLoader = true}) async {
