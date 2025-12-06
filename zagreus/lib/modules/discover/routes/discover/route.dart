@@ -270,6 +270,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicPeopleResult>? _magicPeopleFuture;
   bool _magicPeopleSyncInitialized = false;
 
+  // Track the soonest scheduled regeneration across Z sections for display
+  DateTime? _nextZSectionsRegenerationAt;
+
   @override
   void initState() {
     super.initState();
@@ -2235,6 +2238,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // Content sections in custom order
           ..._buildMovieSections(),
           _discoverSectionsButton(),
+          _zAutoRefreshNote(),
           _metadataCredits(),
           const SizedBox(height: 32),
         ],
@@ -2397,6 +2401,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ..._buildTVSections(),
           const SizedBox(height: 16),
           _discoverSectionsButton(),
+          _zAutoRefreshNote(),
           _metadataCredits(),
           const SizedBox(height: 32),
         ],
@@ -2498,6 +2503,78 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         icon: Icons.tune_rounded,
         color: ZagColours.currentAccent,
         onTap: _openDiscoverSectionsEditor,
+      ),
+    );
+  }
+
+  void _recordNextZRegeneration(DateTime? date) {
+    if (date == null) return;
+    final current = _nextZSectionsRegenerationAt;
+    final shouldUpdate = current == null || date.isBefore(current.subtract(const Duration(minutes: 1)));
+    if (!shouldUpdate) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        if (_nextZSectionsRegenerationAt == null ||
+            date.isBefore(_nextZSectionsRegenerationAt!)) {
+          _nextZSectionsRegenerationAt = date;
+        }
+      });
+    });
+  }
+
+  String _nextZRegenerationText() {
+    if (_nextZSectionsRegenerationAt == null) {
+      return 'Auto-updates weekly.';
+    }
+    final now = DateTime.now();
+    final dt = _nextZSectionsRegenerationAt!;
+    if (dt.isBefore(now)) {
+      return 'Auto-updates weekly • Refreshing soon';
+    }
+    final diff = dt.difference(now);
+    final days = diff.inDays;
+    final hours = diff.inHours % 24;
+    final minutes = diff.inMinutes % 60;
+    String eta;
+    if (days > 0) {
+      eta = '${days}d ${hours}h';
+    } else if (hours > 0) {
+      eta = '${hours}h ${minutes}m';
+    } else {
+      eta = '${minutes}m';
+    }
+    return 'Auto-updates weekly • Next refresh in $eta';
+  }
+
+  Widget _zAutoRefreshNote() {
+    final textColor = Theme.of(context)
+        .textTheme
+        .bodySmall
+        ?.color
+        ?.withOpacity(0.8);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+        vertical: 4,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.schedule_rounded, size: 16, color: ZagColours.purple),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              _nextZRegenerationText(),
+              style: TextStyle(
+                fontSize: 12,
+                color: textColor ?? Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -8043,15 +8120,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<DeepCutsResult>(
       future: _deepCutsFuture,
       builder: (context, futureSnapshot) {
-        // Only show refresh button if:
-        // 1. We have no data yet (empty state) OR
-        // 2. We have data but it's time for regeneration (nextGenerationAt has passed)
-        // Do NOT show if we have a successful list that's still fresh
-        final canRefresh = !futureSnapshot.hasData ||
-            !futureSnapshot.data!.success ||
-            (futureSnapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!));
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -8087,31 +8155,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   ),
-                  // Refresh button (hidden if cooldown active)
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(
-                        Icons.refresh_rounded,
-                        color: ZagColours.purple,
-                        size: 20,
-                      ),
-                      onPressed: () async {
-                        await deepCutsService.generateRecommendations(
-                            force: true);
-                        if (mounted) {
-                          setState(() {
-                            _deepCutsFuture =
-                                deepCutsService.fetchRecommendations();
-                          });
-                        }
-                      },
-                    ),
                 ],
               ),
             ),
             // Content
             Builder(
               builder: (context) {
+                if (futureSnapshot.hasData &&
+                    futureSnapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(
+                      futureSnapshot.data!.nextGenerationAt);
+                }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
                     height: 280,
@@ -8154,7 +8208,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _deepCutsEmptyState(DeepCutsResult? result) {
     // Determine message based on error type
     String title = 'No deep cuts yet';
-    String message = 'Tap refresh to generate AI-powered recommendations';
+    String message = 'Recommendations generate automatically each week.';
     IconData icon = Icons.movie_filter_rounded;
 
     if (result != null && !result.success && result.error != null) {
@@ -8363,15 +8417,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<UpNextResult>(
       future: _upNextFuture,
       builder: (context, futureSnapshot) {
-        // Only show refresh button if:
-        // 1. We have no data yet (empty state) OR
-        // 2. We have data but it's time for regeneration (nextGenerationAt has passed)
-        // Do NOT show if we have a successful list that's still fresh
-        final canRefresh = !futureSnapshot.hasData ||
-            !futureSnapshot.data!.success ||
-            (futureSnapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(futureSnapshot.data!.nextGenerationAt!));
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -8407,31 +8452,17 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   ),
-                  // Refresh button (hidden if cooldown active)
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(
-                        Icons.refresh_rounded,
-                        color: ZagColours.purple,
-                        size: 20,
-                      ),
-                      onPressed: () async {
-                        await upNextService.generateRecommendations(
-                            force: true);
-                        if (mounted) {
-                          setState(() {
-                            _upNextFuture =
-                                upNextService.fetchRecommendations();
-                          });
-                        }
-                      },
-                    ),
                 ],
               ),
             ),
             // Content
             Builder(
               builder: (context) {
+                if (futureSnapshot.hasData &&
+                    futureSnapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(
+                      futureSnapshot.data!.nextGenerationAt);
+                }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
                     height: 280,
@@ -8474,7 +8505,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _upNextEmptyState(UpNextResult? result) {
     // Determine message based on error type
     String title = 'No recommendations yet';
-    String message = 'Tap refresh to generate AI-powered show recommendations';
+    String message = 'Recommendations generate automatically each week.';
     IconData icon = Icons.live_tv_rounded;
 
     if (result != null && !result.success && result.error != null) {
@@ -8681,11 +8712,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicMoviesResult>(
       future: _magicMoviesFuture,
       builder: (context, snapshot) {
-        final canRefresh = !snapshot.hasData ||
-            !snapshot.data!.success ||
-            (snapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
-
         final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies';
 
         return Column(
@@ -8702,24 +8728,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Expanded(
                     child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
                   ),
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
-                      onPressed: () async {
-                        await service.generateRecommendations(force: true);
-                        if (mounted) setState(() => _magicMoviesFuture = service.fetchRecommendations());
-                      },
-                    ),
                 ],
               ),
             ),
             Builder(
               builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -8802,11 +8824,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicMoviesCastCrewResult>(
       future: _magicMoviesCastCrewFuture,
       builder: (context, snapshot) {
-        final canRefresh = !snapshot.hasData ||
-            !snapshot.data!.success ||
-            (snapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
-
         final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies: Cast & Crew';
 
         return Column(
@@ -8823,24 +8840,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Expanded(
                     child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
                   ),
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
-                      onPressed: () async {
-                        await service.generateRecommendations(force: true);
-                        if (mounted) setState(() => _magicMoviesCastCrewFuture = service.fetchRecommendations());
-                      },
-                    ),
                 ],
               ),
             ),
             Builder(
               builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -8913,11 +8926,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleFuture,
       builder: (context, snapshot) {
-        final canRefresh = !snapshot.hasData ||
-            !snapshot.data!.success ||
-            (snapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
-
         final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
 
         return Column(
@@ -8934,24 +8942,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Expanded(
                     child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
                   ),
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
-                      onPressed: () async {
-                        await service.generateRecommendations(force: true);
-                        if (mounted) setState(() => _magicPeopleFuture = service.fetchRecommendations());
-                      },
-                    ),
                 ],
               ),
             ),
             Builder(
               builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(height: 180, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 150, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                  return Container(height: 150, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -9164,11 +9168,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicShowsResult>(
       future: _magicShowsFuture,
       builder: (context, snapshot) {
-        final canRefresh = !snapshot.hasData ||
-            !snapshot.data!.success ||
-            (snapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
-
         final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows';
 
         return Column(
@@ -9185,24 +9184,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Expanded(
                     child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
                   ),
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
-                      onPressed: () async {
-                        await service.generateRecommendations(force: true);
-                        if (mounted) setState(() => _magicShowsFuture = service.fetchRecommendations());
-                      },
-                    ),
                 ],
               ),
             ),
             Builder(
               builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -9285,11 +9280,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicShowsCastCrewResult>(
       future: _magicShowsCastCrewFuture,
       builder: (context, snapshot) {
-        final canRefresh = !snapshot.hasData ||
-            !snapshot.data!.success ||
-            (snapshot.data!.nextGenerationAt != null &&
-                DateTime.now().isAfter(snapshot.data!.nextGenerationAt!));
-
         final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows: Cast & Crew';
 
         return Column(
@@ -9306,24 +9296,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   Expanded(
                     child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
                   ),
-                  if (canRefresh)
-                    IconButton(
-                      icon: Icon(Icons.refresh_rounded, color: ZagColours.purple, size: 20),
-                      onPressed: () async {
-                        await service.generateRecommendations(force: true);
-                        if (mounted) setState(() => _magicShowsCastCrewFuture = service.fetchRecommendations());
-                      },
-                    ),
                 ],
               ),
             ),
             Builder(
               builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(height: 280, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Tap refresh!')));
+                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
