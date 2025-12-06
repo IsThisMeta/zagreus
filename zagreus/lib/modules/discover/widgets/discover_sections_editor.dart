@@ -78,7 +78,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   bool _showTitles = true;
   bool _monochromeRatings = false;
   bool _showHeroCarousel = true;
-  String _trendingTimeWindow = 'day';
+  String _trendingTimeWindow = 'week';
 
   bool get hasChanges => _hasChanges;
 
@@ -185,7 +185,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showTitles = true;
       _monochromeRatings = false;
       _showHeroCarousel = true;
-      _trendingTimeWindow = 'day';
+      _trendingTimeWindow = 'week';
       _hasChanges = true;
     });
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -921,7 +921,7 @@ Future<bool?> showDashboardSectionsEditorSheet(BuildContext context) {
                       child: Row(
                         children: [
                           Text(
-                            'Dashboard Sections',
+                            'Dashboard settings',
                             style: Theme.of(sheetContext)
                                 .textTheme
                                 .titleMedium
