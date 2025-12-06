@@ -2600,6 +2600,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final updated = await showDashboardSectionsEditorSheet(context);
     if (updated == true && mounted) {
       setState(() {
+        _loadSavedSettings();
         _loadTrendingTimeWindowSetting();
         _currentMovieHeroIndex = 0;
         _currentTVHeroIndex = 0;
