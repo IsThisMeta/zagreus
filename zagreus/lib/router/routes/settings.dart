@@ -26,6 +26,7 @@ import 'package:zagreus/modules/settings/routes/configuration_nzbget/pages/defau
 import 'package:zagreus/modules/settings/routes/configuration_nzbget/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_nzbget/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_overseerr/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_overseerr/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_overseerr/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_quick_actions/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_radarr/pages/connection_details.dart';
@@ -100,6 +101,7 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_NZBGET_DEFAULT_PAGES('default_pages'),
   CONFIGURATION_OVERSEERR('overseerr'),
   CONFIGURATION_OVERSEERR_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_OVERSEERR_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_QUICK_ACTIONS('quick_actions'),
   CONFIGURATION_RADARR('radarr'),
   CONFIGURATION_RADARR_CONNECTION_DETAILS('connection_details'),
@@ -216,6 +218,10 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: const ConfigurationOverseerrRoute());
       case SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS:
         return route(widget: const ConfigurationOverseerrConnectionDetailsRoute());
+      case SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS_HEADERS:
+        return route(
+          widget: const ConfigurationOverseerrConnectionDetailsHeadersRoute(),
+        );
       case SettingsRoutes.CONFIGURATION_QUICK_ACTIONS:
         return route(widget: const ConfigurationQuickActionsRoute());
       case SettingsRoutes.CONFIGURATION_RADARR:
@@ -402,6 +408,10 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION_OVERSEERR:
         return [
           SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS:
+        return [
+          SettingsRoutes.CONFIGURATION_OVERSEERR_CONNECTION_DETAILS_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_RADARR:
         return [

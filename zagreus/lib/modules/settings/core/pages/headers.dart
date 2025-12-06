@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:zagreus/core.dart';
+import 'package:zagreus/modules/overseerr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
@@ -118,7 +119,7 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
       case ZagModule.WAKE_ON_LAN:
         throw Exception('Wake on LAN does not have a headers page');
       case ZagModule.OVERSEERR:
-        throw Exception('Overseerr does not have a headers page');
+        return ZagProfile.current.overseerrHeaders;
       case ZagModule.TAUTULLI:
         return ZagProfile.current.tautulliHeaders;
       case ZagModule.UNRAID:
@@ -157,7 +158,7 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
       case ZagModule.UNRAID:
         return context.read<UnraidState>().reset();
       case ZagModule.OVERSEERR:
-        return;
+        return context.read<OverseerrState>().reset();
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a global state');
       case ZagModule.READARR:
