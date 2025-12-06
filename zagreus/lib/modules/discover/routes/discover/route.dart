@@ -8184,7 +8184,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    height: 400,
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -8200,7 +8200,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final recommendations = futureSnapshot.data!.recommendations!;
 
                 return Container(
-                  height: 400,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _deepCutsListKey,
@@ -8481,7 +8481,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    height: 400,
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: const Center(child: CircularProgressIndicator()),
                   );
@@ -8497,7 +8497,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 final recommendations = futureSnapshot.data!.recommendations!;
 
                 return Container(
-                  height: 400,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _upNextListKey,
@@ -8752,14 +8752,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 400,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicMovies),
@@ -8872,14 +8872,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 400,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicMoviesCastCrew),
@@ -9053,7 +9053,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             const SizedBox(height: 8),
             // Name
             Container(
-              width: 90,
+              width: 110,
               child: Text(
                 person.name,
                 style: TextStyle(
@@ -9082,7 +9082,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             const SizedBox(height: 4),
             // Reason (truncated)
             Container(
-              width: 90,
+              width: 130,
               child: Text(
                 person.reason,
                 style: TextStyle(
@@ -9091,7 +9091,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           Colors.white)
                       .withOpacity(0.85),
                 ),
-                maxLines: 2,
+                maxLines: 7,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
@@ -9224,14 +9224,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 400, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
-                  height: 400,
+                  height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     controller: _sectionScrollController(_scrollIdMagicShows),
