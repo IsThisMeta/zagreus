@@ -2623,7 +2623,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               _metadataIcon(
                 'assets/images/justwatch_long.png',
                 fullWidth: true,
-                height: 27,
+                height: 28,
               ),
             ],
           ),
