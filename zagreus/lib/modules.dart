@@ -224,7 +224,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.SABNZBD:
         return ZagIcons.SABNZBD;
       case ZagModule.SEARCH:
-        return Icons.search_rounded;
+        return Icons.travel_explore_rounded;
       case ZagModule.SETTINGS:
         return Icons.settings_rounded;
       case ZagModule.SONARR:
