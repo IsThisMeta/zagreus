@@ -39,6 +39,7 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
     // Only fetch ratings if user is premium
     if (_isPremium) {
       // Check cache first for instant load
+      bool loadedFromCache = false;
       if (widget.movie?.imdbId != null) {
         final cached = RatingsCacheService().getCachedRatings(widget.movie!.imdbId!);
         if (cached != null) {
@@ -50,10 +51,13 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
             _loading = false;
             _hasError = cached.ratings == null && cached.tmdbRating == null;
           });
+          loadedFromCache = true;
         }
       }
-      // Always fetch fresh data in background
-      _fetchRatings();
+      // Only fetch if not loaded from cache
+      if (!loadedFromCache) {
+        _fetchRatings();
+      }
     } else {
       _loading = false;
     }
