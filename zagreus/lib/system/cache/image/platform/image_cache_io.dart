@@ -15,7 +15,13 @@ ZagImageCache getImageCache() {
 }
 
 class IO implements ZagImageCache {
-  static final CacheManager _cache = CacheManager(Config(ZagImageCache.key));
+  static final CacheManager _cache = CacheManager(
+    Config(
+      ZagImageCache.key,
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 5000,
+    ),
+  );
 
   @override
   CacheManager get instance => _cache;
@@ -29,7 +35,7 @@ class IO implements ZagImageCache {
 
   @override
   void initialize() {
-    PaintingBinding.instance.imageCache.maximumSize = 1000;
-    PaintingBinding.instance.imageCache.maximumSizeBytes = 128 << 20;
+    PaintingBinding.instance.imageCache.maximumSize = 2000;
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 512 << 20;
   }
 }
