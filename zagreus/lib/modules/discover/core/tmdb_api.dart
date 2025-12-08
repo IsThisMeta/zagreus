@@ -696,15 +696,27 @@ class TMDBApi {
     required String region,
   }) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/movie/$tmdbId/watch/providers?api_key=$_apiKey'),
-      );
+      final url =
+          Uri.parse('$_baseUrl/movie/$tmdbId/watch/providers?api_key=$_apiKey');
+      final response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        final bodyPreview =
+            response.body.length > 300 ? '${response.body.substring(0, 300)}…' : response.body;
+        print(
+            'TMDB watch providers (movie) failed tmdbId=$tmdbId region=$region status=${response.statusCode} body=$bodyPreview');
+      } else {
+        print(
+            'TMDB watch providers (movie) tmdbId=$tmdbId region=$region status=200');
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final results = data['results'] as Map<String, dynamic>?;
 
         if (results == null || results.isEmpty) {
+          print(
+              'TMDB watch providers (movie) no results tmdbId=$tmdbId region=$region');
           return {'streaming': [], 'buyRent': [], 'link': null};
         }
 
@@ -712,6 +724,8 @@ class TMDBApi {
         final regionData = results[regionKey] as Map<String, dynamic>?;
 
         if (regionData == null) {
+          print(
+              'TMDB watch providers (movie) missing region block tmdbId=$tmdbId region=$regionKey');
           return {'streaming': [], 'buyRent': [], 'link': null};
         }
 
@@ -781,15 +795,25 @@ class TMDBApi {
     required String region,
   }) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/tv/$tmdbId/watch/providers?api_key=$_apiKey'),
-      );
+      final url =
+          Uri.parse('$_baseUrl/tv/$tmdbId/watch/providers?api_key=$_apiKey');
+      final response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        final bodyPreview =
+            response.body.length > 300 ? '${response.body.substring(0, 300)}…' : response.body;
+        print(
+            'TMDB watch providers (tv) failed tmdbId=$tmdbId region=$region status=${response.statusCode} body=$bodyPreview');
+      } else {
+        print('TMDB watch providers (tv) tmdbId=$tmdbId region=$region status=200');
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final results = data['results'] as Map<String, dynamic>?;
 
         if (results == null || results.isEmpty) {
+          print('TMDB watch providers (tv) no results tmdbId=$tmdbId region=$region');
           return {'streaming': [], 'buyRent': [], 'link': null};
         }
 
@@ -797,6 +821,8 @@ class TMDBApi {
         final regionData = results[regionKey] as Map<String, dynamic>?;
 
         if (regionData == null) {
+          print(
+              'TMDB watch providers (tv) missing region block tmdbId=$tmdbId region=$regionKey');
           return {'streaming': [], 'buyRent': [], 'link': null};
         }
 

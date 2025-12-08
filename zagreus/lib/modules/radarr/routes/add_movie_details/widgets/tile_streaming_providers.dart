@@ -26,22 +26,36 @@ class _RadarrAddMovieStreamingProvidersTileState
   bool _loading = true;
   bool _hasError = false;
   late final bool _isPremium;
+  bool _requestedLoad = false;
 
   @override
   void initState() {
     super.initState();
     _isPremium = SubscriptionService.isPremium;
 
-    if (_isPremium) {
-      _loadProviders();
-    } else {
+    debugPrint(
+        '[StreamingProviders][movie] init premium=$_isPremium tmdbId=${widget.movie?.tmdbId} title=${widget.movie?.title}');
+    if (!_isPremium) {
       _loading = false;
     }
   }
 
-  Future<void> _loadProviders() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isPremium && !_requestedLoad) {
+      _requestedLoad = true;
+      final locale = Localizations.localeOf(context);
+      _loadProviders(region: locale.countryCode ?? 'US');
+    }
+  }
+
+  Future<void> _loadProviders({required String region}) async {
+    debugPrint(
+        '[StreamingProviders][movie] loadProviders start tmdbId=${widget.movie?.tmdbId} region=$region');
     final tmdbId = widget.movie?.tmdbId;
     if (tmdbId == null) {
+      debugPrint('[StreamingProviders][movie] abort: no tmdbId');
       setState(() {
         _loading = false;
       });
@@ -49,10 +63,6 @@ class _RadarrAddMovieStreamingProvidersTileState
     }
 
     try {
-      // Get user's region from locale
-      final locale = Localizations.localeOf(context);
-      final region = locale.countryCode ?? 'US';
-
       final results = await TMDBApi.getMovieWatchProviders(
         tmdbId,
         region: region,
@@ -64,7 +74,10 @@ class _RadarrAddMovieStreamingProvidersTileState
         _fallbackLink = results['link'] as String?;
         _loading = false;
       });
+      debugPrint(
+          '[StreamingProviders][movie] done streaming=${_streamingProviders.length} buyRent=${_buyRentProviders.length} hasFallback=${_fallbackLink != null}');
     } catch (e) {
+      debugPrint('[StreamingProviders][movie] error: $e');
       setState(() {
         _loading = false;
         _hasError = true;

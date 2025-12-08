@@ -26,22 +26,36 @@ class _SonarrAddSeriesStreamingProvidersTileState
   bool _loading = true;
   bool _hasError = false;
   late final bool _isPremium;
+  bool _requestedLoad = false;
 
   @override
   void initState() {
     super.initState();
     _isPremium = SubscriptionService.isPremium;
 
-    if (_isPremium) {
-      _loadProviders();
-    } else {
+    debugPrint(
+        '[StreamingProviders][tv] init premium=$_isPremium imdbId=${widget.series?.imdbId} title=${widget.series?.title}');
+    if (!_isPremium) {
       _loading = false;
     }
   }
 
-  Future<void> _loadProviders() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isPremium && !_requestedLoad) {
+      _requestedLoad = true;
+      final locale = Localizations.localeOf(context);
+      _loadProviders(region: locale.countryCode ?? 'US');
+    }
+  }
+
+  Future<void> _loadProviders({required String region}) async {
+    debugPrint(
+        '[StreamingProviders][tv] loadProviders start imdbId=${widget.series?.imdbId} region=$region');
     final imdbId = widget.series?.imdbId;
     if (imdbId == null) {
+      debugPrint('[StreamingProviders][tv] abort: no imdbId');
       setState(() {
         _loading = false;
       });
@@ -52,15 +66,12 @@ class _SonarrAddSeriesStreamingProvidersTileState
       // Look up TMDB ID from IMDb ID
       final tmdbId = await TMDBApi.getTmdbIdFromImdb(imdbId);
       if (tmdbId == null) {
+        debugPrint('[StreamingProviders][tv] abort: tmdbId lookup failed');
         setState(() {
           _loading = false;
         });
         return;
       }
-
-      // Get user's region from locale
-      final locale = Localizations.localeOf(context);
-      final region = locale.countryCode ?? 'US';
 
       final results = await TMDBApi.getTVShowWatchProviders(
         tmdbId,
@@ -73,7 +84,10 @@ class _SonarrAddSeriesStreamingProvidersTileState
         _fallbackLink = results['link'] as String?;
         _loading = false;
       });
+      debugPrint(
+          '[StreamingProviders][tv] done streaming=${_streamingProviders.length} buyRent=${_buyRentProviders.length} hasFallback=${_fallbackLink != null}');
     } catch (e) {
+      debugPrint('[StreamingProviders][tv] error: $e');
       setState(() {
         _loading = false;
         _hasError = true;
