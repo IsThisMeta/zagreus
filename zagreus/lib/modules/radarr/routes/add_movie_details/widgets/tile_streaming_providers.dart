@@ -151,10 +151,8 @@ class _RadarrAddMovieStreamingProvidersTileState
                         ),
                       ),
                     )
-                  : Wrap(
-                      alignment: WrapAlignment.start,
-                      spacing: 8,
-                      runSpacing: 8,
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         ...visibleProviders
                             .where((provider) {
@@ -163,19 +161,22 @@ class _RadarrAddMovieStreamingProvidersTileState
                             })
                             .map((provider) {
                               final logoPath = provider['logo_path'] as String;
-                              return GestureDetector(
-                                onTap: () => _openProvider(provider),
-                                child: Tooltip(
-                                  message: provider['provider_name'] ?? '',
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.network(
-                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                                      width: 36,
-                                      height: 36,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox.shrink(),
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () => _openProvider(provider),
+                                  child: Tooltip(
+                                    message: provider['provider_name'] ?? '',
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.network(
+                                        TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                        width: 36,
+                                        height: 36,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const SizedBox.shrink(),
+                                      ),
                                     ),
                                   ),
                                 ),
