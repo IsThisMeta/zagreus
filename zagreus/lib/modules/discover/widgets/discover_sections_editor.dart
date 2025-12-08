@@ -6,9 +6,11 @@ class DiscoverSectionsEditor extends StatefulWidget {
   const DiscoverSectionsEditor({
     super.key,
     this.onHasChangesChanged,
+    this.initialIndex = 0,
   });
 
   final ValueChanged<bool>? onHasChangesChanged;
+  final int initialIndex;
 
   @override
   DiscoverSectionsEditorState createState() => DiscoverSectionsEditorState();
@@ -204,6 +206,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
+      initialIndex: widget.initialIndex,
       child: Column(
         children: [
           Container(
@@ -845,7 +848,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   }
 }
 
-Future<bool?> showDashboardSectionsEditorSheet(BuildContext context) {
+Future<bool?> showDashboardSectionsEditorSheet(
+  BuildContext context, {
+  int initialIndex = 0,
+}) {
   final editorKey = GlobalKey<DiscoverSectionsEditorState>();
   bool hasChanges = false;
   bool isSaving = false;
@@ -929,6 +935,7 @@ Future<bool?> showDashboardSectionsEditorSheet(BuildContext context) {
                         key: editorKey,
                         onHasChangesChanged: (value) =>
                             setModalState(() => hasChanges = value),
+                        initialIndex: initialIndex,
                       ),
                     ),
                   ],

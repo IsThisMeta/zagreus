@@ -2400,7 +2400,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           // TV shows sections in custom order
           ..._buildTVSections(),
           const SizedBox(height: 16),
-          _discoverSectionsButton(),
+          _discoverSectionsButton(isShows: true),
           _zAutoRefreshNote(),
           _metadataCredits(),
           const SizedBox(height: 32),
@@ -2491,22 +2491,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return sections;
   }
 
-  Widget _discoverSectionsButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
-        vertical: 8,
-      ),
-      child: ZagButton(
-        type: ZagButtonType.TEXT,
-        text: 'Edit Sections',
-        icon: Icons.tune_rounded,
-        color: ZagColours.currentAccent,
-        onTap: _openDiscoverSectionsEditor,
+  Widget _discoverSectionsButton({bool isShows = false}) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+          vertical: 8,
+        ),
+        child: ZagButton(
+          type: ZagButtonType.TEXT,
+          text: 'Edit Sections',
+          icon: Icons.tune_rounded,
+          color: ZagColours.currentAccent,
+          onTap: () => _openDiscoverSectionsEditor(initialIndex: isShows ? 1 : 0),
+        ),
       ),
     );
   }
-
   void _recordNextZRegeneration(DateTime? date) {
     if (date == null) return;
     final current = _nextZSectionsRegenerationAt;
@@ -2673,8 +2674,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Future<void> _openDiscoverSectionsEditor() async {
-    final updated = await showDashboardSectionsEditorSheet(context);
+  Future<void> _openDiscoverSectionsEditor({int? initialIndex}) async {
+    final enableLegacyModules = _showLegacyModules;
+    final showsTabIndex = enableLegacyModules ? 2 : 1;
+    final effectiveIndex = initialIndex ?? (_currentPageIndex == showsTabIndex ? 1 : 0);
+
+    final updated = await showDashboardSectionsEditorSheet(
+      context,
+      initialIndex: effectiveIndex,
+    );
+
     if (updated == true && mounted) {
       setState(() {
         _loadSavedSettings();
