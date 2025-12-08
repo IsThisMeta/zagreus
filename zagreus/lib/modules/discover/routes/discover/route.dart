@@ -786,8 +786,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         if (showGlobalLoader) _isLoading = false;
       });
 
-      // Reload sections to update library status indicators
-      _loadRecommendedMovies();
+      // Reload TMDB sections to update library status indicators
       _loadPopularMovies();
       _loadRecentlyReleasedMovies();
       _loadMostAnticipatedMovies();
@@ -821,25 +820,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         includeRecommendations: true,
       );
 
-      // Get current library movies to filter out items already in library
-      List<RadarrMovie> libraryMovies = [];
-      if (radarrState.movies != null) {
-        libraryMovies = await radarrState.movies!;
-      }
-
-      // Create a set of TMDB IDs for movies already in library
-      final libraryTmdbIds = libraryMovies
-          .where((m) => m.tmdbId != null)
-          .map((m) => m.tmdbId!)
-          .toSet();
-
-      // Remove duplicates and filter out movies already in library
+      // Remove duplicates and limit
       final Set<int> tmdbIds = {};
       final uniqueMovies = <RadarrMovie>[];
       for (final movie in recommendedMovies) {
-        if (movie.tmdbId != null &&
-            !tmdbIds.contains(movie.tmdbId) &&
-            !libraryTmdbIds.contains(movie.tmdbId)) {
+        if (movie.tmdbId != null && !tmdbIds.contains(movie.tmdbId)) {
           tmdbIds.add(movie.tmdbId!);
           uniqueMovies.add(movie);
         }
