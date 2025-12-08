@@ -590,13 +590,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _loadTrendingData() async {
     try {
+      final hideInLibrary = ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read() ?? false;
+
       // Load separate lists for movies and TV shows
-      final movieItems = await TMDBApi.getTrending(
+      var movieItems = await TMDBApi.getTrending(
         mediaType: 'movie',
         timeWindow: _trendingTimeWindow,
       );
 
-      final tvItems = await TMDBApi.getTrending(
+      var tvItems = await TMDBApi.getTrending(
         mediaType: 'tv',
         timeWindow: _trendingTimeWindow,
       );
@@ -636,6 +638,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             print('📺 Error checking Sonarr library for trending: $e');
           }
         }
+      }
+
+      if (hideInLibrary) {
+        movieItems =
+            movieItems.where((item) => item['inLibrary'] != true).toList();
+        tvItems = tvItems.where((item) => item['inLibrary'] != true).toList();
       }
 
       if (mounted) {

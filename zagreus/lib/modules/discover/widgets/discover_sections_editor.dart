@@ -82,6 +82,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   bool _showTitles = true;
   bool _monochromeRatings = false;
   bool _showHeroCarousel = true;
+  bool _hideInLibraryFromHero = false;
   String _trendingTimeWindow = 'week';
 
   bool get hasChanges => _hasChanges;
@@ -149,6 +150,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showHeroCarousel = savedShowHeroCarousel;
     }
 
+    // Load hide in library from hero setting
+    final savedHideInLibraryFromHero =
+        ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read();
+    if (savedHideInLibraryFromHero != null) {
+      _hideInLibraryFromHero = savedHideInLibraryFromHero;
+    }
+
     final savedTimeWindow =
         ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.read();
     if (savedTimeWindow == 'day' || savedTimeWindow == 'week') {
@@ -168,6 +176,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
+    ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.update(_hideInLibraryFromHero);
     ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW
         .update(_trendingTimeWindow);
     setState(() => _hasChanges = false);
@@ -189,6 +198,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showTitles = true;
       _monochromeRatings = false;
       _showHeroCarousel = true;
+      _hideInLibraryFromHero = false;
       _trendingTimeWindow = 'week';
       _hasChanges = true;
     });
@@ -502,6 +512,42 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Text(
             'Toggle the auto-scrolling hero carousel at the top of Movies and TV Shows tabs.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Hide In-Library Items from Hero',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Switch(
+                value: _hideInLibraryFromHero,
+                activeColor: ZagColours.accentColor(context),
+                onChanged: (value) {
+                  setState(() {
+                    _hideInLibraryFromHero = value;
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+              ),
+            ],
+          ),
+          Text(
+            'Hide movies and shows you already have from the hero carousel.',
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
