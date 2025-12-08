@@ -27,9 +27,6 @@ class _RadarrAddMovieStreamingProvidersTileState
   bool _hasError = false;
   late final bool _isPremium;
 
-  // Max icons per section (side by side layout)
-  static const int _maxVisibleIcons = 4;
-
   @override
   void initState() {
     super.initState();
@@ -116,7 +113,6 @@ class _RadarrAddMovieStreamingProvidersTileState
     required bool isLoading,
     required bool hasError,
   }) {
-    final visibleProviders = providers.take(_maxVisibleIcons).toList();
     final isEmpty = providers.isEmpty;
 
     return Column(
@@ -149,36 +145,52 @@ class _RadarrAddMovieStreamingProvidersTileState
                         ),
                       ),
                     )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: visibleProviders
-                          .where((provider) {
-                            final logoPath = provider['logo_path'] as String?;
-                            return logoPath != null && logoPath.isNotEmpty;
-                          })
-                          .map((provider) {
-                            final logoPath = provider['logo_path'] as String;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: GestureDetector(
-                                onTap: () => _openProvider(provider),
-                                child: Tooltip(
-                                  message: provider['provider_name'] ?? '',
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.network(
-                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                                      width: 36,
-                                      height: 36,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox.shrink(),
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Calculate how many icons can fit
+                        // Icon width: 36, spacing: 8
+                        const iconWidth = 36.0;
+                        const spacing = 8.0;
+                        final availableWidth = constraints.maxWidth;
+
+                        // Calculate max icons that fit
+                        int maxIcons = ((availableWidth + spacing) / (iconWidth + spacing)).floor();
+                        maxIcons = maxIcons.clamp(1, providers.length);
+
+                        final visibleProviders = providers.take(maxIcons).toList();
+
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: visibleProviders
+                              .where((provider) {
+                                final logoPath = provider['logo_path'] as String?;
+                                return logoPath != null && logoPath.isNotEmpty;
+                              })
+                              .map((provider) {
+                                final logoPath = provider['logo_path'] as String;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: GestureDetector(
+                                    onTap: () => _openProvider(provider),
+                                    child: Tooltip(
+                                      message: provider['provider_name'] ?? '',
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Image.network(
+                                          TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                          width: 36,
+                                          height: 36,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const SizedBox.shrink(),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                );
+                              }).toList(),
+                        );
+                      },
                     ),
         ),
       ],
