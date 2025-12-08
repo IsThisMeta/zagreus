@@ -6749,7 +6749,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdRecentlyReleasedMovies,
             loader: _loadRecentlyReleasedMovies,
-            sectionLabel: 'Recently Released Movies',
+            sectionLabel: 'Recently Released',
           ),
           showArrow: _recentlyReleasedMovies.isNotEmpty,
         ),

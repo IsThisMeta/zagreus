@@ -282,7 +282,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     }
 
     return ZagAppBar(
-      title: 'Recently Released Movies',
+      title: 'Recently Released',
       actions: [
         IconButton(
           icon: const Icon(Icons.tune),

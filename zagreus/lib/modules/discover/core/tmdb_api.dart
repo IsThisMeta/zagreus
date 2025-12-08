@@ -239,7 +239,7 @@ class TMDBApi {
 
       throw Exception('Failed to load recently released movies: ${response.statusCode}');
     } catch (e) {
-      print('TMDB API Error (Recently Released Movies): $e');
+      print('TMDB API Error (Recently Released): $e');
       return [];
     }
   }
