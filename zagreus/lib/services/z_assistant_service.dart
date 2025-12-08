@@ -262,6 +262,164 @@ class ZAssistantService {
     }
   }
 
+  /// Send a message to Z Assistant with streaming status updates
+  ///
+  /// Streams real-time status updates while the AI processes the request.
+  /// Returns the final ZAssistantResponse when complete.
+  ///
+  /// [onStatus] is called with status messages like "Thinking...", "Searching for 'movie'..."
+  Stream<ZAssistantStreamEvent> sendMessageStreaming({
+    required String message,
+    String? context,
+    List<Map<String, String>>? history,
+  }) async* {
+    try {
+      ZagLogger().debug('Sending streaming message to Z Assistant: $message');
+
+      final deviceId = DeviceIdService().deviceId;
+      await _ensureDeviceRegistered();
+
+      // Get subscription tier
+      String tier = 'pro';
+      try {
+        final customerInfo = await Purchases.getCustomerInfo();
+        if (customerInfo.entitlements.active.containsKey('Ultra')) {
+          tier = 'ultra';
+        } else if (customerInfo.entitlements.active.containsKey('Mega')) {
+          tier = 'mega';
+        }
+      } catch (_) {}
+
+      // Get HMAC key for auth
+      final hmacService = HmacEncryptionService();
+      final hmacKey = hmacService.hmacKey;
+
+      // Create HTTP client for SSE
+      final client = dio.Dio(dio.BaseOptions(
+        baseUrl: _baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(minutes: 5),
+        responseType: dio.ResponseType.stream,
+      ));
+
+      final response = await client.post<dio.ResponseBody>(
+        '/chat/stream',
+        data: {
+          'message': message,
+          if (context != null) 'context': context,
+          if (history != null) 'history': history,
+        },
+        options: dio.Options(
+          headers: {
+            'X-Device-Id': deviceId,
+            'X-Subscription-Tier': tier,
+            if (hmacKey != null) 'X-HMAC-Key': hmacKey,
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+          },
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to connect to streaming endpoint');
+      }
+
+      final stream = response.data!.stream;
+      String buffer = '';
+
+      await for (final chunk in stream) {
+        buffer += utf8.decode(chunk);
+
+        // Parse SSE events from buffer
+        while (buffer.contains('\n\n')) {
+          final eventEnd = buffer.indexOf('\n\n');
+          final eventData = buffer.substring(0, eventEnd);
+          buffer = buffer.substring(eventEnd + 2);
+
+          // Parse event type and data
+          String? eventType;
+          String? data;
+
+          for (final line in eventData.split('\n')) {
+            if (line.startsWith('event: ')) {
+              eventType = line.substring(7);
+            } else if (line.startsWith('data: ')) {
+              data = line.substring(6);
+            }
+          }
+
+          if (eventType != null && data != null) {
+            try {
+              final jsonData = jsonDecode(data) as Map<String, dynamic>;
+              yield ZAssistantStreamEvent(
+                type: eventType,
+                message: jsonData['message'] as String?,
+                data: jsonData,
+              );
+
+              // If complete, we're done
+              if (eventType == 'complete' || eventType == 'error') {
+                return;
+              }
+            } catch (e) {
+              ZagLogger().warning('Failed to parse SSE event: $e');
+            }
+          }
+        }
+      }
+    } on dio.DioException catch (e, stack) {
+      ZagLogger().error('Z Assistant streaming API error', e, stack);
+      yield ZAssistantStreamEvent(
+        type: 'error',
+        message: 'Connection failed: ${e.message}',
+        data: {},
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Unexpected error in streaming', e, stack);
+      yield ZAssistantStreamEvent(
+        type: 'error',
+        message: 'Unexpected error: $e',
+        data: {},
+      );
+    }
+  }
+
+  /// Convert a stream of events to a final response
+  /// Useful when you want streaming updates but also need the final response
+  Future<ZAssistantResponse> sendMessageWithUpdates({
+    required String message,
+    String? context,
+    List<Map<String, String>>? history,
+    void Function(String status)? onStatus,
+  }) async {
+    await for (final event in sendMessageStreaming(
+      message: message,
+      context: context,
+      history: history,
+    )) {
+      if (event.type == 'status' || event.type == 'tool_call' || event.type == 'tool_result' || event.type == 'staging') {
+        onStatus?.call(event.message ?? event.type);
+      } else if (event.type == 'complete') {
+        // Parse final response
+        final data = event.data;
+        return ZAssistantResponse(
+          text: data['response'] as String? ?? '',
+          isStaged: data['staged'] == true,
+          stageId: data['stage_id'] as String?,
+          operation: data['operation'] as String?,
+          commands: (data['commands'] as List<dynamic>?)
+                  ?.map((c) => ZAssistantCommand.fromJson(c as Map<String, dynamic>))
+                  .toList() ??
+              [],
+        );
+      } else if (event.type == 'error') {
+        throw Exception(event.message ?? 'Unknown error');
+      }
+    }
+
+    throw Exception('Stream ended without completion');
+  }
+
   /// Send an explore view search query to Z Assistant
   ///
   /// Returns a stage_id that can be used to fetch results from Supabase
@@ -459,4 +617,29 @@ class RateLimitInfo {
       tier: json['tier'] as String?,
     );
   }
+}
+
+/// Streaming event from Z Assistant
+///
+/// Event types:
+/// - status: General status update (e.g., "Thinking...")
+/// - tool_call: AI is calling a tool (e.g., "Searching for 'movie'...")
+/// - tool_result: Tool completed (e.g., "Found 5 movies")
+/// - staging: Staging results for display
+/// - complete: Final response ready
+/// - error: An error occurred
+class ZAssistantStreamEvent {
+  final String type;
+  final String? message;
+  final Map<String, dynamic> data;
+
+  const ZAssistantStreamEvent({
+    required this.type,
+    this.message,
+    required this.data,
+  });
+
+  bool get isComplete => type == 'complete';
+  bool get isError => type == 'error';
+  bool get isStatus => type == 'status' || type == 'tool_call' || type == 'tool_result' || type == 'staging';
 }

@@ -220,7 +220,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               tabs: const [
                 Tab(text: 'Movies'),
                 Tab(text: 'Shows'),
-                Tab(text: 'Config'),
+                Tab(text: 'Options'),
               ],
             ),
           ),
@@ -238,7 +238,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   defaults: _defaultTVSections,
                   isMovie: false,
                 ),
-                _buildConfigTab(),
+                _buildOptionsTab(),
               ],
             ),
           ),
@@ -247,7 +247,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     );
   }
 
-  Widget _buildConfigTab() {
+  Widget _buildOptionsTab() {
     final theme = Theme.of(context);
 
     return SingleChildScrollView(

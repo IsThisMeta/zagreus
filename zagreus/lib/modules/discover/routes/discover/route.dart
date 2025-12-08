@@ -3279,7 +3279,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Future<void> _forceLibrarySync() async {
+  Future<bool> _forceLibrarySync() async {
     setState(() => _isSyncing = true);
     _refreshQuickSetupModal();
 
@@ -3358,6 +3358,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           );
         }
       }
+
+      return result.success;
     } catch (e, stack) {
       ZagLogger().error('Failed to sync library', e, stack);
       if (mounted) {
@@ -3367,12 +3369,37 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           type: ZagSnackbarType.ERROR,
         );
       }
+      return false;
     } finally {
       if (mounted) {
         setState(() => _isSyncing = false);
         _refreshQuickSetupModal();
       }
     }
+  }
+
+  Future<void> _enableLibrarySyncForSection({
+    required String sectionName,
+    required VoidCallback onSynced,
+  }) async {
+    final alreadyEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (!alreadyEnabled) {
+      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(true);
+      if (mounted) {
+        showZagInfoSnackBar(
+          title: 'Library Sync Enabled',
+          message: 'Syncing your library to power $sectionName.',
+        );
+        setState(() {});
+      }
+    }
+
+    final syncSucceeded = await _forceLibrarySync();
+    if (!mounted || !syncSucceeded) return;
+
+    onSynced();
   }
 
   Future<void> _loadAvailableUsers() async {
@@ -8136,8 +8163,84 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _librarySyncRequiredState({
+    required String sectionName,
+    required VoidCallback onEnable,
+  }) {
+    final theme = Theme.of(context);
+    final textColor = (theme.brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black)
+        .withOpacity(0.7);
+
+    return Container(
+      height: 260,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.sync_problem_rounded,
+              size: 48,
+              color: textColor.withOpacity(0.6),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Library sync required',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Turn on library sync to unlock $sectionName recommendations.',
+                style: TextStyle(
+                  color: textColor.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _isSyncing
+                ? const CircularProgressIndicator(strokeWidth: 2)
+                : ZagButton.text(
+                    text: 'Enable library sync',
+                    icon: Icons.sync,
+                    onTap: onEnable,
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _deepCutsSection() {
     final deepCutsService = DeepCutsService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    // Library sync required for Deep Cuts
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Deep Cuts',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Deep Cuts',
+          onSynced: () {
+            final service = DeepCutsService();
+            setState(() {
+              _deepCutsFuture =
+                  service.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
 
     // Initialize future once if not already set
     _deepCutsFuture ??= deepCutsService.fetchRecommendations();
@@ -8226,6 +8329,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     String title = 'No deep cuts yet';
     String message = 'Recommendations generate automatically each week.';
     IconData icon = Icons.movie_filter_rounded;
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final showLibrarySyncCta =
+        (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+            result?.error == DeepCutsError.notSynced;
 
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
@@ -8296,6 +8404,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 textAlign: TextAlign.center,
               ),
             ),
+            if (showLibrarySyncCta) ...[
+              const SizedBox(height: 16),
+              _isSyncing
+                  ? const CircularProgressIndicator(strokeWidth: 2)
+                  : ZagButton.text(
+                      text: libraryCacheEnabled
+                          ? 'Sync library now'
+                          : 'Enable library sync',
+                      icon: Icons.sync,
+                      onTap: () => _enableLibrarySyncForSection(
+                        sectionName: 'Deep Cuts',
+                        onSynced: () {
+                          final service = DeepCutsService();
+                          setState(() {
+                            _deepCutsFuture =
+                                service.generateRecommendations(force: true);
+                          });
+                        },
+                      ),
+                    ),
+            ],
           ],
         ),
       ),
@@ -8426,6 +8555,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _upNextSection() {
     final upNextService = UpNextService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    // Library sync required for Up Next
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Up Next',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Up Next',
+          onSynced: () {
+            final service = UpNextService();
+            setState(() {
+              _upNextFuture =
+                  service.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
 
     // Initialize future once if not already set
     _upNextFuture ??= upNextService.fetchRecommendations();
@@ -8523,6 +8671,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     String title = 'No recommendations yet';
     String message = 'Recommendations generate automatically each week.';
     IconData icon = Icons.live_tv_rounded;
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final showLibrarySyncCta =
+        (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+            result?.error == UpNextError.notSynced;
 
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
@@ -8593,6 +8746,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 textAlign: TextAlign.center,
               ),
             ),
+            if (showLibrarySyncCta) ...[
+              const SizedBox(height: 16),
+              _isSyncing
+                  ? const CircularProgressIndicator(strokeWidth: 2)
+                  : ZagButton.text(
+                      text: libraryCacheEnabled
+                          ? 'Sync library now'
+                          : 'Enable library sync',
+                      icon: Icons.sync,
+                      onTap: () => _enableLibrarySyncForSection(
+                        sectionName: 'Up Next',
+                        onSynced: () {
+                          final service = UpNextService();
+                          setState(() {
+                            _upNextFuture =
+                                service.generateRecommendations(force: true);
+                          });
+                        },
+                      ),
+                    ),
+            ],
           ],
         ),
       ),
@@ -8723,6 +8897,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Movies Section
   Widget _magicMoviesSection() {
     final service = MagicMoviesService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic Movies',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic Movies',
+          onSynced: () {
+            final refreshService = MagicMoviesService();
+            setState(() {
+              _magicMoviesFuture =
+                  refreshService.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
+
     _magicMoviesFuture ??= service.fetchRecommendations();
 
     return FutureBuilder<MagicMoviesResult>(
@@ -8755,7 +8948,101 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  String title = 'No recommendations yet';
+                  String message = 'Recommendations generate automatically each week.';
+                  IconData icon = Icons.auto_fix_high_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicMoviesError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicMoviesError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicMoviesError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic Movies requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicMoviesError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicMoviesError.fetchFailed:
+                      case MagicMoviesError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 260,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic Movies',
+                                      onSynced: () {
+                                        final refreshService = MagicMoviesService();
+                                        setState(() {
+                                          _magicMoviesFuture = refreshService
+                                              .generateRecommendations(
+                                                  force: true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -8843,6 +9130,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Movies Cast & Crew Section
   Widget _magicMoviesCastCrewSection() {
     final service = MagicMoviesCastCrewService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic Movies: Cast & Crew',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic Movies: Cast & Crew',
+          onSynced: () {
+            final refreshService = MagicMoviesCastCrewService();
+            setState(() {
+              _magicMoviesCastCrewFuture =
+                  refreshService.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
+
     _magicMoviesCastCrewFuture ??= service.fetchRecommendations();
 
     return FutureBuilder<MagicMoviesCastCrewResult>(
@@ -8875,7 +9181,103 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  String title = 'No recommendations yet';
+                  String message = 'Recommendations generate automatically each week.';
+                  IconData icon = Icons.groups_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicMoviesCastCrewError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicMoviesCastCrewError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicMoviesCastCrewError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic Movies requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicMoviesCastCrewError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicMoviesCastCrewError.fetchFailed:
+                      case MagicMoviesCastCrewError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 260,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic Movies: Cast & Crew',
+                                      onSynced: () {
+                                        final refreshService =
+                                            MagicMoviesCastCrewService();
+                                        setState(() {
+                                          _magicMoviesCastCrewFuture =
+                                              refreshService
+                                                  .generateRecommendations(
+                                                      force: true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -8953,6 +9355,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic People Section
   Widget _magicPeopleSection() {
     final service = MagicPeopleService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic People',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic People',
+          onSynced: () {
+            final refreshService = MagicPeopleService();
+            setState(() {
+              _magicPeopleFuture =
+                  refreshService.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
+
     _magicPeopleFuture ??= service.fetchRecommendations();
 
     return FutureBuilder<MagicPeopleResult>(
@@ -8985,7 +9406,102 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   return Container(height: 260, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 220, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  String title = 'No recommendations yet';
+                  String message = 'Recommendations generate automatically each week.';
+                  IconData icon = Icons.groups_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicPeopleError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicPeopleError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicPeopleError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic People requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicPeopleError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicPeopleError.fetchFailed:
+                      case MagicPeopleError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 240,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic People',
+                                      onSynced: () {
+                                        final refreshService =
+                                            MagicPeopleService();
+                                        setState(() {
+                                          _magicPeopleFuture = refreshService
+                                              .generateRecommendations(
+                                                  force: true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -9195,6 +9711,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Shows Section
   Widget _magicShowsSection() {
     final service = MagicShowsService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic Shows',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic Shows',
+          onSynced: () {
+            final refreshService = MagicShowsService();
+            setState(() {
+              _magicShowsFuture =
+                  refreshService.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
+
     _magicShowsFuture ??= service.fetchRecommendations();
 
     return FutureBuilder<MagicShowsResult>(
@@ -9227,7 +9762,103 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  String title = 'No recommendations yet';
+                  String message = 'Recommendations generate automatically each week.';
+                  IconData icon = Icons.auto_fix_high_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicShowsError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicShowsError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicShowsError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic Shows requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicShowsError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicShowsError.fetchFailed:
+                      case MagicShowsError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 260,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic Shows',
+                                      onSynced: () {
+                                        final refreshService =
+                                            MagicShowsService();
+                                        setState(() {
+                                          _magicShowsFuture =
+                                              refreshService
+                                                  .generateRecommendations(
+                                                      force: true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(
@@ -9315,6 +9946,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Shows Cast & Crew Section
   Widget _magicShowsCastCrewSection() {
     final service = MagicShowsCastCrewService();
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic Shows: Cast & Crew',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic Shows: Cast & Crew',
+          onSynced: () {
+            final refreshService = MagicShowsCastCrewService();
+            setState(() {
+              _magicShowsCastCrewFuture =
+                  refreshService.generateRecommendations(force: true);
+            });
+          },
+        ),
+      );
+    }
+
     _magicShowsCastCrewFuture ??= service.fetchRecommendations();
 
     return FutureBuilder<MagicShowsCastCrewResult>(
@@ -9347,7 +9997,103 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
-                  return Container(height: 200, child: Center(child: Text('No recommendations yet. Updates run automatically.')));
+                  String title = 'No recommendations yet';
+                  String message = 'Recommendations generate automatically each week.';
+                  IconData icon = Icons.person_search_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicShowsCastCrewError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicShowsCastCrewError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicShowsCastCrewError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic Shows requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicShowsCastCrewError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicShowsCastCrewError.fetchFailed:
+                      case MagicShowsCastCrewError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 260,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic Shows: Cast & Crew',
+                                      onSynced: () {
+                                        final refreshService =
+                                            MagicShowsCastCrewService();
+                                        setState(() {
+                                          _magicShowsCastCrewFuture =
+                                              refreshService
+                                                  .generateRecommendations(
+                                                      force: true);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
                 }
                 final recommendations = snapshot.data!.recommendations!;
                 return Container(

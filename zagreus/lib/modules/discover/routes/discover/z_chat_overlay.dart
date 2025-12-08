@@ -33,6 +33,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   final StagedOperationsService _stagingService = StagedOperationsService();
   final ZConversationService _conversationService = ZConversationService();
   bool _isThinking = false;
+  String? _thinkingStatus; // Status message during streaming
   final Set<String> _autoOpenedExploreStages = {};
   bool _isSignedIn = false;
   StreamSubscription<User?>? _authSubscription;
@@ -381,13 +382,22 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
 
       // ZERO-KNOWLEDGE: No server credentials sent to backend!
       // Backend uses library_cache from Supabase instead
-      final response = await zAssistant.sendMessage(
+      // Use streaming for real-time status updates
+      final response = await zAssistant.sendMessageWithUpdates(
         message: userMessage,
         history: historyPayload.isEmpty ? null : historyPayload,
+        onStatus: (status) {
+          if (mounted) {
+            setState(() {
+              _thinkingStatus = status;
+            });
+          }
+        },
       );
 
       setState(() {
         _isThinking = false;
+        _thinkingStatus = null;
       });
 
       if (response.isRateLimited) {
@@ -494,6 +504,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
           isUser: false,
         ));
         _isThinking = false;
+        _thinkingStatus = null;
       });
     }
 
@@ -1948,14 +1959,37 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              3,
-              (index) => Padding(
-                padding: EdgeInsets.only(left: index == 0 ? 0 : 6),
-                child: _BouncingDot(delay: index * 200),
-              ),
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Bouncing dots
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    3,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(left: index == 0 ? 0 : 6),
+                      child: _BouncingDot(delay: index * 200),
+                    ),
+                  ),
+                ),
+                // Status message (if available)
+                if (_thinkingStatus != null) ...[
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
+                      _thinkingStatus!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

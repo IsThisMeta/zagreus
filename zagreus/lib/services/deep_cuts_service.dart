@@ -183,6 +183,13 @@ class DeepCutsService {
           generatedAt: generatedAt,
           nextGenerationAt: nextGenerationAt,
         );
+      } else if (response.statusCode == 400) {
+        final error = json.decode(response.body);
+        print('❌ Library not synced: ${error['detail']}');
+        return DeepCutsResult.failure(
+          DeepCutsError.notSynced,
+          error['detail'] as String? ?? 'Library not synced',
+        );
       } else {
         print('❌ HTTP ${response.statusCode}: ${response.body}');
         return DeepCutsResult.failure(
