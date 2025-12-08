@@ -7,6 +7,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
 import 'package:zagreus/services/subscription_service.dart';
+import 'package:zagreus/services/ratings_cache_service.dart';
 
 class SonarrRatingsTile extends StatefulWidget {
   final SonarrSeries? series;
@@ -36,7 +37,26 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
 
     // Only fetch ratings if user is premium
     if (_isPremium) {
-      _fetchRatings();
+      // Check cache first for instant load
+      bool loadedFromCache = false;
+      if (widget.series?.imdbId != null) {
+        final cached = RatingsCacheService().getCachedRatings(widget.series!.imdbId!);
+        if (cached != null) {
+          // Hot-load from cache to prevent flicker
+          setState(() {
+            _ratings = cached.ratings;
+            _tmdbRating = cached.tmdbRating;
+            _tmdbId = cached.tmdbId;
+            _loading = false;
+            _hasError = cached.ratings == null && cached.tmdbRating == null;
+          });
+          loadedFromCache = true;
+        }
+      }
+      // Only fetch if not loaded from cache
+      if (!loadedFromCache) {
+        _fetchRatings();
+      }
     } else {
       _loading = false;
     }
@@ -73,6 +93,16 @@ class _SonarrRatingsTileState extends State<SonarrRatingsTile> {
         _loading = false;
         _hasError = ratings == null && tmdbRating == null;
       });
+
+      // Cache the ratings for potential navigation to details page
+      if (widget.series?.imdbId != null) {
+        RatingsCacheService().cacheRatings(
+          id: widget.series!.imdbId!,
+          ratings: ratings,
+          tmdbRating: tmdbRating,
+          tmdbId: tmdbId,
+        );
+      }
     } catch (e) {
       setState(() {
         _loading = false;

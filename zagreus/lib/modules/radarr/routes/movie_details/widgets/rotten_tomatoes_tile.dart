@@ -7,6 +7,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/utils/links.dart';
 import 'package:zagreus/services/subscription_service.dart';
+import 'package:zagreus/services/ratings_cache_service.dart';
 
 class RadarrRottenTomatoesTile extends StatefulWidget {
   final RadarrMovie? movie;
@@ -37,7 +38,26 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
 
     // Only fetch ratings if user is premium
     if (_isPremium) {
-      _fetchRatings();
+      // Check cache first for instant load
+      bool loadedFromCache = false;
+      if (widget.movie?.imdbId != null) {
+        final cached = RatingsCacheService().getCachedRatings(widget.movie!.imdbId!);
+        if (cached != null) {
+          // Hot-load from cache to prevent flicker
+          setState(() {
+            _ratings = cached.ratings;
+            _tmdbRating = cached.tmdbRating;
+            _tmdbId = cached.tmdbId;
+            _loading = false;
+            _hasError = cached.ratings == null && cached.tmdbRating == null;
+          });
+          loadedFromCache = true;
+        }
+      }
+      // Only fetch if not loaded from cache
+      if (!loadedFromCache) {
+        _fetchRatings();
+      }
     } else {
       _loading = false;
     }
@@ -76,6 +96,16 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
         _loading = false;
         _hasError = ratings == null && tmdbRating == null;
       });
+
+      // Cache the ratings for potential navigation to details page
+      if (widget.movie?.imdbId != null) {
+        RatingsCacheService().cacheRatings(
+          id: widget.movie!.imdbId!,
+          ratings: ratings,
+          tmdbRating: tmdbRating,
+          tmdbId: tmdbId,
+        );
+      }
     } catch (e) {
       setState(() {
         _loading = false;
