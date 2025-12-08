@@ -41,7 +41,7 @@ class RadarrAddMovieDetailsActionBar extends StatelessWidget {
         searchForMovie: RadarrDatabase.ADD_MOVIE_SEARCH_FOR_MISSING.read(),
       )
           .then((movie) async {
-        await context.read<RadarrState>().fetchMovies();
+        context.read<RadarrState>().fetchMovies();
         context.read<RadarrAddMovieDetailsState>().movie.id = movie!.id;
         ZagRouter.router.pop();
         RadarrRoutes.MOVIE.go(params: {
