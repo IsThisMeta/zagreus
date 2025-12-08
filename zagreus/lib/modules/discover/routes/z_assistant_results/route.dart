@@ -278,10 +278,10 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    final usesThreeColumns = savedColumns == 3;
-    final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    // Z Assistant always uses 2 columns, ignoring dashboard setting
+    const fixedColumns = 2;
+    const horizontalPadding = 16.0;
+    const gridSpacing = 12.0;
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -292,8 +292,8 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: savedColumns,
-          childAspectRatio: 0.55,
+          crossAxisCount: fixedColumns,
+          childAspectRatio: 0.48, // Increased height to fit 8 lines of description
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -415,7 +415,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   fontSize: 12,
                   color: Colors.grey[500],
                 ),
-                maxLines: 3,
+                maxLines: 8,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
