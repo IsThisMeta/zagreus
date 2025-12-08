@@ -592,21 +592,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       final hideInLibrary =
           ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read() ?? false;
-      
+
       // Pre-fetch library data efficiently
       List<RadarrMovie> radarrMovies = [];
       List<SonarrSeries> sonarrSeries = [];
-      
+
       if (mounted) {
         final radarrState = context.read<RadarrState>();
-        if (radarrState.enabled && radarrState.movies != null) {
-          radarrMovies = await radarrState.movies!;
+        if (radarrState.enabled) {
+          // Refresh Radarr library cache to get latest library status
+          radarrState.fetchMovies();
+          if (radarrState.movies != null) {
+            radarrMovies = await radarrState.movies!;
+          }
         }
-        
+
         final sonarrState = context.read<SonarrState>();
         if (sonarrState.enabled && sonarrState.api != null) {
           try {
-            sonarrSeries = await sonarrState.api!.series.getAll();
+            // Refresh Sonarr library cache to get latest library status
+            sonarrState.fetchAllSeries();
+            if (sonarrState.series != null) {
+              final seriesMap = await sonarrState.series!;
+              sonarrSeries = seriesMap.values.toList();
+            }
           } catch (e) {
             print('📺 Error fetching Sonarr library for trending check: $e');
           }
@@ -733,6 +742,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         return;
       }
 
+      // Refresh Radarr library cache to get latest library status
+      radarrState.fetchMovies();
+
       // Fetch history
       final history = await api.history.get(
         pageSize: 50,
@@ -754,11 +766,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
       }
 
-      // Fetch all movies if not already cached
-      if (radarrState.movies == null) {
-        radarrState.fetchMovies();
-      }
-
       // Wait for movies to load
       final allMovies = await radarrState.movies!;
 
@@ -778,6 +785,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _recentlyDownloaded = downloadedMovies;
         if (showGlobalLoader) _isLoading = false;
       });
+
+      // Reload TMDB sections to update library status indicators
+      _loadPopularMovies();
+      _loadRecentlyReleasedMovies();
+      _loadMostAnticipatedMovies();
+      _loadTrendingData();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -1043,6 +1056,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         return;
       }
 
+      // Refresh Sonarr library cache to get latest library status
+      sonarrState.fetchAllSeries();
+
       final api = sonarrState.api!;
 
       // Fetch history sorted by date descending
@@ -1125,6 +1141,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       setState(() {
         _recentlyDownloadedShows = shows;
       });
+
+      // Reload TMDB sections to update library status indicators
+      _loadPopularTVShows();
+      _loadTrendingNewTVShows();
+      _loadMostAnticipatedShows();
+      _loadTrendingData();
     } catch (e) {
       print('Error loading Sonarr history: $e');
       // Fallback to empty list on error
