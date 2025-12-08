@@ -282,6 +282,7 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     return RefreshIndicator(
       onRefresh: _loadTrendingShows,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,

@@ -303,6 +303,7 @@ class _State extends State<DiscoverRecommendedRoute>
     return RefreshIndicator(
       onRefresh: _loadRecommendedMovies,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,

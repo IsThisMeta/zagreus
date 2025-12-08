@@ -85,7 +85,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
 
   void _scrollListener() {
     if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 200) {
+        scrollController.position.maxScrollExtent -
+            scrollController.position.viewportDimension) {
       if (!_isLoadingMore && _hasMorePages) {
         _loadMoreMovies();
       }
@@ -391,6 +392,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     return RefreshIndicator(
       onRefresh: _loadRecentlyReleasedMovies,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,

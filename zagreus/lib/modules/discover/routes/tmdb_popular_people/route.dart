@@ -54,7 +54,8 @@ class _State extends State<TMDBPopularPeopleRoute>
 
   void _scrollListener() {
     if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 200) {
+        scrollController.position.maxScrollExtent -
+            scrollController.position.viewportDimension) {
       if (!_isLoadingMore && _hasMorePages) {
         _loadMorePeople();
       }
@@ -216,6 +217,7 @@ class _State extends State<TMDBPopularPeopleRoute>
     final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
 
     return GridView.builder(
+      cacheExtent: 2000.0,
       controller: scrollController,
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,

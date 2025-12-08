@@ -194,6 +194,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,

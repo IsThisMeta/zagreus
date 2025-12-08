@@ -250,6 +250,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     return RefreshIndicator(
       onRefresh: _loadDownloadingSoon,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,

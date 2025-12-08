@@ -91,7 +91,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
 
   void _scrollListener() {
     if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 200) {
+        scrollController.position.maxScrollExtent -
+            scrollController.position.viewportDimension) {
       if (!_isLoadingMore && _hasMorePages) {
         _loadMoreShows();
       }
@@ -400,12 +401,14 @@ class _State extends State<TMDBPopularTVShowsRoute>
     return RefreshIndicator(
       onRefresh: _loadPopularTVShows,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          // ... existing delegate options ...
           crossAxisCount: savedColumns,
           childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,

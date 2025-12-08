@@ -218,6 +218,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: _recentlyDownloadedShows.length,

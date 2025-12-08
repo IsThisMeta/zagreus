@@ -62,7 +62,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       return;
     }
 
-    final threshold = scrollController.position.maxScrollExtent - 200;
+    final threshold = scrollController.position.maxScrollExtent -
+        scrollController.position.viewportDimension;
     if (scrollController.position.pixels >= threshold) {
       _loadMoreMovies();
     }
@@ -232,6 +233,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     return RefreshIndicator(
       onRefresh: _loadAnticipatedMovies,
       child: GridView.builder(
+        cacheExtent: 2000.0,
         controller: scrollController,
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,
