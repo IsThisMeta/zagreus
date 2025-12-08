@@ -111,18 +111,20 @@ class MagicShowsCastCrewService {
 
   static const String _baseUrl = 'https://z-assistant.fly.dev';
 
-  DateTime? _lastFetchTime;
-  String? _cachedSectionTitle;
-  List<FeaturedTVPerson>? _cachedFeaturedPeople;
-  List<MagicShowCastCrew>? _cachedRecommendations;
-  bool _isGenerating = false;
+  final Map<String, DateTime?> _lastFetchTime = {};
+  final Map<String, String?> _cachedSectionTitle = {};
+  final Map<String, List<FeaturedTVPerson>?> _cachedFeaturedPeople = {};
+  final Map<String, List<MagicShowCastCrew>?> _cachedRecommendations = {};
+  final Map<String, bool> _isGenerating = {};
 
-  String? get sectionTitle => _cachedSectionTitle;
-  List<FeaturedTVPerson>? get featuredPeople => _cachedFeaturedPeople;
-  List<MagicShowCastCrew>? get recommendations => _cachedRecommendations;
-  bool get hasRecommendations =>
-      _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
-  bool get isGenerating => _isGenerating;
+  String? sectionTitle(String instanceKey) => _cachedSectionTitle[instanceKey];
+  List<FeaturedTVPerson>? featuredPeople(String instanceKey) =>
+      _cachedFeaturedPeople[instanceKey];
+  List<MagicShowCastCrew>? recommendations(String instanceKey) =>
+      _cachedRecommendations[instanceKey];
+  bool hasRecommendations(String instanceKey) =>
+      (_cachedRecommendations[instanceKey]?.isNotEmpty ?? false);
+  bool isGenerating(String instanceKey) => _isGenerating[instanceKey] ?? false;
 
   /// Get the current subscription tier ("mega" or "ultra")
   String get _subscriptionTier {
@@ -144,7 +146,10 @@ class MagicShowsCastCrewService {
   }
 
   /// Fetch cached Magic Shows Cast & Crew recommendations from backend
-  Future<MagicShowsCastCrewResult> fetchRecommendations() async {
+  Future<MagicShowsCastCrewResult> fetchRecommendations({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺👥 MAGIC SHOWS CAST & CREW FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -167,6 +172,8 @@ class MagicShowsCastCrewService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -180,9 +187,9 @@ class MagicShowsCastCrewService {
 
         if (recommendationsData == null || recommendationsData.isEmpty) {
           print('📭 No recommendations yet');
-          _cachedRecommendations = [];
-          _cachedSectionTitle = null;
-          _cachedFeaturedPeople = [];
+          _cachedRecommendations[instanceKey] = [];
+          _cachedSectionTitle[instanceKey] = null;
+          _cachedFeaturedPeople[instanceKey] = [];
           return MagicShowsCastCrewResult.success(
             sectionTitle: 'Magic Shows: Cast & Crew',
             featuredPeople: [],
@@ -200,11 +207,12 @@ class MagicShowsCastCrewService {
                 .toList()
             : <FeaturedTVPerson>[];
 
-        _cachedRecommendations = recommendations;
-        _cachedSectionTitle = sectionTitle ?? 'Magic Shows: Cast & Crew';
-        _cachedFeaturedPeople = featuredPeople;
-        _lastFetchTime = DateTime.now();
-        _isGenerating = data['is_generating'] as bool? ?? false;
+        _cachedRecommendations[instanceKey] = recommendations;
+        _cachedSectionTitle[instanceKey] =
+            sectionTitle ?? 'Magic Shows: Cast & Crew';
+        _cachedFeaturedPeople[instanceKey] = featuredPeople;
+        _lastFetchTime[instanceKey] = DateTime.now();
+        _isGenerating[instanceKey] = data['is_generating'] as bool? ?? false;
 
         final generatedAt = data['generated_at'] != null
             ? DateTime.parse(data['generated_at'] as String)
@@ -250,7 +258,11 @@ class MagicShowsCastCrewService {
   }
 
   /// Generate new Magic Shows Cast & Crew recommendations
-  Future<MagicShowsCastCrewResult> generateRecommendations({bool force = false}) async {
+  Future<MagicShowsCastCrewResult> generateRecommendations({
+    required String profileKey,
+    required String instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺👥 MAGIC SHOWS CAST & CREW GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -265,7 +277,7 @@ class MagicShowsCastCrewService {
       );
     }
 
-    if (_isGenerating && !force) {
+    if ((_isGenerating[instanceKey] ?? false) && !force) {
       print('⏳ Already generating...');
       return MagicShowsCastCrewResult.failure(
         MagicShowsCastCrewError.alreadyGenerating,
@@ -277,7 +289,7 @@ class MagicShowsCastCrewService {
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = HmacEncryptionService().hmacKey;
 
-      _isGenerating = true;
+      _isGenerating[instanceKey] = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-shows-cast-crew/generate'),
@@ -285,6 +297,8 @@ class MagicShowsCastCrewService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -296,19 +310,25 @@ class MagicShowsCastCrewService {
         if (data['status'] == 'up_to_date') {
           print('✅ Already up to date');
           print('   Age: ${data['age_days']} days');
-          _isGenerating = false;
-          return fetchRecommendations();
+          _isGenerating[instanceKey] = false;
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
         }
 
         print('✅ Generation started successfully');
         print('   Duration: ${data['generation_duration_ms']}ms');
         print('   Count: ${data['recommendations_count']}');
 
-        _isGenerating = false;
-        return await fetchRecommendations();
+        _isGenerating[instanceKey] = false;
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsCastCrewResult.failure(
           MagicShowsCastCrewError.alreadyGenerating,
           'Generation already in progress',
@@ -316,14 +336,14 @@ class MagicShowsCastCrewService {
       } else if (response.statusCode == 400) {
         final error = json.decode(response.body);
         print('❌ Library not synced: ${error['detail']}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsCastCrewResult.failure(
           MagicShowsCastCrewError.notSynced,
           error['detail'] as String? ?? 'Library not synced',
         );
       } else {
         print('❌ HTTP ${response.statusCode}: ${response.body}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsCastCrewResult.failure(
           MagicShowsCastCrewError.unknown,
           'Generation failed: ${response.statusCode}',
@@ -333,14 +353,20 @@ class MagicShowsCastCrewService {
       ZagLogger().error('Magic Shows Cast & Crew generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
-      _isGenerating = false;
+      _isGenerating[instanceKey] = false;
       return MagicShowsCastCrewResult.failure(MagicShowsCastCrewError.unknown, e.toString());
     }
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicShowsCastCrewResult> syncIfNeeded() async {
-    final fetchResult = await fetchRecommendations();
+  Future<MagicShowsCastCrewResult> syncIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       final needsRegen = needsRegeneration(existingResult: fetchResult);
@@ -349,6 +375,9 @@ class MagicShowsCastCrewService {
       }
     }
 
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

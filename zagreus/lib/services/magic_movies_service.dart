@@ -94,18 +94,19 @@ class MagicMoviesService {
 
   static const String _baseUrl = 'https://z-assistant.fly.dev';
 
-  DateTime? _lastFetchTime;
-  String? _cachedSectionTitle;
-  String? _cachedSectionTheme;
-  List<MagicMovie>? _cachedRecommendations;
-  bool _isGenerating = false;
+  final Map<String, DateTime?> _lastFetchTime = {};
+  final Map<String, String?> _cachedSectionTitle = {};
+  final Map<String, String?> _cachedSectionTheme = {};
+  final Map<String, List<MagicMovie>?> _cachedRecommendations = {};
+  final Map<String, bool> _isGenerating = {};
 
-  String? get sectionTitle => _cachedSectionTitle;
-  String? get sectionTheme => _cachedSectionTheme;
-  List<MagicMovie>? get recommendations => _cachedRecommendations;
-  bool get hasRecommendations =>
-      _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
-  bool get isGenerating => _isGenerating;
+  String? sectionTitle(String instanceKey) => _cachedSectionTitle[instanceKey];
+  String? sectionTheme(String instanceKey) => _cachedSectionTheme[instanceKey];
+  List<MagicMovie>? recommendations(String instanceKey) =>
+      _cachedRecommendations[instanceKey];
+  bool hasRecommendations(String instanceKey) =>
+      (_cachedRecommendations[instanceKey]?.isNotEmpty ?? false);
+  bool isGenerating(String instanceKey) => _isGenerating[instanceKey] ?? false;
 
   /// Get the current subscription tier for Magic Movies ("mega" or "ultra")
   String get _subscriptionTier {
@@ -129,7 +130,10 @@ class MagicMoviesService {
   }
 
   /// Fetch cached Magic Movies recommendations from backend
-  Future<MagicMoviesResult> fetchRecommendations() async {
+  Future<MagicMoviesResult> fetchRecommendations({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬✨ MAGIC MOVIES FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -153,6 +157,8 @@ class MagicMoviesService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -166,9 +172,9 @@ class MagicMoviesService {
 
         if (recommendationsData == null || recommendationsData.isEmpty) {
           print('📭 No recommendations yet');
-          _cachedRecommendations = [];
-          _cachedSectionTitle = null;
-          _cachedSectionTheme = null;
+          _cachedRecommendations[instanceKey] = [];
+          _cachedSectionTitle[instanceKey] = null;
+          _cachedSectionTheme[instanceKey] = null;
           return MagicMoviesResult.success(
             sectionTitle: 'Magic Movies',
             sectionTheme: 'AI-curated themed collections',
@@ -180,11 +186,13 @@ class MagicMoviesService {
             .map((item) => MagicMovie.fromJson(item as Map<String, dynamic>))
             .toList();
 
-        _cachedRecommendations = recommendations;
-        _cachedSectionTitle = sectionTitle ?? 'Magic Movies';
-        _cachedSectionTheme = sectionTheme ?? 'AI-curated themed collections';
-        _lastFetchTime = DateTime.now();
-        _isGenerating = data['is_generating'] as bool? ?? false;
+        _cachedRecommendations[instanceKey] = recommendations;
+        _cachedSectionTitle[instanceKey] =
+            sectionTitle ?? 'Magic Movies';
+        _cachedSectionTheme[instanceKey] =
+            sectionTheme ?? 'AI-curated themed collections';
+        _lastFetchTime[instanceKey] = DateTime.now();
+        _isGenerating[instanceKey] = data['is_generating'] as bool? ?? false;
 
         final generatedAt = data['generated_at'] != null
             ? DateTime.parse(data['generated_at'] as String)
@@ -231,7 +239,11 @@ class MagicMoviesService {
   /// Generate new Magic Movies recommendations
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
-  Future<MagicMoviesResult> generateRecommendations({bool force = false}) async {
+  Future<MagicMoviesResult> generateRecommendations({
+    required String profileKey,
+    required String instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬✨ MAGIC MOVIES GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -247,7 +259,7 @@ class MagicMoviesService {
       );
     }
 
-    if (_isGenerating && !force) {
+    if ((_isGenerating[instanceKey] ?? false) && !force) {
       print('⏳ Already generating...');
       return MagicMoviesResult.failure(
         MagicMoviesError.alreadyGenerating,
@@ -259,7 +271,7 @@ class MagicMoviesService {
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = HmacEncryptionService().hmacKey;
 
-      _isGenerating = true;
+      _isGenerating[instanceKey] = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-movies/generate'),
@@ -267,6 +279,8 @@ class MagicMoviesService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -278,8 +292,11 @@ class MagicMoviesService {
         if (data['status'] == 'up_to_date') {
           print('✅ Magic Movies are already up to date');
           print('   Age: ${data['age_days']} days');
-          _isGenerating = false;
-          return fetchRecommendations(); // Return existing
+          _isGenerating[instanceKey] = false;
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          ); // Return existing
         }
 
         print('✅ Generation started successfully');
@@ -287,11 +304,14 @@ class MagicMoviesService {
         print('   Count: ${data['recommendations_count']}');
 
         // Fetch the fresh recommendations
-        _isGenerating = false;
-        return await fetchRecommendations();
+        _isGenerating[instanceKey] = false;
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicMoviesResult.failure(
           MagicMoviesError.alreadyGenerating,
           'Generation already in progress',
@@ -299,14 +319,14 @@ class MagicMoviesService {
       } else if (response.statusCode == 400) {
         final error = json.decode(response.body);
         print('❌ Library not synced: ${error['detail']}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicMoviesResult.failure(
           MagicMoviesError.notSynced,
           error['detail'] as String? ?? 'Library not synced',
         );
       } else {
         print('❌ HTTP ${response.statusCode}: ${response.body}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicMoviesResult.failure(
           MagicMoviesError.unknown,
           'Generation failed: ${response.statusCode}',
@@ -316,15 +336,21 @@ class MagicMoviesService {
       ZagLogger().error('Magic Movies generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
-      _isGenerating = false;
+      _isGenerating[instanceKey] = false;
       return MagicMoviesResult.failure(MagicMoviesError.unknown, e.toString());
     }
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicMoviesResult> syncIfNeeded() async {
+  Future<MagicMoviesResult> syncIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     // First try to fetch existing - do this ONCE
-    final fetchResult = await fetchRecommendations();
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       // Check if regeneration is needed based on the result we just fetched
@@ -335,6 +361,9 @@ class MagicMoviesService {
     }
 
     // Generate new recommendations
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

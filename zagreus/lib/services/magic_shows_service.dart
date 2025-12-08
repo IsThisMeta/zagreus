@@ -94,18 +94,19 @@ class MagicShowsService {
 
   static const String _baseUrl = 'https://z-assistant.fly.dev';
 
-  DateTime? _lastFetchTime;
-  String? _cachedSectionTitle;
-  String? _cachedSectionTheme;
-  List<MagicShow>? _cachedRecommendations;
-  bool _isGenerating = false;
+  final Map<String, DateTime?> _lastFetchTime = {};
+  final Map<String, String?> _cachedSectionTitle = {};
+  final Map<String, String?> _cachedSectionTheme = {};
+  final Map<String, List<MagicShow>?> _cachedRecommendations = {};
+  final Map<String, bool> _isGenerating = {};
 
-  String? get sectionTitle => _cachedSectionTitle;
-  String? get sectionTheme => _cachedSectionTheme;
-  List<MagicShow>? get recommendations => _cachedRecommendations;
-  bool get hasRecommendations =>
-      _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
-  bool get isGenerating => _isGenerating;
+  String? sectionTitle(String instanceKey) => _cachedSectionTitle[instanceKey];
+  String? sectionTheme(String instanceKey) => _cachedSectionTheme[instanceKey];
+  List<MagicShow>? recommendations(String instanceKey) =>
+      _cachedRecommendations[instanceKey];
+  bool hasRecommendations(String instanceKey) =>
+      (_cachedRecommendations[instanceKey]?.isNotEmpty ?? false);
+  bool isGenerating(String instanceKey) => _isGenerating[instanceKey] ?? false;
 
   /// Get the current subscription tier for Magic Shows ("mega" or "ultra")
   String get _subscriptionTier {
@@ -127,7 +128,10 @@ class MagicShowsService {
   }
 
   /// Fetch cached Magic Shows recommendations from backend
-  Future<MagicShowsResult> fetchRecommendations() async {
+  Future<MagicShowsResult> fetchRecommendations({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺✨ MAGIC SHOWS FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -150,6 +154,8 @@ class MagicShowsService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -163,9 +169,9 @@ class MagicShowsService {
 
         if (recommendationsData == null || recommendationsData.isEmpty) {
           print('📭 No recommendations yet');
-          _cachedRecommendations = [];
-          _cachedSectionTitle = null;
-          _cachedSectionTheme = null;
+          _cachedRecommendations[instanceKey] = [];
+          _cachedSectionTitle[instanceKey] = null;
+          _cachedSectionTheme[instanceKey] = null;
           return MagicShowsResult.success(
             sectionTitle: 'Magic Shows',
             sectionTheme: 'AI-curated themed collections',
@@ -177,11 +183,13 @@ class MagicShowsService {
             .map((item) => MagicShow.fromJson(item as Map<String, dynamic>))
             .toList();
 
-        _cachedRecommendations = recommendations;
-        _cachedSectionTitle = sectionTitle ?? 'Magic Shows';
-        _cachedSectionTheme = sectionTheme ?? 'AI-curated themed collections';
-        _lastFetchTime = DateTime.now();
-        _isGenerating = data['is_generating'] as bool? ?? false;
+        _cachedRecommendations[instanceKey] = recommendations;
+        _cachedSectionTitle[instanceKey] =
+            sectionTitle ?? 'Magic Shows';
+        _cachedSectionTheme[instanceKey] =
+            sectionTheme ?? 'AI-curated themed collections';
+        _lastFetchTime[instanceKey] = DateTime.now();
+        _isGenerating[instanceKey] = data['is_generating'] as bool? ?? false;
 
         final generatedAt = data['generated_at'] != null
             ? DateTime.parse(data['generated_at'] as String)
@@ -226,7 +234,11 @@ class MagicShowsService {
   }
 
   /// Generate new Magic Shows recommendations
-  Future<MagicShowsResult> generateRecommendations({bool force = false}) async {
+  Future<MagicShowsResult> generateRecommendations({
+    required String profileKey,
+    required String instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺✨ MAGIC SHOWS GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -241,7 +253,7 @@ class MagicShowsService {
       );
     }
 
-    if (_isGenerating && !force) {
+    if ((_isGenerating[instanceKey] ?? false) && !force) {
       print('⏳ Already generating...');
       return MagicShowsResult.failure(
         MagicShowsError.alreadyGenerating,
@@ -253,7 +265,7 @@ class MagicShowsService {
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = HmacEncryptionService().hmacKey;
 
-      _isGenerating = true;
+      _isGenerating[instanceKey] = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-shows/generate'),
@@ -261,6 +273,8 @@ class MagicShowsService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -272,19 +286,25 @@ class MagicShowsService {
         if (data['status'] == 'up_to_date') {
           print('✅ Magic Shows are already up to date');
           print('   Age: ${data['age_days']} days');
-          _isGenerating = false;
-          return fetchRecommendations();
+          _isGenerating[instanceKey] = false;
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
         }
 
         print('✅ Generation started successfully');
         print('   Duration: ${data['generation_duration_ms']}ms');
         print('   Count: ${data['recommendations_count']}');
 
-        _isGenerating = false;
-        return await fetchRecommendations();
+        _isGenerating[instanceKey] = false;
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsResult.failure(
           MagicShowsError.alreadyGenerating,
           'Generation already in progress',
@@ -292,14 +312,14 @@ class MagicShowsService {
       } else if (response.statusCode == 400) {
         final error = json.decode(response.body);
         print('❌ Library not synced: ${error['detail']}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsResult.failure(
           MagicShowsError.notSynced,
           error['detail'] as String? ?? 'Library not synced',
         );
       } else {
         print('❌ HTTP ${response.statusCode}: ${response.body}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return MagicShowsResult.failure(
           MagicShowsError.unknown,
           'Generation failed: ${response.statusCode}',
@@ -309,14 +329,20 @@ class MagicShowsService {
       ZagLogger().error('Magic Shows generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
-      _isGenerating = false;
+      _isGenerating[instanceKey] = false;
       return MagicShowsResult.failure(MagicShowsError.unknown, e.toString());
     }
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicShowsResult> syncIfNeeded() async {
-    final fetchResult = await fetchRecommendations();
+  Future<MagicShowsResult> syncIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       final needsRegen = needsRegeneration(existingResult: fetchResult);
@@ -325,6 +351,9 @@ class MagicShowsService {
       }
     }
 
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

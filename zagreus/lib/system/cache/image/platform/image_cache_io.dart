@@ -15,7 +15,13 @@ ZagImageCache getImageCache() {
 }
 
 class IO implements ZagImageCache {
-  static final CacheManager _cache = CacheManager(Config(ZagImageCache.key));
+  static final CacheManager _cache = CacheManager(
+    Config(
+      ZagImageCache.key,
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 5000,
+    ),
+  );
 
   @override
   CacheManager get instance => _cache;

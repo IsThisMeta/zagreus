@@ -88,14 +88,15 @@ class UpNextService {
 
   static const String _baseUrl = 'https://z-assistant.fly.dev';
 
-  DateTime? _lastFetchTime;
-  List<UpNextShow>? _cachedRecommendations;
-  bool _isGenerating = false;
+  final Map<String, DateTime?> _lastFetchTime = {};
+  final Map<String, List<UpNextShow>?> _cachedRecommendations = {};
+  final Map<String, bool> _isGenerating = {};
 
-  List<UpNextShow>? get recommendations => _cachedRecommendations;
-  bool get hasRecommendations =>
-      _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
-  bool get isGenerating => _isGenerating;
+  List<UpNextShow>? recommendations(String instanceKey) =>
+      _cachedRecommendations[instanceKey];
+  bool hasRecommendations(String instanceKey) =>
+      (_cachedRecommendations[instanceKey]?.isNotEmpty ?? false);
+  bool isGenerating(String instanceKey) => _isGenerating[instanceKey] ?? false;
 
   /// Get the current subscription tier for Up Next ("mega" or "ultra")
   String get _subscriptionTier {
@@ -119,7 +120,10 @@ class UpNextService {
   }
 
   /// Fetch cached Up Next recommendations from backend
-  Future<UpNextResult> fetchRecommendations() async {
+  Future<UpNextResult> fetchRecommendations({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺 UP NEXT FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -143,6 +147,8 @@ class UpNextService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -154,7 +160,7 @@ class UpNextService {
 
         if (recommendationsData == null || recommendationsData.isEmpty) {
           print('📭 No recommendations yet');
-          _cachedRecommendations = [];
+          _cachedRecommendations[instanceKey] = [];
           return UpNextResult.success(recommendations: []);
         }
 
@@ -162,9 +168,9 @@ class UpNextService {
             .map((item) => UpNextShow.fromJson(item as Map<String, dynamic>))
             .toList();
 
-        _cachedRecommendations = recommendations;
-        _lastFetchTime = DateTime.now();
-        _isGenerating = data['is_generating'] as bool? ?? false;
+        _cachedRecommendations[instanceKey] = recommendations;
+        _lastFetchTime[instanceKey] = DateTime.now();
+        _isGenerating[instanceKey] = data['is_generating'] as bool? ?? false;
 
         final generatedAt = data['generated_at'] != null
             ? DateTime.parse(data['generated_at'] as String)
@@ -208,7 +214,11 @@ class UpNextService {
   /// Generate new Up Next recommendations
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
-  Future<UpNextResult> generateRecommendations({bool force = false}) async {
+  Future<UpNextResult> generateRecommendations({
+    required String profileKey,
+    required String instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺 UP NEXT GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -224,7 +234,7 @@ class UpNextService {
       );
     }
 
-    if (_isGenerating && !force) {
+    if ((_isGenerating[instanceKey] ?? false) && !force) {
       print('⏳ Already generating...');
       return UpNextResult.failure(
         UpNextError.alreadyGenerating,
@@ -236,7 +246,7 @@ class UpNextService {
       final deviceId = DeviceIdService().deviceId;
       final hmacKey = HmacEncryptionService().hmacKey;
 
-      _isGenerating = true;
+      _isGenerating[instanceKey] = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/up-next/generate'),
@@ -244,6 +254,8 @@ class UpNextService {
           'X-Device-Id': deviceId,
           'X-HMAC-Signature': hmacKey,
           'X-Subscription-Tier': _subscriptionTier,
+          'X-Profile-Key': profileKey,
+          'X-Instance-Key': instanceKey,
         },
       );
 
@@ -255,8 +267,11 @@ class UpNextService {
         if (data['status'] == 'up_to_date') {
           print('✅ Up Next shows are already up to date');
           print('   Age: ${data['age_days']} days');
-          _isGenerating = false;
-          return fetchRecommendations(); // Return existing
+          _isGenerating[instanceKey] = false;
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          ); // Return existing
         }
 
         print('✅ Generation started successfully');
@@ -264,11 +279,14 @@ class UpNextService {
         print('   Count: ${data['recommendations_count']}');
 
         // Fetch the fresh recommendations
-        _isGenerating = false;
-        return await fetchRecommendations();
+        _isGenerating[instanceKey] = false;
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return UpNextResult.failure(
           UpNextError.alreadyGenerating,
           'Generation already in progress',
@@ -276,14 +294,14 @@ class UpNextService {
       } else if (response.statusCode == 400) {
         final error = json.decode(response.body);
         print('❌ Library not synced: ${error['detail']}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return UpNextResult.failure(
           UpNextError.notSynced,
           error['detail'] as String? ?? 'Library not synced',
         );
       } else {
         print('❌ HTTP ${response.statusCode}: ${response.body}');
-        _isGenerating = false;
+        _isGenerating[instanceKey] = false;
         return UpNextResult.failure(
           UpNextError.unknown,
           'Generation failed: ${response.statusCode}',
@@ -293,15 +311,21 @@ class UpNextService {
       ZagLogger().error('Up Next generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
-      _isGenerating = false;
+      _isGenerating[instanceKey] = false;
       return UpNextResult.failure(UpNextError.unknown, e.toString());
     }
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<UpNextResult> syncIfNeeded() async {
+  Future<UpNextResult> syncIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     // First try to fetch existing - do this ONCE
-    final fetchResult = await fetchRecommendations();
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       // Check if regeneration is needed based on the result we just fetched
@@ -312,6 +336,9 @@ class UpNextService {
     }
 
     // Generate new recommendations
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

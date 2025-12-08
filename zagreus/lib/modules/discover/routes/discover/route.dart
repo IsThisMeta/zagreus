@@ -266,7 +266,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicShowsCastCrewResult>? _magicShowsCastCrewFuture;
   bool _magicShowsCastCrewSyncInitialized = false;
 
-  // Magic People future
+  // Magic Actors & Actresses future
   Future<MagicPeopleResult>? _magicPeopleFuture;
   bool _magicPeopleSyncInitialized = false;
 
@@ -297,13 +297,26 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
     _startAutoScroll();
-    _syncDeepCutsIfNeeded();
-    _syncUpNextIfNeeded();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
-    _syncMagicPeopleIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+
+    _syncDeepCutsIfNeeded(profileKey: profileKey, instanceKey: radarrInstance);
+    _syncUpNextIfNeeded(profileKey: profileKey, instanceKey: sonarrInstance);
+    _syncMagicMoviesIfNeeded(
+        profileKey: profileKey, instanceKey: radarrInstance);
+    _syncMagicMoviesCastCrewIfNeeded(
+        profileKey: profileKey, instanceKey: radarrInstance);
+    _syncMagicShowsIfNeeded(
+        profileKey: profileKey, instanceKey: sonarrInstance);
+    _syncMagicShowsCastCrewIfNeeded(
+        profileKey: profileKey, instanceKey: sonarrInstance);
+    _syncMagicPeopleIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
     // Listen for instance context changes (e.g. from add pages)
     ZagInstanceContext().addListener(_onInstanceContextChanged);
   }
@@ -326,7 +339,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadSonarrAiringNext();
   }
 
-  Future<void> _syncDeepCutsIfNeeded() async {
+  Future<void> _syncDeepCutsIfNeeded({required String profileKey, required String instanceKey}) async {
     // Guard to ensure this only runs once
     if (_deepCutsSyncInitialized || !ZagreusMega.isEnabled) return;
     _deepCutsSyncInitialized = true;
@@ -334,7 +347,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       final deepCutsService = DeepCutsService();
       // Fetch current state once
-      final fetchResult = await deepCutsService.fetchRecommendations();
+      final fetchResult = await deepCutsService.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
 
       // Check if regeneration is needed based on fetched data
       final needsRegen = deepCutsService.needsRegeneration(
@@ -344,14 +360,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (needsRegen) {
         ZagLogger().debug('Deep Cuts need regeneration - triggering...');
         // Fire and forget - don't await
-        deepCutsService.generateRecommendations();
+        deepCutsService.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncUpNextIfNeeded() async {
+  Future<void> _syncUpNextIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     // Guard to ensure this only runs once
     if (_upNextSyncInitialized || !ZagreusMega.isEnabled) return;
     _upNextSyncInitialized = true;
@@ -359,7 +381,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       final upNextService = UpNextService();
       // Fetch current state once
-      final fetchResult = await upNextService.fetchRecommendations();
+      final fetchResult = await upNextService.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
 
       // Check if regeneration is needed based on fetched data
       final needsRegen = upNextService.needsRegeneration(
@@ -369,100 +394,148 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (needsRegen) {
         ZagLogger().debug('Up Next need regeneration - triggering...');
         // Fire and forget - don't await
-        upNextService.generateRecommendations();
+        upNextService.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Up Next sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicMoviesIfNeeded() async {
+  Future<void> _syncMagicMoviesIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicMoviesSyncInitialized = true;
 
     try {
       final service = MagicMoviesService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Movies need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Movies sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicMoviesCastCrewIfNeeded() async {
+  Future<void> _syncMagicMoviesCastCrewIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicMoviesCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicMoviesCastCrewSyncInitialized = true;
 
     try {
       final service = MagicMoviesCastCrewService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Movies Cast & Crew need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Movies Cast & Crew sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicShowsIfNeeded() async {
+  Future<void> _syncMagicShowsIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicShowsSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicShowsSyncInitialized = true;
 
     try {
       final service = MagicShowsService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Shows need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Shows sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicShowsCastCrewIfNeeded() async {
+  Future<void> _syncMagicShowsCastCrewIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicShowsCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicShowsCastCrewSyncInitialized = true;
 
     try {
       final service = MagicShowsCastCrewService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Shows Cast & Crew need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Shows Cast & Crew sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicPeopleIfNeeded() async {
+  Future<void> _syncMagicPeopleIfNeeded({
+    required String instanceKey,
+    required String profileKey,
+  }) async {
     if (_magicPeopleSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicPeopleSyncInitialized = true;
 
     try {
       final service = MagicPeopleService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic People need regeneration - triggering...');
-        service.generateRecommendations();
+        ZagLogger().debug('Magic Actors & Actresses need regeneration - triggering...');
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic People sync check failed', e, stack);
+      ZagLogger().error('Magic Actors & Actresses sync check failed', e, stack);
     }
   }
 
@@ -488,10 +561,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadDownloadingSoon();
     _syncDeepCutsIfNeeded();
     _syncUpNextIfNeeded();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
+    _syncMagicMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicMoviesCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicShowsCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
     _syncMagicPeopleIfNeeded();
     if (mounted) setState(() {});
   }
@@ -2085,6 +2170,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _magicMoviesCastCrewSyncInitialized = false;
     _deepCutsFuture = null;
     _deepCutsSyncInitialized = false;
+    _magicPeopleFuture = null;
+    _magicPeopleSyncInitialized = false;
     
     setState(() {});
     
@@ -2093,9 +2180,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadRecommendedMovies();
     _loadMissingMovies();
     _loadDownloadingSoon();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncDeepCutsIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    _syncMagicMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicMoviesCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncDeepCutsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicPeopleIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
   }
 
   void _showSonarrInstanceSelector() async {
@@ -2144,15 +2247,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _magicShowsCastCrewSyncInitialized = false;
     _upNextFuture = null;
     _upNextSyncInitialized = false;
+    _magicPeopleFuture = null;
+    _magicPeopleSyncInitialized = false;
     
     setState(() {});
     
     // Reload all Sonarr-dependent data
     _loadRecentlyDownloadedShows();
     _loadSonarrAiringNext();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
-    _syncUpNextIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+    _syncMagicShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicShowsCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncUpNextIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicPeopleIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
   }
 
   void _showCalendarInstanceFilter() async {
@@ -9410,34 +9531,44 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  // Magic People Section
+  // Magic Actors & Actresses Section (Movies tab / Radarr instance)
   Widget _magicPeopleSection() {
     final service = MagicPeopleService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    // Movies tab should use active Radarr instance
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic People',
+        sectionName: 'Magic Actors & Actresses',
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic People',
+          sectionName: 'Magic Actors & Actresses',
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
-              _magicPeopleFuture =
-                  refreshService.generateRecommendations(force: true);
+              _magicPeopleFuture = refreshService.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
       );
     }
 
-    _magicPeopleFuture ??= service.fetchRecommendations();
+    _magicPeopleFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Actors & Actresses';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -9485,7 +9616,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
-                            'Magic People requires Mega or Ultra';
+                            'Magic Actors & Actresses requires Mega or Ultra';
                         icon = Icons.lock_rounded;
                         break;
                       case MagicPeopleError.alreadyGenerating:
