@@ -590,61 +590,80 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _loadTrendingData() async {
     try {
-      final hideInLibrary = ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read() ?? false;
-
-      // Load separate lists for movies and TV shows
-      var movieItems = await TMDBApi.getTrending(
-        mediaType: 'movie',
-        timeWindow: _trendingTimeWindow,
-      );
-
-      var tvItems = await TMDBApi.getTrending(
-        mediaType: 'tv',
-        timeWindow: _trendingTimeWindow,
-      );
-
-      // Check against Radarr library if available
+      final hideInLibrary =
+          ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read() ?? false;
+      
+      // Pre-fetch library data efficiently
+      List<RadarrMovie> radarrMovies = [];
+      List<SonarrSeries> sonarrSeries = [];
+      
       if (mounted) {
         final radarrState = context.read<RadarrState>();
         if (radarrState.enabled && radarrState.movies != null) {
-          final movies = await radarrState.movies!;
-          for (final item in movieItems) {
-            final tmdbId = item['tmdbId'] as int;
-            final match = movies.where((m) => m.tmdbId == tmdbId).firstOrNull;
-            item['inLibrary'] = match != null;
-            if (match != null) {
-              item['radarrId'] = match.id;
-            }
-          }
+          radarrMovies = await radarrState.movies!;
         }
-
-        // Check against Sonarr library if available
+        
         final sonarrState = context.read<SonarrState>();
         if (sonarrState.enabled && sonarrState.api != null) {
           try {
-            final sonarrSeries = await sonarrState.api!.series.getAll();
-            for (final item in tvItems) {
-              final title = item['title'] as String;
-              // Check if this show is in Sonarr library by title match
-              final match = sonarrSeries.where((series) {
-                return series.title?.toLowerCase() == title.toLowerCase();
-              }).firstOrNull;
-              item['inLibrary'] = match != null;
-              if (match != null) {
-                item['sonarrId'] = match.id;
-              }
-            }
+            sonarrSeries = await sonarrState.api!.series.getAll();
           } catch (e) {
-            print('📺 Error checking Sonarr library for trending: $e');
+            print('📺 Error fetching Sonarr library for trending check: $e');
           }
         }
       }
 
-      if (hideInLibrary) {
-        movieItems =
-            movieItems.where((item) => item['inLibrary'] != true).toList();
-        tvItems = tvItems.where((item) => item['inLibrary'] != true).toList();
+      // Helper function to fetch and filter items
+      Future<List<Map<String, dynamic>>> fetchAndFilter(
+        String mediaType,
+      ) async {
+        List<Map<String, dynamic>> finalItems = [];
+        // Fetch up to 5 pages to ensure we have enough items after filtering
+        for (int page = 1; page <= 5; page++) {
+          if (finalItems.length >= 20) break;
+
+          final items = await TMDBApi.getTrending(
+            mediaType: mediaType,
+            timeWindow: _trendingTimeWindow,
+            page: page,
+          );
+
+          if (items.isEmpty) break;
+
+          for (final item in items) {
+            final tmdbId = item['tmdbId'] as int;
+            bool inLibrary = false;
+
+            if (mediaType == 'movie') {
+              final match =
+                  radarrMovies.where((m) => m.tmdbId == tmdbId).firstOrNull;
+              if (match != null) {
+                inLibrary = true;
+                item['inLibrary'] = true;
+                item['radarrId'] = match.id;
+              }
+            } else {
+              final title = item['title'] as String;
+              final match = sonarrSeries.where((series) {
+                return series.title?.toLowerCase() == title.toLowerCase();
+              }).firstOrNull;
+              if (match != null) {
+                inLibrary = true;
+                item['inLibrary'] = true;
+                item['sonarrId'] = match.id;
+              }
+            }
+
+            if (!hideInLibrary || !inLibrary) {
+              finalItems.add(item);
+            }
+          }
+        }
+        return finalItems.take(20).toList();
       }
+
+      final movieItems = await fetchAndFilter('movie');
+      final tvItems = await fetchAndFilter('tv');
 
       if (mounted) {
         setState(() {
@@ -663,7 +682,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       }
     } catch (e) {
       print('Failed to load trending: $e');
-      // Falls back to mock data in the API
+      // Falls back to mock data in the API or empty state
     }
   }
 

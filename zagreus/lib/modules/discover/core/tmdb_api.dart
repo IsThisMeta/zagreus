@@ -95,10 +95,11 @@ class TMDBApi {
   static Future<List<Map<String, dynamic>>> getTrending({
     String mediaType = 'all',
     String timeWindow = 'day',
+    int page = 1,
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/trending/$mediaType/$timeWindow?api_key=$_apiKey'),
+        Uri.parse('$_baseUrl/trending/$mediaType/$timeWindow?api_key=$_apiKey&page=$page'),
       );
 
       if (response.statusCode == 200) {
