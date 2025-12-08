@@ -117,8 +117,6 @@ class _RadarrAddMovieStreamingProvidersTileState
     required bool hasError,
   }) {
     final visibleProviders = providers.take(_maxVisibleIcons).toList();
-    final hasMore = providers.length > _maxVisibleIcons;
-    final hiddenCount = providers.length - _maxVisibleIcons;
     final isEmpty = providers.isEmpty;
 
     return Column(
@@ -153,75 +151,37 @@ class _RadarrAddMovieStreamingProvidersTileState
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ...visibleProviders
-                            .where((provider) {
-                              final logoPath = provider['logo_path'] as String?;
-                              return logoPath != null && logoPath.isNotEmpty;
-                            })
-                            .map((provider) {
-                              final logoPath = provider['logo_path'] as String;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: GestureDetector(
-                                  onTap: () => _openProvider(provider),
-                                  child: Tooltip(
-                                    message: provider['provider_name'] ?? '',
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Image.network(
-                                        TMDBApi.getImageUrl(logoPath, size: 'w92'),
-                                        width: 36,
-                                        height: 36,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const SizedBox.shrink(),
-                                      ),
+                      children: visibleProviders
+                          .where((provider) {
+                            final logoPath = provider['logo_path'] as String?;
+                            return logoPath != null && logoPath.isNotEmpty;
+                          })
+                          .map((provider) {
+                            final logoPath = provider['logo_path'] as String;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () => _openProvider(provider),
+                                child: Tooltip(
+                                  message: provider['provider_name'] ?? '',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      TMDBApi.getImageUrl(logoPath, size: 'w92'),
+                                      width: 36,
+                                      height: 36,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox.shrink(),
                                     ),
                                   ),
                                 ),
-                              );
-                            }),
-                        if (hasMore)
-                          GestureDetector(
-                            onTap: () => _showAllProviders(title, providers),
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Center(
-                                child: Text(
-                                  '+$hiddenCount',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+                            );
+                          }).toList(),
                     ),
         ),
       ],
-    );
-  }
-
-  void _showAllProviders(String title, List<Map<String, dynamic>> providers) {
-    final providerNames = providers
-        .map((p) => p['provider_name'] as String?)
-        .where((name) => name != null && name.isNotEmpty)
-        .join(', ');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$title: $providerNames'),
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-      ),
     );
   }
 
