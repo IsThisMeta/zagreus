@@ -293,7 +293,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: fixedColumns,
-          childAspectRatio: 0.48, // Increased height to fit 8 lines of description
+          childAspectRatio: 0.55,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -415,7 +415,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                   fontSize: 12,
                   color: Colors.grey[500],
                 ),
-                maxLines: 8,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
