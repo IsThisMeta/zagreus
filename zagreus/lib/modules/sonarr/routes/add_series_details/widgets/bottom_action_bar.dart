@@ -48,7 +48,7 @@ class SonarrAddSeriesDetailsActionBar extends StatelessWidget {
         monitorType: _state.monitorType,
       )
           .then((series) async {
-        context.read<SonarrState>().fetchAllSeries();
+        await context.read<SonarrState>().fetchAllSeries();
         context.read<SonarrSeriesAddDetailsState>().series.id = series!.id;
 
         ZagRouter.router.pop();
