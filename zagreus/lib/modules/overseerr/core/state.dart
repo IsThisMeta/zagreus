@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/overseerr.dart';
@@ -7,10 +9,18 @@ class OverseerrState extends ZagModuleState {
     reset();
   }
 
-  /// Trim whitespace, drop accidental /api suffixes, and ensure trailing slash.
+  /// Trim whitespace, drop accidental /api suffixes, capture basic auth, ensure trailing slash.
   String _normalizeHost(String host) {
     var value = host.trim();
+    _basicAuthHeader = null;
     if (value.isEmpty) return value;
+
+    // Capture any userinfo (basic auth) and convert to Authorization header.
+    final uri = Uri.tryParse(value);
+    if (uri != null && uri.userInfo.isNotEmpty) {
+      _basicAuthHeader = 'Basic ${base64Encode(utf8.encode(uri.userInfo))}';
+      value = uri.replace(userInfo: '').toString();
+    }
 
     // Remove trailing slashes and accidental /api suffixes so we can append our own.
     value = value.replaceAll(RegExp(r'/+$'), '');
@@ -58,6 +68,9 @@ class OverseerrState extends ZagModuleState {
   String _host = '';
   String get host => _host;
 
+  /// Basic auth header derived from userinfo in the host URL (if provided)
+  String? _basicAuthHeader;
+
   /// Overseerr API key
   String _apiKey = '';
   String get apiKey => _apiKey;
@@ -92,6 +105,7 @@ class OverseerrState extends ZagModuleState {
         final dio = Dio(BaseOptions(
           baseUrl: '$_host/api/',
           headers: {
+            if (_basicAuthHeader != null) 'Authorization': _basicAuthHeader!,
             'X-Api-Key': _apiKey,
             ..._headers,
           },
