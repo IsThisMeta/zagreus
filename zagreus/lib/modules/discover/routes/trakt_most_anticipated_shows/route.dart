@@ -6,6 +6,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/core/trakt_api.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 
@@ -50,7 +51,19 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('TraktMostAnticipatedShowsRoute');
+    if (cached != null) {
+      _shows = List<Map<String, dynamic>>.from(cached.items);
+      _currentPage = cached.currentPage;
+      _hasMorePages = cached.hasMorePages;
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _shows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -67,6 +80,18 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
 
   @override
   void dispose() {
+    if (_shows.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'TraktMostAnticipatedShowsRoute',
+        DiscoverRouteState(
+          items: _shows,
+          currentPage: _currentPage,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: _hasMorePages,
+        ),
+      );
+    }
     scrollController.removeListener(_onScroll);
     super.dispose();
   }

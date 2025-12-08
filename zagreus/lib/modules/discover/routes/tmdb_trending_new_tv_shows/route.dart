@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
@@ -45,7 +46,17 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('TMDBTrendingNewTVShowsRoute');
+    if (cached != null) {
+      _shows = List<Map<String, dynamic>>.from(cached.items);
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _shows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -56,6 +67,23 @@ class _State extends State<TMDBTrendingNewTVShowsRoute>
     } else {
       _loadTrendingShows();
     }
+  }
+
+  @override
+  void dispose() {
+    if (_shows.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'TMDBTrendingNewTVShowsRoute',
+        DiscoverRouteState(
+          items: _shows,
+          currentPage: 1,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: false,
+        ),
+      );
+    }
+    super.dispose();
   }
 
   void _loadSavedSettings() {

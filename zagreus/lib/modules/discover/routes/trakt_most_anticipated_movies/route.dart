@@ -3,6 +3,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/core/trakt_api.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -31,12 +32,26 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   int _currentPage = 1;
   bool _hasMorePages = true;
   bool _isLoadingMore = false;
+  int _totalPages = 1;
   final Map<String, Map<String, dynamic>?> _ratingsCache = {};
 
   @override
   void initState() {
     super.initState();
-    if (widget.initialData?.isNotEmpty == true) {
+    // _loadSavedSettings(); // Not needed for simple movie list
+
+    final cached = DiscoverSessionCache().get('TraktMostAnticipatedMoviesRoute');
+    if (cached != null) {
+      _movies = List<Map<String, dynamic>>.from(cached.items);
+      _currentPage = cached.currentPage;
+      _totalPages = cached.extra?['totalPages'] ?? 1;
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData != null && widget.initialData!.isNotEmpty) {
       _movies = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -53,6 +68,19 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
 
   @override
   void dispose() {
+    if (_movies.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'TraktMostAnticipatedMoviesRoute',
+        DiscoverRouteState(
+          items: _movies,
+          currentPage: _currentPage,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: _currentPage < _totalPages,
+          extra: {'totalPages': _totalPages},
+        ),
+      );
+    }
     scrollController.removeListener(_onScroll);
     super.dispose();
   }

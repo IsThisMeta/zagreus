@@ -5,6 +5,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 
 const double _airingNextEpisodeThumbWidth = 100;
 const double _airingNextEpisodeThumbHeight = 53;
@@ -33,7 +34,18 @@ class _State extends State<SonarrAiringNextRoute>
   @override
   void initState() {
     super.initState();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('SonarrAiringNextRoute');
+    if (cached != null) {
+      _airingNextShows = List<Map<String, dynamic>>.from(cached.items);
+      _daysAhead = cached.extra?['daysAhead'] ?? 14;
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _airingNextShows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -44,6 +56,24 @@ class _State extends State<SonarrAiringNextRoute>
     } else {
       _loadAiringNextShows();
     }
+  }
+
+  @override
+  void dispose() {
+    if (_airingNextShows.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'SonarrAiringNextRoute',
+        DiscoverRouteState(
+          items: _airingNextShows,
+          currentPage: 1,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: false,
+          extra: {'daysAhead': _daysAhead},
+        ),
+      );
+    }
+    super.dispose();
   }
 
   Future<void> _loadAiringNextShows({bool silent = false}) async {

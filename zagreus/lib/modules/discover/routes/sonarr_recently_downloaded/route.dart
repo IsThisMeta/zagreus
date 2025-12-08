@@ -5,6 +5,7 @@ import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/modules/sonarr/core/dialogs.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 
 const double _recentlyDownloadedEpisodeThumbWidth = 90;
 const double _recentlyDownloadedEpisodeThumbHeight = 53;
@@ -33,7 +34,46 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
   void initState() {
     super.initState();
     // Always load fresh data to ensure we have the latest including file sizes
-    _loadRecentlyDownloadedShows();
+    // But check cache first
+    final cached = DiscoverSessionCache().get('SonarrRecentlyDownloadedRoute');
+    if (cached != null) {
+      _recentlyDownloadedShows = List<Map<String, dynamic>>.from(cached.items);
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+      // Optionally reload in background to refresh file sizes?
+      // The user wants "have it there", implying fast restoration.
+      // If we want fresh data, we might trigger a silent reload.
+      Future.microtask(() {
+        if (mounted) {
+           // We don't have a silent mode for _loadRecentlyDownloadedShows. 
+           // It sets _isLoading=true immediately. 
+           // So we keep cached data. Pull to refresh is available.
+        }
+      });
+    } else {
+      _loadRecentlyDownloadedShows();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_recentlyDownloadedShows.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'SonarrRecentlyDownloadedRoute',
+        DiscoverRouteState(
+          items: _recentlyDownloadedShows,
+          currentPage: 1,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: false,
+        ),
+      );
+    }
+    super.dispose();
   }
 
   Future<void> _loadRecentlyDownloadedShows() async {

@@ -5,6 +5,7 @@ import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 
 class DiscoverRecommendedRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
@@ -40,12 +41,39 @@ class _State extends State<DiscoverRecommendedRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('DiscoverRecommendedRoute');
+    if (cached != null) {
+      _movies = List<RadarrMovie>.from(cached.items);
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _movies = List<RadarrMovie>.from(widget.initialData!);
       _isLoading = false;
     } else {
       _loadRecommendedMovies();
     }
+  }
+
+  @override
+  void dispose() {
+    if (_movies.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'DiscoverRecommendedRoute',
+        DiscoverRouteState(
+          items: _movies,
+          currentPage: 1,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: false,
+        ),
+      );
+    }
+    super.dispose();
   }
 
   void _loadSavedSettings() {

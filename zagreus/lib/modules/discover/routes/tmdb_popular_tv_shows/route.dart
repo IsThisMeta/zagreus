@@ -7,6 +7,7 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 
 class TMDBPopularTVShowsRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
@@ -57,7 +58,19 @@ class _State extends State<TMDBPopularTVShowsRoute>
   void initState() {
     super.initState();
     _loadSavedSettings();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('TMDBPopularTVShowsRoute');
+    if (cached != null) {
+      _shows = List<Map<String, dynamic>>.from(cached.items);
+      _currentPage = cached.currentPage;
+      _hasMorePages = cached.hasMorePages;
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _shows = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -85,6 +98,18 @@ class _State extends State<TMDBPopularTVShowsRoute>
 
   @override
   void dispose() {
+    if (_shows.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'TMDBPopularTVShowsRoute',
+        DiscoverRouteState(
+          items: _shows,
+          currentPage: _currentPage,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: _hasMorePages,
+        ),
+      );
+    }
     scrollController.removeListener(_scrollListener);
     super.dispose();
   }

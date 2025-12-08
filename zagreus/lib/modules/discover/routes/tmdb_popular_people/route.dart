@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
 
@@ -31,7 +33,19 @@ class _State extends State<TMDBPopularPeopleRoute>
   @override
   void initState() {
     super.initState();
-    if (widget.initialData?.isNotEmpty == true) {
+
+    final cached = DiscoverSessionCache().get('TMDBPopularPeopleRoute');
+    if (cached != null) {
+      _people = List<Map<String, dynamic>>.from(cached.items);
+      _currentPage = cached.currentPage;
+      _hasMorePages = cached.hasMorePages;
+      _isLoading = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (scrollController.hasClients) {
+          scrollController.jumpTo(cached.scrollOffset);
+        }
+      });
+    } else if (widget.initialData?.isNotEmpty == true) {
       _people = List<Map<String, dynamic>>.from(widget.initialData!);
       _isLoading = false;
       Future.microtask(() {
@@ -43,11 +57,24 @@ class _State extends State<TMDBPopularPeopleRoute>
       _loadPopularPeople();
     }
 
+    // Add scroll listener for pagination
     scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
+    if (_people.isNotEmpty) {
+      DiscoverSessionCache().set(
+        'TMDBPopularPeopleRoute',
+        DiscoverRouteState(
+          items: _people,
+          currentPage: _currentPage,
+          scrollOffset:
+              scrollController.hasClients ? scrollController.offset : 0.0,
+          hasMorePages: _hasMorePages,
+        ),
+      );
+    }
     scrollController.removeListener(_scrollListener);
     super.dispose();
   }
