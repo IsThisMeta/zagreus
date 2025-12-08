@@ -176,7 +176,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return 18;
   }
 
-  // Magic Actors & Actresses Section (Shows tab / Sonarr instance)
+  // Magic People Section (Shows tab / Sonarr instance)
   Widget _magicPeopleShowsSection() {
     final service = MagicPeopleService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -187,9 +187,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Actors & Actresses',
+        sectionName: 'Magic People',
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Actors & Actresses',
+          sectionName: 'Magic People',
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
@@ -213,7 +213,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       future: _magicPeopleShowsFuture,
       builder: (context, snapshot) {
         final sectionTitle =
-            snapshot.data?.sectionTitle ?? 'Magic Actors & Actresses';
+            snapshot.data?.sectionTitle ?? 'Magic People';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +272,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
-                            'Magic Actors & Actresses requires Mega or Ultra';
+                            'Magic People requires Mega or Ultra';
                         icon = Icons.lock_rounded;
                         break;
                       case MagicPeopleError.alreadyGenerating:
@@ -330,7 +330,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Actors & Actresses',
+                                      sectionName: 'Magic People',
                                       onSynced: () {
                                         final refreshService =
                                             MagicPeopleService();
@@ -489,7 +489,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicShowsCastCrewResult>? _magicShowsCastCrewFuture;
   bool _magicShowsCastCrewSyncInitialized = false;
 
-  // Magic Actors & Actresses futures
+  // Magic People futures
   Future<MagicPeopleResult>? _magicPeopleMoviesFuture;
   Future<MagicPeopleResult>? _magicPeopleShowsFuture;
   bool _magicPeopleMoviesSyncInitialized = false;
@@ -773,14 +773,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic Actors & Actresses need regeneration - triggering...');
+        ZagLogger().debug('Magic People need regeneration - triggering...');
         service.generateRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic Actors & Actresses sync check failed', e, stack);
+      ZagLogger().error('Magic People sync check failed', e, stack);
     }
   }
 
@@ -800,14 +800,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic Actors & Actresses need regeneration - triggering...');
+        ZagLogger().debug('Magic People need regeneration - triggering...');
         service.generateRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic Actors & Actresses sync check failed', e, stack);
+      ZagLogger().error('Magic People sync check failed', e, stack);
     }
   }
 
@@ -9903,7 +9903,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  // Magic Actors & Actresses Section (Movies tab / Radarr instance)
+  // Magic People Section (Movies tab / Radarr instance)
   Widget _magicPeopleSection() {
     final service = MagicPeopleService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -9914,9 +9914,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Actors & Actresses',
+        sectionName: 'Magic People',
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Actors & Actresses',
+          sectionName: 'Magic People',
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
@@ -9940,7 +9940,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleMoviesFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Actors & Actresses';
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -9988,7 +9988,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
-                            'Magic Actors & Actresses requires Mega or Ultra';
+                            'Magic People requires Mega or Ultra';
                         icon = Icons.lock_rounded;
                         break;
                       case MagicPeopleError.alreadyGenerating:
@@ -10046,7 +10046,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Actors & Actresses',
+                                      sectionName: 'Magic People',
                                       onSynced: () {
                                         final refreshService =
                                             MagicPeopleService();

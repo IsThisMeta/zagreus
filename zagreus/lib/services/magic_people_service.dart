@@ -79,8 +79,8 @@ class MagicPerson {
   }
 }
 
-/// Service for managing Magic Actors & Actresses AI-powered recommendations
-/// Magic Actors & Actresses are dynamically themed person recommendations generated weekly by AI
+/// Service for managing Magic People AI-powered recommendations
+/// Magic People are dynamically themed person recommendations generated weekly by AI
 /// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
 class MagicPeopleService {
   static final MagicPeopleService _instance = MagicPeopleService._internal();
@@ -102,7 +102,7 @@ class MagicPeopleService {
       _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
   bool get isGenerating => _isGenerating;
 
-  /// Get the current subscription tier for Magic Actors & Actresses ("mega" or "ultra")
+  /// Get the current subscription tier for Magic People ("mega" or "ultra")
   String get _subscriptionTier {
     if (ZagreusUltra.isEnabled) return 'ultra';
     if (ZagreusMega.isEnabled) return 'mega';
@@ -142,13 +142,13 @@ class MagicPeopleService {
     return DateTime.now().isAfter(existingResult.nextGenerationAt!);
   }
 
-  /// Fetch cached Magic Actors & Actresses recommendations from backend
+  /// Fetch cached Magic People recommendations from backend
   Future<MagicPeopleResult> fetchRecommendations({
     String? profileKey,
     String? instanceKey,
   }) async {
     print('\n═══════════════════════════════════════');
-    print('👥✨ MAGIC ACTORS & ACTRESSES FETCH STARTED');
+    print('👥✨ MAGIC PEOPLE FETCH STARTED');
     print('═══════════════════════════════════════');
 
     // Mega or Ultra required
@@ -156,7 +156,7 @@ class MagicPeopleService {
       print('❌ FETCH BLOCKED: Mega or Ultra subscription required');
       return MagicPeopleResult.failure(
         MagicPeopleError.noMegaOrUltra,
-        'Mega or Ultra subscription required for Magic Actors & Actresses',
+        'Mega or Ultra subscription required for Magic People',
       );
     }
 
@@ -169,7 +169,7 @@ class MagicPeopleService {
         ),
       );
 
-      print('📡 Magic Actors & Actresses response: ${response.statusCode}');
+      print('📡 Magic People response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -183,7 +183,7 @@ class MagicPeopleService {
           _cachedSectionTitle = null;
           _cachedSectionTheme = null;
           return MagicPeopleResult.success(
-            sectionTitle: 'Magic Actors & Actresses',
+            sectionTitle: 'Magic People',
             sectionTheme: 'AI-curated person recommendations',
             recommendations: [],
           );
@@ -194,7 +194,7 @@ class MagicPeopleService {
             .toList();
 
         _cachedRecommendations = recommendations;
-        _cachedSectionTitle = sectionTitle ?? 'Magic Actors & Actresses';
+        _cachedSectionTitle = sectionTitle ?? 'Magic People';
         _cachedSectionTheme = sectionTheme ?? 'AI-curated person recommendations';
         _lastFetchTime = DateTime.now();
         _isGenerating = data['is_generating'] as bool? ?? false;
@@ -206,8 +206,7 @@ class MagicPeopleService {
             ? DateTime.parse(data['next_generation_at'] as String)
             : null;
 
-        print(
-            '✅ Fetched ${recommendations.length} magic actors & actresses recommendations');
+        print('✅ Fetched ${recommendations.length} magic people recommendations');
         print('   Theme: $_cachedSectionTitle');
         print('   Generated: ${generatedAt?.toLocal()}');
         print('   Next generation: ${nextGenerationAt?.toLocal()}');
@@ -235,14 +234,14 @@ class MagicPeopleService {
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic Actors & Actresses fetch error', e, stack);
+      ZagLogger().error('Magic People fetch error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
       return MagicPeopleResult.failure(MagicPeopleError.unknown, e.toString());
     }
   }
 
-  /// Generate new Magic Actors & Actresses recommendations
+  /// Generate new Magic People recommendations
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
   Future<MagicPeopleResult> generateRecommendations({
@@ -251,7 +250,7 @@ class MagicPeopleService {
     bool force = false,
   }) async {
     print('\n═══════════════════════════════════════');
-    print('👥✨ MAGIC ACTORS & ACTRESSES GENERATION STARTED');
+    print('👥✨ MAGIC PEOPLE GENERATION STARTED');
     print('═══════════════════════════════════════');
     print('Force: $force');
     print('Tier: $_subscriptionTier');
@@ -261,7 +260,7 @@ class MagicPeopleService {
       print('❌ GENERATION BLOCKED: Mega or Ultra subscription required');
       return MagicPeopleResult.failure(
         MagicPeopleError.noMegaOrUltra,
-        'Mega or Ultra subscription required for Magic Actors & Actresses',
+        'Mega or Ultra subscription required for Magic People',
       );
     }
 
@@ -269,7 +268,7 @@ class MagicPeopleService {
       print('⏳ Already generating...');
       return MagicPeopleResult.failure(
         MagicPeopleError.alreadyGenerating,
-        'Magic Actors & Actresses are already being generated',
+        'Magic People are already being generated',
       );
     }
 
@@ -290,7 +289,7 @@ class MagicPeopleService {
         final data = json.decode(response.body) as Map<String, dynamic>;
 
         if (data['status'] == 'up_to_date') {
-          print('✅ Magic Actors & Actresses are already up to date');
+          print('✅ Magic People are already up to date');
           print('   Age: ${data['age_days']} days');
           _isGenerating = false;
           return fetchRecommendations(
@@ -333,7 +332,7 @@ class MagicPeopleService {
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic Actors & Actresses generation error', e, stack);
+      ZagLogger().error('Magic People generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
       _isGenerating = false;
