@@ -175,6 +175,229 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
     return 18;
   }
+
+  // Magic Actors & Actresses Section (Shows tab / Sonarr instance)
+  Widget _magicPeopleShowsSection() {
+    final service = MagicPeopleService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: 'Magic Actors & Actresses',
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: 'Magic Actors & Actresses',
+          onSynced: () {
+            final refreshService = MagicPeopleService();
+            setState(() {
+              _magicPeopleShowsFuture = refreshService.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
+            });
+          },
+        ),
+      );
+    }
+
+    _magicPeopleShowsFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
+
+    return FutureBuilder<MagicPeopleResult>(
+      future: _magicPeopleShowsFuture,
+      builder: (context, snapshot) {
+        final sectionTitle =
+            snapshot.data?.sectionTitle ?? 'Magic Actors & Actresses';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Row(
+                children: [
+                  Icon(Icons.groups_rounded,
+                      color: ZagColours.purple, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (snapshot.hasData &&
+                    snapshot.data!.nextGenerationAt != null) {
+                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                      height: 260,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
+                }
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
+                  String title = 'No recommendations yet';
+                  String message =
+                      'Recommendations generate automatically each week.';
+                  IconData icon = Icons.groups_rounded;
+                  final showLibrarySyncCta =
+                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                          snapshot.data?.error ==
+                              MagicPeopleError.notSynced;
+
+                  if (snapshot.hasData &&
+                      !snapshot.data!.success &&
+                      snapshot.data!.error != null) {
+                    switch (snapshot.data!.error!) {
+                      case MagicPeopleError.notSynced:
+                        title = 'Library not synced';
+                        message = snapshot.data!.errorMessage ??
+                            'Please sync your library first';
+                        icon = Icons.sync_problem_rounded;
+                        break;
+                      case MagicPeopleError.noMegaOrUltra:
+                        title = 'Mega subscription required';
+                        message = snapshot.data!.errorMessage ??
+                            'Magic Actors & Actresses requires Mega or Ultra';
+                        icon = Icons.lock_rounded;
+                        break;
+                      case MagicPeopleError.alreadyGenerating:
+                        title = 'Generation in progress';
+                        message = snapshot.data!.errorMessage ??
+                            'Please wait while recommendations are being generated';
+                        icon = Icons.hourglass_empty_rounded;
+                        break;
+                      case MagicPeopleError.fetchFailed:
+                      case MagicPeopleError.unknown:
+                        title = 'Something went wrong';
+                        message = snapshot.data!.errorMessage ??
+                            'Please try again later';
+                        icon = Icons.error_outline_rounded;
+                        break;
+                    }
+                  }
+
+                  return Container(
+                    height: 240,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          const SizedBox(height: 16),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if (showLibrarySyncCta) ...[
+                            const SizedBox(height: 16),
+                            _isSyncing
+                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                : ZagButton.text(
+                                    text: libraryCacheEnabled
+                                        ? 'Sync library now'
+                                        : 'Enable library sync',
+                                    icon: Icons.sync,
+                                    onTap: () => _enableLibrarySyncForSection(
+                                      sectionName: 'Magic Actors & Actresses',
+                                      onSynced: () {
+                                        final refreshService =
+                                            MagicPeopleService();
+                                        setState(() {
+                                          _magicPeopleShowsFuture =
+                                              refreshService
+                                                  .generateRecommendations(
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
+                                        });
+                                      },
+                                    ),
+                                  ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final recommendations =
+                    snapshot.data!.recommendations ?? <MagicPerson>[];
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (recommendations.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Tap for details • Long press to preview',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.color
+                                ?.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 320,
+                      child: ListView.builder(
+                        controller:
+                            _sectionScrollController(_scrollIdMagicPeople),
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: recommendations.length,
+                        itemBuilder: (context, index) {
+                          final person = recommendations[index];
+                          return _buildMagicPersonCard(person);
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   double _heroHeight = 370.0;
 
   List<RadarrMovie> _recentlyDownloaded = [];
@@ -266,9 +489,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicShowsCastCrewResult>? _magicShowsCastCrewFuture;
   bool _magicShowsCastCrewSyncInitialized = false;
 
-  // Magic People future
-  Future<MagicPeopleResult>? _magicPeopleFuture;
-  bool _magicPeopleSyncInitialized = false;
+  // Magic Actors & Actresses futures
+  Future<MagicPeopleResult>? _magicPeopleMoviesFuture;
+  Future<MagicPeopleResult>? _magicPeopleShowsFuture;
+  bool _magicPeopleMoviesSyncInitialized = false;
+  bool _magicPeopleShowsSyncInitialized = false;
 
   // Track the soonest scheduled regeneration across Z sections for display
   DateTime? _nextZSectionsRegenerationAt;
@@ -297,13 +522,43 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
     _startAutoScroll();
-    _syncDeepCutsIfNeeded();
-    _syncUpNextIfNeeded();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
-    _syncMagicPeopleIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+    _syncDeepCutsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncUpNextIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicMoviesCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicShowsCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicPeopleMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicPeopleShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
     // Listen for instance context changes (e.g. from add pages)
     ZagInstanceContext().addListener(_onInstanceContextChanged);
   }
@@ -326,7 +581,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadSonarrAiringNext();
   }
 
-  Future<void> _syncDeepCutsIfNeeded() async {
+  Future<void> _syncDeepCutsIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     // Guard to ensure this only runs once
     if (_deepCutsSyncInitialized || !ZagreusMega.isEnabled) return;
     _deepCutsSyncInitialized = true;
@@ -334,7 +592,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       final deepCutsService = DeepCutsService();
       // Fetch current state once
-      final fetchResult = await deepCutsService.fetchRecommendations();
+      final fetchResult = await deepCutsService.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
 
       // Check if regeneration is needed based on fetched data
       final needsRegen = deepCutsService.needsRegeneration(
@@ -344,14 +605,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (needsRegen) {
         ZagLogger().debug('Deep Cuts need regeneration - triggering...');
         // Fire and forget - don't await
-        deepCutsService.generateRecommendations();
+        deepCutsService.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Deep Cuts sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncUpNextIfNeeded() async {
+  Future<void> _syncUpNextIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     // Guard to ensure this only runs once
     if (_upNextSyncInitialized || !ZagreusMega.isEnabled) return;
     _upNextSyncInitialized = true;
@@ -359,7 +626,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     try {
       final upNextService = UpNextService();
       // Fetch current state once
-      final fetchResult = await upNextService.fetchRecommendations();
+      final fetchResult = await upNextService.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
 
       // Check if regeneration is needed based on fetched data
       final needsRegen = upNextService.needsRegeneration(
@@ -369,100 +639,175 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (needsRegen) {
         ZagLogger().debug('Up Next need regeneration - triggering...');
         // Fire and forget - don't await
-        upNextService.generateRecommendations();
+        upNextService.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Up Next sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicMoviesIfNeeded() async {
+  Future<void> _syncMagicMoviesIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicMoviesSyncInitialized = true;
 
     try {
       final service = MagicMoviesService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Movies need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Movies sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicMoviesCastCrewIfNeeded() async {
+  Future<void> _syncMagicMoviesCastCrewIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicMoviesCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicMoviesCastCrewSyncInitialized = true;
 
     try {
       final service = MagicMoviesCastCrewService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Movies Cast & Crew need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Movies Cast & Crew sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicShowsIfNeeded() async {
+  Future<void> _syncMagicShowsIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicShowsSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicShowsSyncInitialized = true;
 
     try {
       final service = MagicShowsService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Shows need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Shows sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicShowsCastCrewIfNeeded() async {
+  Future<void> _syncMagicShowsCastCrewIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
     if (_magicShowsCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
     _magicShowsCastCrewSyncInitialized = true;
 
     try {
       final service = MagicShowsCastCrewService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
         ZagLogger().debug('Magic Shows Cast & Crew need regeneration - triggering...');
-        service.generateRecommendations();
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Magic Shows Cast & Crew sync check failed', e, stack);
     }
   }
 
-  Future<void> _syncMagicPeopleIfNeeded() async {
-    if (_magicPeopleSyncInitialized || !ZagreusMega.isEnabled) return;
-    _magicPeopleSyncInitialized = true;
+  Future<void> _syncMagicPeopleMoviesIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
+    if (_magicPeopleMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicPeopleMoviesSyncInitialized = true;
 
     try {
       final service = MagicPeopleService();
-      final fetchResult = await service.fetchRecommendations();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic People need regeneration - triggering...');
-        service.generateRecommendations();
+        ZagLogger().debug('Magic Actors & Actresses need regeneration - triggering...');
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic People sync check failed', e, stack);
+      ZagLogger().error('Magic Actors & Actresses sync check failed', e, stack);
+    }
+  }
+
+  Future<void> _syncMagicPeopleShowsIfNeeded({
+    required String profileKey,
+    required String instanceKey,
+  }) async {
+    if (_magicPeopleShowsSyncInitialized || !ZagreusMega.isEnabled) return;
+    _magicPeopleShowsSyncInitialized = true;
+
+    try {
+      final service = MagicPeopleService();
+      final fetchResult = await service.fetchRecommendations(
+        profileKey: profileKey,
+        instanceKey: instanceKey,
+      );
+      final needsRegen = service.needsRegeneration(existingResult: fetchResult);
+
+      if (needsRegen) {
+        ZagLogger().debug('Magic Actors & Actresses need regeneration - triggering...');
+        service.generateRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Magic Actors & Actresses sync check failed', e, stack);
     }
   }
 
@@ -486,16 +831,43 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadRecommendedMovies();
     _loadMissingMovies();
     _loadDownloadingSoon();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     _syncDeepCutsIfNeeded(
       profileKey: profileKey,
       instanceKey: radarrInstance,
     );
-    _syncUpNextIfNeeded();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
-    _syncMagicPeopleIfNeeded();
+    _syncUpNextIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicMoviesCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicShowsCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicPeopleMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicPeopleShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
     if (mounted) setState(() {});
   }
 
@@ -2088,6 +2460,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _magicMoviesCastCrewSyncInitialized = false;
     _deepCutsFuture = null;
     _deepCutsSyncInitialized = false;
+    _magicPeopleMoviesFuture = null;
+    _magicPeopleMoviesSyncInitialized = false;
     
     setState(() {});
     
@@ -2096,9 +2470,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadRecommendedMovies();
     _loadMissingMovies();
     _loadDownloadingSoon();
-    _syncMagicMoviesIfNeeded();
-    _syncMagicMoviesCastCrewIfNeeded();
-    _syncDeepCutsIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    _syncMagicMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicMoviesCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncDeepCutsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
+    _syncMagicPeopleMoviesIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
   }
 
   void _showSonarrInstanceSelector() async {
@@ -2147,15 +2537,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _magicShowsCastCrewSyncInitialized = false;
     _upNextFuture = null;
     _upNextSyncInitialized = false;
+    _magicPeopleShowsFuture = null;
+    _magicPeopleShowsSyncInitialized = false;
     
     setState(() {});
     
     // Reload all Sonarr-dependent data
     _loadRecentlyDownloadedShows();
     _loadSonarrAiringNext();
-    _syncMagicShowsIfNeeded();
-    _syncMagicShowsCastCrewIfNeeded();
-    _syncUpNextIfNeeded();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+    _syncMagicShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicShowsCastCrewIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncUpNextIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
+    _syncMagicPeopleShowsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: sonarrInstance,
+    );
   }
 
   void _showCalendarInstanceFilter() async {
@@ -2472,6 +2880,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'up_next',
       'magic_shows',
       'magic_shows_cast_crew',
+      'magic_people',
     ];
 
     // Get saved order or use default
@@ -2494,6 +2903,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Migration: Add 'magic_shows_cast_crew' to existing saved orders if missing
     if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_shows_cast_crew')) {
       sectionOrder.add('magic_shows_cast_crew');
+      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
+    }
+    // Migration: Add 'magic_people' to existing saved orders if missing (shows tab actors)
+    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_people')) {
+      sectionOrder.add('magic_people');
       ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
     }
 
@@ -2527,6 +2941,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'magic_shows_cast_crew': () => ZagreusMega.isEnabled
           ? Column(children: [
               _magicShowsCastCrewSection(),
+              if (_showTitles) const SizedBox(height: 4)
+            ])
+          : const SizedBox.shrink(),
+      'magic_people': () => ZagreusMega.isEnabled
+          ? Column(children: [
+              _magicPeopleShowsSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
@@ -8283,6 +8703,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _deepCutsSection() {
     final deepCutsService = DeepCutsService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -8296,7 +8719,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final service = DeepCutsService();
             setState(() {
               _deepCutsFuture =
-                  service.generateRecommendations(force: true);
+                  service.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
@@ -8304,7 +8731,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     // Initialize future once if not already set
-    _deepCutsFuture ??= deepCutsService.fetchRecommendations();
+    _deepCutsFuture ??= deepCutsService.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<DeepCutsResult>(
       future: _deepCutsFuture,
@@ -8358,7 +8788,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     !futureSnapshot.data!.success ||
                     futureSnapshot.data!.recommendations == null ||
                     futureSnapshot.data!.recommendations!.isEmpty) {
-                  return _deepCutsEmptyState(futureSnapshot.data);
+                  return _deepCutsEmptyState(
+                    futureSnapshot.data,
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                  );
                 }
 
                 final recommendations = futureSnapshot.data!.recommendations!;
@@ -8385,7 +8819,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _deepCutsEmptyState(DeepCutsResult? result) {
+  Widget _deepCutsEmptyState(
+    DeepCutsResult? result, {
+    required String profileKey,
+    required String instanceKey,
+  }) {
     // Determine message based on error type
     String title = 'No deep cuts yet';
     String message = 'Recommendations generate automatically each week.';
@@ -8480,7 +8918,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           final service = DeepCutsService();
                           setState(() {
                             _deepCutsFuture =
-                                service.generateRecommendations(force: true);
+                                service.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
                           });
                         },
                       ),
@@ -8616,6 +9058,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _upNextSection() {
     final upNextService = UpNextService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -8629,7 +9074,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final service = UpNextService();
             setState(() {
               _upNextFuture =
-                  service.generateRecommendations(force: true);
+                  service.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
@@ -8637,7 +9086,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     // Initialize future once if not already set
-    _upNextFuture ??= upNextService.fetchRecommendations();
+    _upNextFuture ??= upNextService.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<UpNextResult>(
       future: _upNextFuture,
@@ -8700,7 +9152,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     !futureSnapshot.data!.success ||
                     futureSnapshot.data!.recommendations == null ||
                     futureSnapshot.data!.recommendations!.isEmpty) {
-                  return _upNextEmptyState(futureSnapshot.data);
+                  return _upNextEmptyState(
+                    futureSnapshot.data,
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                  );
                 }
 
                 final recommendations = futureSnapshot.data!.recommendations!;
@@ -8727,7 +9183,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _upNextEmptyState(UpNextResult? result) {
+  Widget _upNextEmptyState(
+    UpNextResult? result, {
+    required String profileKey,
+    required String instanceKey,
+  }) {
     // Determine message based on error type
     String title = 'No recommendations yet';
     String message = 'Recommendations generate automatically each week.';
@@ -8822,7 +9282,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           final service = UpNextService();
                           setState(() {
                             _upNextFuture =
-                                service.generateRecommendations(force: true);
+                                service.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
                           });
                         },
                       ),
@@ -8958,6 +9422,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Movies Section
   Widget _magicMoviesSection() {
     final service = MagicMoviesService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -8970,14 +9437,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final refreshService = MagicMoviesService();
             setState(() {
               _magicMoviesFuture =
-                  refreshService.generateRecommendations(force: true);
+                  refreshService.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
       );
     }
 
-    _magicMoviesFuture ??= service.fetchRecommendations();
+    _magicMoviesFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicMoviesResult>(
       future: _magicMoviesFuture,
@@ -9094,7 +9568,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         setState(() {
                                           _magicMoviesFuture = refreshService
                                               .generateRecommendations(
-                                                  force: true);
+                                                profileKey: profileKey,
+                                                instanceKey: instanceKey,
+                                                force: true,
+                                              );
                                         });
                                       },
                                     ),
@@ -9191,6 +9668,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Movies Cast & Crew Section
   Widget _magicMoviesCastCrewSection() {
     final service = MagicMoviesCastCrewService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -9203,14 +9683,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final refreshService = MagicMoviesCastCrewService();
             setState(() {
               _magicMoviesCastCrewFuture =
-                  refreshService.generateRecommendations(force: true);
+                  refreshService.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
       );
     }
 
-    _magicMoviesCastCrewFuture ??= service.fetchRecommendations();
+    _magicMoviesCastCrewFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicMoviesCastCrewResult>(
       future: _magicMoviesCastCrewFuture,
@@ -9329,7 +9816,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           _magicMoviesCastCrewFuture =
                                               refreshService
                                                   .generateRecommendations(
-                                                      force: true);
+                                                profileKey: profileKey,
+                                                instanceKey: instanceKey,
+                                                force: true,
+                                              );
                                         });
                                       },
                                     ),
@@ -9413,34 +9903,44 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  // Magic People Section
+  // Magic Actors & Actresses Section (Movies tab / Radarr instance)
   Widget _magicPeopleSection() {
     final service = MagicPeopleService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic People',
+        sectionName: 'Magic Actors & Actresses',
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic People',
+          sectionName: 'Magic Actors & Actresses',
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
-              _magicPeopleFuture =
-                  refreshService.generateRecommendations(force: true);
+              _magicPeopleMoviesFuture =
+                  refreshService.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
       );
     }
 
-    _magicPeopleFuture ??= service.fetchRecommendations();
+    _magicPeopleMoviesFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicPeopleResult>(
-      future: _magicPeopleFuture,
+      future: _magicPeopleMoviesFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Actors & Actresses';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -9488,7 +9988,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
-                            'Magic People requires Mega or Ultra';
+                            'Magic Actors & Actresses requires Mega or Ultra';
                         icon = Icons.lock_rounded;
                         break;
                       case MagicPeopleError.alreadyGenerating:
@@ -9546,14 +10046,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic People',
+                                      sectionName: 'Magic Actors & Actresses',
                                       onSynced: () {
                                         final refreshService =
                                             MagicPeopleService();
                                         setState(() {
-                                          _magicPeopleFuture = refreshService
-                                              .generateRecommendations(
-                                                  force: true);
+                                          _magicPeopleMoviesFuture =
+                                              refreshService
+                                                  .generateRecommendations(
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
                                         });
                                       },
                                     ),
@@ -9920,7 +10424,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           _magicShowsFuture =
                                               refreshService
                                                   .generateRecommendations(
-                                                      force: true);
+                                                profileKey: profileKey,
+                                                instanceKey: instanceKey,
+                                                force: true,
+                                              );
                                         });
                                       },
                                     ),
@@ -10017,6 +10524,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Shows Cast & Crew Section
   Widget _magicShowsCastCrewSection() {
     final service = MagicShowsCastCrewService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -10029,14 +10539,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final refreshService = MagicShowsCastCrewService();
             setState(() {
               _magicShowsCastCrewFuture =
-                  refreshService.generateRecommendations(force: true);
+                  refreshService.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
       );
     }
 
-    _magicShowsCastCrewFuture ??= service.fetchRecommendations();
+    _magicShowsCastCrewFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicShowsCastCrewResult>(
       future: _magicShowsCastCrewFuture,
@@ -10155,7 +10672,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           _magicShowsCastCrewFuture =
                                               refreshService
                                                   .generateRecommendations(
-                                                      force: true);
+                                                profileKey: profileKey,
+                                                instanceKey: instanceKey,
+                                                force: true,
+                                              );
                                         });
                                       },
                                     ),

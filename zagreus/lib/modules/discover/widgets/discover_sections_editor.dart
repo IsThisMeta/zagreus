@@ -41,6 +41,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'up_next',
     'magic_shows',
     'magic_shows_cast_crew',
+    'magic_people',
   ];
 
   static const double _posterHeightMin = 150.0;
@@ -62,7 +63,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'deep_cuts': 'Deep Cuts',
     'magic_movies': 'Magic Movies',
     'magic_movies_cast_crew': 'Magic Movies: Cast & Crew',
-    'magic_people': 'Magic People',
+    'magic_people': 'Magic Actors & Actresses',
     'recently_downloaded_shows': 'Recently Downloaded',
     'airing_next': 'Airing Next',
     'popular_tv_shows': 'Popular TV Shows',

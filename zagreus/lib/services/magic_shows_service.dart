@@ -4,6 +4,7 @@ import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -114,6 +115,25 @@ class MagicShowsService {
     return 'none';
   }
 
+  Map<String, String> _buildHeaders({
+    String? profileKey,
+    String? instanceKey,
+  }) {
+    final deviceId = DeviceIdService().deviceId;
+    final hmacKey = HmacEncryptionService().hmacKey;
+    final resolvedProfileKey =
+        profileKey ?? ZagreusDatabase.ENABLED_PROFILE.read();
+    final resolvedInstanceKey = instanceKey ?? resolvedProfileKey;
+
+    return {
+      'X-Device-Id': deviceId,
+      'X-HMAC-Signature': hmacKey,
+      'X-Profile-Key': resolvedProfileKey,
+      'X-Instance-Key': resolvedInstanceKey,
+      'X-Subscription-Tier': _subscriptionTier,
+    };
+  }
+
   /// Check if recommendations need regeneration
   bool needsRegeneration({MagicShowsResult? existingResult}) {
     if (!ZagreusMega.isEnabled) return false;
@@ -127,7 +147,10 @@ class MagicShowsService {
   }
 
   /// Fetch cached Magic Shows recommendations from backend
-  Future<MagicShowsResult> fetchRecommendations() async {
+  Future<MagicShowsResult> fetchRecommendations({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺✨ MAGIC SHOWS FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -141,16 +164,12 @@ class MagicShowsService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       final response = await http.get(
         Uri.parse('$_baseUrl/recommendations/magic-shows'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Magic Shows response: ${response.statusCode}');
@@ -226,7 +245,11 @@ class MagicShowsService {
   }
 
   /// Generate new Magic Shows recommendations
-  Future<MagicShowsResult> generateRecommendations({bool force = false}) async {
+  Future<MagicShowsResult> generateRecommendations({
+    String? profileKey,
+    String? instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('📺✨ MAGIC SHOWS GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -250,18 +273,14 @@ class MagicShowsService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       _isGenerating = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-shows/generate'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Generation response: ${response.statusCode}');
@@ -273,7 +292,10 @@ class MagicShowsService {
           print('✅ Magic Shows are already up to date');
           print('   Age: ${data['age_days']} days');
           _isGenerating = false;
-          return fetchRecommendations();
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
         }
 
         print('✅ Generation started successfully');
@@ -281,7 +303,10 @@ class MagicShowsService {
         print('   Count: ${data['recommendations_count']}');
 
         _isGenerating = false;
-        return await fetchRecommendations();
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
         _isGenerating = false;
@@ -315,8 +340,14 @@ class MagicShowsService {
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicShowsResult> syncIfNeeded() async {
-    final fetchResult = await fetchRecommendations();
+  Future<MagicShowsResult> syncIfNeeded({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       final needsRegen = needsRegeneration(existingResult: fetchResult);
@@ -325,6 +356,9 @@ class MagicShowsService {
       }
     }
 
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

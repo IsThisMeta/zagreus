@@ -4,6 +4,7 @@ import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -104,6 +105,25 @@ class DeepCutsService {
     return 'none';
   }
 
+  Map<String, String> _buildHeaders({
+    String? profileKey,
+    String? instanceKey,
+  }) {
+    final deviceId = DeviceIdService().deviceId;
+    final hmacKey = HmacEncryptionService().hmacKey;
+    final resolvedProfileKey =
+        profileKey ?? ZagreusDatabase.ENABLED_PROFILE.read();
+    final resolvedInstanceKey = instanceKey ?? resolvedProfileKey;
+
+    return {
+      'X-Device-Id': deviceId,
+      'X-HMAC-Signature': hmacKey,
+      'X-Profile-Key': resolvedProfileKey,
+      'X-Instance-Key': resolvedInstanceKey,
+      'X-Subscription-Tier': _subscriptionTier,
+    };
+  }
+
   /// Check if recommendations need regeneration (> 7 days old or never generated)
   /// Pass existing result to avoid redundant API calls
   bool needsRegeneration({DeepCutsResult? existingResult}) {
@@ -119,7 +139,10 @@ class DeepCutsService {
   }
 
   /// Fetch cached Deep Cuts recommendations from backend
-  Future<DeepCutsResult> fetchRecommendations() async {
+  Future<DeepCutsResult> fetchRecommendations({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬 DEEP CUTS FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -134,16 +157,12 @@ class DeepCutsService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       final response = await http.get(
         Uri.parse('$_baseUrl/deep-cuts'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Deep Cuts response: ${response.statusCode}');
@@ -208,7 +227,11 @@ class DeepCutsService {
   /// Generate new Deep Cuts recommendations
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
-  Future<DeepCutsResult> generateRecommendations({bool force = false}) async {
+  Future<DeepCutsResult> generateRecommendations({
+    String? profileKey,
+    String? instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬 DEEP CUTS GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -233,18 +256,14 @@ class DeepCutsService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       _isGenerating = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/deep-cuts/generate'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Generation response: ${response.statusCode}');
@@ -256,7 +275,10 @@ class DeepCutsService {
           print('✅ Deep Cuts are already up to date');
           print('   Age: ${data['age_days']} days');
           _isGenerating = false;
-          return fetchRecommendations(); // Return existing
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          ); // Return existing
         }
 
         print('✅ Generation started successfully');
@@ -265,7 +287,10 @@ class DeepCutsService {
 
         // Fetch the fresh recommendations
         _isGenerating = false;
-        return await fetchRecommendations();
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
         _isGenerating = false;
@@ -299,9 +324,15 @@ class DeepCutsService {
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<DeepCutsResult> syncIfNeeded() async {
+  Future<DeepCutsResult> syncIfNeeded({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     // First try to fetch existing - do this ONCE
-    final fetchResult = await fetchRecommendations();
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       // Check if regeneration is needed based on the result we just fetched
@@ -312,6 +343,9 @@ class DeepCutsService {
     }
 
     // Generate new recommendations
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

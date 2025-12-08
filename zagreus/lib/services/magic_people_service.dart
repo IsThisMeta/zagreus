@@ -4,6 +4,7 @@ import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -78,8 +79,8 @@ class MagicPerson {
   }
 }
 
-/// Service for managing Magic People AI-powered recommendations
-/// Magic People are dynamically themed person recommendations generated weekly by AI
+/// Service for managing Magic Actors & Actresses AI-powered recommendations
+/// Magic Actors & Actresses are dynamically themed person recommendations generated weekly by AI
 /// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
 class MagicPeopleService {
   static final MagicPeopleService _instance = MagicPeopleService._internal();
@@ -101,11 +102,30 @@ class MagicPeopleService {
       _cachedRecommendations != null && _cachedRecommendations!.isNotEmpty;
   bool get isGenerating => _isGenerating;
 
-  /// Get the current subscription tier for Magic People ("mega" or "ultra")
+  /// Get the current subscription tier for Magic Actors & Actresses ("mega" or "ultra")
   String get _subscriptionTier {
     if (ZagreusUltra.isEnabled) return 'ultra';
     if (ZagreusMega.isEnabled) return 'mega';
     return 'none';
+  }
+
+  Map<String, String> _buildHeaders({
+    String? profileKey,
+    String? instanceKey,
+  }) {
+    final deviceId = DeviceIdService().deviceId;
+    final hmacKey = HmacEncryptionService().hmacKey;
+    final resolvedProfileKey =
+        profileKey ?? ZagreusDatabase.ENABLED_PROFILE.read();
+    final resolvedInstanceKey = instanceKey ?? resolvedProfileKey;
+
+    return {
+      'X-Device-Id': deviceId,
+      'X-HMAC-Signature': hmacKey,
+      'X-Profile-Key': resolvedProfileKey,
+      'X-Instance-Key': resolvedInstanceKey,
+      'X-Subscription-Tier': _subscriptionTier,
+    };
   }
 
   /// Check if recommendations need regeneration (> 7 days old or never generated)
@@ -122,10 +142,13 @@ class MagicPeopleService {
     return DateTime.now().isAfter(existingResult.nextGenerationAt!);
   }
 
-  /// Fetch cached Magic People recommendations from backend
-  Future<MagicPeopleResult> fetchRecommendations() async {
+  /// Fetch cached Magic Actors & Actresses recommendations from backend
+  Future<MagicPeopleResult> fetchRecommendations({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
-    print('👥✨ MAGIC PEOPLE FETCH STARTED');
+    print('👥✨ MAGIC ACTORS & ACTRESSES FETCH STARTED');
     print('═══════════════════════════════════════');
 
     // Mega or Ultra required
@@ -133,24 +156,20 @@ class MagicPeopleService {
       print('❌ FETCH BLOCKED: Mega or Ultra subscription required');
       return MagicPeopleResult.failure(
         MagicPeopleError.noMegaOrUltra,
-        'Mega or Ultra subscription required for Magic People',
+        'Mega or Ultra subscription required for Magic Actors & Actresses',
       );
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       final response = await http.get(
         Uri.parse('$_baseUrl/recommendations/magic-people'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
-      print('📡 Magic People response: ${response.statusCode}');
+      print('📡 Magic Actors & Actresses response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -164,7 +183,7 @@ class MagicPeopleService {
           _cachedSectionTitle = null;
           _cachedSectionTheme = null;
           return MagicPeopleResult.success(
-            sectionTitle: 'Magic People',
+            sectionTitle: 'Magic Actors & Actresses',
             sectionTheme: 'AI-curated person recommendations',
             recommendations: [],
           );
@@ -175,7 +194,7 @@ class MagicPeopleService {
             .toList();
 
         _cachedRecommendations = recommendations;
-        _cachedSectionTitle = sectionTitle ?? 'Magic People';
+        _cachedSectionTitle = sectionTitle ?? 'Magic Actors & Actresses';
         _cachedSectionTheme = sectionTheme ?? 'AI-curated person recommendations';
         _lastFetchTime = DateTime.now();
         _isGenerating = data['is_generating'] as bool? ?? false;
@@ -187,7 +206,8 @@ class MagicPeopleService {
             ? DateTime.parse(data['next_generation_at'] as String)
             : null;
 
-        print('✅ Fetched ${recommendations.length} magic people recommendations');
+        print(
+            '✅ Fetched ${recommendations.length} magic actors & actresses recommendations');
         print('   Theme: $_cachedSectionTitle');
         print('   Generated: ${generatedAt?.toLocal()}');
         print('   Next generation: ${nextGenerationAt?.toLocal()}');
@@ -215,19 +235,23 @@ class MagicPeopleService {
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic People fetch error', e, stack);
+      ZagLogger().error('Magic Actors & Actresses fetch error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
       return MagicPeopleResult.failure(MagicPeopleError.unknown, e.toString());
     }
   }
 
-  /// Generate new Magic People recommendations
+  /// Generate new Magic Actors & Actresses recommendations
   /// This triggers the backend to analyze library + watch history with AI
   /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
-  Future<MagicPeopleResult> generateRecommendations({bool force = false}) async {
+  Future<MagicPeopleResult> generateRecommendations({
+    String? profileKey,
+    String? instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
-    print('👥✨ MAGIC PEOPLE GENERATION STARTED');
+    print('👥✨ MAGIC ACTORS & ACTRESSES GENERATION STARTED');
     print('═══════════════════════════════════════');
     print('Force: $force');
     print('Tier: $_subscriptionTier');
@@ -237,7 +261,7 @@ class MagicPeopleService {
       print('❌ GENERATION BLOCKED: Mega or Ultra subscription required');
       return MagicPeopleResult.failure(
         MagicPeopleError.noMegaOrUltra,
-        'Mega or Ultra subscription required for Magic People',
+        'Mega or Ultra subscription required for Magic Actors & Actresses',
       );
     }
 
@@ -245,23 +269,19 @@ class MagicPeopleService {
       print('⏳ Already generating...');
       return MagicPeopleResult.failure(
         MagicPeopleError.alreadyGenerating,
-        'Magic People are already being generated',
+        'Magic Actors & Actresses are already being generated',
       );
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       _isGenerating = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-people/generate'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Generation response: ${response.statusCode}');
@@ -270,10 +290,13 @@ class MagicPeopleService {
         final data = json.decode(response.body) as Map<String, dynamic>;
 
         if (data['status'] == 'up_to_date') {
-          print('✅ Magic People are already up to date');
+          print('✅ Magic Actors & Actresses are already up to date');
           print('   Age: ${data['age_days']} days');
           _isGenerating = false;
-          return fetchRecommendations(); // Return existing
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          ); // Return existing
         }
 
         print('✅ Generation started successfully');
@@ -282,7 +305,10 @@ class MagicPeopleService {
 
         // Fetch the fresh recommendations
         _isGenerating = false;
-        return await fetchRecommendations();
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
         _isGenerating = false;
@@ -307,7 +333,7 @@ class MagicPeopleService {
         );
       }
     } catch (e, stack) {
-      ZagLogger().error('Magic People generation error', e, stack);
+      ZagLogger().error('Magic Actors & Actresses generation error', e, stack);
       print('❌ EXCEPTION: $e');
       print('═══════════════════════════════════════\n');
       _isGenerating = false;
@@ -316,9 +342,15 @@ class MagicPeopleService {
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicPeopleResult> syncIfNeeded() async {
+  Future<MagicPeopleResult> syncIfNeeded({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     // First try to fetch existing - do this ONCE
-    final fetchResult = await fetchRecommendations();
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       // Check if regeneration is needed based on the result we just fetched
@@ -329,6 +361,9 @@ class MagicPeopleService {
     }
 
     // Generate new recommendations
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }

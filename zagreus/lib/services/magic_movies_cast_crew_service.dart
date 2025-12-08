@@ -4,6 +4,7 @@ import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -131,6 +132,25 @@ class MagicMoviesCastCrewService {
     return 'none';
   }
 
+  Map<String, String> _buildHeaders({
+    String? profileKey,
+    String? instanceKey,
+  }) {
+    final deviceId = DeviceIdService().deviceId;
+    final hmacKey = HmacEncryptionService().hmacKey;
+    final resolvedProfileKey =
+        profileKey ?? ZagreusDatabase.ENABLED_PROFILE.read();
+    final resolvedInstanceKey = instanceKey ?? resolvedProfileKey;
+
+    return {
+      'X-Device-Id': deviceId,
+      'X-HMAC-Signature': hmacKey,
+      'X-Profile-Key': resolvedProfileKey,
+      'X-Instance-Key': resolvedInstanceKey,
+      'X-Subscription-Tier': _subscriptionTier,
+    };
+  }
+
   /// Check if recommendations need regeneration
   bool needsRegeneration({MagicMoviesCastCrewResult? existingResult}) {
     if (!ZagreusMega.isEnabled) return false;
@@ -144,7 +164,10 @@ class MagicMoviesCastCrewService {
   }
 
   /// Fetch cached Magic Movies Cast & Crew recommendations from backend
-  Future<MagicMoviesCastCrewResult> fetchRecommendations() async {
+  Future<MagicMoviesCastCrewResult> fetchRecommendations({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬👥 MAGIC MOVIES CAST & CREW FETCH STARTED');
     print('═══════════════════════════════════════');
@@ -158,16 +181,12 @@ class MagicMoviesCastCrewService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       final response = await http.get(
         Uri.parse('$_baseUrl/recommendations/magic-movies-cast-crew'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Magic Movies Cast & Crew response: ${response.statusCode}');
@@ -250,7 +269,11 @@ class MagicMoviesCastCrewService {
   }
 
   /// Generate new Magic Movies Cast & Crew recommendations
-  Future<MagicMoviesCastCrewResult> generateRecommendations({bool force = false}) async {
+  Future<MagicMoviesCastCrewResult> generateRecommendations({
+    String? profileKey,
+    String? instanceKey,
+    bool force = false,
+  }) async {
     print('\n═══════════════════════════════════════');
     print('🎬👥 MAGIC MOVIES CAST & CREW GENERATION STARTED');
     print('═══════════════════════════════════════');
@@ -274,18 +297,14 @@ class MagicMoviesCastCrewService {
     }
 
     try {
-      final deviceId = DeviceIdService().deviceId;
-      final hmacKey = HmacEncryptionService().hmacKey;
-
       _isGenerating = true;
 
       final response = await http.post(
         Uri.parse('$_baseUrl/recommendations/magic-movies-cast-crew/generate'),
-        headers: {
-          'X-Device-Id': deviceId,
-          'X-HMAC-Signature': hmacKey,
-          'X-Subscription-Tier': _subscriptionTier,
-        },
+        headers: _buildHeaders(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        ),
       );
 
       print('📡 Generation response: ${response.statusCode}');
@@ -297,7 +316,10 @@ class MagicMoviesCastCrewService {
           print('✅ Already up to date');
           print('   Age: ${data['age_days']} days');
           _isGenerating = false;
-          return fetchRecommendations();
+          return fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
         }
 
         print('✅ Generation started successfully');
@@ -305,7 +327,10 @@ class MagicMoviesCastCrewService {
         print('   Count: ${data['recommendations_count']}');
 
         _isGenerating = false;
-        return await fetchRecommendations();
+        return await fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       } else if (response.statusCode == 409) {
         print('⏳ Generation already in progress');
         _isGenerating = false;
@@ -339,8 +364,14 @@ class MagicMoviesCastCrewService {
   }
 
   /// Convenience method to fetch or generate as needed
-  Future<MagicMoviesCastCrewResult> syncIfNeeded() async {
-    final fetchResult = await fetchRecommendations();
+  Future<MagicMoviesCastCrewResult> syncIfNeeded({
+    String? profileKey,
+    String? instanceKey,
+  }) async {
+    final fetchResult = await fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     if (fetchResult.success && fetchResult.recommendations!.isNotEmpty) {
       final needsRegen = needsRegeneration(existingResult: fetchResult);
@@ -349,6 +380,9 @@ class MagicMoviesCastCrewService {
       }
     }
 
-    return await generateRecommendations();
+    return await generateRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
   }
 }
