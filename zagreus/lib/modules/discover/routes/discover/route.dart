@@ -486,7 +486,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadRecommendedMovies();
     _loadMissingMovies();
     _loadDownloadingSoon();
-    _syncDeepCutsIfNeeded();
+    _syncDeepCutsIfNeeded(
+      profileKey: profileKey,
+      instanceKey: radarrInstance,
+    );
     _syncUpNextIfNeeded();
     _syncMagicMoviesIfNeeded();
     _syncMagicMoviesCastCrewIfNeeded();
@@ -9769,6 +9772,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Magic Shows Section
   Widget _magicShowsSection() {
     final service = MagicShowsService();
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instanceKey =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
 
@@ -9781,14 +9787,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             final refreshService = MagicShowsService();
             setState(() {
               _magicShowsFuture =
-                  refreshService.generateRecommendations(force: true);
+                  refreshService.generateRecommendations(
+                    profileKey: profileKey,
+                    instanceKey: instanceKey,
+                    force: true,
+                  );
             });
           },
         ),
       );
     }
 
-    _magicShowsFuture ??= service.fetchRecommendations();
+    _magicShowsFuture ??= service.fetchRecommendations(
+      profileKey: profileKey,
+      instanceKey: instanceKey,
+    );
 
     return FutureBuilder<MagicShowsResult>(
       future: _magicShowsFuture,
