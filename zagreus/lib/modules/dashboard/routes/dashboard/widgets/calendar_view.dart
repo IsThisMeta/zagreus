@@ -54,7 +54,10 @@ class _State extends State<CalendarView> {
         children: [
           _calendar(),
           ZagDivider(),
-          _calendarList(),
+          Selector<DashboardState, DateTime>(
+            selector: (_, state) => state.selected,
+            builder: (context, selected, _) => _calendarList(selected),
+          ),
         ],
       ),
       padding: EdgeInsets.only(top: ZagUI.MARGIN_H_DEFAULT_V_HALF.top),
@@ -225,8 +228,7 @@ class _State extends State<CalendarView> {
     return counter;
   }
 
-  Widget _calendarList() {
-    final selected = context.read<DashboardState>().selected;
+  Widget _calendarList(DateTime selected) {
     final events = widget.events[selected.floor()] ?? [];
     if (events.isEmpty) {
       return Expanded(
