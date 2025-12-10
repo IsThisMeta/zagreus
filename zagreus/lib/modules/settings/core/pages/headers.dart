@@ -129,6 +129,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Discover does not have a headers page');
       case ZagModule.READARR:
         return profile.readarrHeaders;
+      case ZagModule.BAZARR:
+        return profile.bazarrHeaders;
     }
   }
 
@@ -164,6 +166,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         throw Exception('Discover does not have a global state');
       case ZagModule.READARR:
         return context.read<ReadarrState>().reset();
+      case ZagModule.BAZARR:
+        return; // Bazarr doesn't have its own state
     }
   }
 }

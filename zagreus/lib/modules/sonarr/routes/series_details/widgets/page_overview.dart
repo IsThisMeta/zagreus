@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sonarr/routes/series_details/widgets/ratings_tile.dart';
+import 'package:zagreus/modules/sonarr/routes/series_details/widgets/bazarr/subtitle_tile.dart';
 
 class SonarrSeriesDetailsOverviewPage extends StatefulWidget {
   final SonarrSeries series;
@@ -41,6 +42,8 @@ class _State extends State<SonarrSeriesDetailsOverviewPage>
           children: [
             SonarrSeriesDetailsOverviewDescriptionTile(series: widget.series),
             SonarrRatingsTile(series: widget.series),
+            if (widget.series.id != null)
+              SonarrBazarrSubtitleTile(sonarrSeriesId: widget.series.id!),
             SonarrSeriesDetailsOverviewInformationBlock(
               series: widget.series,
               qualityProfile: widget.qualityProfile,

@@ -39,6 +39,7 @@ const MODULE_WAKE_ON_LAN_KEY = 'wake_on_lan';
 const MODULE_DISCOVER_KEY = 'discover';
 const MODULE_UNRAID_KEY = 'unraid';
 const MODULE_READARR_KEY = 'readarr';
+const MODULE_BAZARR_KEY = 'bazarr';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -71,7 +72,9 @@ enum ZagModule {
   @HiveField(13)
   UNRAID(MODULE_UNRAID_KEY),
   @HiveField(15)
-  READARR(MODULE_READARR_KEY);
+  READARR(MODULE_READARR_KEY),
+  @HiveField(16)
+  BAZARR(MODULE_BAZARR_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -108,6 +111,8 @@ enum ZagModule {
         return ZagModule.UNRAID;
       case MODULE_READARR_KEY:
         return ZagModule.READARR;
+      case MODULE_BAZARR_KEY:
+        return ZagModule.BAZARR;
     }
     return null;
   }
@@ -116,6 +121,7 @@ enum ZagModule {
     return ZagModule.values.filter((m) {
       if (m == ZagModule.DASHBOARD) return false;
       if (m == ZagModule.SETTINGS) return false;
+      if (m == ZagModule.BAZARR) return false; // Bazarr is integrated into Radarr/Sonarr
       return m.featureFlag;
     }).toList();
   }
@@ -171,6 +177,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagProfile.current.unraidEnabled;
       case ZagModule.READARR:
         return ZagProfile.current.readarrEnabled;
+      case ZagModule.BAZARR:
+        return ZagProfile.current.bazarrEnabled;
     }
   }
 }
@@ -208,6 +216,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Unraid';
       case ZagModule.READARR:
         return 'Readarr';
+      case ZagModule.BAZARR:
+        return 'Bazarr';
     }
   }
 
@@ -243,6 +253,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagIcons.UNRAID;
       case ZagModule.READARR:
         return ZagIcons.READARR;
+      case ZagModule.BAZARR:
+        return Icons.subtitles_rounded;
     }
   }
 
@@ -278,6 +290,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFFEA472B); // Updated Unraid brand orange
       case ZagModule.READARR:
         return const Color(0xFF8E2222); // Readarr red (142, 34, 34)
+      case ZagModule.BAZARR:
+        return const Color(0xFFFFB949); // Bazarr yellow/orange
     }
   }
 
@@ -313,6 +327,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://unraid.net';
       case ZagModule.READARR:
         return 'https://readarr.com';
+      case ZagModule.BAZARR:
+        return 'https://bazarr.media';
     }
   }
 
@@ -348,6 +364,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return null;
       case ZagModule.READARR:
         return 'https://github.com/Readarr/Readarr';
+      case ZagModule.BAZARR:
+        return 'https://github.com/morpheus65535/bazarr';
     }
   }
 
@@ -383,6 +401,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Manage Your Unraid Server';
       case ZagModule.READARR:
         return 'Manage Books and Audiobooks';
+      case ZagModule.BAZARR:
+        return 'Manage Subtitles';
     }
   }
 
@@ -418,6 +438,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Monitor and manage your Unraid server, including system information, array status, Docker containers, and virtual machines.';
       case ZagModule.READARR:
         return 'Readarr is an ebook and audiobook collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new books from your favorite authors and will grab, sort, and organize them. It can also be configured to automatically upgrade the quality of existing files in your library when a better quality format becomes available.';
+      case ZagModule.BAZARR:
+        return 'Bazarr is a companion application to Sonarr and Radarr that manages and downloads subtitles based on your requirements. You can define your preferred languages in profiles and Bazarr takes care of everything for you.';
     }
   }
 }
@@ -455,6 +477,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.unraid.root.path;
       case ZagModule.READARR:
         return ZagRoutes.readarr.root.path;
+      case ZagModule.BAZARR:
+        return null; // Bazarr is integrated into Radarr/Sonarr
     }
   }
 
@@ -490,6 +514,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_UNRAID;
       case ZagModule.READARR:
         return SettingsRoutes.CONFIGURATION_READARR;
+      case ZagModule.BAZARR:
+        return SettingsRoutes.CONFIGURATION_BAZARR;
     }
   }
 
@@ -638,6 +664,8 @@ extension ZagModuleExtension on ZagModule {
         return context.read<UnraidState>();
       case ZagModule.READARR:
         return context.read<ReadarrState>();
+      case ZagModule.BAZARR:
+        return null; // Bazarr doesn't have its own state - integrated into Radarr/Sonarr
     }
   }
 

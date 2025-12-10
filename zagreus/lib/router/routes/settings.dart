@@ -59,6 +59,9 @@ import 'package:zagreus/modules/settings/routes/configuration_tautulli/pages/hea
 import 'package:zagreus/modules/settings/routes/configuration_tautulli/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_unraid/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_unraid/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_bazarr/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/headers.dart';
 import 'package:zagreus/modules/settings/core/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:zagreus/modules/settings/routes/z_agent/route.dart';
@@ -136,6 +139,9 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_UNRAID_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_WAKE_ON_LAN('wake_on_lan'),
+  CONFIGURATION_BAZARR('bazarr'),
+  CONFIGURATION_BAZARR_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS('headers'),
   Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
@@ -319,6 +325,14 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(widget: SettingsHeaderRoute(module: ZagModule.UNRAID));
       case SettingsRoutes.CONFIGURATION_WAKE_ON_LAN:
         return route(widget: const ConfigurationWakeOnLANRoute());
+      case SettingsRoutes.CONFIGURATION_BAZARR:
+        return route(widget: const ConfigurationBazarrRoute());
+      case SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS:
+        return route(widget: const ConfigurationBazarrConnectionDetailsRoute());
+      case SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS:
+        return route(
+          widget: const ConfigurationBazarrConnectionDetailsHeadersRoute(),
+        );
       case SettingsRoutes.Z_AGENT:
         return route(widget: const ZAgentSettingsRoute());
       case SettingsRoutes.NOTIFICATIONS:
@@ -380,6 +394,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_TAUTULLI.routes,
           SettingsRoutes.CONFIGURATION_UNRAID.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
+          SettingsRoutes.CONFIGURATION_BAZARR.routes,
           SettingsRoutes.Z_AGENT.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
@@ -488,6 +503,14 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS:
         return [
           SettingsRoutes.CONFIGURATION_UNRAID_CONNECTION_DETAILS_HEADERS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_BAZARR:
+        return [
+          SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS:
+        return [
+          SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return [

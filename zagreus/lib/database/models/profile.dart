@@ -307,6 +307,30 @@ class ZagProfile extends HiveObject {
   @HiveField(67, defaultValue: '')
   String readarrLocalSsids;
 
+  @JsonKey()
+  @HiveField(70, defaultValue: false)
+  bool bazarrEnabled;
+
+  @JsonKey()
+  @HiveField(71, defaultValue: '')
+  String bazarrHost;
+
+  @JsonKey()
+  @HiveField(72, defaultValue: '')
+  String bazarrKey;
+
+  @JsonKey()
+  @HiveField(73, defaultValue: <String, String>{})
+  Map<String, String> bazarrHeaders;
+
+  @JsonKey()
+  @HiveField(74, defaultValue: '')
+  String bazarrLocalHost;
+
+  @JsonKey()
+  @HiveField(75, defaultValue: '')
+  String bazarrLocalSsids;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -376,6 +400,13 @@ class ZagProfile extends HiveObject {
     required this.readarrHeaders,
     required this.readarrLocalHost,
     required this.readarrLocalSsids,
+    //Bazarr
+    required this.bazarrEnabled,
+    required this.bazarrHost,
+    required this.bazarrKey,
+    required this.bazarrHeaders,
+    required this.bazarrLocalHost,
+    required this.bazarrLocalSsids,
   });
 
   factory ZagProfile({
@@ -447,6 +478,13 @@ class ZagProfile extends HiveObject {
     Map<String, String>? readarrHeaders,
     String? readarrLocalHost,
     String? readarrLocalSsids,
+    //Bazarr
+    bool? bazarrEnabled,
+    String? bazarrHost,
+    String? bazarrKey,
+    Map<String, String>? bazarrHeaders,
+    String? bazarrLocalHost,
+    String? bazarrLocalSsids,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -517,6 +555,13 @@ class ZagProfile extends HiveObject {
       readarrHeaders: readarrHeaders ?? {},
       readarrLocalHost: readarrLocalHost ?? '',
       readarrLocalSsids: readarrLocalSsids ?? '',
+      // Bazarr
+      bazarrEnabled: bazarrEnabled ?? false,
+      bazarrHost: bazarrHost ?? '',
+      bazarrKey: bazarrKey ?? '',
+      bazarrHeaders: bazarrHeaders ?? {},
+      bazarrLocalHost: bazarrLocalHost ?? '',
+      bazarrLocalSsids: bazarrLocalSsids ?? '',
     );
   }
 
@@ -600,6 +645,12 @@ class ZagProfile extends HiveObject {
         remoteHost: readarrHost,
         localHost: readarrLocalHost,
         ssidList: readarrLocalSsids,
+      );
+
+  String effectiveBazarrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: bazarrHost,
+        localHost: bazarrLocalHost,
+        ssidList: bazarrLocalSsids,
       );
 
   // ============== Multi-Instance (Shadow Profile) Support ==============
@@ -896,6 +947,7 @@ class ZagProfile extends HiveObject {
       case 'nzbget': return profile.nzbgetEnabled;
       case 'tautulli': return profile.tautulliEnabled;
       case 'overseerr': return profile.overseerrEnabled;
+      case 'bazarr': return profile.bazarrEnabled;
       default: return false;
     }
   }
