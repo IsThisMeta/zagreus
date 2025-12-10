@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/bazarr/bazarr.dart';
 import 'package:zagreus/api/bazarr/models.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SonarrBazarrSubtitleTile extends StatefulWidget {
   final int sonarrSeriesId;
@@ -28,6 +29,7 @@ class _State extends State<SonarrBazarrSubtitleTile> {
   }
 
   BazarrAPI? _getApi() {
+    if (!ZagreusPro.isEnabled) return null;
     final profile = ZagProfile.current;
     if (!profile.bazarrEnabled) return null;
     final host = profile.effectiveBazarrHost();
@@ -93,6 +95,11 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Show lock for non-Pro users
+    if (!ZagreusPro.isEnabled) {
+      return _proLockedTile();
+    }
+
     // Don't show if Bazarr is not enabled
     if (!ZagProfile.current.bazarrEnabled) {
       return const SizedBox.shrink();
@@ -192,6 +199,20 @@ class _State extends State<SonarrBazarrSubtitleTile> {
               icon: Icons.search_rounded,
               onPressed: missingCount == 0 ? null : _autoSearchSubtitles,
             ),
+    );
+  }
+
+  Widget _proLockedTile() {
+    return ZagBlock(
+      title: 'Subtitles (Bazarr)',
+      body: const [
+        TextSpan(text: 'Zagreus Pro required to manage subtitles with Bazarr.'),
+      ],
+      trailing: const ZagIconButton(icon: Icons.lock_rounded),
+      onTap: () => showZagInfoSnackBar(
+        title: 'Zagreus Pro required',
+        message: 'Upgrade to access Bazarr subtitle actions.',
+      ),
     );
   }
 }

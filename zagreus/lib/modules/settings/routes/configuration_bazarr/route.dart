@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/bazarr/bazarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationBazarrRoute extends StatefulWidget {
   const ConfigurationBazarrRoute({
@@ -68,22 +69,28 @@ class _State extends State<ConfigurationBazarrRoute>
   }
 
   Widget _enabledToggle() {
+    final isPro = ZagreusPro.isEnabled;
+
     return ZagBox.profiles.listenableBuilder(
       builder: (context, _) => ZagBlock(
         title: 'settings.EnableModule'.tr(args: ['Bazarr']),
         trailing: ZagSwitch(
           value: ZagProfile.current.bazarrEnabled,
-          onChanged: (value) {
-            ZagProfile.current.bazarrEnabled = value;
-            ZagProfile.current.save();
-            setState(() {});
-          },
+          onChanged: isPro
+              ? (value) {
+                  ZagProfile.current.bazarrEnabled = value;
+                  ZagProfile.current.save();
+                  setState(() {});
+                }
+              : (_) => _showProUpgradeToast(),
         ),
       ),
     );
   }
 
   Widget _connectionDetailsPage() {
+    final isPro = ZagreusPro.isEnabled;
+
     return ZagBlock(
       title: 'settings.ConnectionDetails'.tr(),
       body: [
@@ -93,8 +100,19 @@ class _State extends State<ConfigurationBazarrRoute>
           ),
         ),
       ],
-      trailing: const ZagIconButton.arrow(),
-      onTap: SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS.go,
+      trailing: isPro
+          ? const ZagIconButton.arrow()
+          : const ZagIconButton(icon: Icons.lock_rounded),
+      onTap: isPro
+          ? SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS.go
+          : _showProUpgradeToast,
+    );
+  }
+
+  void _showProUpgradeToast() {
+    showZagInfoSnackBar(
+      title: 'Zagreus Pro required',
+      message: 'Upgrade to Zagreus Pro to configure Bazarr.',
     );
   }
 }

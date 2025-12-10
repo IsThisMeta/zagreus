@@ -128,6 +128,11 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
         .where((module) => module.settingsRoute != null)
         .toList();
 
+    // Bazarr lives inside Radarr/Sonarr but still needs a settings tile
+    if (!modules.contains(ZagModule.BAZARR)) {
+      modules.add(ZagModule.BAZARR);
+    }
+
     // Remove Discover module (redundant - settings moved elsewhere)
     modules.removeWhere(
       (module) => module == ZagModule.DISCOVER,
@@ -141,7 +146,9 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   }
 
   bool _isProModule(ZagModule module) {
-    return module == ZagModule.OVERSEERR || module == ZagModule.UNRAID;
+    return module == ZagModule.OVERSEERR ||
+        module == ZagModule.UNRAID ||
+        module == ZagModule.BAZARR;
   }
 
   Widget _tileFromModuleMap(ZagModule module) {
