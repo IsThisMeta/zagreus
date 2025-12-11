@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/bazarr/bazarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ConfigurationBazarrRoute extends StatefulWidget {
   const ConfigurationBazarrRoute({
@@ -48,21 +49,17 @@ class _State extends State<ConfigurationBazarrRoute>
     return ZagBanner(
       headerText: 'Bazarr',
       bodyText: 'Bazarr is a companion application to Sonarr and Radarr that manages and downloads subtitles based on your requirements.',
-      iconData: Icons.subtitles_rounded,
+      icon: Icons.subtitles_rounded,
       buttons: [
         ZagButton.text(
           text: 'zagreus.Website'.tr(),
           icon: ZagIcons.LINK,
-          onTap: () => 'https://bazarr.media'.launchUrl(
-            mode: LaunchMode.externalApplication,
-          ),
+          onTap: () => _openUrl('https://bazarr.media'),
         ),
         ZagButton.text(
           text: 'GitHub',
           icon: ZagIcons.GITHUB,
-          onTap: () => 'https://github.com/morpheus65535/bazarr'.launchUrl(
-            mode: LaunchMode.externalApplication,
-          ),
+          onTap: () => _openUrl('https://github.com/morpheus65535/bazarr'),
         ),
       ],
     );
@@ -114,5 +111,17 @@ class _State extends State<ConfigurationBazarrRoute>
       title: 'Zagreus Pro required',
       message: 'Upgrade to Zagreus Pro to configure Bazarr.',
     );
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      showZagInfoSnackBar(
+        title: 'Error',
+        message: 'Could not open link',
+      );
+    }
   }
 }

@@ -165,6 +165,7 @@ abstract class ZagDialog {
     required FormFieldValidator<String>? validator,
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
+    Widget? suffixIcon,
   }) =>
       Builder(
         builder: (context) => TextFormField(
@@ -187,6 +188,7 @@ abstract class ZagDialog {
               borderSide: BorderSide(
                   color: ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH)),
             ),
+            suffixIcon: suffixIcon,
           ),
           style: TextStyle(
             color: Theme.of(context).textTheme.bodyLarge?.color,

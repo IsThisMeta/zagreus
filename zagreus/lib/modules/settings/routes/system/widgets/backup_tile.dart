@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/config.dart';
+import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/system/filesystem/filesystem.dart';
+import 'package:zagreus/utils/encryption.dart';
 
 class SettingsSystemBackupRestoreBackupTile extends StatelessWidget {
   const SettingsSystemBackupRestoreBackupTile({
@@ -21,12 +23,18 @@ class SettingsSystemBackupRestoreBackupTile extends StatelessWidget {
 
   Future<void> _backup(BuildContext context) async {
     try {
+      Tuple2<bool, String> _key =
+          await SettingsDialogs().backupConfiguration(context);
+      if (!_key.item1) return;
+
       String data = ZagConfig().export();
+      String encrypted = ZagEncryption().encrypt(_key.item2, data);
+
       String name = DateFormat('y-MM-dd kk-mm-ss').format(DateTime.now());
       bool result = await ZagFileSystem().save(
         context,
         '$name.zagreus',
-        data.codeUnits,
+        encrypted.codeUnits,
       );
       if (result) {
         showZagSuccessSnackBar(
