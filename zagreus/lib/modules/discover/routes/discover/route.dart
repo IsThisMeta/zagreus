@@ -3021,6 +3021,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _zAutoRefreshNote() {
+    // Only show for Mega and Ultra users (not Pro)
+    final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    if (!isMegaOrUltra) {
+      return const SizedBox.shrink();
+    }
+
     final textColor = Theme.of(context)
         .textTheme
         .bodySmall
