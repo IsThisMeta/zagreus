@@ -1,0 +1,1378 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "_fe_analyzer_shared",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/_fe_analyzer_shared-67.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "analyzer",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/analyzer-6.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "ansicolor",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/ansicolor-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "app_links",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/app_links-6.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "app_links_linux",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/app_links_linux-1.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "app_links_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/app_links_platform_interface-2.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "app_links_web",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/app_links_web-1.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "archive",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/archive-4.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "args",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/args-2.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "asn1lib",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/asn1lib-1.6.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "async",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/async-2.13.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "auto_size_text",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/auto_size_text-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "badges",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/badges-3.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "boolean_selector",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/boolean_selector-2.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "build",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "build_config",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build_config-1.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_daemon",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build_daemon-4.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "build_resolvers",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build_resolvers-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "build_runner",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build_runner-2.4.13",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "build_runner_core",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/build_runner_core-7.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "built_collection",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/built_collection-5.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "built_value",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/built_value-8.12.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "cached_network_image",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/cached_network_image-3.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "cached_network_image_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/cached_network_image_platform_interface-4.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "cached_network_image_web",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/cached_network_image_web-1.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "characters",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/characters-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "checked_yaml",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/checked_yaml-2.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "cli_util",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/cli_util-0.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "clock",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/clock-1.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "code_builder",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/code_builder-4.11.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "collection",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/collection-1.19.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "console",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/console-4.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "convert",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/convert-3.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "cross_file",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/cross_file-0.3.4+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "crypto",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/crypto-3.0.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "csslib",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/csslib-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "dart_style",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/dart_style-2.3.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "dbus",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/dbus-0.7.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "device_frame",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/device_frame-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "device_preview",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/device_preview-1.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "dio",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/dio-5.9.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "dio_web_adapter",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/dio_web_adapter-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "easy_localization",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/easy_localization-3.0.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "easy_logger",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/easy_logger-0.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "encrypt",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/encrypt-5.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "environment_config",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/environment_config-3.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "equatable",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/equatable-2.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "expandable",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/expandable-5.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "ffi",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/ffi-2.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "file",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/file-7.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "file_picker",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/file_picker-9.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "fixnum",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/fixnum-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "fl_chart",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/fl_chart-0.70.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "flash",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flash-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "flutter",
+      "rootUri": "file:///Users/umikaze/flutter/packages/flutter",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "flutter_cache_manager",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_cache_manager-3.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_launcher_icons",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_launcher_icons-0.14.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_lints",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_lints-5.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "flutter_localizations",
+      "rootUri": "file:///Users/umikaze/flutter/packages/flutter_localizations",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "flutter_native_splash",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_native_splash-2.4.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_plugin_android_lifecycle",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.30",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "flutter_spinkit",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_spinkit-5.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_staggered_grid_view",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_staggered_grid_view-0.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_svg",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/flutter_svg-2.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "flutter_web_plugins",
+      "rootUri": "file:///Users/umikaze/flutter/packages/flutter_web_plugins",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "freezed_annotation",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/freezed_annotation-3.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "frontend_server_client",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/frontend_server_client-4.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "functions_client",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/functions_client-2.4.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "get_it",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/get_it-8.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "glob",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/glob-2.1.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "go_router",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/go_router-14.8.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "google_fonts",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/google_fonts-6.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "google_nav_bar",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/google_nav_bar-5.0.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "gotrue",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/gotrue-2.14.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "graphs",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/graphs-2.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "gtk",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/gtk-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "hive",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/hive-2.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "hive_flutter",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/hive_flutter-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "hive_generator",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/hive_generator-2.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "home_widget",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/home_widget-0.6.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "html",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/html-0.15.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "http",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/http-1.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "http_multi_server",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/http_multi_server-3.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "http_parser",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/http_parser-4.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "image",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/image-4.5.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "in_app_purchase",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/in_app_purchase-3.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "in_app_purchase_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/in_app_purchase_android-0.4.0+4",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "in_app_purchase_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/in_app_purchase_platform_interface-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "in_app_purchase_storekit",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/in_app_purchase_storekit-0.4.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "infinite_scroll_pagination",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/infinite_scroll_pagination-4.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.14"
+    },
+    {
+      "name": "intl",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/intl-0.18.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "io",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/io-1.0.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "js",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/js-0.7.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "json_annotation",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/json_annotation-4.9.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "json_serializable",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/json_serializable-6.8.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "jwt_decode",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/jwt_decode-0.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "lints",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/lints-5.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "local_auth",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/local_auth-2.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "local_auth_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/local_auth_android-1.0.56",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "local_auth_darwin",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/local_auth_darwin-1.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "local_auth_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/local_auth_platform_interface-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "local_auth_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/local_auth_windows-1.0.11",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "logging",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/logging-1.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "matcher",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/matcher-0.12.17",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "material_color_utilities",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/material_color_utilities-0.11.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "meta",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/meta-1.17.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "mime",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/mime-2.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "modal_bottom_sheet",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/modal_bottom_sheet-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "msix",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/msix-3.16.12",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "nested",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "network_info_plus",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/network_info_plus-5.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "network_info_plus_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/network_info_plus_platform_interface-2.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "nm",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/nm-0.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "octo_image",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/octo_image-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "package_config",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/package_config-2.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "package_info_plus",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/package_info_plus-8.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "package_info_plus_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/package_info_plus_platform_interface-3.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "path",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path-1.9.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "path_parsing",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_parsing-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "path_provider",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider-2.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "path_provider_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider_android-2.2.18",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "path_provider_foundation",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "path_provider_linux",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "path_provider_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider_platform_interface-2.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "path_provider_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "percent_indicator",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/percent_indicator-4.2.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "permission_handler",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler-11.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "permission_handler_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler_android-12.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "permission_handler_apple",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler_apple-9.4.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "permission_handler_html",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler_html-0.1.3+5",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "permission_handler_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler_platform_interface-4.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "permission_handler_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/permission_handler_windows-0.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "petitparser",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/petitparser-7.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "platform",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/platform-3.1.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "plugin_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "pointycastle",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/pointycastle-3.9.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "pool",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/pool-1.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "posix",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/posix-6.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "postgrest",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/postgrest-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "protobuf",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/protobuf-3.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "provider",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/provider-6.1.5+1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "pub_semver",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/pub_semver-2.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "pubspec_parse",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/pubspec_parse-1.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "purchases_flutter",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/purchases_flutter-9.6.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "quick_actions",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/quick_actions-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "quick_actions_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/quick_actions_android-1.0.23",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "quick_actions_ios",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/quick_actions_ios-1.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "quick_actions_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/quick_actions_platform_interface-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "realtime_client",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/realtime_client-2.5.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "retrofit",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/retrofit-4.7.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "retrofit_generator",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/retrofit_generator-8.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "retry",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/retry-3.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "rxdart",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/rxdart-0.28.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "screen_retriever",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/screen_retriever-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "screen_retriever_linux",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/screen_retriever_linux-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "screen_retriever_macos",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/screen_retriever_macos-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "screen_retriever_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/screen_retriever_platform_interface-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "screen_retriever_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/screen_retriever_windows-0.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "share_plus",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/share_plus-10.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/share_plus_platform_interface-5.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
+      "name": "shared_preferences",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences-2.5.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "shared_preferences_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.12",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "shared_preferences_foundation",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_foundation-2.5.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "shared_preferences_linux",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_linux-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "shared_preferences_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_platform_interface-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "shared_preferences_web",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_web-2.4.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "shared_preferences_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shared_preferences_windows-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "shelf",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shelf-1.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "shelf_web_socket",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shelf_web_socket-2.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "shimmer",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/shimmer-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "simple_gesture_detector",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/simple_gesture_detector-0.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "simple_icons",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/simple_icons-14.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "sky_engine",
+      "rootUri": "file:///Users/umikaze/flutter/bin/cache/pkg/sky_engine",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "sliver_tools",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sliver_tools-0.2.12",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "source_gen",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/source_gen-1.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "source_helper",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/source_helper-1.3.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "source_span",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/source_span-1.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "sprintf",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sprintf-7.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "sqflite",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sqflite-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "sqflite_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sqflite_android-2.4.2+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "sqflite_common",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sqflite_common-2.5.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "sqflite_darwin",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sqflite_darwin-2.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "sqflite_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/sqflite_platform_interface-2.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "stack_trace",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/stack_trace-1.12.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "stash",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/stash-5.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "stash_memory",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/stash_memory-5.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "storage_client",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/storage_client-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "stream_channel",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/stream_channel-2.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "stream_transform",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/stream_transform-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "string_scanner",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/string_scanner-1.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "supabase",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/supabase-2.9.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "supabase_flutter",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/supabase_flutter-2.10.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "supercharged",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/supercharged-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "supercharged_dart",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/supercharged_dart-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "synchronized",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/synchronized-3.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "table_calendar",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/table_calendar-3.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "term_glyph",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/term_glyph-1.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "test_api",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/test_api-0.7.7",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "timing",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/timing-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "transparent_image",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/transparent_image-2.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "tuple",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/tuple-2.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "typed_data",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "universal_io",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/universal_io-2.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "url_launcher",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher-6.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "url_launcher_android",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.21",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
+      "name": "url_launcher_ios",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_ios-6.3.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "url_launcher_linux",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_linux-3.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "url_launcher_macos",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_macos-3.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "url_launcher_platform_interface",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_platform_interface-2.3.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "url_launcher_web",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_web-2.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "url_launcher_windows",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/url_launcher_windows-3.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "uuid",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/uuid-4.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "vector_graphics",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/vector_graphics-1.1.19",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "vector_graphics_codec",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/vector_graphics_codec-1.1.13",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "vector_graphics_compiler",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/vector_graphics_compiler-1.1.19",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "vector_math",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/vector_math-2.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "wake_on_lan",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/wake_on_lan-4.1.1+3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "watcher",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/watcher-1.1.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "web",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/web-1.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "web_socket",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/web_socket-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "web_socket_channel",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/web_socket_channel-3.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "win32",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/win32-5.14.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "window_manager",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/window_manager-0.4.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "xdg_directories",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/xdg_directories-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "xml",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/xml-6.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
+      "name": "yaml",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/yaml-3.1.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "yet_another_json_isolate",
+      "rootUri": "file:///Users/umikaze/.pub-cache/hosted/pub.dev/yet_another_json_isolate-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "zagreus",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    }
+  ],
+  "generator": "pub",
+  "generatorVersion": "3.10.0",
+  "flutterRoot": "file:///Users/umikaze/flutter",
+  "flutterVersion": "3.38.2",
+  "pubCache": "file:///Users/umikaze/.pub-cache"
+}
