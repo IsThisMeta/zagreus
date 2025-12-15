@@ -1,0 +1,11 @@
+framework module quick_actions_ios {
+  umbrella header "quick_actions_ios-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module quick_actions_ios.Swift {
+  header "quick_actions_ios-Swift.h"
+  requires objc
+}

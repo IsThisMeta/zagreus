@@ -1,0 +1,11 @@
+framework module PurchasesHybridCommon {
+  umbrella header "PurchasesHybridCommon-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module PurchasesHybridCommon.Swift {
+  header "PurchasesHybridCommon-Swift.h"
+  requires objc
+}

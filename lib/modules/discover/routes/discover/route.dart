@@ -79,6 +79,7 @@ import 'package:zagreus/modules/dashboard/routes/dashboard/pages/modules.dart';
 import 'package:zagreus/modules/dashboard/routes/dashboard/widgets/switch_view_action.dart';
 import 'package:zagreus/modules/overseerr/routes/requests/widgets/request_tile.dart';
 import 'package:zagreus/database/tables/dashboard.dart';
+import 'package:zagreus/system/platform.dart';
 
 class DiscoverHomeRoute extends StatefulWidget {
   const DiscoverHomeRoute({Key? key}) : super(key: key);
@@ -399,6 +400,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
   double _heroHeight = 370.0;
+
+  /// Returns the appropriate hero carousel height based on device type (tablet vs phone)
+  double _getHeroHeight(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_HERO_HEIGHT.read();
+    }
+    return _heroHeight;
+  }
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -6038,7 +6047,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     });
 
     return SizedBox(
-      height: _heroHeight,
+      height: _getHeroHeight(context),
       child: Stack(
         children: [
           GestureDetector(

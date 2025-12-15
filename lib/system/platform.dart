@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 enum ZagPlatform {
   ANDROID,
@@ -34,6 +35,14 @@ enum ZagPlatform {
 
   static bool get isMobile => isAndroid || isIOS;
   static bool get isDesktop => isLinux || isMacOS || isWindows;
+
+  /// Detects if the current device is a tablet/iPad based on screen size.
+  /// Uses the shortest side of the screen; if > 600px, it's considered a tablet.
+  /// This is the standard Material Design breakpoint for tablets.
+  static bool isTablet(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.shortestSide > 600;
+  }
 
   static ZagPlatform get current {
     if (isWeb) return ZagPlatform.WEB;

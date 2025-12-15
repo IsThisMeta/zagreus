@@ -123,6 +123,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_FILTER_HERO_BY_TAB<bool>(true),
   DISCOVER_HIDE_IN_LIBRARY_FROM_HERO<bool>(false),
   DISCOVER_DEFAULT_TAB<String>('movies'),
+  // iPad-specific Discover settings (used when screen is tablet-sized)
+  DISCOVER_IPAD_COLUMNS_PER_ROW<int>(5),
+  DISCOVER_IPAD_HERO_HEIGHT<double>(550.0),
+  DISCOVER_IPAD_POSTER_HEIGHT<double>(250.0),
   DASHBOARD_SHOW_MODULES_TAB<bool>(true),
   DISCOVER_SHOW_MODULES_TAB<bool>(false),
   SHOW_CALENDAR_TAB<bool>(true),

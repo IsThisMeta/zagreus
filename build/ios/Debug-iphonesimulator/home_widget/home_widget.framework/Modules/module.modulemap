@@ -1,0 +1,11 @@
+framework module home_widget {
+  umbrella header "home_widget-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module home_widget.Swift {
+  header "home_widget-Swift.h"
+  requires objc
+}

@@ -1,0 +1,11 @@
+framework module in_app_purchase_storekit {
+  umbrella header "in_app_purchase_storekit-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module in_app_purchase_storekit.Swift {
+  header "in_app_purchase_storekit-Swift.h"
+  requires objc
+}

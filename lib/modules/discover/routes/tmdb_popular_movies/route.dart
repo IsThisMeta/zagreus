@@ -8,6 +8,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
+import 'package:zagreus/system/platform.dart';
 
 class TMDBPopularMoviesRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
@@ -46,9 +47,21 @@ class _State extends State<TMDBPopularMoviesRoute>
     return 3;
   }
 
-  double get _titleFontSize {
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    return savedColumns == 2 ? 12.0 : (savedColumns == 4 ? 16.0 : 14.0);
+  /// Returns the appropriate column count based on device type (tablet vs phone)
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read();
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read();
+  }
+
+  double _getTitleFontSize(BuildContext context) {
+    final columns = _getColumnsForDevice(context);
+    // Adjust font size based on column count
+    if (columns >= 5) return 12.0;
+    if (columns == 4) return 13.0;
+    if (columns == 2) return 16.0;
+    return 14.0; // 3 columns
   }
 
   @override
@@ -408,11 +421,10 @@ class _State extends State<TMDBPopularMoviesRoute>
       );
     }
 
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    final usesThreeColumns = savedColumns == 3;
-    final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    final columns = _getColumnsForDevice(context);
+    // Adjust padding and spacing based on column count
+    final horizontalPadding = columns >= 5 ? 24.0 : (columns == 3 ? 20.0 : 16.0);
+    final gridSpacing = columns >= 5 ? 14.0 : (columns == 3 ? 16.0 : 12.0);
 
     return RefreshIndicator(
       onRefresh: _loadPopularMovies,
@@ -424,7 +436,7 @@ class _State extends State<TMDBPopularMoviesRoute>
           vertical: 20,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: savedColumns,
+          crossAxisCount: columns,
           childAspectRatio: 0.58,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
@@ -565,7 +577,7 @@ class _State extends State<TMDBPopularMoviesRoute>
                     movie['title'] ?? 'Unknown',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: _titleFontSize,
+                      fontSize: _getTitleFontSize(context),
                       fontWeight: FontWeight.bold,
                       shadows: const [
                         Shadow(
