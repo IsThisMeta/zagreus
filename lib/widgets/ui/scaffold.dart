@@ -73,20 +73,21 @@ class ZagScaffold extends StatelessWidget {
             routeName.startsWith('${ZagModule.NZBGET.key}:');
         final isExternalModulesRoute =
             routeName.startsWith('${ZagModule.EXTERNAL_MODULES.key}:');
-        final isMediaModule = routeName.startsWith('${ZagModule.RADARR.key}:') ||
-            routeName.startsWith('${ZagModule.SONARR.key}:') ||
-            routeName.startsWith('${ZagModule.LIDARR.key}:');
-        final isDashboardModule = routeName.startsWith('${ZagModule.DASHBOARD.key}:');
-        final isDiscoverModule = routeName.startsWith('${ZagModule.DISCOVER.key}:');
+        // Disable global end drawer on main module pages to prevent swipe conflicts
+        final isExcludedHomeRoute = <String>{
+          '${ZagModule.RADARR.key}:HOME',
+          '${ZagModule.SONARR.key}:HOME',
+          '${ZagModule.LIDARR.key}:HOME',
+          '${ZagModule.DASHBOARD.key}:HOME',
+          '${ZagModule.DISCOVER.key}:HOME',
+        }.contains(routeName);
 
-        // Auto-add downloads drawer if not explicitly provided and not in Settings/Downloads/Media modules
+        // Auto-add downloads drawer if not explicitly provided and not in Settings/Downloads/Excluded Home modules
         final shouldAttachGlobalEndDrawer =
             !isSettingsRoute &&
             !isDownloadsModule &&
             !isExternalModulesRoute &&
-            !isMediaModule &&
-            !isDashboardModule &&
-            !isDiscoverModule &&
+            !isExcludedHomeRoute &&
             endDrawer == null;
         final globalEndDrawer = shouldAttachGlobalEndDrawer
             ? ZagGlobalCubeManager.instance.getEndDrawer()
