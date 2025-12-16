@@ -28,3 +28,38 @@ zagreus/lib/supabase/demo_config.dart
 zagreus/demo_config_setup.sql
 zagreus/DEMO_SETUP_INSTRUCTIONS.md
 zagreus-cloud-functions/supabase/migrations/20241004_clean_12_subscription_functions.sql
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Android related
+**/android/app/libs/
+**/android/key.properties
+**/android/local.properties
+
+# Xcode
+**/ios/*.mode1v3
+**/ios/*.mode2v3
+**/ios/*.moved-aside
+**/ios/*.pbxuser
+**/ios/*.perspectivev3
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# IDEs
+.idea/
+*.iml
