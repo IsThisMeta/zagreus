@@ -401,13 +401,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
   double _heroHeight = 370.0;
 
-  /// Returns the appropriate hero carousel height based on device type (tablet vs phone)
-  double _getHeroHeight(BuildContext context) {
-    if (ZagPlatform.isTablet(context)) {
-      return ZagreusDatabase.DISCOVER_IPAD_HERO_HEIGHT.read();
-    }
-    return _heroHeight;
-  }
+
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -445,6 +439,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Library sync state
   bool _isSyncing = false;
+  
+  bool _deviceSettingsLoaded = false;
 
   // Z Assistant Radarr/Sonarr settings
   int? _radarrQualityProfileId;
@@ -579,6 +575,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!_deviceSettingsLoaded) {
+      _loadDeviceSpecificSettings();
+      _deviceSettingsLoaded = true;
+    }
     // Load popular movies and people here where we can access Localizations
     _loadPopularMovies();
     _loadRecentlyReleasedMovies();
@@ -4090,19 +4090,48 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
     _sonarrSearchForCutoffUnmet =
         ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+  }
 
-    // Load poster height preference
-    final savedHeight = ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
-    if (savedHeight != null && savedHeight >= 150 && savedHeight <= 250) {
+  void _loadDeviceSpecificSettings() {
+    final isTablet = ZagPlatform.isTablet(context);
+
+    // Load poster height
+    final savedHeight = isTablet
+        ? ZagreusDatabase.DISCOVER_IPAD_POSTER_HEIGHT.read()
+        : ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
+    
+    // Validate bounds based on device type
+    final minHeight = isTablet ? 150.0 : 150.0;
+    final maxHeight = isTablet ? 350.0 : 250.0;
+
+    if (savedHeight != null &&
+        savedHeight >= minHeight &&
+        savedHeight <= maxHeight) {
       _posterHeight = savedHeight;
+    } else {
+      // Default fallback
+      _posterHeight = isTablet ? 250.0 : 200.0;
     }
 
-    final savedHeroHeight = ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
+    // Load hero height
+    final savedHeroHeight = isTablet
+        ? ZagreusDatabase.DISCOVER_IPAD_HERO_HEIGHT.read()
+        : ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
+    
+    // Validate bounds based on device type
+    final minHeroHeight = isTablet ? 450.0 : 300.0;
+    final maxHeroHeight = isTablet ? 650.0 : 500.0;
+
     if (savedHeroHeight != null &&
-        savedHeroHeight >= 320 &&
-        savedHeroHeight <= 420) {
+        savedHeroHeight >= minHeroHeight &&
+        savedHeroHeight <= maxHeroHeight) {
       _heroHeight = savedHeroHeight;
+    } else {
+      _heroHeight = isTablet ? 550.0 : 370.0;
     }
+    
+    // Refresh UI with new settings
+    setState(() {});
   }
 
   Color _ratingColor(double rating) {
@@ -6047,7 +6076,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     });
 
     return SizedBox(
-      height: _getHeroHeight(context),
+      height: _heroHeight,
       child: Stack(
         children: [
           GestureDetector(
