@@ -310,6 +310,11 @@ class _State extends State<TMDBPopularTVShowsRoute>
             tooltip: 'Select All',
           ),
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showSonarrConfig,
+            tooltip: 'Batch Add Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: _selectedShowIndices.isEmpty ? null : _addSelectedShows,
             tooltip: 'Add Selected',
@@ -321,11 +326,6 @@ class _State extends State<TMDBPopularTVShowsRoute>
     return ZagAppBar(
       title: 'Popular TV Shows',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showSonarrConfig,
-          tooltip: 'Batch Add Settings',
-        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {

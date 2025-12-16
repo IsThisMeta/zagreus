@@ -213,6 +213,11 @@ class _State extends State<DiscoverRecommendedRoute>
             tooltip: 'Select All',
           ),
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showRadarrConfig,
+            tooltip: 'Radarr Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: _selectedMovieIndices.isEmpty ? null : _addSelectedMoviesToRadarr,
             tooltip: 'Add Selected',
@@ -224,11 +229,6 @@ class _State extends State<DiscoverRecommendedRoute>
     return ZagAppBar(
       title: 'Recommended',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showRadarrConfig,
-          tooltip: 'Radarr Settings',
-        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {

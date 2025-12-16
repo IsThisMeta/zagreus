@@ -174,6 +174,11 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                 : 'Select All',
           ),
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showMergedSettings,
+            tooltip: 'Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: _selectedIndices.isEmpty ? null : _addSelectedToLibrary,
             tooltip: 'Add to Library',
@@ -185,11 +190,6 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     return ZagAppBar(
       title: 'Results',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showMergedSettings,
-          tooltip: 'Settings',
-        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: _toggleSelectionMode,

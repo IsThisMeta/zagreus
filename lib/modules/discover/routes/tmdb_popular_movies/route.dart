@@ -310,6 +310,11 @@ class _State extends State<TMDBPopularMoviesRoute>
             tooltip: 'Select All',
           ),
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showRadarrConfig,
+            tooltip: 'Radarr Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: _selectedMovieIndices.isEmpty ? null : _addSelectedMoviesToRadarr,
             tooltip: 'Add Selected',
@@ -321,11 +326,6 @@ class _State extends State<TMDBPopularMoviesRoute>
     return ZagAppBar(
       title: 'Popular Movies',
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showRadarrConfig,
-          tooltip: 'Radarr Settings',
-        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {
