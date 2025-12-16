@@ -8,6 +8,7 @@ import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/core/trakt_api.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/system/platform.dart';
 
 class TraktMostAnticipatedMoviesRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
@@ -253,10 +254,19 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       );
     }
 
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (savedColumns <= 3) {
+      gridSpacing = 16.0;
+    } else if (savedColumns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     return RefreshIndicator(
       onRefresh: _loadAnticipatedMovies,
@@ -377,9 +387,9 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                   right: 8,
                   child: AutoSizeText(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 13,
+                      fontSize: _getTitleFontSize(context),
                       fontWeight: FontWeight.w600,
                       shadows: [
                         Shadow(
@@ -682,5 +692,19 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     final dynamic id = movie['id'];
     final dynamic identity = traktId ?? tmdbId ?? id;
     return identity?.toString();
+  }
+
+  double _getTitleFontSize(BuildContext context) {
+    final savedColumns = _getColumnsForDevice(context);
+    if (savedColumns >= 6) return 12.0;
+    if (savedColumns == 5) return 13.0;
+    return savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 16.0 : 14.0);
+  }
+
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
   }
 }

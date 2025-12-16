@@ -58,10 +58,9 @@ class _State extends State<TMDBPopularMoviesRoute>
   double _getTitleFontSize(BuildContext context) {
     final columns = _getColumnsForDevice(context);
     // Adjust font size based on column count
-    if (columns >= 5) return 12.0;
-    if (columns == 4) return 13.0;
-    if (columns == 2) return 16.0;
-    return 14.0; // 3 columns
+    if (columns >= 6) return 12.0;
+    if (columns == 5) return 13.0;
+    return columns == 2 ? 16.0 : (columns == 4 ? 16.0 : 14.0);
   }
 
   @override
@@ -423,8 +422,18 @@ class _State extends State<TMDBPopularMoviesRoute>
 
     final columns = _getColumnsForDevice(context);
     // Adjust padding and spacing based on column count
-    final horizontalPadding = columns >= 5 ? 24.0 : (columns == 3 ? 20.0 : 16.0);
-    final gridSpacing = columns >= 5 ? 14.0 : (columns == 3 ? 16.0 : 12.0);
+    final usesThreeColumns = columns == 3;
+    final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
+
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (columns <= 3) {
+      gridSpacing = 16.0;
+    } else if (columns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     return RefreshIndicator(
       onRefresh: _loadPopularMovies,

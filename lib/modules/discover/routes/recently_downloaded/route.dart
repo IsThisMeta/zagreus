@@ -7,6 +7,7 @@ import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
+import 'package:zagreus/system/platform.dart';
 
 class DiscoverRecentlyDownloadedRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
@@ -170,10 +171,19 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
 
   Widget _body() {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (savedColumns <= 3) {
+      gridSpacing = 16.0;
+    } else if (savedColumns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     if (_isLoading) {
       return Center(
@@ -237,28 +247,35 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
         itemCount: _movies.length,
         itemBuilder: (context, index) {
           final movie = _movies[index];
-          return _MovieGridItem(movie: movie, columns: savedColumns);
+          return _MovieGridItem(movie: movie, titleFontSize: _getTitleFontSize(context));
         },
       ),
     );
+  }
+  double _getTitleFontSize(BuildContext context) {
+    final savedColumns = _getColumnsForDevice(context);
+    if (savedColumns >= 6) return 12.0;
+    if (savedColumns == 5) return 13.0;
+    return savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 16.0 : 14.0);
+  }
+
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
   }
 }
 
 class _MovieGridItem extends StatelessWidget {
   final RadarrMovie movie;
-  final int columns;
+  final double titleFontSize;
 
   const _MovieGridItem({
     Key? key,
     required this.movie,
-    required this.columns,
+    required this.titleFontSize,
   }) : super(key: key);
-
-  double get _titleFontSize {
-    if (columns == 2) return 16.0;
-    if (columns == 4) return 12.0;
-    return 14.0;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +330,7 @@ class _MovieGridItem extends StatelessWidget {
                   child: AutoSizeText(
                     movie.title ?? 'Unknown',
                     style: TextStyle(
-                      fontSize: _titleFontSize,
+                      fontSize: titleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       shadows: const [

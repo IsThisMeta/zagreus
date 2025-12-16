@@ -6,6 +6,7 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/discover/routes/person_details/route.dart';
+import 'package:zagreus/system/platform.dart';
 
 class TMDBPopularPeopleRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
@@ -238,10 +239,19 @@ class _State extends State<TMDBPopularPeopleRoute>
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 16.0 : 12.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (savedColumns <= 3) {
+      gridSpacing = 16.0;
+    } else if (savedColumns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     return GridView.builder(
       cacheExtent: 2000.0,
@@ -251,7 +261,7 @@ class _State extends State<TMDBPopularPeopleRoute>
         vertical: 16,
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: savedColumns,
         childAspectRatio: 0.7,
         crossAxisSpacing: gridSpacing,
         mainAxisSpacing: gridSpacing,
@@ -271,6 +281,8 @@ class _State extends State<TMDBPopularPeopleRoute>
   }
 
   Widget _personCard(Map<String, dynamic> person) {
+    final titleFontSize = _getTitleFontSize(context);
+    
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -315,7 +327,7 @@ class _State extends State<TMDBPopularPeopleRoute>
           Text(
             person['name'] ?? 'Unknown',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
@@ -330,7 +342,7 @@ class _State extends State<TMDBPopularPeopleRoute>
             Text(
               person['knownForDepartment'],
               style: TextStyle(
-                fontSize: 10,
+                fontSize: titleFontSize - 2,
                 color: (Theme.of(context).brightness == Brightness.dark
                         ? Colors.white
                         : Colors.black)
@@ -351,5 +363,19 @@ class _State extends State<TMDBPopularPeopleRoute>
         color: Colors.grey.shade500,
       ),
     );
+  }
+
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+  }
+
+  double _getTitleFontSize(BuildContext context) {
+    final savedColumns = _getColumnsForDevice(context);
+    if (savedColumns >= 6) return 12.0;
+    if (savedColumns == 5) return 13.0;
+    return savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 16.0 : 14.0);
   }
 }

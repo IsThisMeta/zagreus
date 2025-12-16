@@ -8,6 +8,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
+import 'package:zagreus/system/platform.dart';
 
 class TMDBPopularTVShowsRoute extends StatefulWidget {
   final List<Map<String, dynamic>>? initialData;
@@ -49,9 +50,11 @@ class _State extends State<TMDBPopularTVShowsRoute>
     return 3;
   }
 
-  double get _titleFontSize {
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
-    return savedColumns == 2 ? 12.0 : (savedColumns == 4 ? 16.0 : 14.0);
+  double _getTitleFontSize(BuildContext context) {
+    final savedColumns = _getColumnsForDevice(context);
+    if (savedColumns >= 6) return 12.0;
+    if (savedColumns == 5) return 13.0;
+    return savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 16.0 : 14.0);
   }
 
   @override
@@ -418,10 +421,19 @@ class _State extends State<TMDBPopularTVShowsRoute>
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (savedColumns <= 3) {
+      gridSpacing = 16.0;
+    } else if (savedColumns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     return RefreshIndicator(
       onRefresh: _loadPopularTVShows,
@@ -567,7 +579,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
                     show['title'] ?? 'Unknown',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: _titleFontSize,
+                      fontSize: _getTitleFontSize(context),
                       fontWeight: FontWeight.bold,
                       shadows: const [
                         Shadow(
@@ -1077,5 +1089,11 @@ class _State extends State<TMDBPopularTVShowsRoute>
         ),
       ),
     );
+  }
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
   }
 }

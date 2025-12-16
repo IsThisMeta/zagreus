@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/system/platform.dart';
 
 class DiscoverMissingRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
@@ -231,10 +232,19 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     }
     
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final savedColumns = ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+    final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    final gridSpacing = usesThreeColumns ? 16.0 : 12.0;
+    
+    // Adjust spacing based on column count
+    final double gridSpacing;
+    if (savedColumns <= 3) {
+      gridSpacing = 16.0;
+    } else if (savedColumns <= 5) {
+      gridSpacing = 12.0;
+    } else {
+      gridSpacing = 10.0;
+    }
 
     return RefreshIndicator(
       onRefresh: _loadMissingMovies,
@@ -251,14 +261,13 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
           mainAxisSpacing: gridSpacing,
         ),
         itemCount: _movies.length,
-        itemBuilder: (context, index) => _movieTile(_movies[index], index, savedColumns),
+        itemBuilder: (context, index) => _movieTile(_movies[index], index),
       ),
     );
   }
   
-  Widget _movieTile(RadarrMovie movie, int index, int columns) {
+  Widget _movieTile(RadarrMovie movie, int index) {
     final isSelected = _selectedMovieIndices.contains(index);
-    final titleFontSize = columns == 2 ? 16.0 : (columns == 4 ? 12.0 : 14.0);
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),
@@ -298,7 +307,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
                 child: AutoSizeText(
                   movie.title ?? 'Unknown',
                   style: TextStyle(
-                    fontSize: titleFontSize,
+                    fontSize: _getTitleFontSize(context),
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: const [
@@ -449,5 +458,19 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
+  }
+
+  double _getTitleFontSize(BuildContext context) {
+    final savedColumns = _getColumnsForDevice(context);
+    if (savedColumns >= 6) return 12.0;
+    if (savedColumns == 5) return 13.0;
+    return savedColumns == 2 ? 16.0 : (savedColumns == 4 ? 16.0 : 14.0);
+  }
+
+  int _getColumnsForDevice(BuildContext context) {
+    if (ZagPlatform.isTablet(context)) {
+      return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
+    }
+    return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
   }
 }
