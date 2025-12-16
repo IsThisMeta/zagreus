@@ -76,6 +76,8 @@ class ZagScaffold extends StatelessWidget {
         final isMediaModule = routeName.startsWith('${ZagModule.RADARR.key}:') ||
             routeName.startsWith('${ZagModule.SONARR.key}:') ||
             routeName.startsWith('${ZagModule.LIDARR.key}:');
+        final isDashboardModule = routeName.startsWith('${ZagModule.DASHBOARD.key}:');
+        final isDiscoverModule = routeName.startsWith('${ZagModule.DISCOVER.key}:');
 
         // Auto-add downloads drawer if not explicitly provided and not in Settings/Downloads/Media modules
         final shouldAttachGlobalEndDrawer =
@@ -83,6 +85,8 @@ class ZagScaffold extends StatelessWidget {
             !isDownloadsModule &&
             !isExternalModulesRoute &&
             !isMediaModule &&
+            !isDashboardModule &&
+            !isDiscoverModule &&
             endDrawer == null;
         final globalEndDrawer = shouldAttachGlobalEndDrawer
             ? ZagGlobalCubeManager.instance.getEndDrawer()
