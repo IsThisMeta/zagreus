@@ -176,12 +176,7 @@ class _State extends State<TMDBPopularPeopleRoute>
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'Popular People',
-      actions: [
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadPopularPeople,
-        ),
-      ],
+      actions: [],
     );
   }
 

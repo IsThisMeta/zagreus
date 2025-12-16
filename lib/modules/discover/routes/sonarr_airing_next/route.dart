@@ -274,10 +274,6 @@ class _State extends State<SonarrAiringNextRoute>
             ),
           ],
         ),
-        IconButton(
-          icon: Icon(Icons.refresh_rounded),
-          onPressed: _loadAiringNextShows,
-        ),
       ],
     ) as PreferredSizeWidget;
   }

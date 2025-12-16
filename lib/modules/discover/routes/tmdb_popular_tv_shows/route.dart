@@ -305,14 +305,14 @@ class _State extends State<TMDBPopularTVShowsRoute>
         title: Text('${_selectedShowIndices.length} selected'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.select_all),
-            onPressed: _toggleSelectAll,
-            tooltip: 'Select All',
-          ),
-          IconButton(
             icon: const Icon(Icons.tune),
             onPressed: _showSonarrConfig,
             tooltip: 'Batch Add Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
           ),
           IconButton(
             icon: const Icon(Icons.add),
@@ -334,10 +334,6 @@ class _State extends State<TMDBPopularTVShowsRoute>
             });
           },
           tooltip: 'Multi-Select',
-        ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadPopularTVShows,
         ),
       ],
     );

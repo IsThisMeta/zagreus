@@ -208,14 +208,14 @@ class _State extends State<DiscoverRecommendedRoute>
         title: Text('${_selectedMovieIndices.length} selected'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.select_all),
-            onPressed: _toggleSelectAll,
-            tooltip: 'Select All',
-          ),
-          IconButton(
             icon: const Icon(Icons.tune),
             onPressed: _showRadarrConfig,
             tooltip: 'Radarr Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
           ),
           IconButton(
             icon: const Icon(Icons.add),
@@ -237,10 +237,6 @@ class _State extends State<DiscoverRecommendedRoute>
             });
           },
           tooltip: 'Multi-Select',
-        ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadRecommendedMovies,
         ),
       ],
     );

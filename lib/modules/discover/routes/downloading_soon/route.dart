@@ -215,12 +215,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'Downloading Soon',
-      actions: [
-        IconButton(
-          icon: Icon(Icons.refresh_rounded),
-          onPressed: _loadDownloadingSoon,
-        ),
-      ],
+      actions: [],
     ) as PreferredSizeWidget;
   }
   

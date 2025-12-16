@@ -138,10 +138,6 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
           },
           tooltip: 'Multi-Select',
         ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadMissingMovies,
-        ),
       ],
     );
   }
