@@ -2716,7 +2716,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: ListView(
-      controller: _DiscoverNavigationBar.moviesScrollController,
+        physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        controller: _DiscoverNavigationBar.moviesScrollController,
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel
@@ -2878,7 +2879,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView(
-      controller: _DiscoverNavigationBar.showsScrollController,
+        physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        controller: _DiscoverNavigationBar.showsScrollController,
         padding: EdgeInsets.zero,
         children: [
           // Hero carousel (could be TV shows specific)
