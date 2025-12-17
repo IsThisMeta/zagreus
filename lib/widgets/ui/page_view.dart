@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 
 class FastPageScrollPhysics extends PageScrollPhysics {
@@ -15,6 +16,12 @@ class FastPageScrollPhysics extends PageScrollPhysics {
         stiffness: 850,
         damping: 55,
       );
+
+  @override
+  Tolerance get tolerance => const Tolerance(
+    velocity: 1.0,
+    distance: 0.0,
+  );
 }
 
 class ZagPageView extends StatelessWidget {

@@ -196,13 +196,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
       title: 'Most Anticipated Movies',
-      actions: [
-        IconButton(
-          icon: const Icon(ZagIcons.REFRESH),
-          onPressed: _loadAnticipatedMovies,
-          tooltip: 'Refresh',
-        ),
-      ],
+      actions: [],
     );
   }
 

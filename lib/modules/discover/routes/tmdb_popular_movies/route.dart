@@ -305,6 +305,11 @@ class _State extends State<TMDBPopularMoviesRoute>
         title: Text('${_selectedMovieIndices.length} selected'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showRadarrConfig,
+            tooltip: 'Radarr Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.select_all),
             onPressed: _toggleSelectAll,
             tooltip: 'Select All',
@@ -322,11 +327,6 @@ class _State extends State<TMDBPopularMoviesRoute>
       title: 'Popular Movies',
       actions: [
         IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showRadarrConfig,
-          tooltip: 'Radarr Settings',
-        ),
-        IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {
             setState(() {
@@ -334,10 +334,6 @@ class _State extends State<TMDBPopularMoviesRoute>
             });
           },
           tooltip: 'Multi-Select',
-        ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadPopularMovies,
         ),
       ],
     );

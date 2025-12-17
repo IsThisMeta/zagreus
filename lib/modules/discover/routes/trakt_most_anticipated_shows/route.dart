@@ -289,6 +289,11 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
         title: Text('${_selectedShowIndices.length} selected'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showSonarrConfig,
+            tooltip: 'Batch Add Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.select_all),
             onPressed: _toggleSelectAll,
             tooltip: 'Select All',
@@ -306,11 +311,6 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
       title: 'Most Anticipated',
       actions: [
         IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showSonarrConfig,
-          tooltip: 'Batch Add Settings',
-        ),
-        IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {
             setState(() {
@@ -318,10 +318,6 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
             });
           },
           tooltip: 'Multi-Select',
-        ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadAnticipatedShows,
         ),
       ],
     );

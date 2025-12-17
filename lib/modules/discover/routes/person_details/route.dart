@@ -224,6 +224,11 @@ class _State extends State<PersonDetailsRoute>
         title: Text('${_selectedCreditIndices.length} selected'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showUnifiedConfig,
+            tooltip: 'Batch Add Settings',
+          ),
+          IconButton(
             icon: const Icon(Icons.select_all),
             onPressed: _toggleSelectAll,
             tooltip: 'Select All',
@@ -240,11 +245,6 @@ class _State extends State<PersonDetailsRoute>
     return ZagAppBar(
       title: widget.personName,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showUnifiedConfig,
-          tooltip: 'Batch Add Settings',
-        ),
         IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: () {

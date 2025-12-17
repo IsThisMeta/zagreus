@@ -163,6 +163,11 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showMergedSettings,
+            tooltip: 'Settings',
+          ),
+          IconButton(
             icon: Icon(
               _selectedIndices.length == _operation?.items.length
                   ? Icons.deselect
@@ -186,18 +191,9 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
       title: 'Results',
       actions: [
         IconButton(
-          icon: const Icon(Icons.tune),
-          onPressed: _showMergedSettings,
-          tooltip: 'Settings',
-        ),
-        IconButton(
           icon: const Icon(Icons.checklist),
           onPressed: _toggleSelectionMode,
           tooltip: 'Select Items',
-        ),
-        IconButton(
-          icon: Icon(ZagIcons.REFRESH),
-          onPressed: _loadData,
         ),
       ],
     );
