@@ -252,13 +252,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.recommendations == null ||
                     snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message =
-                      'Recommendations generate automatically each week.';
+                  String? message;
                   IconData icon = Icons.groups_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
                           snapshot.data?.error ==
                               MagicPeopleError.notSynced;
+                  bool showRetryButton = true;
 
                   if (snapshot.hasData &&
                       !snapshot.data!.success &&
@@ -269,18 +269,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         message = snapshot.data!.errorMessage ??
                             'Please sync your library first';
                         icon = Icons.sync_problem_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
                             'Magic People requires Mega or Ultra';
                         icon = Icons.lock_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.alreadyGenerating:
                         title = 'Generation in progress';
                         message = snapshot.data!.errorMessage ??
                             'Please wait while recommendations are being generated';
                         icon = Icons.hourglass_empty_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.fetchFailed:
                       case MagicPeopleError.unknown:
@@ -309,18 +312,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
-                                fontSize: 14,
+                          if (message != null) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                message,
+                                style: TextStyle(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
+                          ],
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
@@ -347,6 +352,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       },
                                     ),
                                   ),
+                          ] else if (showRetryButton) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Tap to retry',
+                              icon: Icons.refresh_rounded,
+                              onTap: () {
+                                final refreshService = MagicPeopleService();
+                                setState(() {
+                                  _magicPeopleShowsFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
+                                });
+                              },
+                            ),
                           ],
                         ],
                       ),
@@ -8870,13 +8892,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }) {
     // Determine message based on error type
     String title = 'No deep cuts yet';
-    String message = 'Recommendations generate automatically each week.';
+    String? message;
     IconData icon = Icons.movie_filter_rounded;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final showLibrarySyncCta =
         (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
             result?.error == DeepCutsError.notSynced;
+    bool showRetryButton = true;
 
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
@@ -8884,17 +8907,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           title = 'Library not synced';
           message = result.errorMessage ?? 'Please sync your library first';
           icon = Icons.sync_problem_rounded;
+          showRetryButton = false;
           break;
         case DeepCutsError.noMegaOrUltra:
           title = 'Mega subscription required';
           message = result.errorMessage ?? 'Deep Cuts requires Mega or Ultra';
           icon = Icons.lock_rounded;
+          showRetryButton = false;
           break;
         case DeepCutsError.alreadyGenerating:
           title = 'Generation in progress';
           message = result.errorMessage ??
               'Please wait while recommendations are being generated';
           icon = Icons.hourglass_empty_rounded;
+          showRetryButton = false;
           break;
         case DeepCutsError.fetchFailed:
         case DeepCutsError.unknown:
@@ -8932,21 +8958,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.5),
-                  fontSize: 14,
+            if (message != null) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
+            ],
             if (showLibrarySyncCta) ...[
               const SizedBox(height: 16),
               _isSyncing
@@ -8971,6 +8999,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         },
                       ),
                     ),
+            ] else if (showRetryButton) ...[
+              const SizedBox(height: 16),
+              ZagButton.text(
+                text: 'Tap to retry',
+                icon: Icons.refresh_rounded,
+                onTap: () {
+                  final service = DeepCutsService();
+                  setState(() {
+                    _deepCutsFuture = service.generateRecommendations(
+                      profileKey: profileKey,
+                      instanceKey: instanceKey,
+                      force: true,
+                    );
+                  });
+                },
+              ),
             ],
           ],
         ),
@@ -9234,13 +9278,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }) {
     // Determine message based on error type
     String title = 'No recommendations yet';
-    String message = 'Recommendations generate automatically each week.';
+    String? message;
     IconData icon = Icons.live_tv_rounded;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final showLibrarySyncCta =
         (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
             result?.error == UpNextError.notSynced;
+    bool showRetryButton = true;
 
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
@@ -9248,17 +9293,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           title = 'Library not synced';
           message = result.errorMessage ?? 'Please sync your library first';
           icon = Icons.sync_problem_rounded;
+          showRetryButton = false;
           break;
         case UpNextError.noMegaOrUltra:
           title = 'Mega subscription required';
           message = result.errorMessage ?? 'Up Next requires Mega or Ultra';
           icon = Icons.lock_rounded;
+          showRetryButton = false;
           break;
         case UpNextError.alreadyGenerating:
           title = 'Generation in progress';
           message = result.errorMessage ??
               'Please wait while recommendations are being generated';
           icon = Icons.hourglass_empty_rounded;
+          showRetryButton = false;
           break;
         case UpNextError.fetchFailed:
         case UpNextError.unknown:
@@ -9296,21 +9344,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black)
-                      .withOpacity(0.5),
-                  fontSize: 14,
+            if (message != null) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
+            ],
             if (showLibrarySyncCta) ...[
               const SizedBox(height: 16),
               _isSyncing
@@ -9335,6 +9385,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         },
                       ),
                     ),
+            ] else if (showRetryButton) ...[
+              const SizedBox(height: 16),
+              ZagButton.text(
+                text: 'Tap to retry',
+                icon: Icons.refresh_rounded,
+                onTap: () {
+                  final service = UpNextService();
+                  setState(() {
+                    _upNextFuture = service.generateRecommendations(
+                      profileKey: profileKey,
+                      instanceKey: instanceKey,
+                      force: true,
+                    );
+                  });
+                },
+              ),
             ],
           ],
         ),
@@ -10012,12 +10078,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message = 'Recommendations generate automatically each week.';
+                  String? message;
                   IconData icon = Icons.groups_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
                           snapshot.data?.error ==
                               MagicPeopleError.notSynced;
+                  bool showRetryButton = true;
 
                   if (snapshot.hasData &&
                       !snapshot.data!.success &&
@@ -10028,18 +10095,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         message = snapshot.data!.errorMessage ??
                             'Please sync your library first';
                         icon = Icons.sync_problem_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
                             'Magic People requires Mega or Ultra';
                         icon = Icons.lock_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.alreadyGenerating:
                         title = 'Generation in progress';
                         message = snapshot.data!.errorMessage ??
                             'Please wait while recommendations are being generated';
                         icon = Icons.hourglass_empty_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicPeopleError.fetchFailed:
                       case MagicPeopleError.unknown:
@@ -10068,18 +10138,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
-                                fontSize: 14,
+                          if (message != null) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                message,
+                                style: TextStyle(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
+                          ],
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
@@ -10106,6 +10178,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       },
                                     ),
                                   ),
+                          ] else if (showRetryButton) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Tap to retry',
+                              icon: Icons.refresh_rounded,
+                              onTap: () {
+                                final refreshService = MagicPeopleService();
+                                setState(() {
+                                  _magicPeopleMoviesFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
+                                });
+                              },
+                            ),
                           ],
                         ],
                       ),
@@ -10382,12 +10471,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message = 'Recommendations generate automatically each week.';
+                  String? message;
                   IconData icon = Icons.auto_fix_high_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
                           snapshot.data?.error ==
                               MagicShowsError.notSynced;
+                  bool showRetryButton = true;
 
                   if (snapshot.hasData &&
                       !snapshot.data!.success &&
@@ -10398,18 +10488,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         message = snapshot.data!.errorMessage ??
                             'Please sync your library first';
                         icon = Icons.sync_problem_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
                             'Magic Shows requires Mega or Ultra';
                         icon = Icons.lock_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsError.alreadyGenerating:
                         title = 'Generation in progress';
                         message = snapshot.data!.errorMessage ??
                             'Please wait while recommendations are being generated';
                         icon = Icons.hourglass_empty_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsError.fetchFailed:
                       case MagicShowsError.unknown:
@@ -10438,18 +10531,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
-                                fontSize: 14,
+                          if (message != null) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                message,
+                                style: TextStyle(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
+                          ],
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
@@ -10476,6 +10571,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       },
                                     ),
                                   ),
+                          ] else if (showRetryButton) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Tap to retry',
+                              icon: Icons.refresh_rounded,
+                              onTap: () {
+                                final refreshService = MagicShowsService();
+                                setState(() {
+                                  _magicShowsFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
+                                });
+                              },
+                            ),
                           ],
                         ],
                       ),
@@ -10630,12 +10742,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message = 'Recommendations generate automatically each week.';
+                  String? message;
                   IconData icon = Icons.person_search_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
                           snapshot.data?.error ==
                               MagicShowsCastCrewError.notSynced;
+                  bool showRetryButton = true;
 
                   if (snapshot.hasData &&
                       !snapshot.data!.success &&
@@ -10646,18 +10759,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         message = snapshot.data!.errorMessage ??
                             'Please sync your library first';
                         icon = Icons.sync_problem_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsCastCrewError.noMegaOrUltra:
                         title = 'Mega subscription required';
                         message = snapshot.data!.errorMessage ??
                             'Magic Shows requires Mega or Ultra';
                         icon = Icons.lock_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsCastCrewError.alreadyGenerating:
                         title = 'Generation in progress';
                         message = snapshot.data!.errorMessage ??
                             'Please wait while recommendations are being generated';
                         icon = Icons.hourglass_empty_rounded;
+                        showRetryButton = false;
                         break;
                       case MagicShowsCastCrewError.fetchFailed:
                       case MagicShowsCastCrewError.unknown:
@@ -10686,18 +10802,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
-                                fontSize: 14,
+                          if (message != null) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                message,
+                                style: TextStyle(
+                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
+                          ],
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
@@ -10724,6 +10842,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       },
                                     ),
                                   ),
+                          ] else if (showRetryButton) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Tap to retry',
+                              icon: Icons.refresh_rounded,
+                              onTap: () {
+                                final refreshService = MagicShowsCastCrewService();
+                                setState(() {
+                                  _magicShowsCastCrewFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
+                                });
+                              },
+                            ),
                           ],
                         ],
                       ),
