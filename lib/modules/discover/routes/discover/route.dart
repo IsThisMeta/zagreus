@@ -951,7 +951,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 4250), (timer) {
       // Handle separate auto-scroll for movies and TV
       if (_trendingMovies.isNotEmpty && _moviesHeroPageController.hasClients) {
         final nextIndex = (_currentMovieHeroIndex + 1) % _trendingMovies.length;
