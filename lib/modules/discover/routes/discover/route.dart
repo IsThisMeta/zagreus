@@ -2238,7 +2238,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       return [
         IconButton(
           key: const ValueKey('discover_action_close_search'),
-          icon: const Icon(Icons.u_turn_left),
+          icon: const Icon(Icons.arrow_back),
           tooltip: 'Back',
           onPressed: _closeSearchOverlay,
         ),
