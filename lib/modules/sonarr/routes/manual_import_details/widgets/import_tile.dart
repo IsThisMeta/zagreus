@@ -137,9 +137,10 @@ class SonarrManualImportDetailsTile extends StatelessWidget {
         icon: Icons.edit_rounded,
         onTap: () async {
           await SonarrBottomModalSheets().configureManualImport(context);
-          Future.microtask(() => context
+          if (!context.mounted) return;
+          context
               .read<SonarrManualImportDetailsTileState>()
-              .checkIfShouldSelect(context));
+              .checkIfShouldSelect(context);
         });
   }
 
@@ -197,9 +198,16 @@ class SonarrManualImportDetailsTileState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLanguage(SonarrEpisodeFileLanguage language) {
+    _manualImport.languages = [language];
+    notifyListeners();
+  }
+
   void checkIfShouldSelect(BuildContext context) {
+    if (!context.mounted) return;
     if (_manualImport.series != null &&
-        (_manualImport.episodes?.isNotEmpty ?? false) &&
+        ((_manualImport.episode != null) ||
+            (_manualImport.episodes?.isNotEmpty ?? false)) &&
         _manualImport.quality != null &&
         (_manualImport.languages?.length ?? 0) > 0 &&
         _manualImport.languages![0].id! >= 0)
@@ -208,35 +216,77 @@ class SonarrManualImportDetailsTileState extends ChangeNotifier {
           .addSelectedFile(_manualImport.id!));
   }
 
-  Future<void> fetchUpdates(BuildContext context, int? seriesId, List<int>? episodeIds) async {
-    if (context.read<SonarrState>().enabled) {
+  void setSeries(SonarrSeries series) {
+    final updated = _manualImport;
+    updated.series = series;
+    updated.episode = null;
+    updated.episodes = null;
+    manualImport = updated;
+  }
+
+  void setEpisode(SonarrEpisode episode) {
+    final updated = _manualImport;
+    updated.episode = episode;
+    updated.episodes = null;
+    manualImport = updated;
+  }
+
+  Future<bool> fetchUpdates(
+    BuildContext context,
+    int? seriesId,
+    List<int>? episodeIds,
+  ) async {
+    if (!context.mounted) return false;
+
+    final sonarrState = context.read<SonarrState>();
+    if (sonarrState.enabled) {
+      final safeEpisodeIds = (episodeIds?.isNotEmpty ?? false) ? episodeIds : null;
       SonarrManualImportUpdateData data = SonarrManualImportUpdateData(
         id: manualImport.id,
         path: manualImport.path,
         seriesId: seriesId,
-        episodeIds: episodeIds,
+        episodeIds: safeEpisodeIds,
         quality: manualImport.quality,
         languages: manualImport.languages,
+        releaseGroup: manualImport.releaseGroup,
+        downloadId: manualImport.downloadId,
       );
-      context
-          .read<SonarrState>()
-          .api!
-          .manualImport
-          .update(data: [data]).then((value) {
+      try {
+        final value =
+            await sonarrState.api!.manualImport.update(
+                  data: [data],
+                );
         if (value.isNotEmpty) {
-          SonarrManualImport _import = _manualImport;
-          _import.series = value[0].series;
-          _import.episodes = value[0].episodes;
-          _import.id = value[0].id;
-          _import.path = value[0].path;
-          _import.rejections = value[0].rejections;
-          manualImport = _import;
+          SonarrManualImport updated = _manualImport;
+          updated.series = value[0].series ?? updated.series;
+          updated.episodes = value[0].episodes ?? updated.episodes;
+          updated.id = value[0].id ?? updated.id;
+          updated.path = value[0].path ?? updated.path;
+          updated.rejections = value[0].rejections;
+          manualImport = updated;
         }
-      });
+        return true;
+      } catch (e, stack) {
+        ZagLogger().warning(
+          'Failed to update manual import selection: ${e.toString()}',
+        );
+        ZagLogger()
+            .debug('Manual import update stacktrace: ${stack.toString()}');
+        return false;
+      }
     }
+    return false;
   }
 
   void updateQuality(SonarrEpisodeFileQualityQuality quality) {
+    _manualImport.quality ??= SonarrEpisodeFileQuality(
+      quality: quality,
+      revision: SonarrEpisodeFileQualityRevision(
+        version: 1,
+        real: 0,
+        isRepack: false,
+      ),
+    );
     _manualImport.quality!.quality = quality;
     notifyListeners();
   }

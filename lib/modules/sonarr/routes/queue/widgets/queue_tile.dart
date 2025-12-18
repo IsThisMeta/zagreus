@@ -208,6 +208,9 @@ class _State extends State<SonarrQueueTile> {
           onTap: () {
             // Build query params with series/episode hints from queue
             Map<String, String> queryParams = {'path': widget.queueRecord.outputPath!};
+            if (widget.queueRecord.downloadId != null) {
+              queryParams['downloadId'] = widget.queueRecord.downloadId!;
+            }
             if (widget.queueRecord.seriesId != null) {
               queryParams['seriesId'] = widget.queueRecord.seriesId!.toString();
             }

@@ -66,10 +66,12 @@ enum SonarrRoutes with ZagRoutesMixin {
       case SonarrRoutes.MANUAL_IMPORT_DETAILS:
         return route(builder: (_, state) {
           final path = state.uri.queryParameters['path'] ?? '';
+          final downloadId = state.uri.queryParameters['downloadId'];
           final seriesId = state.uri.queryParameters['seriesId'];
           final episodeId = state.uri.queryParameters['episodeId'];
           return SonarrManualImportDetailsRoute(
             path: path,
+            downloadId: downloadId,
             seriesId: seriesId,
             episodeId: episodeId,
           );

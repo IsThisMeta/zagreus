@@ -4,10 +4,23 @@ Future<List<SonarrManualImportUpdate>> _controllerUpdateManualImport(
   Dio client, {
   required List<SonarrManualImportUpdateData> data,
 }) async {
-  Response response = await client.put(
-    'manualimport',
-    data: data.map<Map<dynamic, dynamic>>((data) => data.toJson()).toList(),
-  );
+  final payload = data.map<Map<dynamic, dynamic>>((data) => data.toJson()).toList();
+  Response response;
+  try {
+    response = await client.put(
+      'manualimport',
+      data: payload,
+    );
+  } on DioException catch (e) {
+    if (e.response?.statusCode == 405) {
+      response = await client.post(
+        'manualimport',
+        data: payload,
+      );
+    } else {
+      rethrow;
+    }
+  }
   return (response.data as List)
       .map((import) => SonarrManualImportUpdate.fromJson(import))
       .toList();

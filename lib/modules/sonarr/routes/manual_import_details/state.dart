@@ -4,12 +4,14 @@ import 'package:zagreus/modules/sonarr.dart';
 
 class SonarrManualImportDetailsState extends ChangeNotifier {
   final String path;
+  final String? downloadId;
   final int? hintSeriesId;
   final int? hintEpisodeId;
 
   SonarrManualImportDetailsState(
     BuildContext context, {
     required this.path,
+    this.downloadId,
     this.hintSeriesId,
     this.hintEpisodeId,
   }) {
@@ -28,12 +30,14 @@ class SonarrManualImportDetailsState extends ChangeNotifier {
   Future<List<SonarrManualImport>>? get manualImport => _manualImport;
   Future<void> fetchManualImport(BuildContext context) async {
     if (context.read<SonarrState>().enabled) {
+      final folder = (downloadId?.isNotEmpty ?? false) ? '' : path;
       _manualImport = context
           .read<SonarrState>()
           .api!
           .manualImport
           .get(
-            folder: path,
+            folder: folder,
+            downloadId: (downloadId?.isNotEmpty ?? false) ? downloadId : null,
             filterExistingFiles: true,
           )
           .then((files) => _applyHints(context, files));
@@ -45,6 +49,7 @@ class SonarrManualImportDetailsState extends ChangeNotifier {
     BuildContext context,
     List<SonarrManualImport> files,
   ) async {
+    if (!context.mounted) return files;
     // If no hints provided, return files as-is
     if (hintSeriesId == null || files.isEmpty) return files;
 
@@ -67,6 +72,8 @@ class SonarrManualImportDetailsState extends ChangeNotifier {
           episodeIds: episodeIds,
           quality: file.quality,
           languages: file.languages,
+          releaseGroup: file.releaseGroup,
+          downloadId: file.downloadId,
         );
       }).toList();
 

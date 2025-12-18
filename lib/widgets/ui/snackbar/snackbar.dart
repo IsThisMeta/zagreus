@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/database/database.dart';
+import 'package:zagreus/router/router.dart';
 
 enum ZagSnackbarType {
   SUCCESS,
@@ -52,8 +52,11 @@ Future<void> showZagSnackBar({
     return;
   }
 
+  final ctx = ZagRouter.navigator.currentContext;
+  if (ctx == null || !ctx.mounted) return;
+
   showFlash(
-    context: ZagState.context,
+    context: ctx,
     duration: duration ?? Duration(seconds: showButton ? 4 : 2),
     transitionDuration: const Duration(milliseconds: ZagUI.ANIMATION_SPEED),
     reverseTransitionDuration:

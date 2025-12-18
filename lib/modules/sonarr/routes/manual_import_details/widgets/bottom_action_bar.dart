@@ -41,55 +41,64 @@ class SonarrManualImportDetailsBottomActionBar extends StatelessWidget {
   }
 
   Future<void> _importOnTap(BuildContext context) async {
-    if (context.read<SonarrManualImportDetailsState>().canExecuteAction &&
-        context.read<SonarrManualImportDetailsState>().loadingState ==
-            ZagLoadingState.INACTIVE) {
-      List<SonarrManualImport> _imports =
-          await context.read<SonarrManualImportDetailsState>().manualImport!;
-      _imports = _imports
-          .where((import) => context
-              .read<SonarrManualImportDetailsState>()
-              .selectedFiles
-              .contains(import.id))
+    if (!context.mounted) return;
+
+    final state = context.read<SonarrManualImportDetailsState>();
+    if (!state.canExecuteAction || state.loadingState != ZagLoadingState.INACTIVE) {
+      return;
+    }
+
+    try {
+      List<SonarrManualImport> imports = await state.manualImport!;
+      imports = imports
+          .where((import) => state.selectedFiles.contains(import.id))
           .toList();
-      if (_imports.isEmpty) {
+
+      if (imports.isEmpty) {
         showZagInfoSnackBar(
-            title: 'Nothing Selected',
-            message: 'Please select at least one file to import');
+          title: 'Nothing Selected',
+          message: 'Please select at least one file to import',
+        );
         return;
       }
-      bool _allValid = true;
-      List<SonarrManualImportFile> _files = [];
-      _imports.forEach((import) {
-        if (_allValid) {
-          Tuple2<SonarrManualImportFile?, String?> _file =
-              SonarrAPIController().buildManualImportFile(import: import);
-          if (_file.item1 != null) {
-            _files.add(_file.item1!);
-          } else {
-            showZagInfoSnackBar(title: 'Invalid Inputs', message: _file.item2);
-            _allValid = false;
-          }
+
+      bool allValid = true;
+      final files = <SonarrManualImportFile>[];
+      for (final import in imports) {
+        if (!allValid) break;
+        final built = SonarrAPIController().buildManualImportFile(import: import);
+        if (built.item1 != null) {
+          files.add(built.item1!);
+        } else {
+          showZagInfoSnackBar(title: 'Invalid Inputs', message: built.item2);
+          allValid = false;
         }
-      });
-      if (_allValid) {
-        context.read<SonarrManualImportDetailsState>().loadingState =
-            ZagLoadingState.ACTIVE;
-        await SonarrAPIController()
-            .triggerManualImport(
-              context: context,
-              files: _files,
-              importMode: SonarrImportMode.COPY
-                  .from((SonarrDatabase.MANUAL_IMPORT_DEFAULT_MODE.read()))!,
-            )
-            .then((result) => result
-                ? Navigator.of(context).pop()
-                : context.read<SonarrManualImportDetailsState>().loadingState =
-                    ZagLoadingState.INACTIVE)
-            .catchError((_) => context
-                .read<SonarrManualImportDetailsState>()
-                .loadingState = ZagLoadingState.ERROR);
       }
+
+      if (!allValid) return;
+      if (!context.mounted) return;
+
+      state.loadingState = ZagLoadingState.ACTIVE;
+
+      final ok = await SonarrAPIController().triggerManualImport(
+        context: context,
+        files: files,
+        importMode: SonarrImportMode.COPY
+            .from((SonarrDatabase.MANUAL_IMPORT_DEFAULT_MODE.read()))!,
+      );
+
+      if (!context.mounted) return;
+
+      if (ok) {
+        Navigator.of(context).pop();
+      } else {
+        state.loadingState = ZagLoadingState.INACTIVE;
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Manual import failed unexpectedly', e, stack);
+      if (!context.mounted) return;
+      state.loadingState = ZagLoadingState.ERROR;
+      showZagErrorSnackBar(title: 'Failed to Import', error: e);
     }
   }
 }

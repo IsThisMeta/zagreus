@@ -863,6 +863,7 @@
     "sonarr.SeasonFoldersDescription": "Sort episodes into season folders",
     "sonarr.SeasonNumber": "Season {}",
     "sonarr.SelectLanguage": "Select Language",
+    "sonarr.SelectEpisode": "Select Episode",
     "sonarr.SelectQuality": "Select Quality",
     "sonarr.SelectSeries": "Select Series",
     "sonarr.Seeders": "Seeders",
