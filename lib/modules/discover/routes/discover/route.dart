@@ -44,6 +44,7 @@ import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
 import 'package:zagreus/services/watch_history_sync_service.dart';
 import 'package:zagreus/services/device_id_service.dart';
+import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
@@ -193,6 +194,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_people');
+
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: defaultSectionTitle);
+    }
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -640,7 +645,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String instanceKey,
   }) async {
     // Guard to ensure this only runs once
-    if (_deepCutsSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_deepCutsSyncInitialized || !_hasAiAccess) return;
     _deepCutsSyncInitialized = true;
 
     try {
@@ -674,7 +679,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String instanceKey,
   }) async {
     // Guard to ensure this only runs once
-    if (_upNextSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_upNextSyncInitialized || !_hasAiAccess) return;
     _upNextSyncInitialized = true;
 
     try {
@@ -707,7 +712,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicMoviesSyncInitialized || !_hasAiAccess) return;
     _magicMoviesSyncInitialized = true;
 
     try {
@@ -734,7 +739,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicMoviesCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicMoviesCastCrewSyncInitialized || !_hasAiAccess) return;
     _magicMoviesCastCrewSyncInitialized = true;
 
     try {
@@ -762,7 +767,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicShowsSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicShowsSyncInitialized || !_hasAiAccess) return;
     _magicShowsSyncInitialized = true;
 
     try {
@@ -789,7 +794,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicShowsCastCrewSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicShowsCastCrewSyncInitialized || !_hasAiAccess) return;
     _magicShowsCastCrewSyncInitialized = true;
 
     try {
@@ -817,7 +822,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicPeopleMoviesSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicPeopleMoviesSyncInitialized || !_hasAiAccess) return;
     _magicPeopleMoviesSyncInitialized = true;
 
     try {
@@ -844,7 +849,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) async {
-    if (_magicPeopleShowsSyncInitialized || !ZagreusMega.isEnabled) return;
+    if (_magicPeopleShowsSyncInitialized || !_hasAiAccess) return;
     _magicPeopleShowsSyncInitialized = true;
 
     try {
@@ -2124,7 +2129,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool get _showLegacyModules =>
       ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB.read();
   bool get _showCalendarTab => ZagreusDatabase.SHOW_CALENDAR_TAB.read();
-  bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read();
+  bool get _isSignedIn => ZagSupabaseAuth().isSignedIn;
+  bool get _hasAiTier => ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+  bool get _hasAiAccess => _isSignedIn && _hasAiTier;
+  bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read() && _hasAiAccess;
+
+  void _promptSignInForAi() {
+    showZagInfoSnackBar(
+      title: 'Sign in required',
+      message: 'Sign in to your Zagreus account to use AI features.',
+    );
+    SettingsRoutes.ACCOUNT.go();
+  }
 
   List<String> _discoverTabKeys({bool? showLegacyModules, bool? showCalendar}) {
     final includeModules = showLegacyModules ?? _showLegacyModules;
@@ -2335,7 +2351,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (enableCalendar) currentIndex++;
     final serverIndex = currentIndex;
 
-    final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    final isMegaOrUltra = _hasAiAccess;
     final isPro = ZagreusPro.isEnabled;
 
     if (_isSearchActive) {
@@ -3152,10 +3168,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  bool get _customSectionsEnabled =>
-      ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+  bool get _customSectionsEnabled => _hasAiAccess;
 
   Widget _customSectionsArea({required String mediaType}) {
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: 'Custom Sections');
+    }
     if (!_customSectionsEnabled) return const SizedBox.shrink();
 
     return FutureBuilder<List<CustomSectionConfig>>(
@@ -3715,7 +3733,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _zAutoRefreshNote() {
     // Only show for Mega and Ultra users (not Pro)
-    final isMegaOrUltra = ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+    final isMegaOrUltra = _hasAiAccess;
     if (!isMegaOrUltra) {
       return const SizedBox.shrink();
     }
@@ -9498,6 +9516,57 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _accountRequiredState({required String sectionName}) {
+    final theme = Theme.of(context);
+    final textColor =
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black)
+            .withOpacity(0.7);
+
+    return Container(
+      height: 260,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person_outline_rounded,
+              size: 48,
+              color: textColor.withOpacity(0.6),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Account required',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Sign in to unlock $sectionName.',
+                style: TextStyle(
+                  color: textColor.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ZagButton.text(
+              text: 'Sign in',
+              icon: Icons.login_rounded,
+              onTap: _promptSignInForAi,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _deepCutsSection() {
     final deepCutsService = DeepCutsService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -9506,6 +9575,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final sectionTitle = _discoverSectionTitle('deep_cuts');
+
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: sectionTitle);
+    }
 
     // Library sync required for Deep Cuts
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
@@ -9881,6 +9954,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final sectionTitle = _discoverSectionTitle('up_next');
+
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: sectionTitle);
+    }
 
     // Library sync required for Up Next
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
@@ -10267,6 +10344,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_movies');
 
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: defaultSectionTitle);
+    }
+
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
         sectionName: defaultSectionTitle,
@@ -10558,6 +10639,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_movies_cast_crew');
+
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: defaultSectionTitle);
+    }
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -11273,6 +11358,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_shows');
 
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: defaultSectionTitle);
+    }
+
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
         sectionName: defaultSectionTitle,
@@ -11568,6 +11657,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_shows_cast_crew');
+
+    if (_hasAiTier && !_isSignedIn) {
+      return _accountRequiredState(sectionName: defaultSectionTitle);
+    }
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(

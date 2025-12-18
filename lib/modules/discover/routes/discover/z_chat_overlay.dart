@@ -14,6 +14,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/router/routes/settings.dart';
 
 /// Z chat page for the Dashboard module.
 /// Persists the conversation locally so closing the overlay does not clear it.
@@ -64,6 +65,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     });
 
     Future.microtask(() async {
+      if (!ZagSupabaseAuth().isSignedIn) return;
       final assistantService = ZAssistantService();
       final synced = await assistantService.syncSubscriptionIfNeeded();
       ZagLogger()
@@ -73,6 +75,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     // Trigger library sync after 5 seconds to avoid UI lag
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
+        if (!ZagSupabaseAuth().isSignedIn) return;
         final syncService = LibrarySyncService();
         if (syncService.needsSync) {
           ZagLogger().debug('Z Chat opened - triggering library sync...');
@@ -363,6 +366,14 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   }
 
   Future<void> _sendMessage() async {
+    if (!_isSignedIn) {
+      showZagInfoSnackBar(
+        title: 'Sign in required',
+        message: 'Sign in to your Zagreus account to use Z Agent.',
+      );
+      SettingsRoutes.ACCOUNT.go();
+      return;
+    }
     if (_controller.text.trim().isEmpty || _isThinking) return;
 
     final userMessage = _controller.text.trim();
@@ -1175,13 +1186,13 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
             children: [
               // Messages
               Expanded(
-                child: _messages.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'z',
+                  child: _messages.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'z',
                               style: TextStyle(
                                 fontFamily: 'Zebrra',
                                 fontSize: 156,
@@ -1198,6 +1209,21 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
                                   foregroundColor: ZagColours.currentAccent,
                                   side: BorderSide(
                                     color: ZagColours.currentAccent.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (!_isSignedIn) ...[
+                              const SizedBox(height: 24),
+                              OutlinedButton.icon(
+                                onPressed: () => SettingsRoutes.ACCOUNT.go(),
+                                icon: const Icon(Icons.login_rounded),
+                                label: const Text('Sign in to use AI'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: ZagColours.currentAccent,
+                                  side: BorderSide(
+                                    color:
+                                        ZagColours.currentAccent.withOpacity(0.5),
                                   ),
                                 ),
                               ),
@@ -1237,14 +1263,16 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Ask me anything...',
+                    hintText:
+                        _isSignedIn ? 'Ask me anything...' : 'Sign in to use AI',
                     hintStyle: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
                           ? Colors.white.withOpacity(0.3)
                           : Colors.black.withOpacity(0.3),
                     ),
                     suffixIcon: _controller.text.isNotEmpty &&
-                            !_isThinking
+                            !_isThinking &&
+                            _isSignedIn
                         ? IconButton(
                             icon: Icon(
                               Icons.arrow_upward_rounded,
@@ -1269,8 +1297,8 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
                       ),
                     ),
                   ),
-                  enabled: !_isThinking,
-                  readOnly: false,
+                  enabled: !_isThinking && _isSignedIn,
+                  readOnly: !_isSignedIn,
                 ),
               ),
             ],

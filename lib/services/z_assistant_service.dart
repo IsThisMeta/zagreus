@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
@@ -30,6 +31,12 @@ class ZAssistantService {
     _dio.interceptors.add(
       dio.InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final session = Supabase.instance.client.auth.currentSession;
+          final accessToken = session?.accessToken;
+          if (accessToken != null && accessToken.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $accessToken';
+          }
+
           // Get device ID - no auth required!
           final deviceId = DeviceIdService().deviceId;
           options.headers['X-Device-Id'] = deviceId;
@@ -47,11 +54,18 @@ class ZAssistantService {
     );
   }
 
+  void _requireSignedIn() {
+    if (!ZagSupabaseAuth().isSignedIn) {
+      throw Exception('Sign in required');
+    }
+  }
+
   /// Ensure device is registered with backend
   /// Public method to force device re-registration
   /// Useful for syncing subscription changes or fixing registration issues
   /// Returns true if registration succeeded, false otherwise
   Future<bool> forceDeviceRegistration() async {
+    _requireSignedIn();
     return await _ensureDeviceRegistered(force: true);
   }
 
@@ -60,6 +74,7 @@ class ZAssistantService {
   /// Subsequent calls are ignored once a successful sync has occurred,
   /// unless [force] is true.
   Future<bool> syncSubscriptionIfNeeded({bool force = false}) async {
+    _requireSignedIn();
     if (_subscriptionSynced && !force) {
       return true;
     }
@@ -93,8 +108,9 @@ class ZAssistantService {
     final hmacService = HmacEncryptionService();
     final supabaseUserId = ZagSupabaseAuth().uid;
 
-    // Supabase user ID is now optional - backend works purely on RC customer ID
-    // But we still track it if available for user linkage
+    if (supabaseUserId == null) {
+      return false;
+    }
 
     if (!force && hmacService.isRegistered) {
       // Already registered (skip unless forced)
@@ -179,6 +195,7 @@ class ZAssistantService {
     String? context,
     List<Map<String, String>>? history,
   }) async {
+    _requireSignedIn();
     try {
       ZagLogger().debug('Sending message to Z Assistant: $message');
 
@@ -273,6 +290,14 @@ class ZAssistantService {
     String? context,
     List<Map<String, String>>? history,
   }) async* {
+    if (!ZagSupabaseAuth().isSignedIn) {
+      yield ZAssistantStreamEvent(
+        type: 'error',
+        message: 'Sign in required',
+        data: const {},
+      );
+      return;
+    }
     try {
       ZagLogger().debug('Sending streaming message to Z Assistant: $message');
 
@@ -426,6 +451,7 @@ class ZAssistantService {
   Future<String> sendExploreQuery({
     required String query,
   }) async {
+    _requireSignedIn();
     try {
       ZagLogger().debug('Sending explore query: $query');
 
@@ -466,6 +492,7 @@ class ZAssistantService {
 
   /// Get available Tautulli users from watch history
   Future<ZAssistantApiResponse> getAvailableUsers(String deviceId) async {
+    _requireSignedIn();
     try {
       ZagLogger().debug('Fetching available Tautulli users for device: ${deviceId.substring(0, 8)}...');
 
@@ -499,6 +526,7 @@ class ZAssistantService {
 
   /// Select a Tautulli user for personalized recommendations
   Future<ZAssistantApiResponse> selectUser(String deviceId, String userAlias) async {
+    _requireSignedIn();
     try {
       ZagLogger().debug('Selecting user $userAlias for device: ${deviceId.substring(0, 8)}...');
 
