@@ -9689,6 +9689,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     ),
                                   ),
                           ],
+                          if (!showLibrarySyncCta && snapshot.data?.error != MagicMoviesError.alreadyGenerating) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Generate now',
+                              icon: Icons.auto_fix_high_rounded,
+                              onTap: () {
+                                final refreshService = MagicMoviesService();
+                                setState(() {
+                                  _magicMoviesFuture = refreshService
+                                      .generateRecommendations(
+                                        profileKey: profileKey,
+                                        instanceKey: instanceKey,
+                                        force: true,
+                                      );
+                                });
+                              },
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -9936,6 +9954,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       },
                                     ),
                                   ),
+                          ],
+                          if (!showLibrarySyncCta && snapshot.data?.error != MagicMoviesCastCrewError.alreadyGenerating) ...[
+                            const SizedBox(height: 16),
+                            ZagButton.text(
+                              text: 'Generate now',
+                              icon: Icons.groups_rounded,
+                              onTap: () {
+                                final refreshService = MagicMoviesCastCrewService();
+                                setState(() {
+                                  _magicMoviesCastCrewFuture = refreshService
+                                      .generateRecommendations(
+                                        profileKey: profileKey,
+                                        instanceKey: instanceKey,
+                                        force: true,
+                                      );
+                                });
+                              },
+                            ),
                           ],
                         ],
                       ),
