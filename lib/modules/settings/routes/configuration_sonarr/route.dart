@@ -242,19 +242,31 @@ class _State extends State<ConfigurationSonarrRoute>
             title: const Text('Instance Name'),
             content: TextField(
               controller: controller,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'e.g., 4K, Anime, Kids',
+                hintStyle: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: ZagColours.currentAccent),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: ZagColours.currentAccent.withOpacity(ZagUI.OPACITY_SPLASH),
+                  ),
+                ),
               ),
               autofocus: true,
+              cursorColor: ZagColours.currentAccent,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
+              ZagDialog.cancel(context),
+              ZagDialog.button(
+                text: 'Create',
                 onPressed: () => Navigator.pop(context, controller.text),
-                child: const Text('Create'),
               ),
             ],
           ),
