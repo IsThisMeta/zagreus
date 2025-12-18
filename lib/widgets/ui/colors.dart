@@ -48,8 +48,8 @@ class ZagColours {
   /// Dark mode accent colour - using brighter color for better visibility
   static const Color accentDark = Color(0xFF6FE0CC);
 
-  /// Light mode accent colour (darker teal)
-  static const Color accentLight = Color(0xFF2A7A82);
+  /// Light mode accent colour (between dark teal and bright accent)
+  static const Color accentLight = Color(0xFF289888);
   
   // Dark Mode Colors
   static const Color primaryDark = Color(0xFF232534);
