@@ -43,7 +43,7 @@ class ZagColours {
   ];
 
   /// Core accent colour (brighter teal for dark mode)
-  static const Color accent = Color(0xFF2B9A9A);
+  static const Color accent = Color(0xFF3EC7B0);
 
   /// Dark mode accent colour - using brighter color for better visibility
   static const Color accentDark = Color(0xFF6FE0CC);
