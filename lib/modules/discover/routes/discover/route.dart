@@ -3077,7 +3077,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   String _nextZRegenerationText() {
     if (_nextZSectionsRegenerationAt == null) {
-      return 'Auto-updates weekly.';
+      return 'Auto-updates weekly';
     }
     final now = DateTime.now();
     final dt = _nextZSectionsRegenerationAt!;
@@ -3087,14 +3087,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final diff = dt.difference(now);
     final days = diff.inDays;
     final hours = diff.inHours % 24;
-    final minutes = diff.inMinutes % 60;
     String eta;
     if (days > 0) {
       eta = '${days}d ${hours}h';
-    } else if (hours > 0) {
-      eta = '${hours}h ${minutes}m';
     } else {
-      eta = '${minutes}m';
+      eta = '${hours}h';
     }
     return 'Auto-updates weekly • Next refresh in $eta';
   }
@@ -9642,7 +9639,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message = 'Recommendations generate automatically each week.';
+                  String message = 'Auto-updates weekly';
                   IconData icon = Icons.auto_fix_high_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
@@ -9906,7 +9903,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 }
                 if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
-                  String message = 'Recommendations generate automatically each week.';
+                  String message = 'Auto-updates weekly';
                   IconData icon = Icons.groups_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
