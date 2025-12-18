@@ -19,7 +19,7 @@ class SonarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'zagreus.Settings'.tr(),
+      title: 'sonarr.More'.tr(),
       content: List.generate(
         SonarrGlobalSettingsType.values.length,
         (index) => ZagDialog.tile(

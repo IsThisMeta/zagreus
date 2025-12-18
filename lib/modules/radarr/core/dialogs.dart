@@ -18,7 +18,7 @@ class RadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'zagreus.Settings'.tr(),
+      title: 'radarr.More'.tr(),
       content: List.generate(
         RadarrGlobalSettingsType.values.length,
         (index) => ZagDialog.tile(

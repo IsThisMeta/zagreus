@@ -37,5 +37,6 @@
     "sonarr.DownloadingWithMessage": "Se Descarcă: {}",
     "sonarr.Automatic": "Automat",
     "sonarr.AutomaticSearch": "Căutare Automată",
-    "sonarr.DeleteReasonManual": "Fișierul a fost șters de către UI"
+    "sonarr.DeleteReasonManual": "Fișierul a fost șters de către UI",
+    "sonarr.More": "Mai multe"
 }
