@@ -3167,47 +3167,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         final sections = snapshot.data!;
 
-    if (sections.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
-          vertical: 8,
-        ),
-        child: Column(
-          children: [
-            ZagBlock(
-              title: 'Custom Sections',
-              body: const [
-                TextSpan(
-                  text:
-                      'Create your own AI-powered recommendation categories by describing what you want to discover.',
-                ),
-              ],
-              trailing: const Icon(Icons.auto_awesome_rounded),
-              onTap: () => _showCreateCustomSectionDialog(mediaType),
-            ),
-            const SizedBox(height: 8),
-            ZagButton.text(
-              text: 'Create Custom Section',
-              icon: Icons.add_rounded,
-              color: ZagColours.currentAccent,
-              onTap: () => _showCreateCustomSectionDialog(mediaType),
-            ),
-          ],
-        ),
-      );
-    }
+        // Custom Sections are managed in Dashboard Settings.
+        if (sections.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      children: sections.map((config) {
         return Column(
-          children: [
-            const SizedBox(height: 8),
-            _customSectionWidget(config),
-          ],
+          children: sections.map((config) {
+            return Column(
+              children: [
+                const SizedBox(height: 8),
+                _customSectionWidget(config),
+              ],
+            );
+          }).toList(),
         );
-      }).toList(),
-    );
       },
     );
   }
@@ -3276,22 +3248,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ],
                   ),
-                ),
-                IconButton(
-                  tooltip: 'Refresh',
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: () => _regenerateCustomSection(config),
-                ),
-                IconButton(
-                  tooltip: 'Edit',
-                  icon: const Icon(Icons.edit_rounded),
-                  onPressed: () => _showEditCustomSectionDialog(config),
-                ),
-                IconButton(
-                  tooltip: 'Delete',
-                  icon: const Icon(Icons.delete_outline_rounded),
-                  color: Colors.red,
-                  onPressed: () => _deleteCustomSection(config),
                 ),
               ],
             ),
@@ -3894,7 +3850,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       initialIndex: effectiveIndex,
     );
 
-    if (updated == true && mounted) {
+    if (!mounted) return;
+
+    // Always refresh Custom Sections after closing settings so create/edit/delete
+    // actions reflect immediately, even if the user didn't press "Save".
+    setState(() => _customSectionsFutures.clear());
+
+    if (updated == true) {
       setState(() {
         _loadSavedSettings();
         _loadTrendingTimeWindowSetting();

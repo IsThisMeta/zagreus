@@ -255,7 +255,7 @@ class CustomSectionsService {
     print('═══════════════════════════════════════');
 
     // Mega or Ultra required
-    if (!ZagreusMega.isEnabled) {
+    if (!(ZagreusUltra.isEnabled || ZagreusMega.isEnabled)) {
       print('❌ FETCH BLOCKED: Mega or Ultra subscription required');
       return CustomSectionResult.failure(
         CustomSectionError.noMegaOrUltra,
@@ -359,7 +359,7 @@ class CustomSectionsService {
     print('═══════════════════════════════════════');
 
     // Mega or Ultra required
-    if (!ZagreusMega.isEnabled) {
+    if (!(ZagreusUltra.isEnabled || ZagreusMega.isEnabled)) {
       print('❌ GENERATION BLOCKED: Mega or Ultra subscription required');
       return CustomSectionResult.failure(
         CustomSectionError.noMegaOrUltra,

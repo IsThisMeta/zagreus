@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/services/custom_sections_service.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class DiscoverSectionsEditor extends StatefulWidget {
   const DiscoverSectionsEditor({
@@ -68,6 +71,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   // Helper to check if we're on iPad
   bool get _isTablet => mounted && ZagPlatform.isTablet(context);
 
+  bool get _customSectionsEnabled =>
+      ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+
   // Dynamic getters based on device type
   double get _posterHeightMin =>
       _isTablet ? _posterHeightMinIPad : _posterHeightMinPhone;
@@ -100,6 +106,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   bool _hideInLibraryFromHero = false;
   String _trendingTimeWindow = 'week';
 
+  late Future<List<CustomSectionConfig>> _customMovieSectionsFuture;
+  late Future<List<CustomSectionConfig>> _customTVSectionsFuture;
+
   bool get hasChanges => _hasChanges;
 
   // Track if we've loaded device-dependent settings
@@ -109,6 +118,15 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   void initState() {
     super.initState();
     _loadNonDeviceDependentSettings();
+    if (_customSectionsEnabled) {
+      _customMovieSectionsFuture =
+          CustomSectionsService().syncFromSupabase(mediaType: 'movie');
+      _customTVSectionsFuture =
+          CustomSectionsService().syncFromSupabase(mediaType: 'tv');
+    } else {
+      _customMovieSectionsFuture = Future.value(const <CustomSectionConfig>[]);
+      _customTVSectionsFuture = Future.value(const <CustomSectionConfig>[]);
+    }
   }
 
   @override
@@ -699,30 +717,176 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     final availableSections =
         defaults.where((section) => !sections.contains(section)).toList();
 
-    return Column(
-      children: [
-        Expanded(
-          child: sections.isEmpty
-              ? _emptySectionsPlaceholder(isMovie: isMovie)
-              : ReorderableListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: sections.length,
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex -= 1;
-                      final item = sections.removeAt(oldIndex);
-                      sections.insert(newIndex, item);
-                      _setHasChanges();
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    final section = sections[index];
-                    final name = _sectionName(section);
+    return CustomScrollView(
+      slivers: [
+        if (sections.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: _emptySectionsPlaceholder(isMovie: isMovie),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            sliver: SliverReorderableList(
+              itemCount: sections.length,
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  final item = sections.removeAt(oldIndex);
+                  sections.insert(newIndex, item);
+                  _setHasChanges();
+                });
+              },
+              itemBuilder: (context, index) {
+                final section = sections[index];
+                final name = _sectionName(section);
 
-                    return Container(
-                      key: ValueKey(section),
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                return Container(
+                  key: ValueKey(section),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.dark
+                        ? ZagColours.secondary
+                        : ZagColours.secondaryLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white10
+                          : Colors.black12,
+                      width: 1,
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      _getSectionIcon(section),
+                      color: ZagColours.accentColor(context),
+                    ),
+                    title: Text(
+                      name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          tooltip: 'Remove Section',
+                          onPressed: () => _removeSection(sections, section),
+                        ),
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: Icon(
+                            Icons.drag_handle_rounded,
+                            color: theme.brightness == Brightness.dark
+                                ? Colors.white30
+                                : Colors.black26,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 8),
+            child: ZagButton.text(
+              text: availableSections.isEmpty ? 'All Sections Added' : 'Add Section',
+              icon: availableSections.isEmpty ? null : Icons.add_rounded,
+              color: ZagColours.currentAccent,
+              onTap: availableSections.isEmpty
+                  ? null
+                  : () => _showAddSectionSheet(
+                        isMovie: isMovie,
+                        defaults: defaults,
+                      ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: _customSectionsSettingsArea(
+            mediaType: isMovie ? 'movie' : 'tv',
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+      ],
+    );
+  }
+
+  Widget _customSectionsSettingsArea({required String mediaType}) {
+    if (!_customSectionsEnabled) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final future = mediaType == 'movie'
+        ? _customMovieSectionsFuture
+        : _customTVSectionsFuture;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Custom Sections',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Create your own AI-powered recommendation categories.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ZagButton.text(
+            text: 'Create Custom Section',
+            icon: Icons.add_rounded,
+            color: ZagColours.currentAccent,
+            onTap: () => _showCreateCustomSectionDialog(mediaType),
+          ),
+          const SizedBox(height: 8),
+          FutureBuilder<List<CustomSectionConfig>>(
+            future: future,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final sections = snapshot.data ?? const <CustomSectionConfig>[];
+              if (sections.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'No custom sections yet.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white54
+                          : Colors.black45,
+                    ),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  for (final config in sections)
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
                       decoration: BoxDecoration(
                         color: theme.brightness == Brightness.dark
                             ? ZagColours.secondary
@@ -737,59 +901,278 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                       ),
                       child: ListTile(
                         leading: Icon(
-                          _getSectionIcon(section),
+                          Icons.auto_awesome_rounded,
                           color: ZagColours.accentColor(context),
                         ),
                         title: Text(
-                          name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          config.title,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        subtitle: Text(
+                          config.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded),
-                              tooltip: 'Remove Section',
+                              tooltip: 'Regenerate',
+                              icon: const Icon(Icons.refresh_rounded),
                               onPressed: () =>
-                                  _removeSection(sections, section),
+                                  _regenerateCustomSectionFromSettings(config),
                             ),
-                            ReorderableDragStartListener(
-                              index: index,
-                              child: Icon(
-                                Icons.drag_handle_rounded,
-                                color: theme.brightness == Brightness.dark
-                                    ? Colors.white30
-                                    : Colors.black26,
-                              ),
+                            IconButton(
+                              tooltip: 'Edit',
+                              icon: const Icon(Icons.edit_rounded),
+                              onPressed: () =>
+                                  _showEditCustomSectionDialog(config),
+                            ),
+                            IconButton(
+                              tooltip: 'Delete',
+                              icon: const Icon(Icons.delete_outline_rounded),
+                              color: Colors.red,
+                              onPressed: () =>
+                                  _deleteCustomSectionFromSettings(config),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  },
-                ),
-        ),
-        Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 8),
-          child: ZagButton.text(
-            text: availableSections.isEmpty
-                ? 'All Sections Added'
-                : 'Add Section',
-            icon: availableSections.isEmpty ? null : Icons.add_rounded,
-            color: ZagColours.currentAccent,
-            onTap: availableSections.isEmpty
-                ? null
-                : () => _showAddSectionSheet(
-                      isMovie: isMovie,
-                      defaults: defaults,
                     ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _refreshCustomSectionsFutures(String mediaType) {
+    if (!_customSectionsEnabled) return;
+    setState(() {
+      if (mediaType == 'movie') {
+        _customMovieSectionsFuture =
+            CustomSectionsService().syncFromSupabase(mediaType: 'movie');
+      } else {
+        _customTVSectionsFuture =
+            CustomSectionsService().syncFromSupabase(mediaType: 'tv');
+      }
+    });
+  }
+
+  Future<void> _showCreateCustomSectionDialog(String mediaType) async {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Section Title',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
           ),
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.trim().isEmpty ||
+                  descriptionController.text.trim().isEmpty) {
+                showZagErrorSnackBar(
+                  title: 'Missing Fields',
+                  error: 'Please fill in all fields',
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
     );
+
+    if (result == true && mounted) {
+      final config = await CustomSectionsService().createSection(
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim(),
+        mediaType: mediaType,
+      );
+
+      try {
+        await CustomSectionsService().generateRecommendations(
+          sectionId: config.id,
+          title: config.title,
+          description: config.description,
+          mediaType: config.mediaType,
+          force: true,
+        );
+        showZagInfoSnackBar(
+          title: 'Custom Section Created',
+          message: 'Generating recommendations…',
+        );
+      } catch (e) {
+        // Best-effort; recommendations can still be fetched from the Dashboard.
+      }
+
+      _refreshCustomSectionsFutures(mediaType);
+    }
+  }
+
+  Future<void> _showEditCustomSectionDialog(CustomSectionConfig config) async {
+    final titleController = TextEditingController(text: config.title);
+    final descriptionController =
+        TextEditingController(text: config.description);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Section Title',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.trim().isEmpty ||
+                  descriptionController.text.trim().isEmpty) {
+                showZagErrorSnackBar(
+                  title: 'Missing Fields',
+                  error: 'Please fill in all fields',
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      final updatedConfig = CustomSectionConfig(
+        id: config.id,
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim(),
+        mediaType: config.mediaType,
+        createdAt: config.createdAt,
+        lastGeneratedAt: config.lastGeneratedAt,
+      );
+
+      await CustomSectionsService().updateSection(updatedConfig);
+      _refreshCustomSectionsFutures(config.mediaType);
+    }
+  }
+
+  Future<void> _deleteCustomSectionFromSettings(CustomSectionConfig config) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Custom Section?'),
+        content: Text('Are you sure you want to delete "${config.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await CustomSectionsService().deleteSection(config.id);
+      _refreshCustomSectionsFutures(config.mediaType);
+    }
+  }
+
+  Future<void> _regenerateCustomSectionFromSettings(
+    CustomSectionConfig config,
+  ) async {
+    showZagInfoSnackBar(
+      title: 'Regenerating',
+      message: 'Generating recommendations…',
+    );
+
+    final result = await CustomSectionsService().generateRecommendations(
+      sectionId: config.id,
+      title: config.title,
+      description: config.description,
+      mediaType: config.mediaType,
+      force: true,
+    );
+
+    if (!mounted) return;
+
+    if (!result.success) {
+      showZagErrorSnackBar(
+        title: 'Failed to Regenerate',
+        error: result.errorMessage ?? 'Unknown error',
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'Updated',
+      message: 'Recommendations refreshed',
+    );
+    _refreshCustomSectionsFutures(config.mediaType);
   }
 
   Widget _emptySectionsPlaceholder({required bool isMovie}) {
