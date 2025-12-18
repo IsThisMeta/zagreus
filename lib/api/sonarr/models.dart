@@ -21,6 +21,9 @@ export 'models/episode_file/episode_file_quality_revision.dart';
 
 /// Filesystem
 export 'models/filesystem/disk_space.dart';
+export 'models/filesystem/filesystem.dart';
+export 'models/filesystem/directory.dart';
+export 'models/filesystem/file.dart';
 
 /// Health Check
 export 'models/health_check/health_check.dart';

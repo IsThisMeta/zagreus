@@ -6,6 +6,8 @@ import 'package:zagreus/modules/sonarr/routes/add_series/route.dart';
 import 'package:zagreus/modules/sonarr/routes/add_series_details/route.dart';
 import 'package:zagreus/modules/sonarr/routes/edit_series/route.dart';
 import 'package:zagreus/modules/sonarr/routes/history/route.dart';
+import 'package:zagreus/modules/sonarr/routes/manual_import/route.dart';
+import 'package:zagreus/modules/sonarr/routes/manual_import_details/route.dart';
 import 'package:zagreus/modules/sonarr/routes/queue/route.dart';
 import 'package:zagreus/modules/sonarr/routes/releases/route.dart';
 import 'package:zagreus/modules/sonarr/routes/season_details/route.dart';
@@ -20,6 +22,8 @@ enum SonarrRoutes with ZagRoutesMixin {
   ADD_SERIES('add_series'),
   ADD_SERIES_DETAILS('details'),
   HISTORY('history'),
+  MANUAL_IMPORT('manual_import'),
+  MANUAL_IMPORT_DETAILS('details'),
   QUEUE('queue'),
   RELEASES('releases'),
   SERIES('series/:series'),
@@ -57,6 +61,13 @@ enum SonarrRoutes with ZagRoutesMixin {
         });
       case SonarrRoutes.HISTORY:
         return route(widget: const HistoryRoute());
+      case SonarrRoutes.MANUAL_IMPORT:
+        return route(widget: const SonarrManualImportRoute());
+      case SonarrRoutes.MANUAL_IMPORT_DETAILS:
+        return route(builder: (_, state) {
+          final path = state.uri.queryParameters['path'] ?? '';
+          return SonarrManualImportDetailsRoute(path: path);
+        });
       case SonarrRoutes.QUEUE:
         return route(widget: const QueueRoute());
       case SonarrRoutes.RELEASES:
@@ -108,6 +119,7 @@ enum SonarrRoutes with ZagRoutesMixin {
         return [
           SonarrRoutes.ADD_SERIES.routes,
           SonarrRoutes.HISTORY.routes,
+          SonarrRoutes.MANUAL_IMPORT.routes,
           SonarrRoutes.QUEUE.routes,
           SonarrRoutes.RELEASES.routes,
           SonarrRoutes.SERIES.routes,
@@ -116,6 +128,10 @@ enum SonarrRoutes with ZagRoutesMixin {
       case SonarrRoutes.ADD_SERIES:
         return [
           SonarrRoutes.ADD_SERIES_DETAILS.routes,
+        ];
+      case SonarrRoutes.MANUAL_IMPORT:
+        return [
+          SonarrRoutes.MANUAL_IMPORT_DETAILS.routes,
         ];
       case SonarrRoutes.SERIES:
         return [

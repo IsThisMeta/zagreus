@@ -11,6 +11,7 @@ enum SonarrGlobalSettingsType {
   UPDATE_LIBRARY,
   BACKUP_DATABASE,
   HISTORY,
+  MANUAL_IMPORT,
   TAGS,
 }
 
@@ -29,6 +30,8 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return Icons.save_rounded;
       case SonarrGlobalSettingsType.HISTORY:
         return Icons.history_rounded;
+      case SonarrGlobalSettingsType.MANUAL_IMPORT:
+        return Icons.download_done_rounded;
       case SonarrGlobalSettingsType.TAGS:
         return Icons.style_rounded;
     }
@@ -48,6 +51,8 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return 'sonarr.BackupDatabase'.tr();
       case SonarrGlobalSettingsType.HISTORY:
         return 'sonarr.History'.tr();
+      case SonarrGlobalSettingsType.MANUAL_IMPORT:
+        return 'sonarr.ManualImport'.tr();
       case SonarrGlobalSettingsType.TAGS:
         return 'sonarr.Tags'.tr();
     }
@@ -67,6 +72,8 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
         return _backupDatabase(context);
       case SonarrGlobalSettingsType.HISTORY:
         return _openHistory(context);
+      case SonarrGlobalSettingsType.MANUAL_IMPORT:
+        return _openManualImport(context);
       case SonarrGlobalSettingsType.TAGS:
         return _openTags(context);
     }
@@ -88,6 +95,9 @@ extension SonarrGlobalSettingsTypeExtension on SonarrGlobalSettingsType {
 
   Future<void> _openHistory(BuildContext context) async =>
       SonarrRoutes.HISTORY.go();
+
+  Future<void> _openManualImport(BuildContext context) async =>
+      SonarrRoutes.MANUAL_IMPORT.go();
 
   Future<void> _openTags(BuildContext context) async =>
       SonarrRoutes.TAGS.go();

@@ -28,6 +28,7 @@ enum SonarrDatabase<T> with ZagTableMixin<T> {
   DEFAULT_SORTING_RELEASES<SonarrReleasesSorting>(SonarrReleasesSorting.WEIGHT),
   DEFAULT_SORTING_SERIES_ASCENDING<bool>(true),
   DEFAULT_SORTING_RELEASES_ASCENDING<bool>(true),
+  MANUAL_IMPORT_DEFAULT_MODE<String>('copy'),
   REMOVE_SERIES_DELETE_FILES<bool>(false),
   REMOVE_SERIES_EXCLUSION_LIST<bool>(false),
   UPCOMING_FUTURE_DAYS<int>(7),

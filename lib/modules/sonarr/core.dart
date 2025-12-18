@@ -1,5 +1,6 @@
 export 'package:zagreus/database/tables/sonarr.dart';
 export 'core/api_controller.dart';
+export 'core/bottom_modal_sheets.dart';
 export 'core/dialogs.dart';
 export 'core/extensions.dart';
 export 'core/state.dart';

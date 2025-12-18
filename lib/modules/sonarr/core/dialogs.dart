@@ -935,4 +935,33 @@ class SonarrDialogs {
 
     return Tuple2(_flag, int.tryParse(_textController.text) ?? 50);
   }
+
+  Future<Tuple2<bool, SonarrImportMode?>> setManualImportMode(
+      BuildContext context) async {
+    bool _flag = false;
+    SonarrImportMode? _mode;
+
+    void _setValues(bool flag, SonarrImportMode mode) {
+      _flag = flag;
+      _mode = mode;
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'sonarr.ImportMode'.tr(),
+      content: List.generate(
+        SonarrImportMode.values.length,
+        (index) => ZagDialog.tile(
+          text: SonarrImportMode.values[index].zagReadable,
+          icon: SonarrImportMode.values[index].zagIcon,
+          iconColor: ZagColours().byListIndex(index),
+          onTap: () => _setValues(true, SonarrImportMode.values[index]),
+        ),
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+
+    return Tuple2(_flag, _mode);
+  }
 }

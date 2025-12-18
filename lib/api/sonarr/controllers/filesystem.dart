@@ -7,6 +7,26 @@ class SonarrControllerFilesystem {
   /// Create a controller using an initialized [Dio] client.
   SonarrControllerFilesystem(this._client);
 
+  /// Handler for `filesystem`.
+  ///
+  /// Returns a list of directories and files in the supplied path.
+  /// If no path is supplied, fetches the root directory of the OS.
+  ///
+  /// - `path`: The full path on the filesystem
+  /// - `allowFoldersWithoutTrailingSlashes`: Go into a folders without trailing slashes
+  /// - `includeFiles`: Include files in the folder (defaulted to false)
+  Future<SonarrFileSystem> get({
+    String? path,
+    bool? allowFoldersWithoutTrailingSlashes,
+    bool? includeFiles,
+  }) async =>
+      _controllerGetFileSystem(
+        _client,
+        path: path,
+        allowFoldersWithoutTrailingSlashes: allowFoldersWithoutTrailingSlashes,
+        includeFiles: includeFiles,
+      );
+
   /// Handler for `diskspace`.
   ///
   /// Returns a list of all disks and space information for the disks.

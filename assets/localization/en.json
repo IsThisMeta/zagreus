@@ -760,6 +760,7 @@
     "sonarr.FailedToUpdateLibrary": "Failed to Update Library",
     "sonarr.FailedToUpdateSeries": "Failed to Update Series",
     "sonarr.Files": "Files",
+    "sonarr.FileBrowser": "File Browser…",
     "sonarr.FilterCatalogue": "Filter Catalogue",
     "sonarr.FilterReleases": "Filter Releases",
     "sonarr.FPS": "FPS",

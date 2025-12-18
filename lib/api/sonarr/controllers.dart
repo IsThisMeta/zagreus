@@ -40,6 +40,7 @@ part 'controllers/episode/update_episode.dart';
 
 // Filesystem
 part 'controllers/filesystem.dart';
+part 'controllers/filesystem/get_filesystem.dart';
 
 // Health Check
 part 'controllers/health_check.dart';

@@ -3,6 +3,8 @@ export 'routes/add_series_details.dart';
 export 'routes/catalogue.dart';
 export 'routes/edit_series.dart';
 export 'routes/history.dart';
+export 'routes/manual_import.dart';
+export 'routes/manual_import_details.dart';
 export 'routes/missing.dart';
 export 'routes/more.dart';
 export 'routes/queue.dart';

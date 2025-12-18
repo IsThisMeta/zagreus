@@ -3,6 +3,8 @@ export 'extensions/sonarr_episode_file_media_info.dart';
 export 'extensions/sonarr_episode.dart';
 export 'extensions/sonarr_event_type.dart';
 export 'extensions/sonarr_history.dart';
+export 'extensions/sonarr_import_mode.dart';
+export 'extensions/sonarr_manual_import.dart';
 export 'extensions/sonarr_protocol.dart';
 export 'extensions/sonarr_queue_record.dart';
 export 'extensions/sonarr_queue_status.dart';
