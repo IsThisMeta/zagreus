@@ -58,7 +58,7 @@ class _State extends State<ConfigurationTautulliRoute>
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Select Instance'),
+        title: Text('Select Instance', style: TextStyle(color: ZagColours.textColor(ctx))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: options.map((instanceKey) {
@@ -67,7 +67,7 @@ class _State extends State<ConfigurationTautulliRoute>
                 ? ZagModule.TAUTULLI.title
                 : '${ZagModule.TAUTULLI.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
             return ListTile(
-              title: Text(name),
+              title: Text(name, style: TextStyle(color: ZagColours.textColor(ctx))),
               leading: isSelected 
                   ? Icon(Icons.check, color: ZagModule.TAUTULLI.color)
                   : const SizedBox(width: 24),
@@ -231,7 +231,7 @@ class _State extends State<ConfigurationTautulliRoute>
         final result = await showDialog<String>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Instance Name'),
+            title: Text('Instance Name', style: TextStyle(color: ZagColours.textColor(context))),
             content: TextField(
               controller: controller,
               decoration: InputDecoration(
@@ -318,7 +318,7 @@ class _State extends State<ConfigurationTautulliRoute>
         final newName = await showDialog<String>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Rename Instance'),
+            title: Text('Rename Instance', style: TextStyle(color: ZagColours.textColor(context))),
             content: TextField(
               controller: controller,
               autofocus: true,
@@ -392,9 +392,10 @@ class _State extends State<ConfigurationTautulliRoute>
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Instance?'),
+            title: Text('Delete Instance?', style: TextStyle(color: ZagColours.textColor(context))),
             content: Text(
               'Are you sure you want to delete ${ZagModule.TAUTULLI.title} $instanceName? This cannot be undone.',
+              style: TextStyle(color: ZagColours.textColor(context)),
             ),
             actions: [
               TextButton(

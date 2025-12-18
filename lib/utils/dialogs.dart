@@ -356,7 +356,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
         itemBuilder: (ctx, index) {
           final profile = profiles[index];
           return ListTile(
-            title: Text(profile.name),
+            title: Text(profile.name, style: TextStyle(color: ZagColours.textColor(ctx))),
             onTap: () {
               setState(() => _qualityProfile = profile.name);
               widget.onQualityProfileChanged?.call(profile.id, profile.name);
@@ -379,7 +379,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
         itemBuilder: (ctx, index) {
           final type = widget.seriesTypes![index];
           return ListTile(
-            title: Text(type),
+            title: Text(type, style: TextStyle(color: ZagColours.textColor(ctx))),
             onTap: () {
               setState(() => _seriesType = type);
               widget.onSeriesTypeChanged?.call(type);
@@ -438,7 +438,10 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                           setState(() {});
                           widget.onSeasonsChanged?.call(_selectedSeasons);
                         },
-                        child: Text(allSelected ? 'Deselect All' : 'Select All'),
+                        child: Text(
+                          allSelected ? 'Deselect All' : 'Select All',
+                          style: TextStyle(color: ZagColours.textColor(context)),
+                        ),
                       ),
                     ],
                   ),
@@ -456,7 +459,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
                           : 'Season ${season.seasonNumber}';
                       return CheckboxListTile(
                         value: isSelected,
-                        title: Text(seasonLabel),
+                        title: Text(seasonLabel, style: TextStyle(color: ZagColours.textColor(context))),
                         subtitle: Text(
                           '${season.episodeCount} episode${season.episodeCount == 1 ? '' : 's'}',
                           style: TextStyle(color: Colors.grey[500], fontSize: 12),
@@ -487,7 +490,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: widget.title != null ? Text(widget.title!) : null,
+      title: widget.title != null ? Text(widget.title!, style: TextStyle(color: ZagColours.textColor(context))) : null,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -496,6 +499,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
             Text(
               widget.text,
               textAlign: widget.alignLeft ? TextAlign.start : TextAlign.center,
+              style: TextStyle(color: ZagColours.textColor(context)),
             ),
             if (widget.hasInlineOptions) ...[
               const SizedBox(height: 16),
@@ -669,7 +673,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-          child: const Text('Close', style: TextStyle(color: Colors.white)),
+          child: Text('Close', style: TextStyle(color: ZagColours.textColor(context))),
         ),
         TextButton(
           onPressed: () {
