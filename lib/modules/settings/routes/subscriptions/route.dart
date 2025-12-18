@@ -283,12 +283,15 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: ZagColours.white,
+                        ),
                         child: const Text('Cancel'),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(true),
                         style: TextButton.styleFrom(
-                          foregroundColor: ZagColours.red,
+                          foregroundColor: ZagColours.currentAccent,
                         ),
                         child: const Text('Unlink'),
                       ),
