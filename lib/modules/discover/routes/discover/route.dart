@@ -195,9 +195,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_people');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: defaultSectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -2865,6 +2863,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
           // Content sections in custom order
           ..._buildMovieSections(),
+          // Single grouped sign-in gate for all AI sections (Deep Cuts / Magic / Custom Sections)
+          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
           // Custom user-defined sections (Mega/Ultra only)
           _customSectionsArea(mediaType: 'movie'),
           _discoverSectionsButton(),
@@ -2971,25 +2971,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             _popularPeopleSection(),
             if (_showTitles) const SizedBox(height: 4)
           ]),
-      'deep_cuts': () => ZagreusMega.isEnabled
+      'deep_cuts': () => _hasAiAccess
           ? Column(children: [
               _deepCutsSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_movies': () => ZagreusMega.isEnabled
+      'magic_movies': () => _hasAiAccess
           ? Column(children: [
               _magicMoviesSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_movies_cast_crew': () => ZagreusMega.isEnabled
+      'magic_movies_cast_crew': () => _hasAiAccess
           ? Column(children: [
               _magicMoviesCastCrewSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_people': () => ZagreusMega.isEnabled
+      'magic_people': () => _hasAiAccess
           ? Column(children: [
               _magicPeopleSection(),
               if (_showTitles) const SizedBox(height: 4)
@@ -3035,6 +3035,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
           // TV shows sections in custom order
           ..._buildTVSections(),
+          // Single grouped sign-in gate for all AI sections (Up Next / Magic / Custom Sections)
+          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
           // Custom user-defined sections (Mega/Ultra only)
           _customSectionsArea(mediaType: 'tv'),
           const SizedBox(height: 16),
@@ -3116,25 +3118,25 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             if (_showTitles) const SizedBox(height: 12)
           ]),
       'most_anticipated': () => _mostAnticipatedShowsSection(),
-      'up_next': () => ZagreusMega.isEnabled
+      'up_next': () => _hasAiAccess
           ? Column(children: [
               _upNextSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_shows': () => ZagreusMega.isEnabled
+      'magic_shows': () => _hasAiAccess
           ? Column(children: [
               _magicShowsSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_shows_cast_crew': () => ZagreusMega.isEnabled
+      'magic_shows_cast_crew': () => _hasAiAccess
           ? Column(children: [
               _magicShowsCastCrewSection(),
               if (_showTitles) const SizedBox(height: 4)
             ])
           : const SizedBox.shrink(),
-      'magic_people': () => ZagreusMega.isEnabled
+      'magic_people': () => _hasAiAccess
           ? Column(children: [
               _magicPeopleShowsSection(),
               if (_showTitles) const SizedBox(height: 4)
@@ -3175,9 +3177,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool get _customSectionsEnabled => _hasAiAccess;
 
   Widget _customSectionsArea({required String mediaType}) {
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: 'Custom Sections');
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
     if (!_customSectionsEnabled) return const SizedBox.shrink();
 
     return FutureBuilder<List<CustomSectionConfig>>(
@@ -9571,6 +9571,57 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _accountRequiredAiGroupState() {
+    final theme = Theme.of(context);
+    final textColor =
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black)
+            .withOpacity(0.7);
+
+    return Container(
+      height: 260,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person_outline_rounded,
+              size: 48,
+              color: textColor.withOpacity(0.6),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Account required',
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Sign in to unlock AI features in Discover.',
+                style: TextStyle(
+                  color: textColor.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ZagButton.text(
+              text: 'Sign in',
+              icon: Icons.login_rounded,
+              onTap: _promptSignInForAi,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _deepCutsSection() {
     final deepCutsService = DeepCutsService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
@@ -9580,9 +9631,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final sectionTitle = _discoverSectionTitle('deep_cuts');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: sectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     // Library sync required for Deep Cuts
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
@@ -9959,9 +10008,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final sectionTitle = _discoverSectionTitle('up_next');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: sectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     // Library sync required for Up Next
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
@@ -10348,9 +10395,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_movies');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: defaultSectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -10644,9 +10689,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_movies_cast_crew');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: defaultSectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -11362,9 +11405,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_shows');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: defaultSectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
@@ -11662,9 +11703,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
     final defaultSectionTitle = _discoverSectionTitle('magic_shows_cast_crew');
 
-    if (_hasAiTier && !_isSignedIn) {
-      return _accountRequiredState(sectionName: defaultSectionTitle);
-    }
+    if (_hasAiTier && !_isSignedIn) return const SizedBox.shrink();
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(

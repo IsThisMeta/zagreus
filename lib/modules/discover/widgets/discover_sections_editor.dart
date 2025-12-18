@@ -739,6 +739,23 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   _setHasChanges();
                 });
               },
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final double elevation =
+                        Curves.easeInOut.transform(animation.value) * 4.0;
+                    return Material(
+                      elevation: elevation,
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.transparent,
+                      shadowColor: Colors.black.withOpacity(0.3),
+                      child: child,
+                    );
+                  },
+                  child: child,
+                );
+              },
               itemBuilder: (context, index) {
                 final section = sections[index];
                 final name = _sectionName(section);
