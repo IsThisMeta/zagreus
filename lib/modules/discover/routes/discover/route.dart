@@ -54,6 +54,7 @@ import 'package:zagreus/services/magic_movies_cast_crew_service.dart';
 import 'package:zagreus/services/magic_shows_service.dart';
 import 'package:zagreus/services/magic_shows_cast_crew_service.dart';
 import 'package:zagreus/services/magic_people_service.dart';
+import 'package:zagreus/services/custom_sections_service.dart';
 import 'package:zagreus/modules/overseerr/core/extensions.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
@@ -107,6 +108,12 @@ const double _recentlyDownloadedEpisodeThumbHeight = 53;
 const int _overseerrPreviewLimit = 4;
 
 class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
+  String _discoverSectionTitle(String sectionKey) {
+    final key = 'discover.section.$sectionKey';
+    final translated = key.tr();
+    return translated == key ? sectionKey : translated;
+  }
+
   // Page storage + controller keys for scroll preservation
   static const _scrollIdRecentlyDownloaded = 'recently_downloaded_section';
   static const _scrollIdRecommended = 'recommended_movies_section';
@@ -185,12 +192,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_people');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic People',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic People',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
@@ -213,7 +221,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleShowsFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +358,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic People',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicPeopleService();
@@ -533,6 +541,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<MagicPeopleResult>? _magicPeopleShowsFuture;
   bool _magicPeopleMoviesSyncInitialized = false;
   bool _magicPeopleShowsSyncInitialized = false;
+
+  // Custom Sections futures - user-defined AI recommendation categories
+  final Map<String, Future<CustomSectionResult>> _customSectionsFutures = {};
 
   // Track the soonest scheduled regeneration across Z sections for display
   DateTime? _nextZSectionsRegenerationAt;
@@ -2834,6 +2845,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
           // Content sections in custom order
           ..._buildMovieSections(),
+          // Custom user-defined sections (Mega/Ultra only)
+          _customSectionsArea(mediaType: 'movie'),
           _discoverSectionsButton(),
           _zAutoRefreshNote(),
           _metadataCredits(),
@@ -3002,6 +3015,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
           // TV shows sections in custom order
           ..._buildTVSections(),
+          // Custom user-defined sections (Mega/Ultra only)
+          _customSectionsArea(mediaType: 'tv'),
           const SizedBox(height: 16),
           _discoverSectionsButton(isShows: true),
           _zAutoRefreshNote(),
@@ -3135,6 +3150,565 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
+  }
+
+  bool get _customSectionsEnabled =>
+      ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+
+  Widget _customSectionsArea({required String mediaType}) {
+    if (!_customSectionsEnabled) return const SizedBox.shrink();
+
+    final sections =
+        CustomSectionsService().getSavedSections(mediaType: mediaType);
+
+    if (sections.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+          vertical: 8,
+        ),
+        child: Column(
+          children: [
+            ZagBlock(
+              title: 'Custom Sections',
+              body: const [
+                TextSpan(
+                  text:
+                      'Create your own AI-powered recommendation categories by describing what you want to discover.',
+                ),
+              ],
+              trailing: const Icon(Icons.auto_awesome_rounded),
+              onTap: () => _showCreateCustomSectionDialog(mediaType),
+            ),
+            const SizedBox(height: 8),
+            ZagButton.text(
+              text: 'Create Custom Section',
+              icon: Icons.add_rounded,
+              color: ZagColours.currentAccent,
+              onTap: () => _showCreateCustomSectionDialog(mediaType),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: sections.map((config) {
+        return Column(
+          children: [
+            const SizedBox(height: 8),
+            _customSectionWidget(config),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _customSectionWidget(CustomSectionConfig config) {
+    final libraryCacheEnabled =
+        ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+
+    if (!libraryCacheEnabled) {
+      return _librarySyncRequiredState(
+        sectionName: config.title,
+        onEnable: () => _enableLibrarySyncForSection(
+          sectionName: config.title,
+          onSynced: () => _regenerateCustomSection(config),
+        ),
+      );
+    }
+
+    _customSectionsFutures[config.id] ??=
+        CustomSectionsService().fetchRecommendations(
+      sectionId: config.id,
+      title: config.title,
+      description: config.description,
+      mediaType: config.mediaType,
+    );
+
+    return FutureBuilder<CustomSectionResult>(
+      future: _customSectionsFutures[config.id],
+      builder: (context, snapshot) {
+        final titleStyle = TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black87,
+        );
+
+        Widget header() {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: ZagColours.purple,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(config.title, style: titleStyle),
+                      const SizedBox(height: 2),
+                      Text(
+                        config.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: (Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black)
+                              .withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Refresh',
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: () => _regenerateCustomSection(config),
+                ),
+                IconButton(
+                  tooltip: 'Edit',
+                  icon: const Icon(Icons.edit_rounded),
+                  onPressed: () => _showEditCustomSectionDialog(config),
+                ),
+                IconButton(
+                  tooltip: 'Delete',
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  color: Colors.red,
+                  onPressed: () => _deleteCustomSection(config),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header(),
+              SizedBox(
+                height: 260,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      ZagColours.currentAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header(),
+              SizedBox(
+                height: 200,
+                child: Center(
+                  child: Text(
+                    'Failed to load recommendations',
+                    style: TextStyle(
+                      color:
+                          (Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black)
+                              .withOpacity(0.6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        final result = snapshot.data!;
+        if (!result.success) {
+          final message = result.errorMessage ??
+              (result.error == CustomSectionError.noMegaOrUltra
+                  ? 'Mega or Ultra subscription required'
+                  : 'Something went wrong');
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header(),
+              SizedBox(
+                height: 220,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 48,
+                          color: Colors.red.withOpacity(0.7),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          message,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ZagButton.text(
+                          text: 'Try Again',
+                          icon: Icons.refresh_rounded,
+                          onTap: () => _regenerateCustomSection(config),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        final items = result.recommendations ?? const <CustomSectionItem>[];
+        if (items.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header(),
+              SizedBox(
+                height: 180,
+                child: Center(
+                  child: ZagButton.text(
+                    text: 'Generate Now',
+                    icon: Icons.auto_awesome_rounded,
+                    onTap: () => _regenerateCustomSection(config),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            header(),
+            SizedBox(
+              height: _posterHeight + (_showTitles ? 45 : 0),
+              child: ListView.builder(
+                controller:
+                    _sectionScrollController('custom_section_${config.id}'),
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return _customSectionItemCard(item, config);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _customSectionItemCard(
+    CustomSectionItem item,
+    CustomSectionConfig config,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: GestureDetector(
+        onTap: () async {
+          if (item.tmdbId == null) {
+            showZagSnackBar(
+              title: config.title,
+              message: 'Missing TMDB identifier for this title.',
+              type: ZagSnackbarType.ERROR,
+            );
+            return;
+          }
+
+          if (item.mediaType == 'movie') {
+            await _openMovieInRadarr(
+              tmdbId: item.tmdbId!,
+              title: item.title,
+            );
+            return;
+          }
+
+          await _openSeriesInSonarr(
+            tmdbId: item.tmdbId!,
+            title: item.title,
+          );
+        },
+        onLongPress: () => _showCustomSectionItemDetails(item, config),
+        child: SizedBox(
+          width: _posterWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: _posterHeight,
+                width: _posterWidth,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade800,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: item.posterUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: item.posterUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Colors.grey.shade800),
+                          errorWidget: (context, url, error) => Center(
+                            child: Icon(
+                              item.mediaType == 'movie'
+                                  ? Icons.movie_rounded
+                                  : Icons.live_tv_rounded,
+                              size: 40,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            item.mediaType == 'movie'
+                                ? Icons.movie_rounded
+                                : Icons.live_tv_rounded,
+                            size: 40,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                ),
+              ),
+              if (_showTitles) ...[
+                const SizedBox(height: 8),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCustomSectionItemDetails(
+    CustomSectionItem item,
+    CustomSectionConfig config,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${item.title} (${item.year})'),
+        content: Text(item.reason),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showCreateCustomSectionDialog(String mediaType) async {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Create Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Section Title',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final title = titleController.text.trim();
+              final description = descriptionController.text.trim();
+              if (title.isEmpty || description.isEmpty) {
+                showZagSnackBar(
+                  title: 'Missing Details',
+                  message: 'Please fill in all fields',
+                  type: ZagSnackbarType.ERROR,
+                );
+                return;
+              }
+              Navigator.pop(ctx, true);
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true || !mounted) return;
+
+    final config = await CustomSectionsService().createSection(
+      title: titleController.text.trim(),
+      description: descriptionController.text.trim(),
+      mediaType: mediaType,
+    );
+
+    setState(() => _regenerateCustomSection(config));
+  }
+
+  Future<void> _showEditCustomSectionDialog(CustomSectionConfig config) async {
+    final titleController = TextEditingController(text: config.title);
+    final descriptionController = TextEditingController(text: config.description);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Section Title',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true || !mounted) return;
+
+    final updatedConfig = CustomSectionConfig(
+      id: config.id,
+      title: titleController.text.trim(),
+      description: descriptionController.text.trim(),
+      mediaType: config.mediaType,
+      createdAt: config.createdAt,
+      lastGeneratedAt: config.lastGeneratedAt,
+    );
+
+    await CustomSectionsService().updateSection(updatedConfig);
+    setState(() {
+      _customSectionsFutures.remove(config.id);
+    });
+  }
+
+  void _regenerateCustomSection(CustomSectionConfig config) {
+    _customSectionsFutures[config.id] =
+        CustomSectionsService().generateRecommendations(
+      sectionId: config.id,
+      title: config.title,
+      description: config.description,
+      mediaType: config.mediaType,
+      force: true,
+    );
+  }
+
+  Future<void> _deleteCustomSection(CustomSectionConfig config) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Custom Section?'),
+        content: Text('Are you sure you want to delete "${config.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await CustomSectionsService().deleteSection(config.id);
+    setState(() {
+      _customSectionsFutures.remove(config.id);
+    });
   }
 
   void _recordNextZRegeneration(DateTime? date) {
@@ -6522,7 +7096,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFFEC333),
           moduleLabel: 'Radarr',
           moduleLabelColor: const Color(0xFFFEC333),
-          title: 'Recommended',
+          title: _discoverSectionTitle('recommended'),
           onTap: () {
             Navigator.push(
               context,
@@ -6536,7 +7110,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdRecommended,
             loader: _loadRecommendedMovies,
-            sectionLabel: 'Recommended',
+            sectionLabel: _discoverSectionTitle('recommended'),
           ),
         ),
         // Movie list or placeholder
@@ -6587,7 +7161,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFFEC333),
           moduleLabel: 'Radarr',
           moduleLabelColor: const Color(0xFFFEC333),
-          title: 'Missing',
+          title: _discoverSectionTitle('missing'),
           onTap: () {
             Navigator.push(
               context,
@@ -6601,7 +7175,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdMissing,
             loader: _loadMissingMovies,
-            sectionLabel: 'Missing',
+            sectionLabel: _discoverSectionTitle('missing'),
           ),
         ),
         // Movie list
@@ -6635,7 +7209,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: Colors.orange,
           moduleLabel: 'Radarr',
           moduleLabelColor: const Color(0xFFFEC333),
-          title: 'Downloading Soon',
+          title: _discoverSectionTitle('downloading_soon'),
           onTap: () {
             Navigator.push(
               context,
@@ -6649,7 +7223,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdDownloadingSoon,
             loader: _loadDownloadingSoon,
-            sectionLabel: 'Downloading Soon',
+            sectionLabel: _discoverSectionTitle('downloading_soon'),
           ),
         ),
         // Movie list
@@ -6716,7 +7290,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
-          title: 'Popular Movies',
+          title: _discoverSectionTitle('popular_movies'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _popularMovies.isNotEmpty
               ? () {
@@ -6732,7 +7306,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdPopularMovies,
             loader: _loadPopularMovies,
-            sectionLabel: 'Popular Movies',
+            sectionLabel: _discoverSectionTitle('popular_movies'),
           ),
           showArrow: _popularMovies.isNotEmpty,
         ),
@@ -6952,7 +7526,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
-          title: 'Recently Released',
+          title: _discoverSectionTitle('recently_released_movies'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _recentlyReleasedMovies.isNotEmpty
               ? () {
@@ -6968,7 +7542,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdRecentlyReleasedMovies,
             loader: _loadRecentlyReleasedMovies,
-            sectionLabel: 'Recently Released',
+            sectionLabel: _discoverSectionTitle('recently_released_movies'),
           ),
           showArrow: _recentlyReleasedMovies.isNotEmpty,
         ),
@@ -7190,7 +7764,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
-          title: 'Popular TV Shows',
+          title: _discoverSectionTitle('popular_tv_shows'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _popularTVShows.isNotEmpty
               ? () {
@@ -7206,7 +7780,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdPopularTv,
             loader: _loadPopularTVShows,
-            sectionLabel: 'Popular TV Shows',
+            sectionLabel: _discoverSectionTitle('popular_tv_shows'),
           ),
           showArrow: _popularTVShows.isNotEmpty,
         ),
@@ -7433,7 +8007,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
-          title: 'Trending Shows',
+          title: _discoverSectionTitle('trending_new_tv_shows'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _trendingNewTVShows.isNotEmpty
               ? () {
@@ -7449,7 +8023,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdTrendingTv,
             loader: _loadTrendingNewTVShows,
-            sectionLabel: 'Trending Shows',
+            sectionLabel: _discoverSectionTitle('trending_new_tv_shows'),
           ),
           showArrow: _trendingNewTVShows.isNotEmpty,
         ),
@@ -8370,7 +8944,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFED2224),
           moduleLabel: 'Trakt',
           moduleLabelColor: const Color(0xFFED2224),
-          title: 'Most Anticipated Shows',
+          title: _discoverSectionTitle('most_anticipated'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _mostAnticipatedShows.isNotEmpty
               ? () {
@@ -8386,7 +8960,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdMostAnticipatedShows,
             loader: _loadMostAnticipatedShows,
-            sectionLabel: 'Most Anticipated Shows',
+            sectionLabel: _discoverSectionTitle('most_anticipated'),
           ),
           showArrow: _mostAnticipatedShows.isNotEmpty,
         ),
@@ -8597,7 +9171,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFED2224),
           moduleLabel: 'Trakt',
           moduleLabelColor: const Color(0xFFED2224),
-          title: 'Most Anticipated Movies',
+          title: _discoverSectionTitle('most_anticipated_movies'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _mostAnticipatedMovies.isNotEmpty
               ? () {
@@ -8613,7 +9187,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdMostAnticipatedMovies,
             loader: _loadMostAnticipatedMovies,
-            sectionLabel: 'Most Anticipated Movies',
+            sectionLabel: _discoverSectionTitle('most_anticipated_movies'),
           ),
           showArrow: _mostAnticipatedMovies.isNotEmpty,
         ),
@@ -8842,7 +9416,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFF6688FF),
           moduleLabel: 'TMDB',
           moduleLabelColor: const Color(0xFF6688FF),
-          title: 'Popular People',
+          title: _discoverSectionTitle('popular_people'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           onTap: _popularPeople.isNotEmpty
               ? () {
@@ -8858,7 +9432,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdPopularPeople,
             loader: _loadPopularPeople,
-            sectionLabel: 'Popular People',
+            sectionLabel: _discoverSectionTitle('popular_people'),
           ),
           showArrow: _popularPeople.isNotEmpty,
         ),
@@ -8961,13 +9535,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final sectionTitle = _discoverSectionTitle('deep_cuts');
 
     // Library sync required for Deep Cuts
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Deep Cuts',
+        sectionName: sectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Deep Cuts',
+          sectionName: sectionTitle,
           onSynced: () {
             final service = DeepCutsService();
             setState(() {
@@ -9007,7 +9582,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Deep Cuts',
+                      sectionTitle,
                       style: TextStyle(
                         fontSize: _moduleSectionTitleFontSize,
                         fontWeight: FontWeight.bold,
@@ -9335,13 +9910,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final sectionTitle = _discoverSectionTitle('up_next');
 
     // Library sync required for Up Next
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Up Next',
+        sectionName: sectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Up Next',
+          sectionName: sectionTitle,
           onSynced: () {
             final service = UpNextService();
             setState(() {
@@ -9390,7 +9966,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Up Next',
+                      sectionTitle,
                       style: TextStyle(
                         fontSize: _moduleSectionTitleFontSize,
                         fontWeight: FontWeight.bold,
@@ -9458,6 +10034,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) {
+    final sectionTitle = _discoverSectionTitle('up_next');
     // Determine message based on error type
     String title = 'No recommendations yet';
     String? message;
@@ -9553,7 +10130,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           : 'Enable library sync',
                       icon: Icons.sync,
                       onTap: () => _enableLibrarySyncForSection(
-                        sectionName: 'Up Next',
+                        sectionName: sectionTitle,
                         onSynced: () {
                           final service = UpNextService();
                           setState(() {
@@ -9718,12 +10295,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_movies');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Movies',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Movies',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicMoviesService();
             setState(() {
@@ -9746,7 +10324,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicMoviesResult>(
       future: _magicMoviesFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -9876,7 +10454,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Movies',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicMoviesService();
@@ -10009,12 +10587,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_movies_cast_crew');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Movies: Cast & Crew',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Movies: Cast & Crew',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicMoviesCastCrewService();
             setState(() {
@@ -10038,8 +10617,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicMoviesCastCrewResult>(
       future: _magicMoviesCastCrewFuture,
       builder: (context, snapshot) {
-        final sectionTitle =
-            snapshot.data?.sectionTitle ?? 'Magic Movies: Cast & Crew';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -10170,7 +10748,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Movies: Cast & Crew',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicMoviesCastCrewService();
@@ -10297,12 +10875,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_people');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic People',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic People',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
@@ -10325,7 +10904,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleMoviesFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -10462,7 +11041,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic People',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicPeopleService();
@@ -10722,12 +11301,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_shows');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Shows',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Shows',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicShowsService();
             setState(() {
@@ -10750,7 +11330,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicShowsResult>(
       future: _magicShowsFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -10887,7 +11467,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Shows',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicShowsService();
@@ -11017,12 +11597,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
     final libraryCacheEnabled =
         ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+    final defaultSectionTitle = _discoverSectionTitle('magic_shows_cast_crew');
 
     if (ZagreusMega.isEnabled && !libraryCacheEnabled) {
       return _librarySyncRequiredState(
-        sectionName: 'Magic Shows: Cast & Crew',
+        sectionName: defaultSectionTitle,
         onEnable: () => _enableLibrarySyncForSection(
-          sectionName: 'Magic Shows: Cast & Crew',
+          sectionName: defaultSectionTitle,
           onSynced: () {
             final refreshService = MagicShowsCastCrewService();
             setState(() {
@@ -11046,8 +11627,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicShowsCastCrewResult>(
       future: _magicShowsCastCrewFuture,
       builder: (context, snapshot) {
-        final sectionTitle =
-            snapshot.data?.sectionTitle ?? 'Magic Shows: Cast & Crew';
+        final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -11184,7 +11764,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         : 'Enable library sync',
                                     icon: Icons.sync,
                                     onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: 'Magic Shows: Cast & Crew',
+                                      sectionName: defaultSectionTitle,
                                       onSynced: () {
                                         final refreshService =
                                             MagicShowsCastCrewService();
@@ -11637,7 +12217,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: const Color(0xFFFEC333),
           moduleLabel: 'Radarr',
           moduleLabelColor: const Color(0xFFFEC333),
-          title: 'Recently Downloaded',
+          title: _discoverSectionTitle('recently_downloaded'),
           titleStyle: TextStyle(
             fontSize: _moduleSectionTitleFontSize,
             fontWeight: FontWeight.w600,
@@ -11655,7 +12235,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onLongPress: () => _refreshSection(
             scrollKey: _scrollIdRecentlyDownloaded,
             loader: () => _loadRecentlyDownloaded(showGlobalLoader: false),
-            sectionLabel: 'Recently Downloaded',
+            sectionLabel: _discoverSectionTitle('recently_downloaded'),
           ),
           trailingIcon: Icons.chevron_right_rounded,
           trailingColor: Colors.grey,
@@ -11866,7 +12446,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: ZagColours.blue,
           moduleLabel: 'Sonarr',
           moduleLabelColor: ZagColours.blue,
-          title: 'Recently Downloaded',
+          title: _discoverSectionTitle('recently_downloaded_shows'),
           titleStyle: TextStyle(
             fontSize: _moduleSectionTitleFontSize,
             fontWeight: FontWeight.w600,
@@ -11912,7 +12492,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           leadingIconColor: ZagColours.blue,
           moduleLabel: 'Sonarr',
           moduleLabelColor: ZagColours.blue,
-          title: 'Airing Next',
+          title: _discoverSectionTitle('airing_next'),
           titleStyle: TextStyle(
             fontSize: _moduleSectionTitleFontSize,
             fontWeight: FontWeight.w600,
@@ -13475,7 +14055,538 @@ class _ServerPageState extends State<_ServerPage>
       });
     }
   }
+
 }
+
+/*
+  /// Custom Sections Area - User-defined AI recommendation categories
+  Widget _customSectionsArea({required String mediaType}) {
+    // Only show for Mega/Ultra users
+    if (!ZagreusMega.isEnabled) return const SizedBox.shrink();
+
+    final sections = CustomSectionsService().getSavedSections(
+      mediaType: mediaType,
+    );
+
+    // If no sections configured, show a prompt to create one
+    if (sections.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
+          vertical: 16,
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: ZagColours.GREY_800.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: ZagColours.currentAccent.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: ZagColours.currentAccent,
+                    size: 32,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Create Your Own Magic Section',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ZagColours.TEXT_WHITE,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Define your own AI-powered recommendation category. Give it a title and describe what you\'re looking for!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ZagColours.TEXT_GREY,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ZagButton(
+                    type: ZagButtonType.FILLED,
+                    text: 'Create Custom Section',
+                    icon: Icons.add_rounded,
+                    color: ZagColours.currentAccent,
+                    onTap: () => _showCreateCustomSectionDialog(mediaType),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Show each configured custom section
+    return Column(
+      children: sections.map((config) {
+        return Column(
+          children: [
+            if (_showTitles) const SizedBox(height: 4),
+            _customSectionWidget(config),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  /// Widget for displaying a single custom section
+  Widget _customSectionWidget(CustomSectionConfig config) {
+    // Get or create future for this section
+    _customSectionsFutures[config.id] ??=
+        CustomSectionsService().fetchRecommendations(
+      sectionId: config.id,
+      title: config.title,
+      description: config.description,
+      mediaType: config.mediaType,
+    );
+
+    return _buildScrollableSection(
+      scrollId: 'custom_section_${config.id}',
+      sectionBuilder: (context) {
+        return FutureBuilder<CustomSectionResult>(
+          future: _customSectionsFutures[config.id],
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildSectionWithLoading(
+                title: config.title,
+                subtitle: config.description,
+                icon: Icons.auto_awesome_rounded,
+                scrollId: 'custom_section_${config.id}',
+              );
+            }
+
+            if (snapshot.hasError || !snapshot.hasData) {
+              return _buildErrorSection(
+                title: config.title,
+                subtitle: config.description,
+                errorMessage: 'Failed to load recommendations',
+              );
+            }
+
+            final result = snapshot.data!;
+
+            // Handle error states
+            if (!result.success) {
+              if (result.error == CustomSectionError.noMegaOrUltra) {
+                return const SizedBox.shrink();
+              }
+              if (result.error == CustomSectionError.notSynced) {
+                return _buildLibraryNotSyncedSection(
+                  title: config.title,
+                  subtitle: config.description,
+                  isMovie: config.mediaType == 'movie',
+                );
+              }
+              return _buildErrorSection(
+                title: config.title,
+                subtitle: config.description,
+                errorMessage: result.errorMessage ?? 'Unknown error',
+              );
+            }
+
+            // No recommendations generated yet
+            if (result.recommendations == null ||
+                result.recommendations!.isEmpty) {
+              return _buildEmptyCustomSection(config);
+            }
+
+            final recommendations = result.recommendations!;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(
+                  title: config.title,
+                  subtitle: config.description,
+                  icon: Icons.auto_awesome_rounded,
+                  showSeeAll: false,
+                  trailing: PopupMenuButton<String>(
+                    icon: Icon(Icons.more_vert_rounded,
+                        color: ZagColours.TEXT_GREY),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_rounded, size: 18),
+                            const SizedBox(width: 12),
+                            Text('Edit Section'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'refresh',
+                        child: Row(
+                          children: [
+                            Icon(Icons.refresh_rounded, size: 18),
+                            const SizedBox(width: 12),
+                            Text('Regenerate'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_rounded,
+                                size: 18, color: Colors.red),
+                            const SizedBox(width: 12),
+                            Text('Delete Section',
+                                style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) async {
+                      if (value == 'edit') {
+                        _showEditCustomSectionDialog(config);
+                      } else if (value == 'refresh') {
+                        _regenerateCustomSection(config);
+                      } else if (value == 'delete') {
+                        _deleteCustomSection(config);
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(
+                  height: _posterHeight + (_showTitles ? 45 : 0),
+                  child: ListView.builder(
+                    controller:
+                        _sectionScrollController('custom_section_${config.id}'),
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) {
+                      final item = recommendations[index];
+                      return _buildCustomSectionCard(item);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyCustomSection(CustomSectionConfig config) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          title: config.title,
+          subtitle: config.description,
+          icon: Icons.auto_awesome_rounded,
+          showSeeAll: false,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ZagColours.GREY_800.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: ZagColours.currentAccent.withOpacity(0.5),
+                  size: 28,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'No recommendations yet',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: ZagColours.TEXT_GREY,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ZagButton(
+                  type: ZagButtonType.OUTLINED,
+                  text: 'Generate Recommendations',
+                  icon: Icons.refresh_rounded,
+                  color: ZagColours.currentAccent,
+                  onTap: () => _regenerateCustomSection(config),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomSectionCard(CustomSectionItem item) {
+    final posterUrl = item.posterUrl;
+
+    return Container(
+      width: _posterWidth,
+      margin: const EdgeInsets.only(right: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Poster
+          GestureDetector(
+            onTap: () {
+              if (item.tmdbId != null) {
+                if (item.mediaType == 'movie') {
+                  DiscoverRoutes.MOVIE_DETAILS.go(
+                    context,
+                    pathParameters: {'id': item.tmdbId.toString()},
+                  );
+                } else {
+                  DiscoverRoutes.TV_SHOW_DETAILS.go(
+                    context,
+                    pathParameters: {'id': item.tmdbId.toString()},
+                  );
+                }
+              }
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: _posterHeight,
+                width: _posterWidth,
+                color: ZagColours.GREY_800,
+                child: posterUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: posterUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.movie_rounded,
+                          color: ZagColours.TEXT_GREY,
+                        ),
+                      )
+                    : Icon(
+                        Icons.movie_rounded,
+                        color: ZagColours.TEXT_GREY,
+                      ),
+              ),
+            ),
+          ),
+          if (_showTitles) ...[
+            const SizedBox(height: 8),
+            Text(
+              item.title,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showCreateCustomSectionDialog(String mediaType) async {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Create Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Give your custom section a title and describe what kind of ${mediaType == 'movie' ? 'movies' : 'shows'} you want to discover.',
+                style: TextStyle(fontSize: 14, color: ZagColours.TEXT_GREY),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Section Title',
+                  hintText: 'e.g., "Hidden Sci-Fi Gems"',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Describe what you\'re looking for...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.trim().isEmpty ||
+                  descriptionController.text.trim().isEmpty) {
+                ZagSnackBar().show(
+                  context: context,
+                  type: SnackBarType.ERROR,
+                  message: 'Please fill in all fields',
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      final config = await CustomSectionsService().createSection(
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim(),
+        mediaType: mediaType,
+      );
+
+      setState(() {
+        // Trigger generation
+        _regenerateCustomSection(config);
+      });
+    }
+  }
+
+  Future<void> _showEditCustomSectionDialog(CustomSectionConfig config) async {
+    final titleController = TextEditingController(text: config.title);
+    final descriptionController =
+        TextEditingController(text: config.description);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Custom Section'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: 'Section Title',
+                  border: OutlineInputBorder(),
+                ),
+                maxLength: 50,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 4,
+                maxLength: 300,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      final updatedConfig = CustomSectionConfig(
+        id: config.id,
+        title: titleController.text.trim(),
+        description: descriptionController.text.trim(),
+        mediaType: config.mediaType,
+        createdAt: config.createdAt,
+        lastGeneratedAt: config.lastGeneratedAt,
+      );
+
+      await CustomSectionsService().updateSection(updatedConfig);
+      setState(() {
+        _customSectionsFutures.remove(config.id);
+      });
+    }
+  }
+
+  Future<void> _regenerateCustomSection(CustomSectionConfig config) async {
+    setState(() {
+      _customSectionsFutures[config.id] =
+          CustomSectionsService().generateRecommendations(
+        sectionId: config.id,
+        title: config.title,
+        description: config.description,
+        mediaType: config.mediaType,
+        force: true,
+      );
+    });
+  }
+
+  Future<void> _deleteCustomSection(CustomSectionConfig config) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Custom Section?'),
+        content: Text('Are you sure you want to delete "${config.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await CustomSectionsService().deleteSection(config.id);
+      setState(() {
+        _customSectionsFutures.remove(config.id);
+      });
+    }
+  }
+}
+*/
 
 /// Simple class to hold server issue data with service metadata
 class _ServerIssue {

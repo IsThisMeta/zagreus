@@ -90,13 +90,17 @@ class _State extends State<TMDBPopularTVShowsRoute>
   }
 
   void _loadSavedSettings() {
-    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
-    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
     _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
     _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
     _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
-    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
-    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+    _sonarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
+    _sonarrSearchForCutoffUnmet =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
   @override
@@ -132,7 +136,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
     if (monochrome) {
       return Colors.white;
     }
-    
+
     if (rating >= 8.0) {
       return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
@@ -145,7 +149,6 @@ class _State extends State<TMDBPopularTVShowsRoute>
       return Colors.red;
     }
   }
-
 
   Future<void> _loadPopularTVShows({bool silent = false}) async {
     if (!silent) {
@@ -324,7 +327,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
     }
 
     return ZagAppBar(
-      title: 'Popular TV Shows',
+      title: 'discover.section.popular_tv_shows'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.checklist),
@@ -420,7 +423,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -470,7 +473,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
     final bool isSelected = _selectedShowIndices.contains(index);
 
     return GestureDetector(
-      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
+      onTap: () =>
+          _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -525,7 +529,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -550,7 +555,9 @@ class _State extends State<TMDBPopularTVShowsRoute>
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      color: isSelected
+                          ? Colors.blue
+                          : Colors.white.withOpacity(0.5),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.white,
                         width: 2,
@@ -739,20 +746,22 @@ class _State extends State<TMDBPopularTVShowsRoute>
 
   void _showSonarrConfig() {
     // Helper to get monitor type enum from string
-    final currentMonitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
-        ? SonarrSeriesMonitorType.values.firstWhere(
-            (type) => type.value == _sonarrMonitorType,
-            orElse: () => SonarrSeriesMonitorType.ALL,
-          )
-        : SonarrSeriesMonitorType.ALL;
+    final currentMonitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
 
     // Helper to get series type enum from string
-    final currentSeriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
-        ? SonarrSeriesType.values.firstWhere(
-            (type) => type.value == _sonarrSeriesType,
-            orElse: () => SonarrSeriesType.STANDARD,
-          )
-        : SonarrSeriesType.STANDARD;
+    final currentSeriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
 
     showModalBottomSheet(
       context: context,
@@ -777,11 +786,13 @@ class _State extends State<TMDBPopularTVShowsRoute>
                     ListTile(
                       leading: const Icon(Icons.high_quality),
                       title: const Text('Quality Profile'),
-                      subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+                      subtitle:
+                          Text(_sonarrQualityProfileName ?? 'Not selected'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () async {
                         final sonarrState = context.read<SonarrState>();
-                        final profiles = await sonarrState.api!.profile.getQualityProfiles();
+                        final profiles =
+                            await sonarrState.api!.profile.getQualityProfiles();
 
                         if (!mounted) return;
 
@@ -799,8 +810,12 @@ class _State extends State<TMDBPopularTVShowsRoute>
                                     _sonarrQualityProfileName = profile.name;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                                      .update(profile.id);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                                      .update(profile.name);
                                   Navigator.pop(context);
                                 },
                               );
@@ -833,7 +848,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
                                     _sonarrRootFolder = folder.path;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                                  ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+                                      .update(folder.path);
                                   Navigator.pop(context);
                                 },
                               );
@@ -853,7 +869,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
                           builder: (context) => ListView.builder(
                             itemCount: SonarrSeriesMonitorType.values.length,
                             itemBuilder: (context, index) {
-                              final monitorType = SonarrSeriesMonitorType.values[index];
+                              final monitorType =
+                                  SonarrSeriesMonitorType.values[index];
                               return ListTile(
                                 title: Text(monitorType.zagName),
                                 onTap: () {
@@ -861,7 +878,9 @@ class _State extends State<TMDBPopularTVShowsRoute>
                                     _sonarrMonitorType = monitorType.value;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(monitorType.value);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_MONITOR_TYPE
+                                      .update(monitorType.value);
                                   Navigator.pop(context);
                                 },
                               );
@@ -873,7 +892,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
                     ListTile(
                       leading: const Icon(Icons.folder_open_rounded),
                       title: const Text('Series Type'),
-                      subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+                      subtitle: Text(
+                          currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () async {
                         showModalBottomSheet(
@@ -883,13 +903,15 @@ class _State extends State<TMDBPopularTVShowsRoute>
                             itemBuilder: (context, index) {
                               final seriesType = SonarrSeriesType.values[index];
                               return ListTile(
-                                title: Text(seriesType.value?.toUpperCase() ?? 'Unknown'),
+                                title: Text(seriesType.value?.toUpperCase() ??
+                                    'Unknown'),
                                 onTap: () {
                                   setState(() {
                                     _sonarrSeriesType = seriesType.value;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(seriesType.value);
+                                  ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE
+                                      .update(seriesType.value);
                                   Navigator.pop(context);
                                 },
                               );
@@ -907,7 +929,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
                           _sonarrSearchForMissing = value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING
+                            .update(value);
                       },
                     ),
                     SwitchListTile(
@@ -919,7 +942,9 @@ class _State extends State<TMDBPopularTVShowsRoute>
                           _sonarrSearchForCutoffUnmet = value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+                        ZagreusDatabase
+                            .Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET
+                            .update(value);
                       },
                     ),
                   ],
@@ -975,18 +1000,20 @@ class _State extends State<TMDBPopularTVShowsRoute>
       orElse: () => folders.first,
     );
 
-    final monitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
-        ? SonarrSeriesMonitorType.values.firstWhere(
-            (type) => type.value == _sonarrMonitorType,
-            orElse: () => SonarrSeriesMonitorType.ALL,
-          )
-        : SonarrSeriesMonitorType.ALL;
-    final seriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
-        ? SonarrSeriesType.values.firstWhere(
-            (type) => type.value == _sonarrSeriesType,
-            orElse: () => SonarrSeriesType.STANDARD,
-          )
-        : SonarrSeriesType.STANDARD;
+    final monitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
+    final seriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
 
     int successCount = 0;
     int failCount = 0;
@@ -1003,7 +1030,8 @@ class _State extends State<TMDBPopularTVShowsRoute>
           term: "tmdb:$tmdbId",
         );
 
-        if (lookupResults.isEmpty || (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
+        if (lookupResults.isEmpty ||
+            (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
           failCount++;
           continue;
         }
@@ -1086,6 +1114,7 @@ class _State extends State<TMDBPopularTVShowsRoute>
       ),
     );
   }
+
   int _getColumnsForDevice(BuildContext context) {
     if (ZagPlatform.isTablet(context)) {
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;

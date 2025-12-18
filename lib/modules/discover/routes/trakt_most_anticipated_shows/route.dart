@@ -98,13 +98,17 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
   }
 
   void _loadSavedSettings() {
-    _sonarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
-    _sonarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
+    _sonarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
+    _sonarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.read();
     _sonarrRootFolder = ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.read();
     _sonarrMonitorType = ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.read();
     _sonarrSeriesType = ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.read();
-    _sonarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
-    _sonarrSearchForCutoffUnmet = ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
+    _sonarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.read();
+    _sonarrSearchForCutoffUnmet =
+        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.read();
   }
 
   void _onScroll() {
@@ -112,9 +116,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
       return;
     }
 
-    final threshold =
-        scrollController.position.maxScrollExtent -
-            scrollController.position.viewportDimension;
+    final threshold = scrollController.position.maxScrollExtent -
+        scrollController.position.viewportDimension;
     if (scrollController.position.pixels >= threshold) {
       _loadMoreShows();
     }
@@ -170,10 +173,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
 
       if (!mounted) return;
 
-      final existingKeys = _shows
-          .map(_showIdentity)
-          .whereType<String>()
-          .toSet();
+      final existingKeys =
+          _shows.map(_showIdentity).whereType<String>().toSet();
 
       final newShows = shows.where((show) {
         final key = _showIdentity(show);
@@ -308,7 +309,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     }
 
     return ZagAppBar(
-      title: 'Most Anticipated',
+      title: 'discover.section.most_anticipated'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.checklist),
@@ -402,7 +403,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -450,7 +451,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     final bool isSelected = _selectedShowIndices.contains(index);
 
     return GestureDetector(
-      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
+      onTap: () =>
+          _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -508,7 +510,9 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      color: isSelected
+                          ? Colors.blue
+                          : Colors.white.withOpacity(0.5),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.white,
                         width: 2,
@@ -778,7 +782,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     if (monochrome) {
       return Colors.white;
     }
-    
+
     if (rating >= 8.0) {
       return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
@@ -793,19 +797,21 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
   }
 
   void _showSonarrConfig() {
-    final currentMonitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
-        ? SonarrSeriesMonitorType.values.firstWhere(
-            (type) => type.value == _sonarrMonitorType,
-            orElse: () => SonarrSeriesMonitorType.ALL,
-          )
-        : SonarrSeriesMonitorType.ALL;
+    final currentMonitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
 
-    final currentSeriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
-        ? SonarrSeriesType.values.firstWhere(
-            (type) => type.value == _sonarrSeriesType,
-            orElse: () => SonarrSeriesType.STANDARD,
-          )
-        : SonarrSeriesType.STANDARD;
+    final currentSeriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
 
     showModalBottomSheet(
       context: context,
@@ -830,7 +836,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                     ListTile(
                       leading: const Icon(Icons.high_quality),
                       title: const Text('Quality Profile'),
-                      subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+                      subtitle:
+                          Text(_sonarrQualityProfileName ?? 'Not selected'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () async {
                         final sonarrState = context.read<SonarrState>();
@@ -851,8 +858,12 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                                     _sonarrQualityProfileName = profile.name;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(profile.id);
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(profile.name);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                                      .update(profile.id);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                                      .update(profile.name);
                                   Navigator.pop(context);
                                 },
                               );
@@ -884,7 +895,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                                     _sonarrRootFolder = folder.path;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(folder.path);
+                                  ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER
+                                      .update(folder.path);
                                   Navigator.pop(context);
                                 },
                               );
@@ -904,7 +916,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                           builder: (context) => ListView.builder(
                             itemCount: SonarrSeriesMonitorType.values.length,
                             itemBuilder: (context, index) {
-                              final type = SonarrSeriesMonitorType.values[index];
+                              final type =
+                                  SonarrSeriesMonitorType.values[index];
                               return ListTile(
                                 title: Text(type.zagName),
                                 onTap: () {
@@ -912,7 +925,9 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                                     _sonarrMonitorType = type.value;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_MONITOR_TYPE.update(type.value);
+                                  ZagreusDatabase
+                                      .Z_ASSISTANT_SONARR_MONITOR_TYPE
+                                      .update(type.value);
                                   Navigator.pop(context);
                                 },
                               );
@@ -924,7 +939,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                     ListTile(
                       leading: const Icon(Icons.folder_open_rounded),
                       title: const Text('Series Type'),
-                      subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+                      subtitle: Text(
+                          currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         showModalBottomSheet(
@@ -934,13 +950,15 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                             itemBuilder: (context, index) {
                               final type = SonarrSeriesType.values[index];
                               return ListTile(
-                                title: Text(type.value?.toUpperCase() ?? 'Unknown'),
+                                title: Text(
+                                    type.value?.toUpperCase() ?? 'Unknown'),
                                 onTap: () {
                                   setState(() {
                                     _sonarrSeriesType = type.value;
                                   });
                                   setModalState(() {});
-                                  ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type.value);
+                                  ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE
+                                      .update(type.value);
                                   Navigator.pop(context);
                                 },
                               );
@@ -958,7 +976,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                           _sonarrSearchForMissing = value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING.update(value);
+                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_MISSING
+                            .update(value);
                       },
                     ),
                     SwitchListTile(
@@ -970,7 +989,9 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
                           _sonarrSearchForCutoffUnmet = value;
                         });
                         setModalState(() {});
-                        ZagreusDatabase.Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET.update(value);
+                        ZagreusDatabase
+                            .Z_ASSISTANT_SONARR_SEARCH_FOR_CUTOFF_UNMET
+                            .update(value);
                       },
                     ),
                   ],
@@ -1026,18 +1047,20 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
       orElse: () => folders.first,
     );
 
-    final monitorType = _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
-        ? SonarrSeriesMonitorType.values.firstWhere(
-            (type) => type.value == _sonarrMonitorType,
-            orElse: () => SonarrSeriesMonitorType.ALL,
-          )
-        : SonarrSeriesMonitorType.ALL;
-    final seriesType = _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
-        ? SonarrSeriesType.values.firstWhere(
-            (type) => type.value == _sonarrSeriesType,
-            orElse: () => SonarrSeriesType.STANDARD,
-          )
-        : SonarrSeriesType.STANDARD;
+    final monitorType =
+        _sonarrMonitorType != null && _sonarrMonitorType!.isNotEmpty
+            ? SonarrSeriesMonitorType.values.firstWhere(
+                (type) => type.value == _sonarrMonitorType,
+                orElse: () => SonarrSeriesMonitorType.ALL,
+              )
+            : SonarrSeriesMonitorType.ALL;
+    final seriesType =
+        _sonarrSeriesType != null && _sonarrSeriesType!.isNotEmpty
+            ? SonarrSeriesType.values.firstWhere(
+                (type) => type.value == _sonarrSeriesType,
+                orElse: () => SonarrSeriesType.STANDARD,
+              )
+            : SonarrSeriesType.STANDARD;
 
     int successCount = 0;
     int failCount = 0;
@@ -1054,7 +1077,8 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
           term: "tmdb:$tmdbId",
         );
 
-        if (lookupResults.isEmpty || (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
+        if (lookupResults.isEmpty ||
+            (lookupResults.first.id != null && lookupResults.first.id! > 0)) {
           failCount++;
           continue;
         }

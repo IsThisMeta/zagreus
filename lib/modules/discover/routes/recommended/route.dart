@@ -78,10 +78,13 @@ class _State extends State<DiscoverRecommendedRoute>
   }
 
   void _loadSavedSettings() {
-    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
-    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
     _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
-    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+    _radarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
   }
 
   Future<void> _loadRecommendedMovies() async {
@@ -219,7 +222,9 @@ class _State extends State<DiscoverRecommendedRoute>
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _selectedMovieIndices.isEmpty ? null : _addSelectedMoviesToRadarr,
+            onPressed: _selectedMovieIndices.isEmpty
+                ? null
+                : _addSelectedMoviesToRadarr,
             tooltip: 'Add Selected',
           ),
         ],
@@ -227,7 +232,7 @@ class _State extends State<DiscoverRecommendedRoute>
     }
 
     return ZagAppBar(
-      title: 'Recommended',
+      title: 'discover.section.recommended'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.checklist),
@@ -247,7 +252,8 @@ class _State extends State<DiscoverRecommendedRoute>
       if (_selectedMovieIndices.length == _movies.length) {
         _selectedMovieIndices.clear();
       } else {
-        _selectedMovieIndices = Set.from(List.generate(_movies.length, (i) => i));
+        _selectedMovieIndices =
+            Set.from(List.generate(_movies.length, (i) => i));
       }
     });
   }
@@ -323,7 +329,7 @@ class _State extends State<DiscoverRecommendedRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -360,7 +366,8 @@ class _State extends State<DiscoverRecommendedRoute>
     final titleFontSize = _getTitleFontSize(context);
 
     return GestureDetector(
-      onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _handleMovieTap(movie),
+      onTap: () =>
+          _isMultiSelectMode ? _toggleSelection(index) : _handleMovieTap(movie),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -424,7 +431,9 @@ class _State extends State<DiscoverRecommendedRoute>
                     height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      color: isSelected
+                          ? Colors.blue
+                          : Colors.white.withOpacity(0.5),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.white,
                         width: 2,
@@ -563,7 +572,8 @@ class _State extends State<DiscoverRecommendedRoute>
                 subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
                 onTap: () async {
                   final radarrState = context.read<RadarrState>();
-                  final profiles = await radarrState.api!.qualityProfile.getAll();
+                  final profiles =
+                      await radarrState.api!.qualityProfile.getAll();
 
                   if (!mounted) return;
 
@@ -580,8 +590,12 @@ class _State extends State<DiscoverRecommendedRoute>
                               _radarrQualityProfileId = profile.id;
                               _radarrQualityProfileName = profile.name;
                             });
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                                .update(profile.id);
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                                .update(profile.name);
                             Navigator.pop(context);
                           },
                         );
@@ -612,7 +626,8 @@ class _State extends State<DiscoverRecommendedRoute>
                             setModalState(() {
                               _radarrRootFolder = folder.path;
                             });
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                                .update(folder.path);
                             Navigator.pop(context);
                           },
                         );
@@ -628,7 +643,8 @@ class _State extends State<DiscoverRecommendedRoute>
                   setModalState(() {
                     _radarrSearchForMissing = value;
                   });
-                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                      .update(value);
                 },
               ),
             ],
@@ -681,7 +697,8 @@ class _State extends State<DiscoverRecommendedRoute>
     );
 
     // Get selected movies
-    final selectedMovies = _selectedMovieIndices.map((i) => _movies[i]).toList();
+    final selectedMovies =
+        _selectedMovieIndices.map((i) => _movies[i]).toList();
 
     showZagSnackBar(
       title: 'Adding Movies',

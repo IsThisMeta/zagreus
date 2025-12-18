@@ -125,5 +125,7 @@
     "radarr.ViewWebGUI": "Mostra la GUI de la WEB",
     "radarr.Wanted": "Volgudes",
     "radarr.Weight": "Mida",
-    "radarr.Year": "Any"
+    "radarr.Year": "Any",
+    "sonarr.More": "Més",
+    "sonarr.ParentDirectory": "Directori principal"
 }

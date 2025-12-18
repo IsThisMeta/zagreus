@@ -49,9 +49,9 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
       // If we want fresh data, we might trigger a silent reload.
       Future.microtask(() {
         if (mounted) {
-           // We don't have a silent mode for _loadRecentlyDownloadedShows. 
-           // It sets _isLoading=true immediately. 
-           // So we keep cached data. Pull to refresh is available.
+          // We don't have a silent mode for _loadRecentlyDownloadedShows.
+          // It sets _isLoading=true immediately.
+          // So we keep cached data. Pull to refresh is available.
         }
       });
     } else {
@@ -147,7 +147,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
           // Pull file size from record.data (size is stored there for download events)
           double? sizeGb;
           final dynamic rawSize = record.data?['size'];
-          
+
           if (rawSize != null) {
             if (rawSize is num) {
               sizeGb = rawSize / (1024 * 1024 * 1024);
@@ -199,7 +199,7 @@ class _State extends State<SonarrRecentlyDownloadedRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Recently Downloaded',
+      title: 'discover.section.recently_downloaded_shows'.tr(),
       actions: [
         IconButton(
           icon: Icon(Icons.refresh_rounded),

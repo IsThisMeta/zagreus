@@ -41,7 +41,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     super.initState();
     // _loadSavedSettings(); // Not needed for simple movie list
 
-    final cached = DiscoverSessionCache().get('TraktMostAnticipatedMoviesRoute');
+    final cached =
+        DiscoverSessionCache().get('TraktMostAnticipatedMoviesRoute');
     if (cached != null) {
       _movies = List<Map<String, dynamic>>.from(cached.items);
       _currentPage = cached.currentPage;
@@ -146,7 +147,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
 
       if (!mounted) return;
 
-      final existingKeys = _movies.map(_movieIdentity).whereType<String>().toSet();
+      final existingKeys =
+          _movies.map(_movieIdentity).whereType<String>().toSet();
       final newMovies = movies.where((movie) {
         final key = _movieIdentity(movie);
         if (key == null) return true;
@@ -195,7 +197,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Most Anticipated Movies',
+      title: 'discover.section.most_anticipated_movies'.tr(),
       actions: [],
     );
   }
@@ -251,7 +253,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -358,7 +360,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -448,7 +451,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     if (monochrome) {
       return Colors.white;
     }
-    
+
     if (rating >= 8.0) {
       return const Color(0xFF35C5F4); // Blue for high ratings
     } else if (rating >= 6.0) {
@@ -666,10 +669,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       if (radarrMovies.isEmpty) continue;
 
       for (final radarrMovie in radarrMovies) {
-        final matchesTmdb =
-            tmdbId != null && radarrMovie.tmdbId == tmdbId;
-        final matchesImdb =
-            imdbId != null && radarrMovie.imdbId == imdbId;
+        final matchesTmdb = tmdbId != null && radarrMovie.tmdbId == tmdbId;
+        final matchesImdb = imdbId != null && radarrMovie.imdbId == imdbId;
 
         if (matchesTmdb || matchesImdb) {
           movie['inLibrary'] = true;

@@ -8,7 +8,7 @@ import 'package:zagreus/system/platform.dart';
 
 class DiscoverDownloadingSoonRoute extends StatefulWidget {
   final List<RadarrMovie>? initialData;
-  
+
   const DiscoverDownloadingSoonRoute({
     Key? key,
     this.initialData,
@@ -18,14 +18,15 @@ class DiscoverDownloadingSoonRoute extends StatefulWidget {
   State<DiscoverDownloadingSoonRoute> createState() => _State();
 }
 
-class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControllerMixin {
+class _State extends State<DiscoverDownloadingSoonRoute>
+    with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   List<RadarrMovie> _movies = [];
   bool _isLoading = true;
   String? _error;
   int _lookAheadDays = 28; // Default look-ahead period
-  
+
   @override
   void initState() {
     super.initState();
@@ -63,13 +64,13 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
     }
     super.dispose();
   }
-  
+
   Future<void> _loadDownloadingSoon() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    
+
     try {
       final radarrState = context.read<RadarrState>();
       if (!radarrState.enabled) {
@@ -79,7 +80,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         });
         return;
       }
-      
+
       final api = radarrState.api;
       if (api == null) {
         setState(() {
@@ -88,48 +89,51 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         });
         return;
       }
-      
+
       // Fetch all movies
       if (radarrState.movies == null) {
         radarrState.fetchMovies();
       }
-      
+
       final allMovies = await radarrState.movies!;
-      
+
       // Filter movies that are:
       // 1. Monitored
       // 2. Not downloaded (no file)
       // 3. Available soon (within lookAheadDays window)
       final comingSoonMovies = <RadarrMovie>[];
       final now = DateTime.now();
-      
+
       for (final movie in allMovies) {
         // Skip if not monitored or already downloaded
         if (movie.monitored != true || movie.hasFile == true) {
           continue;
         }
-        
+
         // Try digital release first, then physical release (matching Zebrra logic)
         final releaseDate = movie.digitalRelease ?? movie.physicalRelease;
-        
+
         if (releaseDate != null) {
           // Calculate days using UTC dates (matching Zebrra)
           final nowUtc = now.toUtc();
           final releaseDateUtc = releaseDate.toUtc();
-          
+
           // Compare start of days in UTC
-          final startOfTodayUtc = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
-          final startOfReleaseUtc = DateTime.utc(releaseDateUtc.year, releaseDateUtc.month, releaseDateUtc.day);
-          
-          final daysUntil = startOfReleaseUtc.difference(startOfTodayUtc).inDays;
-          
+          final startOfTodayUtc =
+              DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+          final startOfReleaseUtc = DateTime.utc(
+              releaseDateUtc.year, releaseDateUtc.month, releaseDateUtc.day);
+
+          final daysUntil =
+              startOfReleaseUtc.difference(startOfTodayUtc).inDays;
+
           // Check if within look-ahead window
           if (daysUntil >= 0 && daysUntil <= _lookAheadDays) {
             comingSoonMovies.add(movie);
           }
         }
       }
-      
+
       // Sort by release date (closest first)
       comingSoonMovies.sort((a, b) {
         final aDate = a.digitalRelease ?? a.physicalRelease;
@@ -139,7 +143,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         if (bDate == null) return -1;
         return aDate.compareTo(bDate);
       });
-      
+
       if (!mounted) return;
       setState(() {
         _movies = comingSoonMovies;
@@ -154,7 +158,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       });
     }
   }
-  
+
   String _formatDaysUntil(RadarrMovie movie) {
     DateTime? releaseDate = movie.digitalRelease ?? movie.physicalRelease;
 
@@ -180,10 +184,11 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
 
     // Compare start of days in UTC
     final startOfTodayUtc = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
-    final startOfReleaseUtc = DateTime.utc(releaseDateUtc.year, releaseDateUtc.month, releaseDateUtc.day);
+    final startOfReleaseUtc = DateTime.utc(
+        releaseDateUtc.year, releaseDateUtc.month, releaseDateUtc.day);
 
     final daysUntil = startOfReleaseUtc.difference(startOfTodayUtc).inDays;
-    
+
     if (daysUntil < 0) {
       return 'TBA';
     } else if (daysUntil == 0) {
@@ -202,7 +207,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       return 'In ${(daysUntil / 7).round()} weeks';
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return ZagScaffold(
@@ -211,14 +216,14 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       body: _body(),
     );
   }
-  
+
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Downloading Soon',
+      title: 'discover.section.downloading_soon'.tr(),
       actions: [],
     ) as PreferredSizeWidget;
   }
-  
+
   Widget _body() {
     if (_isLoading) {
       return Center(
@@ -227,13 +232,13 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         ),
       );
     }
-    
+
     if (_error != null && _movies.isEmpty) {
       return ZagMessage.error(
         onTap: _loadDownloadingSoon,
       );
     }
-    
+
     if (_movies.isEmpty) {
       return Center(
         child: Column(
@@ -264,12 +269,12 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
         ),
       );
     }
-    
+
     final screenWidth = MediaQuery.sizeOf(context).width;
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -307,6 +312,7 @@ class _State extends State<DiscoverDownloadingSoonRoute> with ZagScrollControlle
       ),
     );
   }
+
   double _getTitleFontSize(BuildContext context) {
     final savedColumns = _getColumnsForDevice(context);
     if (savedColumns >= 6) return 12.0;
@@ -326,7 +332,7 @@ class _MovieGridItem extends StatelessWidget {
   final RadarrMovie movie;
   final String subtitle;
   final double titleFontSize;
-  
+
   const _MovieGridItem({
     Key? key,
     required this.movie,
@@ -420,7 +426,7 @@ class _MovieGridItem extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildPosterImage(BuildContext context, RadarrMovie movie) {
     String? imageUrl;
     final images = movie.images ?? [];
@@ -430,7 +436,7 @@ class _MovieGridItem extends StatelessWidget {
         break;
       }
     }
-    
+
     if (imageUrl != null && imageUrl.isNotEmpty) {
       return Image.network(
         imageUrl,
@@ -440,10 +446,10 @@ class _MovieGridItem extends StatelessWidget {
         },
       );
     }
-    
+
     return _posterPlaceholder();
   }
-  
+
   Widget _posterPlaceholder() {
     return Container(
       color: Colors.grey.shade800,

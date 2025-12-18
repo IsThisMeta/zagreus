@@ -17,5 +17,8 @@
     "dashboard.Thursday": "Četvrtak",
     "dashboard.Tuesday": "Utorak",
     "dashboard.TwoWeeks": "Dva tjedna",
-    "dashboard.Wednesday": "Srijeda"
+    "dashboard.Wednesday": "Srijeda",
+    "radarr.More": "Više",
+    "sonarr.More": "Više",
+    "sonarr.ParentDirectory": "Nadređeni direktorij"
 }

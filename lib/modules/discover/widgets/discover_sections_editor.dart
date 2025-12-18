@@ -82,28 +82,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   int get _columnsPerRowMax =>
       _isTablet ? _columnsPerRowMaxIPad : _columnsPerRowMaxPhone;
 
-  static const Map<String, String> _sectionNames = {
-    'recently_downloaded': 'Recently Downloaded',
-    'recommended': 'Recommended',
-    'missing': 'Missing',
-    'downloading_soon': 'Downloading Soon',
-    'popular_movies': 'Popular Movies',
-    'recently_released_movies': 'Recently Released',
-    'most_anticipated_movies': 'Most Anticipated Movies',
-    'popular_people': 'Popular People',
-    'deep_cuts': 'Deep Cuts',
-    'magic_movies': 'Magic Movies',
-    'magic_movies_cast_crew': 'Magic Movies: Cast & Crew',
-    'magic_people': 'Magic People',
-    'recently_downloaded_shows': 'Recently Downloaded',
-    'airing_next': 'Airing Next',
-    'popular_tv_shows': 'Popular TV Shows',
-    'trending_new_tv_shows': 'Trending New',
-    'most_anticipated': 'Most Anticipated',
-    'up_next': 'Up Next',
-    'magic_shows': 'Magic Shows',
-    'magic_shows_cast_crew': 'Magic Shows: Cast & Crew',
-  };
+  String _sectionName(String sectionKey) {
+    final key = 'discover.section.$sectionKey';
+    final translated = key.tr();
+    return translated == key ? sectionKey : translated;
+  }
 
   late List<String> _movieSections;
   late List<String> _tvSections;
@@ -734,7 +717,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   },
                   itemBuilder: (context, index) {
                     final section = sections[index];
-                    final name = _sectionNames[section] ?? section;
+                    final name = _sectionName(section);
 
                     return Container(
                       key: ValueKey(section),
@@ -898,7 +881,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                   itemBuilder: (context, index) {
                     final section = available[index];
-                    final name = _sectionNames[section] ?? section;
+                    final name = _sectionName(section);
                     return ListTile(
                       leading: Icon(
                         _getSectionIcon(section),

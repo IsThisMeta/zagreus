@@ -88,10 +88,13 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
   }
 
   void _loadSavedSettings() {
-    _radarrQualityProfileId = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
-    _radarrQualityProfileName = ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
     _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
-    _radarrSearchForMissing = ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+    _radarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
   }
 
   @override
@@ -156,7 +159,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
       final locale = Localizations.localeOf(context);
       final region = locale.countryCode ?? 'US';
 
-      final movies = await TMDBApi.getRecentlyReleasedMovies(page: 1, region: region);
+      final movies =
+          await TMDBApi.getRecentlyReleasedMovies(page: 1, region: region);
 
       // Check against Radarr library if available
       final radarrState = context.read<RadarrState>();
@@ -201,7 +205,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
         _error = null;
       });
     } catch (error, stack) {
-      ZagLogger().error('Failed to load recently released movies', error, stack);
+      ZagLogger()
+          .error('Failed to load recently released movies', error, stack);
       if (!mounted) return;
       if (silent && _movies.isNotEmpty) {
         return;
@@ -225,8 +230,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
       final region = locale.countryCode ?? 'US';
 
       final nextPage = _currentPage + 1;
-      final movies =
-          await TMDBApi.getRecentlyReleasedMovies(page: nextPage, region: region);
+      final movies = await TMDBApi.getRecentlyReleasedMovies(
+          page: nextPage, region: region);
 
       // Check against Radarr library if available
       final radarrState = context.read<RadarrState>();
@@ -308,7 +313,9 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: _selectedMovieIndices.isEmpty ? null : _addSelectedMoviesToRadarr,
+            onPressed: _selectedMovieIndices.isEmpty
+                ? null
+                : _addSelectedMoviesToRadarr,
             tooltip: 'Add Selected',
           ),
         ],
@@ -316,7 +323,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     }
 
     return ZagAppBar(
-      title: 'Recently Released',
+      title: 'discover.section.recently_released_movies'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.checklist),
@@ -336,7 +343,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
       if (_selectedMovieIndices.length == _movies.length) {
         _selectedMovieIndices.clear();
       } else {
-        _selectedMovieIndices = Set.from(List.generate(_movies.length, (i) => i));
+        _selectedMovieIndices =
+            Set.from(List.generate(_movies.length, (i) => i));
       }
     });
   }
@@ -412,7 +420,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -524,7 +532,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -532,7 +541,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                     child: Text(
                       (movie['rating'] ?? 0.0).toStringAsFixed(1),
                       style: TextStyle(
-                        color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
+                        color:
+                            _ratingColor((movie['rating'] ?? 0.0).toDouble()),
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -549,7 +559,9 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                     height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                      color: isSelected
+                          ? Colors.blue
+                          : Colors.white.withOpacity(0.5),
                       border: Border.all(
                         color: isSelected ? Colors.blue : Colors.white,
                         width: 2,
@@ -630,7 +642,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                 subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
                 onTap: () async {
                   final radarrState = context.read<RadarrState>();
-                  final profiles = await radarrState.api!.qualityProfile.getAll();
+                  final profiles =
+                      await radarrState.api!.qualityProfile.getAll();
 
                   if (!mounted) return;
 
@@ -647,8 +660,12 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                               _radarrQualityProfileId = profile.id;
                               _radarrQualityProfileName = profile.name;
                             });
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(profile.id);
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(profile.name);
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                                .update(profile.id);
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                                .update(profile.name);
                             Navigator.pop(context);
                           },
                         );
@@ -679,7 +696,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                             setModalState(() {
                               _radarrRootFolder = folder.path;
                             });
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(folder.path);
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                                .update(folder.path);
                             Navigator.pop(context);
                           },
                         );
@@ -695,7 +713,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                   setModalState(() {
                     _radarrSearchForMissing = value;
                   });
-                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.update(value);
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                      .update(value);
                 },
               ),
             ],
@@ -748,7 +767,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     );
 
     // Get selected movies
-    final selectedMovies = _selectedMovieIndices.map((i) => _movies[i]).toList();
+    final selectedMovies =
+        _selectedMovieIndices.map((i) => _movies[i]).toList();
 
     showZagSnackBar(
       title: 'Adding Movies',
@@ -962,6 +982,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
       );
     }
   }
+
   int _getColumnsForDevice(BuildContext context) {
     if (ZagPlatform.isTablet(context)) {
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;

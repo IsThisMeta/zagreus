@@ -16,6 +16,7 @@
     "dashboard.Monday": "Luni",
     "lidarr.StartSearchFor": "Începe Căutarea Pentru…",
     "lidarr.StartSearchForMissingAlbums": "Începe căutarea pentru albume lipsă",
+    "radarr.More": "Mai multe",
     "sonarr.AddedOn": "Adăugat La",
     "sonarr.AddedSeries": "Seriale Adăugate",
     "sonarr.AddedTag": "Etichetă Adăugată",
@@ -54,5 +55,7 @@
     "sonarr.DownloadingWithMessage": "Se Descarcă: {}",
     "sonarr.Automatic": "Automat",
     "sonarr.AutomaticSearch": "Căutare Automată",
-    "sonarr.DeleteReasonManual": "Fișierul a fost șters de către UI"
+    "sonarr.DeleteReasonManual": "Fișierul a fost șters de către UI",
+    "sonarr.More": "Mai multe",
+    "sonarr.ParentDirectory": "Director părinte"
 }

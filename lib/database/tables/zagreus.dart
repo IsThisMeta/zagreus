@@ -140,7 +140,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   PROFILE_INSTANCES<Map>({}),
   // Calendar instance filter: list of instance keys to show (null = all, empty = none selected shows all)
   // e.g. [null, "__radarr__4k__default"] means show main + 4k radarr
-  CALENDAR_INSTANCE_FILTER<List>([]);
+  CALENDAR_INSTANCE_FILTER<List>([]),
+  // Custom Sections: user-defined AI recommendation categories (Mega/Ultra only)
+  // Stores list of section configs with id, title, description, mediaType
+  CUSTOM_SECTIONS<List>([]);
 
   @override
   ZagTable get table => ZagTable.zagreus;

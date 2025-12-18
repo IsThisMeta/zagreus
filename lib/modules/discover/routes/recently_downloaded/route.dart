@@ -33,7 +33,8 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
   void initState() {
     super.initState();
 
-    final cached = DiscoverSessionCache().get('DiscoverRecentlyDownloadedRoute');
+    final cached =
+        DiscoverSessionCache().get('DiscoverRecentlyDownloadedRoute');
     if (cached != null) {
       _movies = List<RadarrMovie>.from(cached.items);
       _isLoading = false;
@@ -159,7 +160,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Recently Downloaded',
+      title: 'discover.section.recently_downloaded'.tr(),
       actions: [
         IconButton(
           icon: Icon(Icons.refresh_rounded),
@@ -174,7 +175,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 20.0 : 16.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -247,11 +248,13 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
         itemCount: _movies.length,
         itemBuilder: (context, index) {
           final movie = _movies[index];
-          return _MovieGridItem(movie: movie, titleFontSize: _getTitleFontSize(context));
+          return _MovieGridItem(
+              movie: movie, titleFontSize: _getTitleFontSize(context));
         },
       ),
     );
   }
+
   double _getTitleFontSize(BuildContext context) {
     final savedColumns = _getColumnsForDevice(context);
     if (savedColumns >= 6) return 12.0;

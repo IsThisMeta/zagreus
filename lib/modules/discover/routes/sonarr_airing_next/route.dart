@@ -241,7 +241,7 @@ class _State extends State<SonarrAiringNextRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Airing Next',
+      title: 'discover.section.airing_next'.tr(),
       actions: [
         PopupMenuButton<int>(
           icon: Icon(Icons.filter_list_rounded),
@@ -340,12 +340,9 @@ class _State extends State<SonarrAiringNextRoute>
   }
 
   Widget _episodeCard(Map<String, dynamic> episode) {
-    final secondaryTextColor = Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.color
-            ?.withOpacity(0.65) ??
-        Colors.grey.shade700;
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
+            Colors.grey.shade700;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(

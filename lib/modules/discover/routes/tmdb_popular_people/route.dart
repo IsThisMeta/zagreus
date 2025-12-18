@@ -175,7 +175,7 @@ class _State extends State<TMDBPopularPeopleRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Popular People',
+      title: 'discover.section.popular_people'.tr(),
       actions: [],
     );
   }
@@ -237,7 +237,7 @@ class _State extends State<TMDBPopularPeopleRoute>
     final savedColumns = _getColumnsForDevice(context);
     final usesThreeColumns = savedColumns == 3;
     final horizontalPadding = usesThreeColumns ? 16.0 : 12.0;
-    
+
     // Adjust spacing based on column count
     final double gridSpacing;
     if (savedColumns <= 3) {
@@ -277,7 +277,7 @@ class _State extends State<TMDBPopularPeopleRoute>
 
   Widget _personCard(Map<String, dynamic> person) {
     final titleFontSize = _getTitleFontSize(context);
-    
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
