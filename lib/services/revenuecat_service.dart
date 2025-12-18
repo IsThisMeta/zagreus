@@ -31,10 +31,12 @@ class RevenueCatService {
 
   CustomerInfo? _customerInfo;
   bool _isUpdating = false; // Prevent duplicate updates
+  bool _isConfigured = false;
   final Map<String, IntroEligibilityStatus> _trialEligibilityCache = {};
 
   // Public getter for customer info
   CustomerInfo? get customerInfo => _customerInfo;
+  bool get isConfigured => _isConfigured;
 
   Future<void> initialize() async {
     try {
@@ -43,6 +45,7 @@ class RevenueCatService {
         PurchasesConfiguration(_apiKey)
           ..appUserID = null // Let RevenueCat generate anonymous ID
       );
+      _isConfigured = true;
 
       // Enable minimal logging in debug mode to avoid JWT token spam
       if (kDebugMode) {

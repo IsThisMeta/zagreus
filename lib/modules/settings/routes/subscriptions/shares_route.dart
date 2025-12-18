@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/utils/zagreus_supreme.dart';
 import 'package:zagreus/supabase/subscription_shares.dart';
 import 'package:zagreus/supabase/auth.dart';
-import 'package:zagreus/database/tables/zagreus.dart';
 
 class SharesManagementRoute extends StatefulWidget {
   const SharesManagementRoute({Key? key}) : super(key: key);
@@ -20,6 +21,9 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   int _remainingShares = 0;
   bool _isLoading = true;
   String? _currentProductId;
+  DateTime? _currentExpiresAt;
+  bool _accountLinkLoaded = false;
+  bool _hasLinkedSubscription = false;
 
   @override
   void initState() {
@@ -30,26 +34,51 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   Future<void> _loadShares() async {
     setState(() => _isLoading = true);
 
-    // Determine current product ID
-    if (ZagreusUltra.isEnabled) {
-      _currentProductId = 'ultra';
-    } else if (ZagreusMega.isEnabled) {
-      _currentProductId = 'mega';
+    try {
+      if (ZagSupabaseAuth().isSignedIn) {
+        final row = await Supabase.instance.client
+            .from('account_subscriptions')
+            .select('tier,expires_at')
+            .maybeSingle();
+
+        if (row != null) {
+          final tier = row['tier'] as String?;
+          final expiresAtRaw = row['expires_at'];
+          _currentProductId = tier;
+          _currentExpiresAt = expiresAtRaw is String ? DateTime.tryParse(expiresAtRaw) : null;
+          _hasLinkedSubscription = tier != null && tier.isNotEmpty;
+        } else {
+          _currentProductId = null;
+          _currentExpiresAt = null;
+          _hasLinkedSubscription = false;
+        }
+      } else {
+        _currentProductId = null;
+        _currentExpiresAt = null;
+        _hasLinkedSubscription = false;
+      }
+    } catch (_) {
+      _currentProductId = null;
+      _currentExpiresAt = null;
+      _hasLinkedSubscription = false;
+    } finally {
+      _accountLinkLoaded = true;
     }
 
-    if (_currentProductId != null) {
-      final remaining = await ZagSupabaseShares().getRemainingShares(_currentProductId!);
-      final granted = await ZagSupabaseShares().getGrantedShares();
-      setState(() {
-        _remainingShares = remaining;
-        _grantedShares = granted;
-      });
-    }
+    final receivedFuture = ZagSupabaseShares().getReceivedShares();
+    final grantedFuture =
+        _currentProductId != null ? ZagSupabaseShares().getGrantedShares() : Future.value(<SubscriptionShare>[]);
+    final remainingFuture =
+        _currentProductId != null ? ZagSupabaseShares().getRemainingShares(_currentProductId!) : Future.value(0);
 
-    final received = await ZagSupabaseShares().getReceivedShares();
+    final received = await receivedFuture;
+    final granted = await grantedFuture;
+    final remaining = await remainingFuture;
 
     setState(() {
       _receivedShares = received;
+      _grantedShares = granted;
+      _remainingShares = remaining;
       _isLoading = false;
     });
   }
@@ -89,8 +118,14 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
       return const Center(child: CircularProgressIndicator());
     }
 
-    final bool canShare = ZagreusUltra.isEnabled || ZagreusMega.isEnabled;
-    final int totalShares = ZagreusUltra.isEnabled ? 5 : (ZagreusMega.isEnabled ? 1 : 0);
+    final bool canShare =
+        _hasLinkedSubscription && (_currentProductId == 'ultra' || _currentProductId == 'mega' || _currentProductId == 'supreme');
+    final int totalShares = switch (_currentProductId) {
+      'supreme' => 10,
+      'ultra' => 5,
+      'mega' => 1,
+      _ => 0,
+    };
     final int usedShares = _grantedShares.length;
 
     return ZagListView(
@@ -107,6 +142,24 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
             ],
             trailing: ZagIconButton(
               icon: Icons.supervisor_account_rounded,
+              color: ZagColours.currentAccent,
+            ),
+          ),
+        ],
+
+        if (_accountLinkLoaded &&
+            !_hasLinkedSubscription &&
+            (ZagreusMega.isEnabled || ZagreusUltra.isEnabled || ZagreusSupreme.isEnabled) &&
+            _receivedShares.isEmpty) ...[
+          ZagBlock(
+            title: 'Link Required',
+            body: [
+              TextSpan(
+                text: 'To share your subscription, link your account first in the Subscriptions screen.',
+              ),
+            ],
+            trailing: ZagIconButton(
+              icon: Icons.link_rounded,
               color: ZagColours.currentAccent,
             ),
           ),
@@ -242,9 +295,9 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
 
   Future<void> _grantShareByEmail(String email) async {
     if (_currentProductId == null) {
-      showZagInfoSnackBar(
+      showZagErrorSnackBar(
         title: 'Error',
-        message: 'No active Mega or Ultra subscription',
+        message: 'No linked subscription found',
       );
       return;
     }
@@ -254,27 +307,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
       message: 'Creating share...',
     );
 
-    // Get expiry from local tier
-    DateTime? expiresAt;
-    if (ZagreusUltra.isEnabled) {
-      final expiryString = ZagreusDatabase.ZAGREUS_ULTRA_EXPIRY.read();
-      if (expiryString.isNotEmpty) {
-        expiresAt = DateTime.parse(expiryString);
-      }
-    } else if (ZagreusMega.isEnabled) {
-      final expiryString = ZagreusDatabase.ZAGREUS_MEGA_EXPIRY.read();
-      if (expiryString.isNotEmpty) {
-        expiresAt = DateTime.parse(expiryString);
-      }
-    }
-
-    if (expiresAt == null) {
-      showZagInfoSnackBar(
-        title: 'Error',
-        message: 'Could not determine subscription expiry',
-      );
-      return;
-    }
+    final expiresAt = _currentExpiresAt ?? DateTime.now();
 
     final result = await ZagSupabaseShares().grantShareByEmail(
       email: email,
@@ -283,13 +316,13 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     );
 
     if (result.success) {
-      showZagInfoSnackBar(
+      showZagSuccessSnackBar(
         title: 'Success',
         message: 'Pro access shared with $email',
       );
       _loadShares(); // Reload shares
     } else {
-      showZagInfoSnackBar(
+      showZagErrorSnackBar(
         title: 'Failed',
         message: result.error ?? 'Could not grant share',
       );
@@ -305,7 +338,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Remove Pro access for ${share.sharedWithEmail ?? "this user"}?',
+              'Remove Pro access for ${share.sharedWithEmail}?',
               style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
             ),
           ),
@@ -328,13 +361,13 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     final success = await ZagSupabaseShares().revokeShare(share.id);
 
     if (success) {
-      showZagInfoSnackBar(
+      showZagSuccessSnackBar(
         title: 'Share Revoked',
         message: 'Pro access removed',
       );
       _loadShares(); // Reload shares
     } else {
-      showZagInfoSnackBar(
+      showZagErrorSnackBar(
         title: 'Failed',
         message: 'Could not revoke share',
       );

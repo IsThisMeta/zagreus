@@ -19,14 +19,41 @@ import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/system/recovery_mode/main.dart';
 import 'package:zagreus/system/window_manager/window_manager.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/supabase/messaging.dart';
 import 'package:zagreus/modules/services/webhook_sync_service.dart';
+import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
-import 'package:zagreus/services/command_processor_service.dart';
+import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/services/upcoming_widget_service.dart';
 import 'package:zagreus/services/subscription_service.dart';
+
+StreamSubscription<User?>? _aiAuthLinkSubscription;
+
+void _initializeAiAccountLinking() {
+  if (!ZagSupabase.isSupported) return;
+  if (_aiAuthLinkSubscription != null) return;
+
+  _aiAuthLinkSubscription = ZagSupabaseAuth.authStateChanges().listen((user) {
+    final hmacService = HmacEncryptionService();
+
+    if (user == null) {
+      hmacService.resetRegistration();
+      return;
+    }
+
+    final currentUserId = user.id;
+    final registeredUserId = hmacService.registeredUserId;
+    if (registeredUserId != null && registeredUserId != currentUserId) {
+      hmacService.resetRegistration();
+    }
+
+    // Kick a forced sync so the backend/device linkage reflects the active account.
+    // This is intentionally fire-and-forget.
+    unawaited(ZAssistantService().syncSubscriptionIfNeeded(force: true));
+  });
+}
 
 /// Zagreus Entry Point: Bootstrap & Run Application
 ///
@@ -51,7 +78,6 @@ Future<void> main() async {
 ///
 Future<void> bootstrap() async {
   await ZagDatabase().initialize();
-  SubscriptionService().initialize();
   ZagLogger().initialize();
   ZagTheme().initialize();
   if (ZagWindowManager.isSupported) await ZagWindowManager().initialize();
@@ -80,6 +106,10 @@ Future<void> bootstrap() async {
     await RevenueCatService().initialize();
     // Bitcoin miner started
   }
+  // Initialize subscription cache and shared access checks after Supabase init.
+  SubscriptionService().initialize();
+  // Wire auth-change listener after RevenueCat is configured (prevents Purchases crash).
+  _initializeAiAccountLinking();
   // Initialize home screen widget
   if (ZagPlatform.isIOS) await UpcomingWidgetService.initialize();
 }
@@ -172,7 +202,6 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
                 ZagreusDatabase.THEME_FOLLOW_SYSTEM,
               ],
               builder: (context, _) {
-                final brightness = MediaQuery.of(context).platformBrightness;
                 return MaterialApp.router(
                   debugShowCheckedModeBanner: false,
                   localizationsDelegates: context.localizationDelegates,

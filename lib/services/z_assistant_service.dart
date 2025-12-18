@@ -75,6 +75,12 @@ class ZAssistantService {
   /// unless [force] is true.
   Future<bool> syncSubscriptionIfNeeded({bool force = false}) async {
     _requireSignedIn();
+    // RevenueCat Purchases APIs crash if called before configuration.
+    if (!RevenueCatService().isConfigured) {
+      ZagLogger().warning(
+          'Skipping subscription sync: RevenueCat not configured yet');
+      return false;
+    }
     if (_subscriptionSynced && !force) {
       return true;
     }
@@ -136,7 +142,7 @@ class ZAssistantService {
       final hasMega = rcService.isMegaActive;
       final hasPro = rcService.isProActive;
 
-      if (customerInfo == null || (!hasUltra && !hasMega && !hasPro)) {
+      if (!hasUltra && !hasMega && !hasPro) {
         ZagLogger()
             .warning('No Pro, Mega, or Ultra subscription available for registration');
         hmacService.resetRegistration();
@@ -156,7 +162,7 @@ class ZAssistantService {
 
       print('🔐 Registering device with Z Assistant...');
       print('   Receipt token length: ${receiptToken.length} chars');
-      print('   Supabase user ID: ${supabaseUserId != null ? "present" : "none"}');
+      print('   Supabase user ID: present');
       print('   Subscription tier: $subscriptionTier');
 
       final response = await _dio.post(
@@ -165,7 +171,7 @@ class ZAssistantService {
           'device_id': deviceId,
           'hmac_key': hmacKey,
           'receipt_token': receiptToken,
-          if (supabaseUserId != null) 'user_id': supabaseUserId,
+          'user_id': supabaseUserId,
           'subscription_tier': subscriptionTier,
         },
       );
@@ -338,7 +344,7 @@ class ZAssistantService {
           headers: {
             'X-Device-Id': deviceId,
             'X-Subscription-Tier': tier,
-            if (hmacKey != null) 'X-HMAC-Key': hmacKey,
+            'X-HMAC-Key': hmacKey,
             'Accept': 'text/event-stream',
             'Cache-Control': 'no-cache',
           },
@@ -561,6 +567,39 @@ class ZAssistantService {
         success: false,
         error: e.toString(),
       );
+    }
+  }
+
+  Future<void> linkAccountToSubscription() async {
+    _requireSignedIn();
+    if (!RevenueCatService().isConfigured) {
+      throw Exception('RevenueCat not configured yet');
+    }
+    final customerInfo = await Purchases.getCustomerInfo();
+    final receiptToken = customerInfo.originalAppUserId;
+
+    try {
+      await _dio.post(
+        '/account/link',
+        data: {
+          'receipt_token': receiptToken,
+        },
+      );
+    } on dio.DioException catch (e) {
+      final data = e.response?.data;
+      final detail = data is Map<String, dynamic> ? (data['detail'] as String?) : null;
+      throw Exception(detail ?? e.message ?? 'Could not link account');
+    }
+  }
+
+  Future<void> unlinkAccountFromSubscription() async {
+    _requireSignedIn();
+    try {
+      await _dio.post('/account/unlink');
+    } on dio.DioException catch (e) {
+      final data = e.response?.data;
+      final detail = data is Map<String, dynamic> ? (data['detail'] as String?) : null;
+      throw Exception(detail ?? e.message ?? 'Could not unlink account');
     }
   }
 }

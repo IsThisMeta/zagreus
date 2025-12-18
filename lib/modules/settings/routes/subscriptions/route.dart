@@ -8,15 +8,15 @@ import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_supreme.dart';
 import 'package:zagreus/services/revenuecat_service.dart';
+import 'package:zagreus/services/z_assistant_service.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/modules/settings/routes/subscriptions/shares_route.dart';
+import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/auth.dart';
-import 'package:zagreus/supabase/subscription_shares.dart';
-import 'package:zagreus/services/subscription_service.dart';
 
 class SubscriptionsRoute extends StatefulWidget {
   const SubscriptionsRoute({
@@ -30,10 +30,94 @@ class SubscriptionsRoute extends StatefulWidget {
 class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _revokeTimer;
+  StreamSubscription<User?>? _authSubscription;
+  bool _accountLinkLoaded = false;
+  Map<String, dynamic>? _accountSubscription;
+  bool get _isSignedIn => ZagSupabaseAuth().isSignedIn;
 
   @override
   void initState() {
     super.initState();
+    _authSubscription = ZagSupabaseAuth.authStateChanges().listen((_) {
+      _loadAccountSubscription();
+    });
+    _loadAccountSubscription();
+  }
+
+  Future<void> _loadAccountSubscription() async {
+    if (!_isSignedIn) {
+      if (!mounted) return;
+      setState(() {
+        _accountSubscription = null;
+        _accountLinkLoaded = true;
+      });
+      return;
+    }
+
+    try {
+      final row = await Supabase.instance.client
+          .from('account_subscriptions')
+          .select('rc_original_app_user_id,tier,expires_at,product_id,updated_at')
+          .maybeSingle();
+      if (!mounted) return;
+      setState(() {
+        _accountSubscription =
+            row == null ? null : Map<String, dynamic>.from(row as Map);
+        _accountLinkLoaded = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _accountSubscription = null;
+        _accountLinkLoaded = true;
+      });
+    }
+  }
+
+  bool get _hasLinkedSubscription => _accountSubscription != null;
+
+  void _promptSignInForSharing() {
+    showZagInfoSnackBar(
+      title: 'Sign in required',
+      message: 'Sign in to your Zagreus account to share subscriptions.',
+    );
+    SettingsRoutes.ACCOUNT.go();
+  }
+
+  Future<void> _linkThisAccount() async {
+    if (!_isSignedIn) return;
+    showZagInfoSnackBar(title: 'Linking', message: 'Linking this account...');
+    try {
+      await ZAssistantService().linkAccountToSubscription();
+      await _loadAccountSubscription();
+      showZagSuccessSnackBar(
+        title: 'Linked',
+        message: 'This account is now linked to your subscription.',
+      );
+    } catch (e) {
+      showZagErrorSnackBar(
+        title: 'Could not link',
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<void> _unlinkThisAccount() async {
+    if (!_isSignedIn) return;
+    showZagInfoSnackBar(title: 'Unlinking', message: 'Unlinking this account...');
+    try {
+      await ZAssistantService().unlinkAccountFromSubscription();
+      await _loadAccountSubscription();
+      showZagSuccessSnackBar(
+        title: 'Unlinked',
+        message: 'This account is no longer linked.',
+      );
+    } catch (e) {
+      showZagErrorSnackBar(
+        title: 'Could not unlink',
+        message: e.toString(),
+      );
+    }
   }
 
   @override
@@ -154,12 +238,75 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             trailing: ZagIconButton(
               icon: isSupreme ? Icons.star_rounded : Icons.star_border_rounded,
               color: ZagColours.gold,
+          ),
+          onTap: () => _showSupremeDialog(context),
+        ),
+
+        if (isMega || isUltra || isSupreme)
+          ZagBlock(
+            title: 'Account Link',
+            body: [
+              TextSpan(
+                text: !_isSignedIn
+                    ? 'Link to share subscriptions'
+                    : _accountLinkLoaded
+                        ? (_hasLinkedSubscription
+                            ? 'Linked • ${(_accountSubscription?['tier'] as String?)?.toUpperCase() ?? ''}'
+                            : 'Link to share subscriptions')
+                        : 'Checking link…',
+              ),
+            ],
+            trailing: ZagIconButton(
+              icon: !_isSignedIn
+                  ? Icons.login_rounded
+                  : _hasLinkedSubscription
+                      ? Icons.link_rounded
+                      : Icons.link_off_rounded,
+              color: _hasLinkedSubscription
+                  ? ZagColours.purple
+                  : ZagColours.currentAccent,
             ),
-            onTap: () => _showSupremeDialog(context),
+            onTap: () async {
+              if (!_isSignedIn) {
+                _promptSignInForSharing();
+                return;
+              }
+              if (!_accountLinkLoaded) return;
+              if (_hasLinkedSubscription) {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Unlink account?'),
+                    content: const Text(
+                      'Unlinking will disable subscription sharing for your account until re-linked.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        style: TextButton.styleFrom(
+                          foregroundColor: ZagColours.red,
+                        ),
+                        child: const Text('Unlink'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  await _unlinkThisAccount();
+                }
+                return;
+              }
+              await _linkThisAccount();
+            },
           ),
 
         // Subscription Sharing (for Mega/Ultra/Supreme users or shared Pro users)
-        if (ZagSupabaseAuth().isSignedIn && (isMega || isUltra || isSupreme || _hasSharedPro()))
+        if (ZagSupabaseAuth().isSignedIn &&
+            ((isMega || isUltra || isSupreme) ? _hasLinkedSubscription : _hasSharedPro()))
           ZagBlock(
             title: 'Subscription Sharing',
             body: [
@@ -1133,6 +1280,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _cancelRevokeTimer();
     super.dispose();
   }
