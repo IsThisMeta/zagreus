@@ -275,6 +275,8 @@ class _State extends State<ZagAppBar> {
       elevation: 0.0,
       titleSpacing: 0.0,
       title: widget.child,
+      // Hide the endDrawer icon while keeping drawer accessible via swipe
+      actions: const [SizedBox.shrink()],
     );
   }
 
