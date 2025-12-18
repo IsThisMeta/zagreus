@@ -222,7 +222,7 @@ class _State extends State<ConfigurationTautulliRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.TAUTULLI.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.TAUTULLI.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),

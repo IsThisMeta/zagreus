@@ -148,7 +148,7 @@ class _State extends State<ConfigurationOverseerrRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.OVERSEERR.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.OVERSEERR.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),

@@ -246,7 +246,7 @@ class _State extends State<ConfigurationRadarrRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.RADARR.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.RADARR.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),

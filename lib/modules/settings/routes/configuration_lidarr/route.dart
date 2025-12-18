@@ -159,7 +159,7 @@ class _State extends State<ConfigurationLidarrRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.LIDARR.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.LIDARR.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),

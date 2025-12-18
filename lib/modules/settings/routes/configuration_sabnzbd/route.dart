@@ -159,7 +159,7 @@ class _State extends State<ConfigurationSABnzbdRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.SABNZBD.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.SABNZBD.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),

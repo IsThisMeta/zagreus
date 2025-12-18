@@ -158,7 +158,7 @@ class _State extends State<ConfigurationNZBGetRoute>
       title: 'Add Duplicate Instance',
       body: [
         TextSpan(
-          text: 'Create another ${ZagModule.NZBGET.title} instance with separate connection details',
+          text: 'Create another ${ZagModule.NZBGET.title} instance',
         ),
       ],
       trailing: const ZagIconButton(icon: ZagIcons.ADD),
