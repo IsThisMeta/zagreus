@@ -1252,25 +1252,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final instanceKey =
           ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
 
-      setState(() {
-        _deepCutsFuture = DeepCutsService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicMoviesFuture = MagicMoviesService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicMoviesCastCrewFuture =
-            MagicMoviesCastCrewService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicPeopleMoviesFuture = MagicPeopleService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-      });
+      if (_hasAiAccess) {
+        setState(() {
+          _deepCutsFuture = DeepCutsService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicMoviesFuture = MagicMoviesService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicMoviesCastCrewFuture =
+              MagicMoviesCastCrewService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicPeopleMoviesFuture = MagicPeopleService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+        });
+      }
 
       // Reload TMDB sections to update library status indicators
       _loadPopularMovies();
@@ -1634,25 +1636,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final instanceKey =
           ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
 
-      setState(() {
-        _upNextFuture = UpNextService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicShowsFuture = MagicShowsService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicShowsCastCrewFuture =
-            MagicShowsCastCrewService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-        _magicPeopleShowsFuture = MagicPeopleService().fetchRecommendations(
-          profileKey: profileKey,
-          instanceKey: instanceKey,
-        );
-      });
+      if (_hasAiAccess) {
+        setState(() {
+          _upNextFuture = UpNextService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicShowsFuture = MagicShowsService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicShowsCastCrewFuture =
+              MagicShowsCastCrewService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+          _magicPeopleShowsFuture = MagicPeopleService().fetchRecommendations(
+            profileKey: profileKey,
+            instanceKey: instanceKey,
+          );
+        });
+      }
 
       // Reload TMDB sections to update library status indicators
       _loadPopularTVShows();
@@ -2132,7 +2136,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool get _isSignedIn => ZagSupabaseAuth().isSignedIn;
   bool get _hasAiTier => ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
   bool get _hasAiAccess => _isSignedIn && _hasAiTier;
-  bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read() && _hasAiAccess;
+  bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read() && _hasAiTier;
 
   void _promptSignInForAi() {
     showZagInfoSnackBar(
@@ -2351,7 +2355,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (enableCalendar) currentIndex++;
     final serverIndex = currentIndex;
 
-    final isMegaOrUltra = _hasAiAccess;
+    final isMegaOrUltra = _hasAiTier;
     final isPro = ZagreusPro.isEnabled;
 
     if (_isSearchActive) {
