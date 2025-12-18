@@ -5,10 +5,14 @@ import 'package:zagreus/widgets/pages/invalid_route.dart';
 
 class SonarrManualImportDetailsRoute extends StatefulWidget {
   final String? path;
+  final String? seriesId;
+  final String? episodeId;
 
   const SonarrManualImportDetailsRoute({
     Key? key,
     required this.path,
+    this.seriesId,
+    this.episodeId,
   }) : super(key: key);
 
   @override
@@ -38,6 +42,8 @@ class _State extends State<SonarrManualImportDetailsRoute>
       create: (BuildContext context) => SonarrManualImportDetailsState(
         context,
         path: widget.path!,
+        hintSeriesId: widget.seriesId != null ? int.tryParse(widget.seriesId!) : null,
+        hintEpisodeId: widget.episodeId != null ? int.tryParse(widget.episodeId!) : null,
       ),
       builder: (context, _) {
         return ZagScaffold(

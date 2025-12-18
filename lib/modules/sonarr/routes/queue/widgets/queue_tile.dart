@@ -198,14 +198,25 @@ class _State extends State<SonarrQueueTile> {
             );
           },
         ),
-      // if (widget.queueRecord.status == SonarrQueueStatus.COMPLETED &&
-      //     widget.queueRecord?.trackedDownloadStatus ==
-      //         SonarrTrackedDownloadStatus.WARNING)
-      //   ZagButton.text(
-      //     icon: Icons.download_done_rounded,
-      //     text: 'sonarr.Import'.tr(),
-      //     onTap: () async {},
-      //   ),
+      if (widget.queueRecord.status == SonarrQueueStatus.COMPLETED &&
+          widget.queueRecord.trackedDownloadStatus ==
+              SonarrTrackedDownloadStatus.WARNING &&
+          (widget.queueRecord.outputPath ?? '').isNotEmpty)
+        ZagButton.text(
+          icon: Icons.download_done_rounded,
+          text: 'sonarr.Import'.tr(),
+          onTap: () {
+            // Build query params with series/episode hints from queue
+            Map<String, String> queryParams = {'path': widget.queueRecord.outputPath!};
+            if (widget.queueRecord.seriesId != null) {
+              queryParams['seriesId'] = widget.queueRecord.seriesId!.toString();
+            }
+            if (widget.queueRecord.episodeId != null) {
+              queryParams['episodeId'] = widget.queueRecord.episodeId!.toString();
+            }
+            SonarrRoutes.MANUAL_IMPORT_DETAILS.go(queryParams: queryParams);
+          },
+        ),
       ZagButton.text(
         icon: Icons.delete_rounded,
         color: ZagColours.red,

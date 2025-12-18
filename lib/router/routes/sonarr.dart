@@ -66,7 +66,13 @@ enum SonarrRoutes with ZagRoutesMixin {
       case SonarrRoutes.MANUAL_IMPORT_DETAILS:
         return route(builder: (_, state) {
           final path = state.uri.queryParameters['path'] ?? '';
-          return SonarrManualImportDetailsRoute(path: path);
+          final seriesId = state.uri.queryParameters['seriesId'];
+          final episodeId = state.uri.queryParameters['episodeId'];
+          return SonarrManualImportDetailsRoute(
+            path: path,
+            seriesId: seriesId,
+            episodeId: episodeId,
+          );
         });
       case SonarrRoutes.QUEUE:
         return route(widget: const QueueRoute());
