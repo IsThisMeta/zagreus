@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/system/platform.dart';
 
 class DiscoverSectionsEditor extends StatefulWidget {
@@ -100,16 +99,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'magic_shows_cast_crew': 'Magic Shows: Cast & Crew',
   };
 
-  static const List<String> _megaOnlySections = [
-    'deep_cuts',
-    'magic_movies',
-    'magic_movies_cast_crew',
-    'magic_people',
-    'up_next',
-    'magic_shows',
-    'magic_shows_cast_crew',
-  ];
-
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
@@ -156,11 +145,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     _tvSections = savedTVOrder.isNotEmpty
         ? List<String>.from(savedTVOrder)
         : List<String>.from(_defaultTVSections);
-
-    if (!ZagreusMega.isEnabled) {
-      _movieSections.removeWhere((s) => _megaOnlySections.contains(s));
-      _tvSections.removeWhere((s) => _megaOnlySections.contains(s));
-    }
     
     // Load show titles setting
     final savedShowTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read();
@@ -276,12 +260,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     setState(() {
       _movieSections = List<String>.from(_defaultMovieSections);
       _tvSections = List<String>.from(_defaultTVSections);
-
-      if (!ZagreusMega.isEnabled) {
-        _movieSections.removeWhere((s) => _megaOnlySections.contains(s));
-        _tvSections.removeWhere((s) => _megaOnlySections.contains(s));
-      }
-
       // Use device-specific defaults
       _posterHeight = isTablet ? 250.0 : 200.0;
       _heroHeight = isTablet ? 550.0 : 370.0;
@@ -727,15 +705,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     required bool isMovie,
   }) {
     final theme = Theme.of(context);
-    final allowedDefaults = ZagreusMega.isEnabled
-        ? defaults
-        : defaults
-            .where((section) => !_megaOnlySections.contains(section))
-            .toList();
-            
-    final availableSections = allowedDefaults
-        .where((section) => !sections.contains(section))
-        .toList();
+    final availableSections =
+        defaults.where((section) => !sections.contains(section)).toList();
 
     return Column(
       children: [
@@ -822,7 +793,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 ? null
                 : () => _showAddSectionSheet(
                       isMovie: isMovie,
-                      defaults: allowedDefaults,
+                      defaults: defaults,
                     ),
           ),
         ),

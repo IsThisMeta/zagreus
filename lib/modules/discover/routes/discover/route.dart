@@ -355,7 +355,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ] else if (showRetryButton) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
-                              text: 'Tap to retry',
+                              text: 'Generate now',
                               icon: Icons.refresh_rounded,
                               onTap: () {
                                 final refreshService = MagicPeopleService();
@@ -1192,6 +1192,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         if (showGlobalLoader) _isLoading = false;
       });
 
+      // Refresh AI sections (fetch only, don't trigger generation)
+      final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+      final instanceKey = ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+
+      setState(() {
+        _deepCutsFuture = DeepCutsService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicMoviesFuture = MagicMoviesService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicMoviesCastCrewFuture = MagicMoviesCastCrewService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicPeopleMoviesFuture = MagicPeopleService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+      });
+
       // Reload TMDB sections to update library status indicators
       _loadPopularMovies();
       _loadRecentlyReleasedMovies();
@@ -1546,6 +1569,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       setState(() {
         _recentlyDownloadedShows = shows;
+      });
+
+      // Refresh AI sections (fetch only, don't trigger generation)
+      final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+      final instanceKey = ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+
+      setState(() {
+        _upNextFuture = UpNextService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicShowsFuture = MagicShowsService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicShowsCastCrewFuture = MagicShowsCastCrewService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
+        _magicPeopleShowsFuture = MagicPeopleService().fetchRecommendations(
+          profileKey: profileKey,
+          instanceKey: instanceKey,
+        );
       });
 
       // Reload TMDB sections to update library status indicators
@@ -9004,7 +9050,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ] else if (showRetryButton) ...[
               const SizedBox(height: 16),
               ZagButton.text(
-                text: 'Tap to retry',
+                text: 'Generate now',
                 icon: Icons.refresh_rounded,
                 onTap: () {
                   final service = DeepCutsService();
@@ -9390,7 +9436,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ] else if (showRetryButton) ...[
               const SizedBox(height: 16),
               ZagButton.text(
-                text: 'Tap to retry',
+                text: 'Generate now',
                 icon: Icons.refresh_rounded,
                 onTap: () {
                   final service = UpNextService();
@@ -10219,7 +10265,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ] else if (showRetryButton) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
-                              text: 'Tap to retry',
+                              text: 'Generate now',
                               icon: Icons.refresh_rounded,
                               onTap: () {
                                 final refreshService = MagicPeopleService();
@@ -10612,7 +10658,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ] else if (showRetryButton) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
-                              text: 'Tap to retry',
+                              text: 'Generate now',
                               icon: Icons.refresh_rounded,
                               onTap: () {
                                 final refreshService = MagicShowsService();
@@ -10883,7 +10929,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ] else if (showRetryButton) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
-                              text: 'Tap to retry',
+                              text: 'Generate now',
                               icon: Icons.refresh_rounded,
                               onTap: () {
                                 final refreshService = MagicShowsCastCrewService();
