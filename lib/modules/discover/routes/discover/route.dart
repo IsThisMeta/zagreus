@@ -3158,8 +3158,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _customSectionsArea({required String mediaType}) {
     if (!_customSectionsEnabled) return const SizedBox.shrink();
 
-    final sections =
-        CustomSectionsService().getSavedSections(mediaType: mediaType);
+    return FutureBuilder<List<CustomSectionConfig>>(
+      future: CustomSectionsService().syncFromSupabase(mediaType: mediaType),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        final sections = snapshot.data!;
 
     if (sections.isEmpty) {
       return Padding(
@@ -3201,6 +3207,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ],
         );
       }).toList(),
+    );
+      },
     );
   }
 

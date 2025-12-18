@@ -3,6 +3,7 @@ import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/services/hmac_encryption_service.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -142,6 +143,9 @@ class CustomSectionsService {
   final Map<String, CustomSectionResult> _cachedResults = {};
   final Map<String, bool> _generatingFlags = {};
 
+  // Supabase client
+  SupabaseClient get _supabase => Supabase.instance.client;
+
   /// Get the current subscription tier
   String get _subscriptionTier {
     if (ZagreusUltra.isEnabled) return 'ultra';
@@ -194,16 +198,21 @@ class CustomSectionsService {
       createdAt: DateTime.now(),
     );
 
+    // Save locally
     final savedList =
         ZagreusDatabase.CUSTOM_SECTIONS.read() as List<dynamic>? ?? [];
     savedList.add(config.toJson());
     ZagreusDatabase.CUSTOM_SECTIONS.update(savedList);
+
+    // Sync to Supabase
+    await _syncToSupabase(config);
 
     return config;
   }
 
   /// Update an existing custom section config
   Future<void> updateSection(CustomSectionConfig config) async {
+    // Update locally
     final savedList =
         ZagreusDatabase.CUSTOM_SECTIONS.read() as List<dynamic>? ?? [];
     final index = savedList.indexWhere((json) =>
@@ -212,16 +221,23 @@ class CustomSectionsService {
       savedList[index] = config.toJson();
       ZagreusDatabase.CUSTOM_SECTIONS.update(savedList);
     }
+
+    // Sync to Supabase
+    await _syncToSupabase(config);
   }
 
   /// Delete a custom section config
   Future<void> deleteSection(String sectionId) async {
+    // Delete locally
     final savedList =
         ZagreusDatabase.CUSTOM_SECTIONS.read() as List<dynamic>? ?? [];
     savedList.removeWhere(
         (json) => (json as Map<String, dynamic>)['id'] == sectionId);
     ZagreusDatabase.CUSTOM_SECTIONS.update(savedList);
     _cachedResults.remove(sectionId);
+
+    // Soft delete in Supabase
+    await _deleteFromSupabase(sectionId);
   }
 
   /// Fetch cached recommendations for a custom section
@@ -440,5 +456,115 @@ class CustomSectionsService {
     }
 
     return DateTime.now().isAfter(existingResult.nextGenerationAt!);
+  }
+
+  // ============================================================================
+  // SUPABASE SYNC METHODS
+  // ============================================================================
+
+  /// Sync a custom section config to Supabase (upsert)
+  Future<void> _syncToSupabase(CustomSectionConfig config) async {
+    try {
+      final deviceId = DeviceIdService().deviceId;
+      final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+      final userId = _getUserId();
+
+      await _supabase.from('custom_sections').upsert({
+        'id': config.id,
+        'user_id': userId,
+        'device_id': deviceId,
+        'profile_key': profileKey,
+        'title': config.title,
+        'description': config.description,
+        'media_type': config.mediaType,
+        'created_at': config.createdAt.toIso8601String(),
+        'last_generated_at': config.lastGeneratedAt?.toIso8601String(),
+      });
+
+      print('✅ Synced custom section to Supabase: ${config.title}');
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync custom section to Supabase', e, stack);
+      // Don't throw - allow offline operation
+    }
+  }
+
+  /// Soft delete a custom section from Supabase
+  Future<void> _deleteFromSupabase(String sectionId) async {
+    try {
+      await _supabase.from('custom_sections').update({
+        'deleted_at': DateTime.now().toIso8601String(),
+      }).eq('id', sectionId);
+
+      print('✅ Soft deleted custom section from Supabase: $sectionId');
+    } catch (e, stack) {
+      ZagLogger().error('Failed to delete custom section from Supabase', e, stack);
+      // Don't throw - allow offline operation
+    }
+  }
+
+  /// Fetch custom sections from Supabase and merge with local storage
+  Future<List<CustomSectionConfig>> syncFromSupabase({
+    required String mediaType,
+  }) async {
+    try {
+      final deviceId = DeviceIdService().deviceId;
+      final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+
+      final response = await _supabase
+          .from('custom_sections')
+          .select()
+          .eq('device_id', deviceId)
+          .eq('profile_key', profileKey)
+          .eq('media_type', mediaType)
+          .filter('deleted_at', 'is', null)
+          .order('created_at', ascending: false);
+
+      final cloudSections = (response as List)
+          .map((json) => CustomSectionConfig.fromJson(json))
+          .toList();
+
+      // Merge with local storage
+      final localSections = getSavedSections(mediaType: mediaType);
+      final mergedMap = <String, CustomSectionConfig>{};
+
+      // Add local sections first
+      for (final section in localSections) {
+        mergedMap[section.id] = section;
+      }
+
+      // Override with cloud sections (cloud is source of truth)
+      for (final section in cloudSections) {
+        mergedMap[section.id] = section;
+      }
+
+      // Save merged list back to local storage
+      final savedList =
+          ZagreusDatabase.CUSTOM_SECTIONS.read() as List<dynamic>? ?? [];
+      final otherMediaSections = savedList
+          .map((json) =>
+              CustomSectionConfig.fromJson(Map<String, dynamic>.from(json as Map)))
+          .where((config) => config.mediaType != mediaType)
+          .toList();
+
+      final allSections = [
+        ...otherMediaSections.map((c) => c.toJson()),
+        ...mergedMap.values.map((c) => c.toJson()),
+      ];
+
+      ZagreusDatabase.CUSTOM_SECTIONS.update(allSections);
+
+      print('✅ Synced ${cloudSections.length} custom sections from Supabase');
+      return mergedMap.values.toList();
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync from Supabase', e, stack);
+      // Fallback to local storage
+      return getSavedSections(mediaType: mediaType);
+    }
+  }
+
+  /// Get user ID (device ID as fallback for anonymous users)
+  String _getUserId() {
+    final user = _supabase.auth.currentUser;
+    return user?.id ?? DeviceIdService().deviceId;
   }
 }
