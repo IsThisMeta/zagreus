@@ -1357,6 +1357,7 @@ class SettingsDialogs {
       title: 'settings.AccountHelp'.tr(),
       content: [ZagDialog.textContent(text: 'settings.AccountHelpHint1'.tr())],
       contentPadding: ZagDialog.textDialogContentPadding(),
+      cancelButtonText: 'zagreus.Close'.tr(),
     );
   }
 
