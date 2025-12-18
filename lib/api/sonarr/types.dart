@@ -4,6 +4,7 @@ library sonarr_types;
 part 'types/event_type.dart';
 part 'types/health_check_type.dart';
 part 'types/history_sort_key.dart';
+part 'types/import_mode.dart';
 part 'types/protocol_type.dart';
 part 'types/queue_sort_key.dart';
 part 'types/queue_status_type.dart';

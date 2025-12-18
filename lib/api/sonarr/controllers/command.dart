@@ -12,6 +12,12 @@ class SonarrControllerCommand {
   }) async =>
       _commandEpisodeSearch(_client, episodeIds: episodeIds);
 
+  Future<SonarrCommand> manualImport({
+    required List<SonarrManualImportFile> files,
+    required SonarrImportMode importMode,
+  }) async =>
+      _commandManualImport(_client, files: files, importMode: importMode);
+
   Future<List<SonarrCommand>> queue() async => _commandCommandQueue(_client);
 
   Future<SonarrCommand> missingEpisodeSearch() async =>

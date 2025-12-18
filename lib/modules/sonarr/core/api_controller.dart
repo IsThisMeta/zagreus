@@ -918,4 +918,90 @@ class SonarrAPIController {
     }
     return false;
   }
+
+  /// Trigger a manual import of files.
+  Future<bool> triggerManualImport({
+    required BuildContext context,
+    required List<SonarrManualImportFile> files,
+    required SonarrImportMode importMode,
+    bool showSnackbar = true,
+  }) async {
+    if (context.read<SonarrState>().enabled) {
+      return await context
+          .read<SonarrState>()
+          .api!
+          .command
+          .manualImport(
+            files: files,
+            importMode: importMode,
+          )
+          .then((_) {
+        String message = '${files.length} Files';
+        if (files.length == 1) message = files[0].path!;
+        if (showSnackbar) {
+          showZagSuccessSnackBar(
+            title: 'Importing... (${importMode.value.toTitleCase()})',
+            message: message,
+          );
+        }
+        return true;
+      }).catchError((error, stack) {
+        ZagLogger().error('Failed to trigger manual import', error, stack);
+        if (showSnackbar)
+          showZagErrorSnackBar(title: 'Failed to Import', error: error);
+        return false;
+      });
+    }
+    return false;
+  }
+
+  /// Given a [SonarrManualImport] instance, create a [SonarrManualImportFile] which is sent within the command to start the import.
+  Tuple2<SonarrManualImportFile?, String?> buildManualImportFile({
+    required SonarrManualImport import,
+  }) {
+    if (import.series == null || import.series!.id == null)
+      return const Tuple2(null, 'All selections must have a series set');
+    if ((import.episodes?.length ?? 0) == 0 && import.episode == null)
+      return const Tuple2(null, 'All selections must have at least one episode set');
+    if (import.quality == null || (import.quality?.quality?.id ?? -1) < 0)
+      return const Tuple2(null, 'All selections must have a quality set');
+    if ((import.languages?.length ?? 0) == 0)
+      return const Tuple2(null, 'All selections must have a language set');
+
+    // Build episode IDs list from both episode and episodes fields
+    List<int> episodeIds = [];
+    if (import.episode != null && import.episode!.id != null) {
+      episodeIds.add(import.episode!.id!);
+    }
+    if (import.episodes != null) {
+      episodeIds.addAll(
+        import.episodes!
+            .where((e) => e.id != null)
+            .map((e) => e.id!)
+            .toList(),
+      );
+    }
+
+    // Remove duplicates
+    episodeIds = episodeIds.toSet().toList();
+
+    if (episodeIds.isEmpty) {
+      return const Tuple2(null, 'All selections must have valid episode IDs');
+    }
+
+    return Tuple2(
+      SonarrManualImportFile(
+        path: import.path,
+        folderName: import.folderName,
+        seriesId: import.series!.id,
+        episodeIds: episodeIds,
+        quality: import.quality,
+        languages: import.languages,
+        releaseGroup: import.releaseGroup,
+        releaseType: import.releaseType,
+        downloadId: import.downloadId,
+      ),
+      null,
+    );
+  }
 }

@@ -14,6 +14,7 @@ part 'controllers/calendar/get_calendar.dart';
 part 'controllers/command.dart';
 part 'controllers/command/backup.dart';
 part 'controllers/command/episode_search.dart';
+part 'controllers/command/manual_import.dart';
 part 'controllers/command/missing_episode_search.dart';
 part 'controllers/command/queue.dart';
 part 'controllers/command/refresh_monitored_downloads.dart';
@@ -51,6 +52,11 @@ part 'controllers/history/get_history_by_series.dart';
 // Import List
 part 'controllers/import_list.dart';
 part 'controllers/import_list/get_exclusion_list.dart';
+
+// Manual Import
+part 'controllers/manual_import.dart';
+part 'controllers/manual_import/get_manual_import.dart';
+part 'controllers/manual_import/update_manual_import.dart';
 
 // Notification
 part 'controllers/notification.dart';
