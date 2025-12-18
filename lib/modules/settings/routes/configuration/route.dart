@@ -189,8 +189,9 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
               '• Recommended based on your library\n'
               '• Missing movies from collections\n\n'
               'Choose a plan:',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
+                color: ZagColours.textColor(context),
               ),
             ),
           ),

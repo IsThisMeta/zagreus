@@ -10,13 +10,17 @@ abstract class ZagDialog {
 
   static Widget title({
     required String text,
+    Color? color,
   }) =>
-      Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: ZagDialog.HEADER_SIZE,
-          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+      Builder(
+        builder: (context) => Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: ZagDialog.HEADER_SIZE,
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            color: color ?? ZagColours.textColor(context),
+          ),
         ),
       );
 
@@ -38,14 +42,17 @@ abstract class ZagDialog {
     required List<TextSpan>? children,
     TextAlign alignment = TextAlign.start,
   }) =>
-      RichText(
-        text: TextSpan(
-          style: TextStyle(
-            fontSize: ZagDialog.BODY_SIZE,
+      Builder(
+        builder: (context) => RichText(
+          text: TextSpan(
+            style: TextStyle(
+              fontSize: ZagDialog.BODY_SIZE,
+              color: ZagColours.textColor(context),
+            ),
+            children: children,
           ),
-          children: children,
+          textAlign: alignment,
         ),
-        textAlign: alignment,
       );
 
   static Widget button({
@@ -107,7 +114,7 @@ abstract class ZagDialog {
         builder: (context) => Text(
           text,
           style: TextStyle(
-            color: color ?? Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: (color ?? ZagColours.textColor(context)).withOpacity(0.85),
             fontSize: ZagDialog.BODY_SIZE,
           ),
           textAlign: textAlign,

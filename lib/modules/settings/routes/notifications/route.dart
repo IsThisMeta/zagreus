@@ -364,29 +364,16 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   }
 
   void _showErrorDialog(String title, String errorMessage) {
-    showDialog(
+    ZagDialog.dialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$title Error'),
-        content: SingleChildScrollView(
-          child: Text(
-            errorMessage,
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H3,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
+      title: '$title Error',
+      content: [
+        ZagDialog.textContent(
+          text: errorMessage,
+          textAlign: TextAlign.left,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'OK',
-              style: TextStyle(color: ZagColours.currentAccentLight),
-            ),
-          ),
-        ],
-      ),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
     );
   }
 

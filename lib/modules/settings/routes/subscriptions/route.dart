@@ -391,8 +391,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               introText,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
+                color: ZagColours.textColor(context),
               ),
             ),
           ),
@@ -580,8 +581,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               padding: ZagDialog.textDialogContentPadding(),
               child: Text(
                 'Supreme already includes every Mega feature.',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: ZagUI.FONT_SIZE_H2,
+                  color: ZagColours.textColor(context),
                 ),
               ),
             ),
@@ -618,8 +620,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               megaIntro,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
+                color: ZagColours.textColor(context),
               ),
             ),
           ),

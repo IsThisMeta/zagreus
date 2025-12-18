@@ -138,6 +138,12 @@ class ZagColours {
     final useLunaColors = ZagreusDatabase.THEME_USE_LUNASEA_COLORS.read();
     return useLunaColors ? LunaColours.accentLight : accentLight;
   }
+
+  /// Get theme-aware text color (White for dark mode, Black for light mode)
+  static Color textColor(BuildContext context) {
+    bool isLight = Theme.of(context).brightness == Brightness.light;
+    return isLight ? Colors.black : white;
+  }
 }
 
 extension ZagColor on Color {

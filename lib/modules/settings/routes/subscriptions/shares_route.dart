@@ -258,7 +258,10 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
               children: [
                 Text(
                   'Enter the email address of the person you want to share Pro access with:',
-                  style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
+                  style: TextStyle(
+                    fontSize: ZagUI.FONT_SIZE_H2,
+                    color: ZagColours.textColor(context),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -339,7 +342,10 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               'Remove Pro access for ${share.sharedWithEmail}?',
-              style: const TextStyle(fontSize: ZagUI.FONT_SIZE_H2),
+              style: TextStyle(
+                fontSize: ZagUI.FONT_SIZE_H2,
+                color: ZagColours.textColor(context),
+              ),
             ),
           ),
           ZagDialog.tile(
