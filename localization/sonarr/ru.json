@@ -30,5 +30,6 @@
     "sonarr.DeleteFile": "Удалить файл",
     "sonarr.Destination": "Назначение",
     "sonarr.DestinationRelative": "Относительное назначение",
-    "sonarr.More": "Больше"
+    "sonarr.More": "Больше",
+    "sonarr.ParentDirectory": "Родительская папка"
 }

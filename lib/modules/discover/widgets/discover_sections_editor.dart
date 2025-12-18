@@ -48,33 +48,39 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   // Phone poster height
   static const double _posterHeightMinPhone = 150.0;
   static const double _posterHeightMaxPhone = 250.0;
-  
+
   // iPad poster height (larger range for bigger screen)
   static const double _posterHeightMinIPad = 150.0;
   static const double _posterHeightMaxIPad = 350.0;
-  
+
   // Phone defaults
   static const double _heroHeightMinPhone = 300.0;
   static const double _heroHeightMaxPhone = 500.0;
   static const int _columnsPerRowMinPhone = 2;
   static const int _columnsPerRowMaxPhone = 4;
-  
+
   // iPad defaults (larger screen = more space for hero, more columns)
   static const double _heroHeightMinIPad = 450.0;
   static const double _heroHeightMaxIPad = 650.0;
-  static const int _columnsPerRowMinIPad = 2;  // Default 4, range 2-6
+  static const int _columnsPerRowMinIPad = 2; // Default 4, range 2-6
   static const int _columnsPerRowMaxIPad = 6;
 
   // Helper to check if we're on iPad
   bool get _isTablet => mounted && ZagPlatform.isTablet(context);
 
   // Dynamic getters based on device type
-  double get _posterHeightMin => _isTablet ? _posterHeightMinIPad : _posterHeightMinPhone;
-  double get _posterHeightMax => _isTablet ? _posterHeightMaxIPad : _posterHeightMaxPhone;
-  double get _heroHeightMin => _isTablet ? _heroHeightMinIPad : _heroHeightMinPhone;
-  double get _heroHeightMax => _isTablet ? _heroHeightMaxIPad : _heroHeightMaxPhone;
-  int get _columnsPerRowMin => _isTablet ? _columnsPerRowMinIPad : _columnsPerRowMinPhone;
-  int get _columnsPerRowMax => _isTablet ? _columnsPerRowMaxIPad : _columnsPerRowMaxPhone;
+  double get _posterHeightMin =>
+      _isTablet ? _posterHeightMinIPad : _posterHeightMinPhone;
+  double get _posterHeightMax =>
+      _isTablet ? _posterHeightMaxIPad : _posterHeightMaxPhone;
+  double get _heroHeightMin =>
+      _isTablet ? _heroHeightMinIPad : _heroHeightMinPhone;
+  double get _heroHeightMax =>
+      _isTablet ? _heroHeightMaxIPad : _heroHeightMaxPhone;
+  int get _columnsPerRowMin =>
+      _isTablet ? _columnsPerRowMinIPad : _columnsPerRowMinPhone;
+  int get _columnsPerRowMax =>
+      _isTablet ? _columnsPerRowMaxIPad : _columnsPerRowMaxPhone;
 
   static const Map<String, String> _sectionNames = {
     'recently_downloaded': 'Recently Downloaded',
@@ -145,7 +151,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     _tvSections = savedTVOrder.isNotEmpty
         ? List<String>.from(savedTVOrder)
         : List<String>.from(_defaultTVSections);
-    
+
     // Load show titles setting
     final savedShowTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read();
     if (savedShowTitles != null) {
@@ -183,9 +189,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   /// Load settings that are device-specific (poster height, hero height, columns per row)
   void _loadDeviceDependentSettings() {
     final isTablet = _isTablet;
-    
+
     // Load poster height from device-specific key
-    final savedPosterHeight = isTablet 
+    final savedPosterHeight = isTablet
         ? ZagreusDatabase.DISCOVER_IPAD_POSTER_HEIGHT.read()
         : ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
     if (savedPosterHeight >= _posterHeightMin &&
@@ -195,9 +201,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       // Set to default for this device type
       _posterHeight = isTablet ? 250.0 : 200.0;
     }
-    
+
     // Load hero height from device-specific key
-    final savedHeroHeight = isTablet 
+    final savedHeroHeight = isTablet
         ? ZagreusDatabase.DISCOVER_IPAD_HERO_HEIGHT.read()
         : ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
     if (savedHeroHeight >= _heroHeightMin &&
@@ -229,7 +235,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
     ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(_movieSections);
     ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(_tvSections);
-    
+    ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.update(true);
+    ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.update(true);
+
     // Save device-specific settings
     if (_isTablet) {
       ZagreusDatabase.DISCOVER_IPAD_POSTER_HEIGHT.update(_posterHeight);
@@ -240,13 +248,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       ZagreusDatabase.DISCOVER_HERO_HEIGHT.update(_heroHeight);
       ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.update(_columnsPerRow);
     }
-    
+
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
-    ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.update(_hideInLibraryFromHero);
-    ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW
-        .update(_trendingTimeWindow);
+    ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO
+        .update(_hideInLibraryFromHero);
+    ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.update(_trendingTimeWindow);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(

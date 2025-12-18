@@ -179,6 +179,7 @@
     "sonarr.Leechers": "Leechers",
     "sonarr.Messages": "Berichten",
     "sonarr.More": "Meer",
+    "sonarr.ParentDirectory": "Bovenliggende map",
     "sonarr.Other": "Anders",
     "sonarr.Overview": "Overzicht",
     "sonarr.Path": "Pad",

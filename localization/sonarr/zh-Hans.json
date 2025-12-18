@@ -128,6 +128,7 @@
     "sonarr.MissingEpisodes": "缺少集",
     "sonarr.Monitoring": "监控",
     "sonarr.More": "更多",
+    "sonarr.ParentDirectory": "父目录",
     "sonarr.NoLongerMonitoring": "不再监控",
     "sonarr.NoSeasonsFound": "未找到季",
     "sonarr.QualityProfile": "质量概况",

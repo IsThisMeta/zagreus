@@ -147,6 +147,7 @@
     "sonarr.Name": "Name",
     "sonarr.NoSeasonsFound": "Keine Staffeln gefunden",
     "sonarr.More": "Mehr",
+    "sonarr.ParentDirectory": "Übergeordnetes Verzeichnis",
     "sonarr.OneSeason": "1 Staffel",
     "sonarr.Searching": "Sucht {}",
     "sonarr.NoSeriesFound": "Keine Serie gefunden",

@@ -94,6 +94,9 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   // Discover module section order
   DISCOVER_MOVIES_SECTION_ORDER<List>([]),
   DISCOVER_TV_SECTION_ORDER<List>([]),
+  // Discover section order migration guards (prevents re-adding deleted sections)
+  DISCOVER_MOVIES_SECTION_ORDER_MIGRATED<bool>(false),
+  DISCOVER_TV_SECTION_ORDER_MIGRATED<bool>(false),
   // Z Assistant settings
   Z_ASSISTANT_LIBRARY_CACHE_ENABLED<bool>(false),
   Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED<bool>(false),
@@ -124,9 +127,9 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_HIDE_IN_LIBRARY_FROM_HERO<bool>(false),
   DISCOVER_DEFAULT_TAB<String>('movies'),
   // iPad-specific Discover settings (used when screen is tablet-sized)
-  DISCOVER_IPAD_COLUMNS_PER_ROW<int>(4),  // Range: 2-6
+  DISCOVER_IPAD_COLUMNS_PER_ROW<int>(4), // Range: 2-6
   DISCOVER_IPAD_HERO_HEIGHT<double>(550.0),
-  DISCOVER_IPAD_POSTER_HEIGHT<double>(250.0),  // Range: 150-350
+  DISCOVER_IPAD_POSTER_HEIGHT<double>(250.0), // Range: 150-350
   DASHBOARD_SHOW_MODULES_TAB<bool>(true),
   DISCOVER_SHOW_MODULES_TAB<bool>(false),
   SHOW_CALENDAR_TAB<bool>(true),

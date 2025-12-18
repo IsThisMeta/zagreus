@@ -113,20 +113,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   static const _scrollIdMissing = 'missing_movies_section';
   static const _scrollIdDownloadingSoon = 'downloading_soon_section';
   static const _scrollIdPopularMovies = 'popular_movies_section';
-  static const _scrollIdRecentlyReleasedMovies = 'recently_released_movies_section';
+  static const _scrollIdRecentlyReleasedMovies =
+      'recently_released_movies_section';
   static const _scrollIdPopularTv = 'popular_tv_shows_section';
   static const _scrollIdTrendingTv = 'trending_tv_shows_section';
-  static const _scrollIdMostAnticipatedShows =
-      'most_anticipated_shows_section';
+  static const _scrollIdMostAnticipatedShows = 'most_anticipated_shows_section';
   static const _scrollIdMostAnticipatedMovies =
       'most_anticipated_movies_section';
   static const _scrollIdPopularPeople = 'popular_people_section';
   static const _scrollIdDeepCuts = 'deep_cuts_recommendations';
   static const _scrollIdUpNext = 'up_next_recommendations';
   static const _scrollIdMagicMovies = 'magic_movies_recommendations';
-  static const _scrollIdMagicMoviesCastCrew = 'magic_movies_cast_crew_recommendations';
+  static const _scrollIdMagicMoviesCastCrew =
+      'magic_movies_cast_crew_recommendations';
   static const _scrollIdMagicShows = 'magic_shows_recommendations';
-  static const _scrollIdMagicShowsCastCrew = 'magic_shows_cast_crew_recommendations';
+  static const _scrollIdMagicShowsCastCrew =
+      'magic_shows_cast_crew_recommendations';
   static const _scrollIdMagicPeople = 'magic_people_recommendations';
 
   static const _recentlyDownloadedListKey =
@@ -151,10 +153,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       PageStorageKey<String>('discover_most_anticipated_movies');
   static const _popularPeopleListKey =
       PageStorageKey<String>('discover_popular_people');
-  static const _deepCutsListKey =
-      PageStorageKey<String>('discover_deep_cuts');
-  static const _upNextListKey =
-      PageStorageKey<String>('discover_up_next');
+  static const _deepCutsListKey = PageStorageKey<String>('discover_deep_cuts');
+  static const _upNextListKey = PageStorageKey<String>('discover_up_next');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<ZChatPageState> _agentChatKey = GlobalKey<ZChatPageState>();
   late ZagPageController _pageController;
@@ -213,8 +213,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicPeopleResult>(
       future: _magicPeopleShowsFuture,
       builder: (context, snapshot) {
-        final sectionTitle =
-            snapshot.data?.sectionTitle ?? 'Magic People';
+        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic People';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,8 +255,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   IconData icon = Icons.groups_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicPeopleError.notSynced;
+                          snapshot.data?.error == MagicPeopleError.notSynced;
                   bool showRetryButton = true;
 
                   if (snapshot.hasData &&
@@ -302,12 +300,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -315,11 +323,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (message != null) ...[
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
                               child: Text(
                                 message,
                                 style: TextStyle(
-                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  color: (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black)
+                                      .withOpacity(0.5),
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,
@@ -329,7 +342,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -421,9 +435,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       },
     );
   }
+
   double _heroHeight = 370.0;
-
-
 
   List<RadarrMovie> _recentlyDownloaded = [];
   List<Map<String, dynamic>> _recentlyDownloadedShows = []; // Sonarr episodes
@@ -461,7 +474,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Library sync state
   bool _isSyncing = false;
-  
+
   bool _deviceSettingsLoaded = false;
 
   // Z Assistant Radarr/Sonarr settings
@@ -486,8 +499,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String? _selectedUser;
   StateSetter? _quickSetupModalSetState;
 
-  bool get _showTitles =>
-      ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
 
   bool get _showHeroCarousel =>
       ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
@@ -723,7 +735,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic Movies Cast & Crew need regeneration - triggering...');
+        ZagLogger().debug(
+            'Magic Movies Cast & Crew need regeneration - triggering...');
         service.generateRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
@@ -777,7 +790,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final needsRegen = service.needsRegeneration(existingResult: fetchResult);
 
       if (needsRegen) {
-        ZagLogger().debug('Magic Shows Cast & Crew need regeneration - triggering...');
+        ZagLogger()
+            .debug('Magic Shows Cast & Crew need regeneration - triggering...');
         service.generateRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
@@ -934,8 +948,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     final controller = _sectionScrollControllers[scrollKey];
-    final previousOffset =
-        (controller != null && controller.hasClients) ? controller.offset : null;
+    final previousOffset = (controller != null && controller.hasClients)
+        ? controller.offset
+        : null;
 
     await loader();
 
@@ -951,7 +966,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 4250), (timer) {
+    _autoScrollTimer =
+        Timer.periodic(const Duration(milliseconds: 4250), (timer) {
       // Handle separate auto-scroll for movies and TV
       if (_trendingMovies.isNotEmpty && _moviesHeroPageController.hasClients) {
         final nextIndex = (_currentMovieHeroIndex + 1) % _trendingMovies.length;
@@ -1005,7 +1021,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         timeWindow: _trendingTimeWindow,
         page: 1,
       );
-      
+
       final quickTvItems = await TMDBApi.getTrending(
         mediaType: 'tv',
         timeWindow: _trendingTimeWindow,
@@ -1019,7 +1035,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _trendingTVShows = quickTvItems.take(20).toList();
           _precachedHeroBackdrops.clear();
         });
-        
+
         // Precache first images immediately
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
@@ -1217,7 +1233,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       // Refresh AI sections (fetch only, don't trigger generation)
       final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
-      final instanceKey = ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+      final instanceKey =
+          ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
 
       setState(() {
         _deepCutsFuture = DeepCutsService().fetchRecommendations(
@@ -1228,7 +1245,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
-        _magicMoviesCastCrewFuture = MagicMoviesCastCrewService().fetchRecommendations(
+        _magicMoviesCastCrewFuture =
+            MagicMoviesCastCrewService().fetchRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
@@ -1490,7 +1508,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _recentlyReleasedMovies =
               movies.take(10).toList(); // Limit to 10 for the section
         });
-        print('🎬 Set ${_recentlyReleasedMovies.length} recently released movies in state');
+        print(
+            '🎬 Set ${_recentlyReleasedMovies.length} recently released movies in state');
       }
     } catch (e) {
       print('❌ Error loading recently released movies: $e');
@@ -1596,7 +1615,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       // Refresh AI sections (fetch only, don't trigger generation)
       final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
-      final instanceKey = ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+      final instanceKey =
+          ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
 
       setState(() {
         _upNextFuture = UpNextService().fetchRecommendations(
@@ -1607,7 +1627,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
-        _magicShowsCastCrewFuture = MagicShowsCastCrewService().fetchRecommendations(
+        _magicShowsCastCrewFuture =
+            MagicShowsCastCrewService().fetchRecommendations(
           profileKey: profileKey,
           instanceKey: instanceKey,
         );
@@ -2133,7 +2154,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _ensureDiscoverDefaultTabIsValid();
     // Build app bar here so it rebuilds when _currentPageIndex changes
     final appBar = ZagAppBar(
-      title: _isSearchActive ? 'Search' : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
+      title: _isSearchActive
+          ? 'Search'
+          : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
       useDrawer: true,
       actions: _buildAppBarActions(),
     );
@@ -2167,7 +2190,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final enableCalendar = _showCalendarTab;
     final showAgentTab = _showAgentTab;
     final tabs = ZagPageView(
-      key: ValueKey('discover_tabs_${enableLegacyModules}_${enableCalendar}_$showAgentTab'),
+      key: ValueKey(
+          'discover_tabs_${enableLegacyModules}_${enableCalendar}_$showAgentTab'),
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
@@ -2365,10 +2389,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (calendarIndex != null && _currentPageIndex == calendarIndex) {
       final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-      final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
-      final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
-      final hasInstances = radarrInstances.isNotEmpty || sonarrInstances.isNotEmpty;
-      
+      final radarrInstances =
+          ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+      final sonarrInstances =
+          ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+      final hasInstances =
+          radarrInstances.isNotEmpty || sonarrInstances.isNotEmpty;
+
       return [
         if (hasInstances)
           IconButton(
@@ -2426,7 +2453,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } else if (_currentPageIndex == moviesTabIndex) {
       // Movies tab - add Radarr instance swap if instances exist
       final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-      final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+      final radarrInstances =
+          ZagProfile.getInstancesForModule(currentProfile, 'radarr');
       if (radarrInstances.isNotEmpty) {
         actions.add(
           IconButton(
@@ -2458,7 +2486,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } else if (_currentPageIndex == showsTabIndex) {
       // Shows tab - add Sonarr instance swap if instances exist
       final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-      final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+      final sonarrInstances =
+          ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
       if (sonarrInstances.isNotEmpty) {
         actions.add(
           IconButton(
@@ -2514,11 +2543,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _showRadarrInstanceSelector() async {
     final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-    final instances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final instances =
+        ZagProfile.getInstancesForModule(currentProfile, 'radarr');
     final currentInstance = ZagInstanceContext().getActiveInstance('radarr');
-    
+
     final options = <String?>[null, ...instances];
-    
+
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -2527,12 +2557,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           mainAxisSize: MainAxisSize.min,
           children: options.map((instanceKey) {
             final isSelected = instanceKey == currentInstance;
-            final name = instanceKey == null 
+            final name = instanceKey == null
                 ? ZagModule.RADARR.title
                 : '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
             return ListTile(
               title: Text(name),
-              leading: isSelected 
+              leading: isSelected
                   ? Icon(Icons.check, color: ZagModule.RADARR.color)
                   : const SizedBox(width: 24),
               onTap: () => Navigator.pop(ctx, instanceKey),
@@ -2541,14 +2571,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
-    
+
     if (!mounted) return;
     if (result == currentInstance) return; // No change
-    
+
     // Update instance and reset state
     ZagInstanceContext().setActiveInstance('radarr', result);
     context.read<RadarrState>().reset();
-    
+
     // Clear cached data and reload everything for Movies tab
     _recentlyDownloaded = [];
     _recommendedMovies = [];
@@ -2562,9 +2592,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _deepCutsSyncInitialized = false;
     _magicPeopleMoviesFuture = null;
     _magicPeopleMoviesSyncInitialized = false;
-    
+
     setState(() {});
-    
+
     // Reload all Radarr-dependent data
     _loadRecentlyDownloaded();
     _loadRecommendedMovies();
@@ -2593,11 +2623,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _showSonarrInstanceSelector() async {
     final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-    final instances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final instances =
+        ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
     final currentInstance = ZagInstanceContext().getActiveInstance('sonarr');
-    
+
     final options = <String?>[null, ...instances];
-    
+
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -2606,12 +2637,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           mainAxisSize: MainAxisSize.min,
           children: options.map((instanceKey) {
             final isSelected = instanceKey == currentInstance;
-            final name = instanceKey == null 
+            final name = instanceKey == null
                 ? ZagModule.SONARR.title
                 : '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(instanceKey) ?? ""}';
             return ListTile(
               title: Text(name),
-              leading: isSelected 
+              leading: isSelected
                   ? Icon(Icons.check, color: ZagModule.SONARR.color)
                   : const SizedBox(width: 24),
               onTap: () => Navigator.pop(ctx, instanceKey),
@@ -2620,14 +2651,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
-    
+
     if (!mounted) return;
     if (result == currentInstance) return; // No change
-    
+
     // Update instance and reset state
     ZagInstanceContext().setActiveInstance('sonarr', result);
     context.read<SonarrState>().reset();
-    
+
     // Clear cached data and reload everything for Shows tab
     _recentlyDownloadedShows = [];
     _airingNextShows = [];
@@ -2639,9 +2670,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _upNextSyncInitialized = false;
     _magicPeopleShowsFuture = null;
     _magicPeopleShowsSyncInitialized = false;
-    
+
     setState(() {});
-    
+
     // Reload all Sonarr-dependent data
     _loadRecentlyDownloadedShows();
     _loadSonarrAiringNext();
@@ -2668,9 +2699,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _showCalendarInstanceFilter() async {
     final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-    final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
-    final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
-    
+    final radarrInstances =
+        ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final sonarrInstances =
+        ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+
     // Build list of all options: main profiles + instances
     final options = <_CalendarFilterOption>[
       // Main Radarr
@@ -2682,11 +2715,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ),
       // Radarr instances
       ...radarrInstances.map((key) => _CalendarFilterOption(
-        key: 'radarr:$key',
-        name: '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
-        module: ZagModule.RADARR,
-        instanceKey: key,
-      )),
+            key: 'radarr:$key',
+            name:
+                '${ZagModule.RADARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
+            module: ZagModule.RADARR,
+            instanceKey: key,
+          )),
       // Main Sonarr
       _CalendarFilterOption(
         key: 'sonarr:main',
@@ -2696,23 +2730,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ),
       // Sonarr instances
       ...sonarrInstances.map((key) => _CalendarFilterOption(
-        key: 'sonarr:$key',
-        name: '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
-        module: ZagModule.SONARR,
-        instanceKey: key,
-      )),
+            key: 'sonarr:$key',
+            name:
+                '${ZagModule.SONARR.title} ${ZagProfile.getInstanceDisplayName(key) ?? ""}',
+            module: ZagModule.SONARR,
+            instanceKey: key,
+          )),
     ];
-    
+
     // Get current filter state
     final currentFilter = List<String>.from(
-      ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []
-    );
-    
+        ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []);
+
     // If empty, default to all instances selected
-    final selectedKeys = currentFilter.isEmpty 
+    final selectedKeys = currentFilter.isEmpty
         ? options.map((o) => o.key).toSet()
         : currentFilter.toSet();
-    
+
     await showDialog(
       context: context,
       builder: (ctx) => _CalendarFilterDialog(
@@ -2724,7 +2758,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           if (newSelection.length == allKeys.length) {
             ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update([]);
           } else {
-            ZagreusDatabase.CALENDAR_INSTANCE_FILTER.update(newSelection.toList());
+            ZagreusDatabase.CALENDAR_INSTANCE_FILTER
+                .update(newSelection.toList());
           }
           setState(() {});
         },
@@ -2785,7 +2820,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
       child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics()),
         controller: _DiscoverNavigationBar.moviesScrollController,
         padding: EdgeInsets.zero,
         children: [
@@ -2824,42 +2860,46 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'magic_people',
     ];
 
+    List<String> ensureContainsDefaultSections({
+      required List<String> currentOrder,
+      required List<String> defaultOrder,
+    }) {
+      final updated = List<String>.from(currentOrder);
+      for (final sectionKey in defaultOrder) {
+        if (updated.contains(sectionKey)) continue;
+
+        var insertAt = updated.length;
+        final defaultIndex = defaultOrder.indexOf(sectionKey);
+        for (var i = defaultIndex - 1; i >= 0; i--) {
+          final previousKey = defaultOrder[i];
+          final previousIndex = updated.indexOf(previousKey);
+          if (previousIndex != -1) {
+            insertAt = previousIndex + 1;
+            break;
+          }
+        }
+        updated.insert(insertAt, sectionKey);
+      }
+      return updated;
+    }
+
     // Get saved order or use default
     final savedOrder =
         ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
     var sectionOrder =
         savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
 
-    // Migration: Add 'most_anticipated_movies' if missing
-    if (!sectionOrder.contains('most_anticipated_movies')) {
-      final popularIndex = sectionOrder.indexOf('popular_movies');
-      final insertIndex =
-          popularIndex == -1 ? sectionOrder.length : popularIndex + 1;
-      sectionOrder.insert(insertIndex, 'most_anticipated_movies');
-    }
-
-    // Migration: Add 'deep_cuts' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('deep_cuts')) {
-      sectionOrder.add('deep_cuts');
+    // One-time migration: ensure older saved orders include newer default sections.
+    // Guarded so user-deleted sections are not re-added on every rebuild.
+    final migrated =
+        ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.read();
+    if (savedOrder.isNotEmpty && migrated != true) {
+      sectionOrder = ensureContainsDefaultSections(
+        currentOrder: sectionOrder,
+        defaultOrder: defaultOrder,
+      );
       ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
-    }
-
-    // Migration: Add 'magic_movies' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_movies')) {
-      sectionOrder.add('magic_movies');
-      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
-    }
-
-    // Migration: Add 'magic_movies_cast_crew' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_movies_cast_crew')) {
-      sectionOrder.add('magic_movies_cast_crew');
-      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
-    }
-
-    // Migration: Add 'magic_people' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_people')) {
-      sectionOrder.add('magic_people');
-      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
+      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.update(true);
     }
 
     // Map of section builders
@@ -2948,7 +2988,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloadedShows,
       child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics()),
         controller: _DiscoverNavigationBar.showsScrollController,
         padding: EdgeInsets.zero,
         children: [
@@ -2985,32 +3026,44 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       'magic_people',
     ];
 
+    List<String> ensureContainsDefaultSections({
+      required List<String> currentOrder,
+      required List<String> defaultOrder,
+    }) {
+      final updated = List<String>.from(currentOrder);
+      for (final sectionKey in defaultOrder) {
+        if (updated.contains(sectionKey)) continue;
+
+        var insertAt = updated.length;
+        final defaultIndex = defaultOrder.indexOf(sectionKey);
+        for (var i = defaultIndex - 1; i >= 0; i--) {
+          final previousKey = defaultOrder[i];
+          final previousIndex = updated.indexOf(previousKey);
+          if (previousIndex != -1) {
+            insertAt = previousIndex + 1;
+            break;
+          }
+        }
+        updated.insert(insertAt, sectionKey);
+      }
+      return updated;
+    }
+
     // Get saved order or use default
     final savedOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
     var sectionOrder =
         savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
 
-    // Migration: Add 'up_next' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('up_next')) {
-      sectionOrder.add('up_next');
+    // One-time migration: ensure older saved orders include newer default sections.
+    // Guarded so user-deleted sections are not re-added on every rebuild.
+    final migrated = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.read();
+    if (savedOrder.isNotEmpty && migrated != true) {
+      sectionOrder = ensureContainsDefaultSections(
+        currentOrder: sectionOrder,
+        defaultOrder: defaultOrder,
+      );
       ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
-    }
-
-    // Migration: Add 'magic_shows' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_shows')) {
-      sectionOrder.add('magic_shows');
-      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
-    }
-
-    // Migration: Add 'magic_shows_cast_crew' to existing saved orders if missing
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_shows_cast_crew')) {
-      sectionOrder.add('magic_shows_cast_crew');
-      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
-    }
-    // Migration: Add 'magic_people' to existing saved orders if missing (shows tab actors)
-    if (savedOrder.isNotEmpty && !sectionOrder.contains('magic_people')) {
-      sectionOrder.add('magic_people');
-      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
+      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.update(true);
     }
 
     // Map of section builders
@@ -3077,15 +3130,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           text: 'Edit Sections',
           icon: Icons.tune_rounded,
           color: ZagColours.currentAccent,
-          onTap: () => _openDiscoverSectionsEditor(initialIndex: isShows ? 1 : 0),
+          onTap: () =>
+              _openDiscoverSectionsEditor(initialIndex: isShows ? 1 : 0),
         ),
       ),
     );
   }
+
   void _recordNextZRegeneration(DateTime? date) {
     if (date == null) return;
     final current = _nextZSectionsRegenerationAt;
-    final shouldUpdate = current == null || date.isBefore(current.subtract(const Duration(minutes: 1)));
+    final shouldUpdate = current == null ||
+        date.isBefore(current.subtract(const Duration(minutes: 1)));
     if (!shouldUpdate) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -3126,11 +3182,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       return const SizedBox.shrink();
     }
 
-    final textColor = Theme.of(context)
-        .textTheme
-        .bodySmall
-        ?.color
-        ?.withOpacity(0.8);
+    final textColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.8);
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: ZagUI.DEFAULT_MARGIN_SIZE,
@@ -3158,11 +3211,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _metadataCredits() {
-    final textColor = Theme.of(context)
-        .textTheme
-        .bodySmall
-        ?.color
-        ?.withOpacity(0.7);
+    final textColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         ZagUI.DEFAULT_MARGIN_SIZE,
@@ -3254,7 +3304,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _openDiscoverSectionsEditor({int? initialIndex}) async {
     final enableLegacyModules = _showLegacyModules;
     final showsTabIndex = enableLegacyModules ? 2 : 1;
-    final effectiveIndex = initialIndex ?? (_currentPageIndex == showsTabIndex ? 1 : 0);
+    final effectiveIndex =
+        initialIndex ?? (_currentPageIndex == showsTabIndex ? 1 : 0);
 
     final updated = await showDashboardSectionsEditorSheet(
       context,
@@ -3308,10 +3359,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _calendarTab() {
     return ZagreusDatabase.ENABLED_PROFILE.listenableBuilder(
-      builder: (context, _) => ZagreusDatabase.CALENDAR_INSTANCE_FILTER.listenableBuilder(
+      builder: (context, _) =>
+          ZagreusDatabase.CALENDAR_INSTANCE_FILTER.listenableBuilder(
         builder: (context, _) {
           // Force rebuild when filter changes
-          final filterKey = (ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []).join(',');
+          final filterKey =
+              (ZagreusDatabase.CALENDAR_INSTANCE_FILTER.read() ?? []).join(',');
           return CalendarPage(
             key: ValueKey(
               'discover_calendar_${ZagreusDatabase.ENABLED_PROFILE.read()}_$filterKey',
@@ -3729,7 +3782,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       });
 
       print('🔍 Found ${results.length} results');
-      
+
       // Compute library badges in background
       _computeLibraryBadgesForResults();
     } catch (e) {
@@ -4166,8 +4219,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
     _persistChatHistory =
         ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY.read();
-    _supabaseChatSync =
-        ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
+    _supabaseChatSync = ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
 
     _sonarrQualityProfileId =
         ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.read();
@@ -4189,7 +4241,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final savedHeight = isTablet
         ? ZagreusDatabase.DISCOVER_IPAD_POSTER_HEIGHT.read()
         : ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
-    
+
     // Validate bounds based on device type
     final minHeight = isTablet ? 150.0 : 150.0;
     final maxHeight = isTablet ? 350.0 : 250.0;
@@ -4207,7 +4259,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final savedHeroHeight = isTablet
         ? ZagreusDatabase.DISCOVER_IPAD_HERO_HEIGHT.read()
         : ZagreusDatabase.DISCOVER_HERO_HEIGHT.read();
-    
+
     // Validate bounds based on device type
     final minHeroHeight = isTablet ? 450.0 : 300.0;
     final maxHeroHeight = isTablet ? 650.0 : 500.0;
@@ -4219,7 +4271,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } else {
       _heroHeight = isTablet ? 550.0 : 370.0;
     }
-    
+
     // Refresh UI with new settings
     setState(() {});
   }
@@ -4229,7 +4281,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (monochrome) {
       return Colors.white;
     }
-    
+
     if (rating >= 8.0) {
       return const Color(0xFF64B5F6); // Pastel blue
     } else if (rating >= 6.0) {
@@ -4287,10 +4339,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 16),
-                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.listenableBuilder(
+                      ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                          .listenableBuilder(
                         builder: (context, _) {
-                          final enabled =
-                              ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.read();
+                          final enabled = ZagreusDatabase
+                              .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                              .read();
                           return ZagBlock(
                             title: 'Library Cache',
                             body: [
@@ -4303,16 +4357,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             trailing: ZagSwitch(
                               value: enabled,
                               onChanged: (value) {
-                                ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(value);
+                                ZagreusDatabase
+                                    .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
+                                    .update(value);
                                 if (value) {
                                   showZagInfoSnackBar(
                                     title: 'Library Cache Enabled',
-                                    message: 'Z Agent will now sync your library periodically',
+                                    message:
+                                        'Z Agent will now sync your library periodically',
                                   );
                                 } else {
                                   showZagInfoSnackBar(
                                     title: 'Library Cache Disabled',
-                                    message: 'Z Agent will no longer sync your library',
+                                    message:
+                                        'Z Agent will no longer sync your library',
                                   );
                                 }
                               },
@@ -4385,15 +4443,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             trailing: ZagSwitch(
                               value: enabled,
                               onChanged: (value) {
-                                ZagreusDatabase
-                                    .Z_ASSISTANT_PERSIST_CHAT_HISTORY
+                                ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
                                     .update(value);
                                 setState(() => _persistChatHistory = value);
 
                                 if (value) {
                                   // Mutually exclusive: disable Supabase
-                                  ZagreusDatabase
-                                      .Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                                  ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
                                       .update(false);
                                   _supabaseChatSync = false;
                                   _agentChatKey.currentState
@@ -4434,8 +4490,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             trailing: ZagSwitch(
                               value: enabled,
                               onChanged: (value) {
-                                ZagreusDatabase
-                                    .Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                                ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
                                     .update(value);
                                 setState(() => _supabaseChatSync = value);
 
@@ -4675,9 +4730,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           const SizedBox(height: 16),
                           Text(
                             'No conversations yet',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: Theme.of(context).disabledColor,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Theme.of(context).disabledColor,
+                                    ),
                           ),
                         ],
                       ),
@@ -4710,11 +4766,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
                                       child: const Text('Cancel'),
                                     ),
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
                                       child: const Text('Delete'),
                                     ),
                                   ],
@@ -4924,7 +4982,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final radarrState = context.read<RadarrState>();
-                  final profiles = await radarrState.api!.qualityProfile.getAll();
+                  final profiles =
+                      await radarrState.api!.qualityProfile.getAll();
 
                   if (!mounted) return;
 
@@ -4942,9 +5001,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               _radarrQualityProfileName = profile.name;
                             });
                             setModalState(() {});
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
                                 .update(profile.id);
-                            ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
                                 .update(profile.name);
                             Navigator.pop(context);
                           },
@@ -5051,7 +5112,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final sonarrState = context.read<SonarrState>();
-                  final profiles = await sonarrState.api!.profile.getQualityProfiles();
+                  final profiles =
+                      await sonarrState.api!.profile.getQualityProfiles();
 
                   if (!mounted) return;
 
@@ -5069,9 +5131,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               _sonarrQualityProfileName = profile.name;
                             });
                             setModalState(() {});
-                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
+                            ZagreusDatabase
+                                .Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID
                                 .update(profile.id);
-                            ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
+                            ZagreusDatabase
+                                .Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME
                                 .update(profile.name);
                             Navigator.pop(context);
                           },
@@ -5147,7 +5211,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ListTile(
                 leading: const Icon(Icons.tv),
                 title: const Text('Series Type'),
-                subtitle: Text(currentSeriesType.value?.toUpperCase() ?? 'Standard'),
+                subtitle:
+                    Text(currentSeriesType.value?.toUpperCase() ?? 'Standard'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   showModalBottomSheet(
@@ -5588,7 +5653,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _buildSearchResults() {
     final showBadges = DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read();
     final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
-    
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _searchResults.length,
@@ -5662,7 +5727,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ? CachedNetworkImage(
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey.shade800),
                               errorWidget: (context, url, error) {
                                 return _searchResultPlaceholder(mediaType);
                               },
@@ -5713,7 +5779,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                             if (releaseDate.isNotEmpty) ...[
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                                 child: Text(
                                   releaseDate.split('-').first,
                                   style: TextStyle(
@@ -5757,17 +5824,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.5),
                                     width: 1,
                                   ),
                                 ),
                                 child: Text(
                                   badge.displayName,
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -5803,15 +5877,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  List<_LibraryBadgeInfo> _getLibraryBadges(String? mediaType, int tmdbId, String currentProfile) {
+  List<_LibraryBadgeInfo> _getLibraryBadges(
+      String? mediaType, int tmdbId, String currentProfile) {
     final List<_LibraryBadgeInfo> badges = [];
-    
+
     // We'll use the cached library info that was pre-computed when search was performed
     final cachedInfo = _searchLibraryCache[tmdbId];
     if (cachedInfo != null) {
       return cachedInfo;
     }
-    
+
     return badges;
   }
 
@@ -5820,22 +5895,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _computeLibraryBadgesForResults() async {
     if (!DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read()) return;
-    
+
     final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
     _searchLibraryCache.clear();
-    
+
     // Get all movie tmdb IDs from search results
     final movieTmdbIds = _searchResults
         .where((r) => r['media_type'] == 'movie')
         .map((r) => r['id'] as int)
         .toSet();
-    
-    // Get all show tmdb IDs from search results  
+
+    // Get all show tmdb IDs from search results
     final showTmdbIds = _searchResults
         .where((r) => r['media_type'] == 'tv')
         .map((r) => r['id'] as int)
         .toSet();
-    
+
     // Check main Radarr instance
     final radarrState = context.read<RadarrState>();
     if (radarrState.enabled && radarrState.movies != null) {
@@ -5856,12 +5931,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Ignore errors
       }
     }
-    
+
     // Check shadow Radarr instances
-    final radarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'radarr');
+    final radarrInstances =
+        ZagProfile.getInstancesForModule(currentProfile, 'radarr');
     for (final instanceKey in radarrInstances) {
       final profile = ZagBox.profiles.read(instanceKey);
-      if (profile != null && profile.radarrEnabled && profile.radarrHost.isNotEmpty) {
+      if (profile != null &&
+          profile.radarrEnabled &&
+          profile.radarrHost.isNotEmpty) {
         try {
           final parsed = ZagProfile.parseShadowKey(instanceKey);
           final instanceName = parsed?.name ?? instanceKey;
@@ -5887,7 +5965,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
       }
     }
-    
+
     // Check main Sonarr instance
     final sonarrState = context.read<SonarrState>();
     if (sonarrState.enabled && sonarrState.series != null) {
@@ -5908,12 +5986,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // Ignore errors
       }
     }
-    
+
     // Check shadow Sonarr instances
-    final sonarrInstances = ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
+    final sonarrInstances =
+        ZagProfile.getInstancesForModule(currentProfile, 'sonarr');
     for (final instanceKey in sonarrInstances) {
       final profile = ZagBox.profiles.read(instanceKey);
-      if (profile != null && profile.sonarrEnabled && profile.sonarrHost.isNotEmpty) {
+      if (profile != null &&
+          profile.sonarrEnabled &&
+          profile.sonarrHost.isNotEmpty) {
         try {
           final parsed = ZagProfile.parseShadowKey(instanceKey);
           final instanceName = parsed?.name ?? instanceKey;
@@ -5939,22 +6020,24 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
       }
     }
-    
+
     // Trigger rebuild to show badges
     if (mounted) {
       setState(() {});
     }
   }
 
-  void _handleSearchResultTapWithInstance(Map<String, dynamic> item, _LibraryBadgeInfo badge) {
+  void _handleSearchResultTapWithInstance(
+      Map<String, dynamic> item, _LibraryBadgeInfo badge) {
     final mediaType = item['media_type'] as String?;
-    
+
     if (badge.instanceKey != null) {
-      ZagInstanceContext().setActiveInstance(badge.moduleType, badge.instanceKey);
+      ZagInstanceContext()
+          .setActiveInstance(badge.moduleType, badge.instanceKey);
     } else {
       ZagInstanceContext().clearActiveInstance(badge.moduleType);
     }
-    
+
     if (mediaType == 'movie' && badge.itemId != null) {
       RadarrRoutes.MOVIE.go(params: {'movie': badge.itemId!.toString()});
     } else if (mediaType == 'tv' && badge.itemId != null) {
@@ -5965,9 +6048,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
-  void _showInstanceSelectionDialog(Map<String, dynamic> item, List<_LibraryBadgeInfo> badges) {
+  void _showInstanceSelectionDialog(
+      Map<String, dynamic> item, List<_LibraryBadgeInfo> badges) {
     final title = item['title'] ?? item['name'] ?? 'Unknown';
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -6152,13 +6236,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }) {
     // Determine which list and index to use
     final items = isMovieTab ? _trendingMovies : _trendingTVShows;
-    final currentIndex = isMovieTab ? _currentMovieHeroIndex : _currentTVHeroIndex;
+    final currentIndex =
+        isMovieTab ? _currentMovieHeroIndex : _currentTVHeroIndex;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (controller.hasClients) {
-        final currentPage =
-            controller.page?.round() ?? controller.initialPage;
+        final currentPage = controller.page?.round() ?? controller.initialPage;
         if (currentPage != currentIndex) {
           controller.jumpToPage(currentIndex);
         }
@@ -6607,7 +6691,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
                   key: _downloadingSoonListKey,
-                  controller: _sectionScrollController(_scrollIdDownloadingSoon),
+                  controller:
+                      _sectionScrollController(_scrollIdDownloadingSoon),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: previewMovies.length,
                   itemBuilder: (context, index) {
@@ -6657,8 +6742,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 height: _posterListHeight,
                 child: ListView.builder(
                   key: _popularMoviesListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdPopularMovies),
+                  controller: _sectionScrollController(_scrollIdPopularMovies),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _popularMovies.length,
@@ -6717,7 +6801,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: CachedNetworkImage(
                         imageUrl: movie['poster'] ?? '',
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        placeholder: (context, url) =>
+                            Container(color: Colors.grey.shade800),
                         errorWidget: (context, url, error) {
                           return Center(
                             child: Icon(
@@ -6953,7 +7038,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: CachedNetworkImage(
                         imageUrl: movie['poster'] ?? '',
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        placeholder: (context, url) =>
+                            Container(color: Colors.grey.shade800),
                         errorWidget: (context, url, error) {
                           return Center(
                             child: Icon(
@@ -7063,7 +7149,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Future<void> _handleRecentlyReleasedMovieTap(Map<String, dynamic> movie) async {
+  Future<void> _handleRecentlyReleasedMovieTap(
+      Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final int? serviceItemId = movie['serviceItemId'] as int?;
     final int? tmdbId = movie['tmdbId'] as int?;
@@ -7192,7 +7279,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ? CachedNetworkImage(
                               imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey.shade800),
                               errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
@@ -7434,7 +7522,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ? CachedNetworkImage(
                               imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey.shade800),
                               errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
@@ -7642,13 +7731,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<List<String>> _getRadarrRootFolders() async {
     final radarrState = context.read<RadarrState>();
     final folders = await radarrState.rootFolders;
-    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+    return folders
+            ?.map((f) => f.path ?? '')
+            .where((p) => p.isNotEmpty)
+            .toList() ??
+        [];
   }
 
   Future<List<({int id, String name})>> _getRadarrQualityProfiles() async {
     final radarrState = context.read<RadarrState>();
     final profiles = await radarrState.api!.qualityProfile.getAll();
-    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+    return profiles
+        .map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown'))
+        .toList();
   }
 
   void _onRadarrRootFolderChanged(String path) {
@@ -7669,13 +7764,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<List<String>> _getSonarrRootFolders() async {
     final sonarrState = context.read<SonarrState>();
     final folders = await sonarrState.rootFolders;
-    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+    return folders
+            ?.map((f) => f.path ?? '')
+            .where((p) => p.isNotEmpty)
+            .toList() ??
+        [];
   }
 
   Future<List<({int id, String name})>> _getSonarrQualityProfiles() async {
     final sonarrState = context.read<SonarrState>();
     final profiles = await sonarrState.api!.profile.getQualityProfiles();
-    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+    return profiles
+        .map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown'))
+        .toList();
   }
 
   void _onSonarrRootFolderChanged(String path) {
@@ -7702,21 +7803,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   /// Fetch seasons for a TV show via Sonarr lookup by TMDB ID
-  Future<List<({int seasonNumber, int episodeCount})>> _getSonarrSeasons(int tmdbId) async {
+  Future<List<({int seasonNumber, int episodeCount})>> _getSonarrSeasons(
+      int tmdbId) async {
     try {
       final sonarrState = context.read<SonarrState>();
       if (!sonarrState.enabled || sonarrState.api == null) return [];
-      
-      final results = await sonarrState.api!.seriesLookup.get(term: 'tmdb:$tmdbId');
+
+      final results =
+          await sonarrState.api!.seriesLookup.get(term: 'tmdb:$tmdbId');
       if (results.isEmpty) return [];
-      
+
       final series = results.first;
       if (series.seasons == null || series.seasons!.isEmpty) return [];
-      
-      return series.seasons!.map((s) => (
-        seasonNumber: s.seasonNumber ?? 0,
-        episodeCount: s.statistics?.totalEpisodeCount ?? s.statistics?.episodeCount ?? 0,
-      )).toList();
+
+      return series.seasons!
+          .map((s) => (
+                seasonNumber: s.seasonNumber ?? 0,
+                episodeCount: s.statistics?.totalEpisodeCount ??
+                    s.statistics?.episodeCount ??
+                    0,
+              ))
+          .toList();
     } catch (e) {
       ZagLogger().debug('Failed to fetch seasons: $e');
       return [];
@@ -7802,18 +7909,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       return;
     }
 
-    final title = show['title'] as String? ?? show['name'] as String? ?? 'TV Show';
+    final title =
+        show['title'] as String? ?? show['name'] as String? ?? 'TV Show';
     final overview = show['overview'] as String? ?? 'No overview available.';
 
     HapticFeedback.lightImpact();
-    
+
     // Fetch seasons in parallel with showing dialog
     final seasonsFuture = _getSonarrSeasons(tmdbId);
     final seasons = await seasonsFuture;
     _sonarrSelectedSeasons = {}; // Start with none selected
-    
+
     if (!mounted) return;
-    
+
     await ZagDialogs().textPreviewWithAdd(
       context,
       title,
@@ -7835,7 +7943,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Future<String> _fetchTmdbOverview({required int tmdbId, required bool isMovie}) async {
+  Future<String> _fetchTmdbOverview(
+      {required int tmdbId, required bool isMovie}) async {
     try {
       final details = isMovie
           ? await TMDBApi.getMovieDetails(tmdbId)
@@ -7852,7 +7961,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showMagicMoviePreview(MagicMovie movie) async {
     if (movie.tmdbId == null) return;
 
-    final overview = await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
+    final overview =
+        await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
     final previewText = overview.isNotEmpty ? overview : movie.reason;
 
     HapticFeedback.lightImpact();
@@ -7860,7 +7970,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       context,
       movie.title,
       previewText,
-      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onAdd: () =>
+          _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
       alignLeft: true,
       rootFolderValue: _radarrRootFolder,
       qualityProfileValue: _radarrQualityProfileName,
@@ -7880,7 +7991,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       context,
       movie.title,
       movie.reason,
-      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onAdd: () =>
+          _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
       alignLeft: true,
       rootFolderValue: _radarrRootFolder,
       qualityProfileValue: _radarrQualityProfileName,
@@ -7897,14 +8009,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     HapticFeedback.lightImpact();
 
-    final overview = await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
+    final overview =
+        await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
     final previewText = overview.isNotEmpty ? overview : show.reason;
 
     final seasons = await _getSonarrSeasons(show.tmdbId!);
     _sonarrSelectedSeasons = {}; // Start with none selected
-    
+
     if (!mounted) return;
-    
+
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
@@ -7931,12 +8044,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (show.tmdbId == null) return;
 
     HapticFeedback.lightImpact();
-    
+
     final seasons = await _getSonarrSeasons(show.tmdbId!);
     _sonarrSelectedSeasons = {}; // Start with none selected
-    
+
     if (!mounted) return;
-    
+
     await ZagDialogs().textPreviewWithAdd(
       context,
       show.title,
@@ -7962,7 +8075,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showMagicMovieCastCrewPreview(MagicMovieCastCrew movie) async {
     if (movie.tmdbId == null) return;
 
-    final overview = await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
+    final overview =
+        await _fetchTmdbOverview(tmdbId: movie.tmdbId!, isMovie: true);
     final previewText = overview.isNotEmpty ? overview : movie.reason;
 
     HapticFeedback.lightImpact();
@@ -7970,7 +8084,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       context,
       movie.title,
       previewText,
-      onAdd: () => _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
+      onAdd: () =>
+          _openMovieInRadarr(tmdbId: movie.tmdbId!, title: movie.title),
       alignLeft: true,
       rootFolderValue: _radarrRootFolder,
       qualityProfileValue: _radarrQualityProfileName,
@@ -7985,7 +8100,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _showMagicShowCastCrewPreview(MagicShowCastCrew show) async {
     if (show.tmdbId == null) return;
 
-    final overview = await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
+    final overview =
+        await _fetchTmdbOverview(tmdbId: show.tmdbId!, isMovie: false);
     final previewText = overview.isNotEmpty ? overview : show.reason;
 
     HapticFeedback.lightImpact();
@@ -8017,8 +8133,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         result.item2!.execute(context, movie);
       }
     } catch (error, stack) {
-      ZagLogger()
-          .error('Failed to open Radarr actions for ${movie.title}', error, stack);
+      ZagLogger().error(
+          'Failed to open Radarr actions for ${movie.title}', error, stack);
       showZagSnackBar(
         title: movie.title ?? 'Radarr',
         message: 'Unable to open Radarr actions right now.',
@@ -8042,7 +8158,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       RadarrMovie? movie;
       if (radarrState.movies != null) {
         final cached = await radarrState.movies!;
-        movie = cached.firstWhere((m) => m.id == movieId, orElse: () => RadarrMovie());
+        movie = cached.firstWhere((m) => m.id == movieId,
+            orElse: () => RadarrMovie());
       }
       if (movie == null || movie.id == null) {
         movie = await radarrState.api!.movie.get(movieId: movieId);
@@ -8052,7 +8169,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         await _showRadarrMovieActions(movie);
       }
     } catch (error, stack) {
-      ZagLogger().error('Failed to fetch movie $movieId for actions', error, stack);
+      ZagLogger()
+          .error('Failed to fetch movie $movieId for actions', error, stack);
       showZagSnackBar(
         title: 'Radarr',
         message: 'Unable to open movie actions right now.',
@@ -8236,7 +8354,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
   }
 
-  Future<void> _openTVShowInSonarr({required int tmdbId, required String title}) async {
+  Future<void> _openTVShowInSonarr(
+      {required int tmdbId, required String title}) async {
     await _openSeriesInSonarr(tmdbId: tmdbId, title: title);
   }
 
@@ -8277,8 +8396,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 height: _posterListHeight,
                 child: ListView.builder(
                   key: _mostAnticipatedShowsListKey,
-                  controller: _sectionScrollController(
-                      _scrollIdMostAnticipatedShows),
+                  controller:
+                      _sectionScrollController(_scrollIdMostAnticipatedShows),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _mostAnticipatedShows.length,
@@ -8340,7 +8459,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ? CachedNetworkImage(
                               imageUrl: show['poster'],
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey.shade800),
                               errorWidget: (context, url, error) {
                                 return _tvShowPosterPlaceholder();
                               },
@@ -8564,7 +8684,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ? CachedNetworkImage(
                               imageUrl: movie['poster'],
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                              placeholder: (context, url) =>
+                                  Container(color: Colors.grey.shade800),
                               errorWidget: (context, url, error) {
                                 return _mostAnticipatedMoviePlaceholder();
                               },
@@ -8747,8 +8868,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 height: 150,
                 child: ListView.builder(
                   key: _popularPeopleListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdPopularPeople),
+                  controller: _sectionScrollController(_scrollIdPopularPeople),
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _popularPeople.length,
@@ -8783,10 +8903,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required VoidCallback onEnable,
   }) {
     final theme = Theme.of(context);
-    final textColor = (theme.brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black)
-        .withOpacity(0.7);
+    final textColor =
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black)
+            .withOpacity(0.7);
 
     return Container(
       height: 260,
@@ -8852,12 +8971,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onSynced: () {
             final service = DeepCutsService();
             setState(() {
-              _deepCutsFuture =
-                  service.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+              _deepCutsFuture = service.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -8936,8 +9054,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _deepCutsListKey,
-                    controller:
-                        _sectionScrollController(_scrollIdDeepCuts),
+                    controller: _sectionScrollController(_scrollIdDeepCuts),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
                     itemBuilder: (context, index) {
@@ -9057,12 +9174,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         onSynced: () {
                           final service = DeepCutsService();
                           setState(() {
-                            _deepCutsFuture =
-                                service.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
+                            _deepCutsFuture = service.generateRecommendations(
+                              profileKey: profileKey,
+                              instanceKey: instanceKey,
+                              force: true,
+                            );
                           });
                         },
                       ),
@@ -9139,8 +9255,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) {
                             return _deepCutPosterPlaceholder(movie);
                           },
@@ -9229,12 +9345,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onSynced: () {
             final service = UpNextService();
             setState(() {
-              _upNextFuture =
-                  service.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+              _upNextFuture = service.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -9322,8 +9437,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
                     key: _upNextListKey,
-                    controller:
-                        _sectionScrollController(_scrollIdUpNext),
+                    controller: _sectionScrollController(_scrollIdUpNext),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
                     itemBuilder: (context, index) {
@@ -9443,12 +9557,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         onSynced: () {
                           final service = UpNextService();
                           setState(() {
-                            _upNextFuture =
-                                service.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
+                            _upNextFuture = service.generateRecommendations(
+                              profileKey: profileKey,
+                              instanceKey: instanceKey,
+                              force: true,
+                            );
                           });
                         },
                       ),
@@ -9525,8 +9638,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _upNextPosterPlaceholder(show),
                         ),
@@ -9614,12 +9727,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onSynced: () {
             final refreshService = MagicMoviesService();
             setState(() {
-              _magicMoviesFuture =
-                  refreshService.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+              _magicMoviesFuture = refreshService.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -9643,10 +9755,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  Icon(Icons.auto_fix_high_rounded, color: ZagColours.purple, size: 20),
+                  Icon(Icons.auto_fix_high_rounded,
+                      color: ZagColours.purple, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -9658,16 +9774,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(
+                      height: 390,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
                 }
-                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
                   String message = 'Auto-updates weekly';
                   IconData icon = Icons.auto_fix_high_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicMoviesError.notSynced;
+                          snapshot.data?.error == MagicMoviesError.notSynced;
 
                   if (snapshot.hasData &&
                       !snapshot.data!.success &&
@@ -9708,12 +9829,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -9724,7 +9855,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             child: Text(
                               message,
                               style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -9733,7 +9868,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -9742,20 +9878,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     onTap: () => _enableLibrarySyncForSection(
                                       sectionName: 'Magic Movies',
                                       onSynced: () {
-                                        final refreshService = MagicMoviesService();
+                                        final refreshService =
+                                            MagicMoviesService();
                                         setState(() {
                                           _magicMoviesFuture = refreshService
                                               .generateRecommendations(
-                                                profileKey: profileKey,
-                                                instanceKey: instanceKey,
-                                                force: true,
-                                              );
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
                                         });
                                       },
                                     ),
                                   ),
                           ],
-                          if (!showLibrarySyncCta && snapshot.data?.error != MagicMoviesError.alreadyGenerating) ...[
+                          if (!showLibrarySyncCta &&
+                              snapshot.data?.error !=
+                                  MagicMoviesError.alreadyGenerating) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
                               text: 'Generate now',
@@ -9763,12 +9902,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               onTap: () {
                                 final refreshService = MagicMoviesService();
                                 setState(() {
-                                  _magicMoviesFuture = refreshService
-                                      .generateRecommendations(
-                                        profileKey: profileKey,
-                                        instanceKey: instanceKey,
-                                        force: true,
-                                      );
+                                  _magicMoviesFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
                                 });
                               },
                             ),
@@ -9786,7 +9925,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     controller: _sectionScrollController(_scrollIdMagicMovies),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
-                    itemBuilder: (context, index) => _buildMagicMovieCard(recommendations[index]),
+                    itemBuilder: (context, index) =>
+                        _buildMagicMovieCard(recommendations[index]),
                   ),
                 );
               },
@@ -9824,8 +9964,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicMoviePosterPlaceholder(movie),
                         ),
@@ -9880,10 +10020,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             setState(() {
               _magicMoviesCastCrewFuture =
                   refreshService.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -9898,7 +10038,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicMoviesCastCrewResult>(
       future: _magicMoviesCastCrewFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Movies: Cast & Crew';
+        final sectionTitle =
+            snapshot.data?.sectionTitle ?? 'Magic Movies: Cast & Crew';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -9907,10 +10048,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  Icon(Icons.groups_rounded, color: ZagColours.purple, size: 20),
+                  Icon(Icons.groups_rounded,
+                      color: ZagColours.purple, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -9922,9 +10067,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(
+                      height: 390,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
                 }
-                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
                   String message = 'Auto-updates weekly';
                   IconData icon = Icons.groups_rounded;
@@ -9972,12 +10123,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -9988,7 +10149,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             child: Text(
                               message,
                               style: TextStyle(
-                                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -9997,7 +10162,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -10012,29 +10178,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           _magicMoviesCastCrewFuture =
                                               refreshService
                                                   .generateRecommendations(
-                                                profileKey: profileKey,
-                                                instanceKey: instanceKey,
-                                                force: true,
-                                              );
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
                                         });
                                       },
                                     ),
                                   ),
                           ],
-                          if (!showLibrarySyncCta && snapshot.data?.error != MagicMoviesCastCrewError.alreadyGenerating) ...[
+                          if (!showLibrarySyncCta &&
+                              snapshot.data?.error !=
+                                  MagicMoviesCastCrewError
+                                      .alreadyGenerating) ...[
                             const SizedBox(height: 16),
                             ZagButton.text(
                               text: 'Generate now',
                               icon: Icons.groups_rounded,
                               onTap: () {
-                                final refreshService = MagicMoviesCastCrewService();
+                                final refreshService =
+                                    MagicMoviesCastCrewService();
                                 setState(() {
-                                  _magicMoviesCastCrewFuture = refreshService
-                                      .generateRecommendations(
-                                        profileKey: profileKey,
-                                        instanceKey: instanceKey,
-                                        force: true,
-                                      );
+                                  _magicMoviesCastCrewFuture =
+                                      refreshService.generateRecommendations(
+                                    profileKey: profileKey,
+                                    instanceKey: instanceKey,
+                                    force: true,
+                                  );
                                 });
                               },
                             ),
@@ -10049,10 +10219,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
-                    controller: _sectionScrollController(_scrollIdMagicMoviesCastCrew),
+                    controller:
+                        _sectionScrollController(_scrollIdMagicMoviesCastCrew),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
-                    itemBuilder: (context, index) => _buildMagicMovieCastCrewCard(recommendations[index]),
+                    itemBuilder: (context, index) =>
+                        _buildMagicMovieCastCrewCard(recommendations[index]),
                   ),
                 );
               },
@@ -10090,8 +10262,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: movie.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicMoviePosterPlaceholder(movie),
                         ),
@@ -10134,12 +10306,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onSynced: () {
             final refreshService = MagicPeopleService();
             setState(() {
-              _magicPeopleMoviesFuture =
-                  refreshService.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+              _magicPeopleMoviesFuture = refreshService.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -10163,10 +10334,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  Icon(Icons.groups_rounded, color: ZagColours.purple, size: 20),
+                  Icon(Icons.groups_rounded,
+                      color: ZagColours.purple, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -10178,16 +10353,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 260, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(
+                      height: 260,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
                 }
-                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
                   String? message;
                   IconData icon = Icons.groups_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicPeopleError.notSynced;
+                          snapshot.data?.error == MagicPeopleError.notSynced;
                   bool showRetryButton = true;
 
                   if (snapshot.hasData &&
@@ -10232,12 +10412,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -10245,11 +10435,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (message != null) ...[
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
                               child: Text(
                                 message,
                                 style: TextStyle(
-                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  color: (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black)
+                                      .withOpacity(0.5),
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,
@@ -10259,7 +10454,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -10313,7 +10509,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     controller: _sectionScrollController(_scrollIdMagicPeople),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
-                    itemBuilder: (context, index) => _buildMagicPersonCard(recommendations[index]),
+                    itemBuilder: (context, index) =>
+                        _buildMagicPersonCard(recommendations[index]),
                   ),
                 );
               },
@@ -10360,7 +10557,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ? CachedNetworkImage(
                         imageUrl: person.profileUrl!,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: ZagColours.purple.withOpacity(0.2)),
+                        placeholder: (context, url) => Container(
+                            color: ZagColours.purple.withOpacity(0.2)),
                         errorWidget: (context, url, error) {
                           return _personPlaceholder();
                         },
@@ -10452,7 +10650,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         shape: BoxShape.circle,
                         color: ZagColours.purple.withOpacity(0.2),
                       ),
-                      child: Icon(Icons.person_rounded, size: 30, color: ZagColours.purple),
+                      child: Icon(Icons.person_rounded,
+                          size: 30, color: ZagColours.purple),
                     ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -10461,11 +10660,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       children: [
                         Text(
                           person.name,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           person.knownFor,
-                          style: TextStyle(fontSize: 14, color: ZagColours.purple),
+                          style:
+                              TextStyle(fontSize: 14, color: ZagColours.purple),
                         ),
                       ],
                     ),
@@ -10475,7 +10676,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               const SizedBox(height: 16),
               Text(
                 'Why we recommend:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: ZagColours.purple),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: ZagColours.purple),
               ),
               const SizedBox(height: 4),
               Text(person.reason, style: const TextStyle(fontSize: 14)),
@@ -10527,12 +10731,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           onSynced: () {
             final refreshService = MagicShowsService();
             setState(() {
-              _magicShowsFuture =
-                  refreshService.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+              _magicShowsFuture = refreshService.generateRecommendations(
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -10556,10 +10759,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  Icon(Icons.auto_fix_high_rounded, color: ZagColours.purple, size: 20),
+                  Icon(Icons.auto_fix_high_rounded,
+                      color: ZagColours.purple, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -10571,16 +10778,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(
+                      height: 390,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
                 }
-                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
                   String? message;
                   IconData icon = Icons.auto_fix_high_rounded;
                   final showLibrarySyncCta =
                       (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicShowsError.notSynced;
+                          snapshot.data?.error == MagicShowsError.notSynced;
                   bool showRetryButton = true;
 
                   if (snapshot.hasData &&
@@ -10625,12 +10837,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -10638,11 +10860,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (message != null) ...[
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
                               child: Text(
                                 message,
                                 style: TextStyle(
-                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  color: (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black)
+                                      .withOpacity(0.5),
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,
@@ -10652,7 +10879,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -10664,13 +10892,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                         final refreshService =
                                             MagicShowsService();
                                         setState(() {
-                                          _magicShowsFuture =
-                                              refreshService
-                                                  .generateRecommendations(
-                                                profileKey: profileKey,
-                                                instanceKey: instanceKey,
-                                                force: true,
-                                              );
+                                          _magicShowsFuture = refreshService
+                                              .generateRecommendations(
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
                                         });
                                       },
                                     ),
@@ -10706,7 +10933,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     controller: _sectionScrollController(_scrollIdMagicShows),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
-                    itemBuilder: (context, index) => _buildMagicShowCard(recommendations[index]),
+                    itemBuilder: (context, index) =>
+                        _buildMagicShowCard(recommendations[index]),
                   ),
                 );
               },
@@ -10744,8 +10972,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicShowPosterPlaceholder(show),
                         ),
@@ -10800,10 +11028,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             setState(() {
               _magicShowsCastCrewFuture =
                   refreshService.generateRecommendations(
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                    force: true,
-                  );
+                profileKey: profileKey,
+                instanceKey: instanceKey,
+                force: true,
+              );
             });
           },
         ),
@@ -10818,7 +11046,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<MagicShowsCastCrewResult>(
       future: _magicShowsCastCrewFuture,
       builder: (context, snapshot) {
-        final sectionTitle = snapshot.data?.sectionTitle ?? 'Magic Shows: Cast & Crew';
+        final sectionTitle =
+            snapshot.data?.sectionTitle ?? 'Magic Shows: Cast & Crew';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -10827,10 +11056,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  Icon(Icons.person_search_rounded, color: ZagColours.purple, size: 20),
+                  Icon(Icons.person_search_rounded,
+                      color: ZagColours.purple, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(sectionTitle, style: TextStyle(fontSize: _moduleSectionTitleFontSize, fontWeight: FontWeight.bold)),
+                    child: Text(sectionTitle,
+                        style: TextStyle(
+                            fontSize: _moduleSectionTitleFontSize,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -10842,16 +11075,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(height: 390, padding: const EdgeInsets.symmetric(horizontal: 16), child: const Center(child: CircularProgressIndicator()));
+                  return Container(
+                      height: 390,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: const Center(child: CircularProgressIndicator()));
                 }
-                if (!snapshot.hasData || !snapshot.data!.success || snapshot.data!.recommendations == null || snapshot.data!.recommendations!.isEmpty) {
+                if (!snapshot.hasData ||
+                    !snapshot.data!.success ||
+                    snapshot.data!.recommendations == null ||
+                    snapshot.data!.recommendations!.isEmpty) {
                   String title = 'No recommendations yet';
                   String? message;
                   IconData icon = Icons.person_search_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicShowsCastCrewError.notSynced;
+                  final showLibrarySyncCta = (ZagreusMega.isEnabled &&
+                          !libraryCacheEnabled) ||
+                      snapshot.data?.error == MagicShowsCastCrewError.notSynced;
                   bool showRetryButton = true;
 
                   if (snapshot.hasData &&
@@ -10896,12 +11134,22 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(icon, size: 48, color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.3)),
+                          Icon(icon,
+                              size: 48,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.3)),
                           const SizedBox(height: 16),
                           Text(
                             title,
                             style: TextStyle(
-                              color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.7),
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(0.7),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -10909,11 +11157,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (message != null) ...[
                             const SizedBox(height: 8),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
                               child: Text(
                                 message,
                                 style: TextStyle(
-                                  color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withOpacity(0.5),
+                                  color: (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black)
+                                      .withOpacity(0.5),
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,
@@ -10923,7 +11176,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           if (showLibrarySyncCta) ...[
                             const SizedBox(height: 16),
                             _isSyncing
-                                ? const CircularProgressIndicator(strokeWidth: 2)
+                                ? const CircularProgressIndicator(
+                                    strokeWidth: 2)
                                 : ZagButton.text(
                                     text: libraryCacheEnabled
                                         ? 'Sync library now'
@@ -10938,10 +11192,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           _magicShowsCastCrewFuture =
                                               refreshService
                                                   .generateRecommendations(
-                                                profileKey: profileKey,
-                                                instanceKey: instanceKey,
-                                                force: true,
-                                              );
+                                            profileKey: profileKey,
+                                            instanceKey: instanceKey,
+                                            force: true,
+                                          );
                                         });
                                       },
                                     ),
@@ -10952,7 +11206,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               text: 'Generate now',
                               icon: Icons.refresh_rounded,
                               onTap: () {
-                                final refreshService = MagicShowsCastCrewService();
+                                final refreshService =
+                                    MagicShowsCastCrewService();
                                 setState(() {
                                   _magicShowsCastCrewFuture =
                                       refreshService.generateRecommendations(
@@ -10974,10 +11229,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   height: 390,
                   padding: const EdgeInsets.only(left: 16),
                   child: ListView.builder(
-                    controller: _sectionScrollController(_scrollIdMagicShowsCastCrew),
+                    controller:
+                        _sectionScrollController(_scrollIdMagicShowsCastCrew),
                     scrollDirection: Axis.horizontal,
                     itemCount: recommendations.length,
-                    itemBuilder: (context, index) => _buildMagicShowCastCrewCard(recommendations[index]),
+                    itemBuilder: (context, index) =>
+                        _buildMagicShowCastCrewCard(recommendations[index]),
                   ),
                 );
               },
@@ -11015,8 +11272,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: CachedNetworkImage(
                           imageUrl: show.posterUrl!,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: ZagColours.purple.withOpacity(0.2)),
+                          placeholder: (context, url) => Container(
+                              color: ZagColours.purple.withOpacity(0.2)),
                           errorWidget: (context, url, error) =>
                               _magicShowPosterPlaceholder(show),
                         ),
@@ -11077,7 +11334,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ? CachedNetworkImage(
                         imageUrl: person['profilePath'],
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                        placeholder: (context, url) =>
+                            Container(color: Colors.grey.shade800),
                         errorWidget: (context, url, error) {
                           return _personPlaceholder();
                         },
@@ -11713,12 +11971,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _airingNextCard(Map<String, dynamic> episode) {
-    final secondaryTextColor = Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.color
-            ?.withOpacity(0.65) ??
-        Colors.grey.shade700;
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
+            Colors.grey.shade700;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -11765,7 +12020,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ? CachedNetworkImage(
                             imageUrl: episode['thumbnail'],
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                            placeholder: (context, url) =>
+                                Container(color: Colors.grey.shade800),
                             errorWidget: (context, url, error) {
                               return Center(
                                 child: Icon(
@@ -11855,12 +12111,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _tvShowCard(Map<String, dynamic> episode) {
     final sizeGb = episode['sizeGb'] is num ? episode['sizeGb'] as num : null;
-    final secondaryTextColor = Theme.of(context)
-            .textTheme
-            .bodySmall
-            ?.color
-            ?.withOpacity(0.65) ??
-        Colors.grey.shade700;
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.65) ??
+            Colors.grey.shade700;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -11923,7 +12176,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     child: CachedNetworkImage(
                       imageUrl: episode['thumbnail'],
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey.shade800),
+                      placeholder: (context, url) =>
+                          Container(color: Colors.grey.shade800),
                       errorWidget: (context, url, error) {
                         return Center(
                           child: Icon(
@@ -12008,12 +12262,10 @@ class _DiscoverNavigationBar extends StatelessWidget {
   final bool showCalendar;
   final bool showAgentTab;
 
-  static final ScrollController modulesScrollController =
-      ScrollController();
+  static final ScrollController modulesScrollController = ScrollController();
   static final ScrollController moviesScrollController = ScrollController();
   static final ScrollController showsScrollController = ScrollController();
-  static final ScrollController calendarScrollController =
-      ScrollController();
+  static final ScrollController calendarScrollController = ScrollController();
   static final ScrollController agentScrollController = ScrollController();
 
   const _DiscoverNavigationBar({
@@ -12069,7 +12321,8 @@ class _ServerPage extends StatefulWidget {
   State<_ServerPage> createState() => _ServerPageState();
 }
 
-class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientMixin {
+class _ServerPageState extends State<_ServerPage>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -12102,7 +12355,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   @override
   void initState() {
     super.initState();
-    _overseerrRequestFilter = UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _overseerrRequestFilter =
+        UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
     _loadData();
   }
 
@@ -12159,11 +12413,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           final sonarrSpaces = await sonarrAPI.filesystem.getAllDiskSpaces();
           // Convert SonarrDiskSpace to RadarrDiskSpace format
           allDiskSpaces.addAll(sonarrSpaces.map((s) => RadarrDiskSpace(
-            path: s.path,
-            label: s.label,
-            freeSpace: s.freeSpace,
-            totalSpace: s.totalSpace,
-          )));
+                path: s.path,
+                label: s.label,
+                freeSpace: s.freeSpace,
+                totalSpace: s.totalSpace,
+              )));
         } catch (e) {
           ZagLogger().warning('Failed to fetch disk spaces from Sonarr: $e');
         }
@@ -12182,8 +12436,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
 
       // Sort by path
       uniqueSpaces.sort((a, b) =>
-        (a.path ?? '').toLowerCase().compareTo((b.path ?? '').toLowerCase())
-      );
+          (a.path ?? '').toLowerCase().compareTo((b.path ?? '').toLowerCase()));
 
       if (mounted) {
         setState(() {
@@ -12219,11 +12472,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           );
           final radarrIssues = await radarrAPI.healthCheck.get();
           allIssues.addAll(radarrIssues.map((issue) => _ServerIssue(
-            message: issue.message ?? 'Unknown issue',
-            serviceType: 'Radarr',
-            icon: ZagIcons.RADARR,
-            color: const Color(0xFFFEC333),
-          )));
+                message: issue.message ?? 'Unknown issue',
+                serviceType: 'Radarr',
+                icon: ZagIcons.RADARR,
+                color: const Color(0xFFFEC333),
+              )));
         } catch (e) {
           ZagLogger().warning('Failed to fetch health checks from Radarr: $e');
         }
@@ -12241,11 +12494,11 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           );
           final sonarrIssues = await sonarrAPI.healthCheck.get();
           allIssues.addAll(sonarrIssues.map((issue) => _ServerIssue(
-            message: issue.message ?? 'Unknown issue',
-            serviceType: 'Sonarr',
-            icon: ZagIcons.SONARR,
-            color: const Color(0xFF3FC6F4),
-          )));
+                message: issue.message ?? 'Unknown issue',
+                serviceType: 'Sonarr',
+                icon: ZagIcons.SONARR,
+                color: const Color(0xFF3FC6F4),
+              )));
         } catch (e) {
           ZagLogger().warning('Failed to fetch health checks from Sonarr: $e');
         }
@@ -12387,15 +12640,18 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     if (!mounted) return;
 
     try {
-      print('🔍 Loading download history - SABnzbd enabled: ${ZagProfile.current.sabnzbdEnabled}');
+      print(
+          '🔍 Loading download history - SABnzbd enabled: ${ZagProfile.current.sabnzbdEnabled}');
       if (ZagProfile.current.sabnzbdEnabled) {
         final sabnzbdApi = SABnzbdAPI.from(ZagProfile.current);
-        final historyData = await DownloadHistoryFetcher.fetchSabnzbdDownloadStats(
+        final historyData =
+            await DownloadHistoryFetcher.fetchSabnzbdDownloadStats(
           api: sabnzbdApi,
           weeksLookBack: _downloadHistoryWeeks, // Use 2 weeks
         );
 
-        print('🔍 Download history loaded: ${historyData.chartData.length} days, ${historyData.totalGB} GB');
+        print(
+            '🔍 Download history loaded: ${historyData.chartData.length} days, ${historyData.totalGB} GB');
         print('🔍 Chart data: ${historyData.chartData}');
 
         if (!mounted) return;
@@ -12450,7 +12706,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             try {
               // Construct cover URL from Lidarr API
               // Note: Lidarr uses /mediacover/Album/{albumId} for album covers
-              coverUrl = '${ZagProfile.current.effectiveLidarrHost()}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
+              coverUrl =
+                  '${ZagProfile.current.effectiveLidarrHost()}/api/v1/mediacover/Album/${record.albumID}/cover.jpg?apikey=${ZagProfile.current.lidarrKey}';
             } catch (e) {
               // Fallback to null if URL construction fails
               coverUrl = null;
@@ -12474,7 +12731,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         setState(() {
           _lidarrRecentlyDownloaded = albums;
         });
-        print('🎵 State updated with ${_lidarrRecentlyDownloaded.length} albums');
+        print(
+            '🎵 State updated with ${_lidarrRecentlyDownloaded.length} albums');
       } else {
         print('🎵 Lidarr is disabled, skipping');
       }
@@ -12528,7 +12786,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
 
               // Fallback: construct cover URL manually if not found
               if (coverUrl == null || coverUrl.isEmpty) {
-                coverUrl = '${ZagProfile.current.effectiveReadarrHost()}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
+                coverUrl =
+                    '${ZagProfile.current.effectiveReadarrHost()}/api/v1/mediacover/${record.bookID}/cover.jpg?apikey=${ZagProfile.current.readarrKey}';
               }
 
               books.add(ReadarrRecentlyDownloadedBook(
@@ -12555,7 +12814,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         setState(() {
           _readarrRecentlyDownloaded = books;
         });
-        print('📚 State updated with ${_readarrRecentlyDownloaded.length} books');
+        print(
+            '📚 State updated with ${_readarrRecentlyDownloaded.length} books');
       } else {
         print('📚 Readarr is disabled, skipping');
       }
@@ -12634,7 +12894,15 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     final sectionOrder = UIPreferencesDatabase.SECTION_ORDER.read() as List;
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
-        : ['server_issues', 'overseerr_requests', 'tautulli_streams', 'disk_space', 'download_history', 'lidarr_recent', 'readarr_recent'];
+        : [
+            'server_issues',
+            'overseerr_requests',
+            'tautulli_streams',
+            'disk_space',
+            'download_history',
+            'lidarr_recent',
+            'readarr_recent'
+          ];
 
     print('🎵 Ordered sections: $orderedSections');
     print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
@@ -12643,12 +12911,17 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
       'server_issues': _buildServerIssuesSection(),
-      if (_shouldShowOverseerrSection) 'overseerr_requests': _buildOverseerrSection(),
-      if (_shouldShowTautulliStreamsSection) 'tautulli_streams': _buildTautulliStreamsSection(),
+      if (_shouldShowOverseerrSection)
+        'overseerr_requests': _buildOverseerrSection(),
+      if (_shouldShowTautulliStreamsSection)
+        'tautulli_streams': _buildTautulliStreamsSection(),
       'disk_space': _buildDiskSpaceSection(),
-      if (ZagProfile.current.sabnzbdEnabled) 'download_history': _buildDownloadHistorySection(),
-      if (ZagProfile.current.lidarrEnabled) 'lidarr_recent': _buildLidarrRecentSection(),
-      if (ZagProfile.current.readarrEnabled) 'readarr_recent': _buildReadarrRecentSection(),
+      if (ZagProfile.current.sabnzbdEnabled)
+        'download_history': _buildDownloadHistorySection(),
+      if (ZagProfile.current.lidarrEnabled)
+        'lidarr_recent': _buildLidarrRecentSection(),
+      if (ZagProfile.current.readarrEnabled)
+        'readarr_recent': _buildReadarrRecentSection(),
     };
 
     print('🎵 Section widgets keys: ${sectionWidgets.keys.toList()}');
@@ -12683,7 +12956,9 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
   }
 
   List<Widget> _buildServerIssuesSection() {
-    if (_serverIssues.isEmpty && !ZagProfile.current.radarrEnabled && !ZagProfile.current.sonarrEnabled) {
+    if (_serverIssues.isEmpty &&
+        !ZagProfile.current.radarrEnabled &&
+        !ZagProfile.current.sonarrEnabled) {
       return [];
     }
 
@@ -12716,17 +12991,17 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
         )
       else
         ..._serverIssues.map((issue) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: ZagBlock(
-            title: issue.message,
-            titleMaxLines: 5,
-            leading: Icon(
-              issue.icon,
-              color: issue.color,
-              size: 28,
-            ),
-          ),
-        )),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ZagBlock(
+                title: issue.message,
+                titleMaxLines: 5,
+                leading: Icon(
+                  issue.icon,
+                  color: issue.color,
+                  size: 28,
+                ),
+              ),
+            )),
       const SizedBox(height: 24),
     ];
   }
@@ -12768,8 +13043,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             children: [
               for (int i = 0; i < _diskSpaces.length; i++) ...[
                 _buildDiskSpaceItem(_diskSpaces[i]),
-                if (i < _diskSpaces.length - 1)
-                  const SizedBox(height: 16),
+                if (i < _diskSpaces.length - 1) const SizedBox(height: 16),
               ],
             ],
           ),
@@ -12848,14 +13122,12 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: _overseerrEnabled
-                    ? ZagModule.OVERSEERR.color
-                    : Colors.grey,
+                color:
+                    _overseerrEnabled ? ZagModule.OVERSEERR.color : Colors.grey,
               ),
             ),
             const Spacer(),
-            if (_overseerrEnabled)
-              _buildFilterSelector(),
+            if (_overseerrEnabled) _buildFilterSelector(),
           ],
         ),
       ),
@@ -12907,9 +13179,7 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         )
       else
-        ..._overseerrRequests
-            .take(_overseerrPreviewLimit)
-            .map(
+        ..._overseerrRequests.take(_overseerrPreviewLimit).map(
               (request) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: OverseerrRequestTile(
@@ -13010,9 +13280,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: _tautulliEnabled
-                    ? ZagModule.TAUTULLI.color
-                    : Colors.grey,
+                color:
+                    _tautulliEnabled ? ZagModule.TAUTULLI.color : Colors.grey,
               ),
             ),
             const Spacer(),
@@ -13035,7 +13304,8 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
             title: 'Enable Tautulli',
             body: const [
               TextSpan(
-                text: 'Turn on Tautulli in Settings to see active streams here.',
+                text:
+                    'Turn on Tautulli in Settings to see active streams here.',
               ),
             ],
             trailing: const Icon(Icons.settings_rounded),
@@ -13069,15 +13339,14 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
           ),
         )
       else
-        ..._tautulliStreams
-            .map(
-              (stream) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TautulliStreamCard(
-                  session: stream,
-                ),
-              ),
+        ..._tautulliStreams.map(
+          (stream) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: TautulliStreamCard(
+              session: stream,
             ),
+          ),
+        ),
       const SizedBox(height: 24),
     ];
   }
@@ -13161,14 +13430,16 @@ class _ServerPageState extends State<_ServerPage> with AutomaticKeepAliveClientM
       DownloadHistoryCard(
         chartData: _downloadHistoryChartData,
         totalGB: _downloadHistoryTotalGB,
-        periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
+        periodLabel:
+            DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
       ),
       const SizedBox(height: 24),
     ];
   }
 
   List<Widget> _buildLidarrRecentSection() {
-    print('🎵 _buildLidarrRecentSection() called with ${_lidarrRecentlyDownloaded.length} albums');
+    print(
+        '🎵 _buildLidarrRecentSection() called with ${_lidarrRecentlyDownloaded.length} albums');
     return [
       LidarrRecentlyDownloadedCard(
         albums: _lidarrRecentlyDownloaded,
@@ -13221,13 +13492,12 @@ class _ServerIssue {
   });
 }
 
-
 class _CalendarFilterOption {
   final String key;
   final String name;
   final ZagModule module;
   final String? instanceKey;
-  
+
   _CalendarFilterOption({
     required this.key,
     required this.name,
@@ -13240,26 +13510,26 @@ class _CalendarFilterDialog extends StatefulWidget {
   final List<_CalendarFilterOption> options;
   final Set<String> selectedKeys;
   final void Function(Set<String>) onSave;
-  
+
   const _CalendarFilterDialog({
     required this.options,
     required this.selectedKeys,
     required this.onSave,
   });
-  
+
   @override
   State<_CalendarFilterDialog> createState() => _CalendarFilterDialogState();
 }
 
 class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
   late Set<String> _selected;
-  
+
   @override
   void initState() {
     super.initState();
     _selected = Set.from(widget.selectedKeys);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -13279,7 +13549,8 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
                   final isSelected = _selected.contains(option.key);
                   return CheckboxListTile(
                     title: Text(option.name),
-                    secondary: Icon(option.module.icon, color: option.module.color),
+                    secondary:
+                        Icon(option.module.icon, color: option.module.color),
                     value: isSelected,
                     activeColor: option.module.color,
                     onChanged: (value) {
@@ -13314,8 +13585,6 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
     );
   }
 }
-
-
 
 class _LibraryBadgeInfo {
   final String? instanceKey;

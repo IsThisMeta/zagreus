@@ -42,6 +42,7 @@
     "sonarr.MonitorSeries": "Monitorar Série",
     "sonarr.MonitoredDescription": "Monitorar série por novos lançamentos",
     "sonarr.More": "Mais",
+    "sonarr.ParentDirectory": "Diretório pai",
     "sonarr.Name": "Nome",
     "sonarr.NoEpisodesFound": "Nenhum Episódio Encontrado",
     "sonarr.AddedOn": "Adicionado Em",

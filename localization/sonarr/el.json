@@ -11,6 +11,7 @@
     "sonarr.MonitorSeries": "Παρακολούθηση σειράς",
     "sonarr.Monitored": "Παρακολουθείται",
     "sonarr.More": "Περισσότερα",
+    "sonarr.ParentDirectory": "Γονικός κατάλογος",
     "sonarr.Name": "Όνομα",
     "sonarr.NoEpisodesFound": "Δε βρέθηκαν επεισόδια",
     "sonarr.Monitoring": "Υπό παρακολούθηση",
