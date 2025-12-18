@@ -547,6 +547,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Custom Sections futures - user-defined AI recommendation categories
   final Map<String, Future<CustomSectionResult>> _customSectionsFutures = {};
+  final Map<String, Future<List<CustomSectionConfig>>> _customSectionsSyncFutures = {};
 
   // Track the soonest scheduled regeneration across Z sections for display
   DateTime? _nextZSectionsRegenerationAt;
@@ -3181,7 +3182,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (!_customSectionsEnabled) return const SizedBox.shrink();
 
     return FutureBuilder<List<CustomSectionConfig>>(
-      future: CustomSectionsService().syncFromSupabase(mediaType: mediaType),
+      future: _customSectionsSyncFutures[mediaType] ??=
+          CustomSectionsService().syncFromSupabase(mediaType: mediaType),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const SizedBox.shrink();
@@ -3876,7 +3878,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     // Always refresh Custom Sections after closing settings so create/edit/delete
     // actions reflect immediately, even if the user didn't press "Save".
-    setState(() => _customSectionsFutures.clear());
+    setState(() {
+      _customSectionsFutures.clear();
+      _customSectionsSyncFutures.clear();
+    });
 
     if (updated == true) {
       setState(() {

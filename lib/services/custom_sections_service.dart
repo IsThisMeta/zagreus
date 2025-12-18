@@ -553,7 +553,6 @@ class CustomSectionsService {
 
       ZagreusDatabase.CUSTOM_SECTIONS.update(allSections);
 
-      print('✅ Synced ${cloudSections.length} custom sections from Supabase');
       return mergedMap.values.toList();
     } catch (e, stack) {
       ZagLogger().error('Failed to sync from Supabase', e, stack);

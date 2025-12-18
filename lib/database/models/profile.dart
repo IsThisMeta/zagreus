@@ -690,10 +690,8 @@ class ZagProfile extends HiveObject {
   /// Get all shadow profiles for a parent profile
   static List<String> getInstancesForProfile(String parentProfile) {
     final dynamic instances = ZagreusDatabase.PROFILE_INSTANCES.read();
-    print('🔍 getInstancesForProfile: parentProfile=$parentProfile, raw instances=$instances, type=${instances.runtimeType}');
     if (instances == null || instances is! Map) return [];
     final dynamic list = instances[parentProfile];
-    print('🔍 getInstancesForProfile: list for $parentProfile = $list');
     if (list == null || list is! List) return [];
     return list.cast<String>();
   }
