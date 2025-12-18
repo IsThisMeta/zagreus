@@ -999,101 +999,124 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       final hideInLibrary =
           ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO.read() ?? false;
 
-      // Pre-fetch library data efficiently
-      List<RadarrMovie> radarrMovies = [];
-      List<SonarrSeries> sonarrSeries = [];
+      // Phase 1: Quick load - Get trending data immediately (no library checks)
+      final quickMovieItems = await TMDBApi.getTrending(
+        mediaType: 'movie',
+        timeWindow: _trendingTimeWindow,
+        page: 1,
+      );
+      
+      final quickTvItems = await TMDBApi.getTrending(
+        mediaType: 'tv',
+        timeWindow: _trendingTimeWindow,
+        page: 1,
+      );
 
-      if (mounted) {
-        final radarrState = context.read<RadarrState>();
-        if (radarrState.enabled) {
-          // Refresh Radarr library cache to get latest library status
-          radarrState.fetchMovies();
-          if (radarrState.movies != null) {
-            radarrMovies = await radarrState.movies!;
-          }
-        }
-
-        final sonarrState = context.read<SonarrState>();
-        if (sonarrState.enabled && sonarrState.api != null) {
-          try {
-            // Refresh Sonarr library cache to get latest library status
-            sonarrState.fetchAllSeries();
-            if (sonarrState.series != null) {
-              final seriesMap = await sonarrState.series!;
-              sonarrSeries = seriesMap.values.toList();
-            }
-          } catch (e) {
-            print('📺 Error fetching Sonarr library for trending check: $e');
-          }
-        }
-      }
-
-      // Helper function to fetch and filter items
-      Future<List<Map<String, dynamic>>> fetchAndFilter(
-        String mediaType,
-      ) async {
-        List<Map<String, dynamic>> finalItems = [];
-        // Fetch up to 5 pages to ensure we have enough items after filtering
-        for (int page = 1; page <= 5; page++) {
-          if (finalItems.length >= 20) break;
-
-          final items = await TMDBApi.getTrending(
-            mediaType: mediaType,
-            timeWindow: _trendingTimeWindow,
-            page: page,
-          );
-
-          if (items.isEmpty) break;
-
-          for (final item in items) {
-            final tmdbId = item['tmdbId'] as int;
-            bool inLibrary = false;
-
-            if (mediaType == 'movie') {
-              final match =
-                  radarrMovies.where((m) => m.tmdbId == tmdbId).firstOrNull;
-              if (match != null) {
-                inLibrary = true;
-                item['inLibrary'] = true;
-                item['radarrId'] = match.id;
-              }
-            } else {
-              final title = item['title'] as String;
-              final match = sonarrSeries.where((series) {
-                return series.title?.toLowerCase() == title.toLowerCase();
-              }).firstOrNull;
-              if (match != null) {
-                inLibrary = true;
-                item['inLibrary'] = true;
-                item['sonarrId'] = match.id;
-              }
-            }
-
-            if (!hideInLibrary || !inLibrary) {
-              finalItems.add(item);
-            }
-          }
-        }
-        return finalItems.take(20).toList();
-      }
-
-      final movieItems = await fetchAndFilter('movie');
-      final tvItems = await fetchAndFilter('tv');
-
+      // Show the carousel immediately with basic data
       if (mounted) {
         setState(() {
-          _trendingMovies = movieItems;
-          _trendingTVShows = tvItems;
+          _trendingMovies = quickMovieItems.take(20).toList();
+          _trendingTVShows = quickTvItems.take(20).toList();
           _precachedHeroBackdrops.clear();
         });
+        
+        // Precache first images immediately
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          // Precache both movie and TV images
           _precacheHeroImage(_currentMovieHeroIndex, isMovie: true);
           _precacheHeroImage(_currentMovieHeroIndex + 1, isMovie: true);
           _precacheHeroImage(_currentTVHeroIndex, isMovie: false);
           _precacheHeroImage(_currentTVHeroIndex + 1, isMovie: false);
         });
+      }
+
+      // Phase 2: Background enhancement - Add library status if needed
+      if (hideInLibrary || mounted) {
+        // Pre-fetch library data efficiently
+        List<RadarrMovie> radarrMovies = [];
+        List<SonarrSeries> sonarrSeries = [];
+
+        if (mounted) {
+          final radarrState = context.read<RadarrState>();
+          if (radarrState.enabled) {
+            radarrState.fetchMovies();
+            if (radarrState.movies != null) {
+              radarrMovies = await radarrState.movies!;
+            }
+          }
+
+          final sonarrState = context.read<SonarrState>();
+          if (sonarrState.enabled && sonarrState.api != null) {
+            try {
+              sonarrState.fetchAllSeries();
+              if (sonarrState.series != null) {
+                final seriesMap = await sonarrState.series!;
+                sonarrSeries = seriesMap.values.toList();
+              }
+            } catch (e) {
+              print('📺 Error fetching Sonarr library for trending check: $e');
+            }
+          }
+        }
+
+        // Helper function to fetch and filter items with library status
+        Future<List<Map<String, dynamic>>> fetchAndFilter(
+          String mediaType,
+        ) async {
+          List<Map<String, dynamic>> finalItems = [];
+          // Fetch up to 5 pages to ensure we have enough items after filtering
+          for (int page = 1; page <= 5; page++) {
+            if (finalItems.length >= 20) break;
+
+            final items = await TMDBApi.getTrending(
+              mediaType: mediaType,
+              timeWindow: _trendingTimeWindow,
+              page: page,
+            );
+
+            if (items.isEmpty) break;
+
+            for (final item in items) {
+              final tmdbId = item['tmdbId'] as int;
+              bool inLibrary = false;
+
+              if (mediaType == 'movie') {
+                final match =
+                    radarrMovies.where((m) => m.tmdbId == tmdbId).firstOrNull;
+                if (match != null) {
+                  inLibrary = true;
+                  item['inLibrary'] = true;
+                  item['radarrId'] = match.id;
+                }
+              } else {
+                final title = item['title'] as String;
+                final match = sonarrSeries.where((series) {
+                  return series.title?.toLowerCase() == title.toLowerCase();
+                }).firstOrNull;
+                if (match != null) {
+                  inLibrary = true;
+                  item['inLibrary'] = true;
+                  item['sonarrId'] = match.id;
+                }
+              }
+
+              if (!hideInLibrary || !inLibrary) {
+                finalItems.add(item);
+              }
+            }
+          }
+          return finalItems.take(20).toList();
+        }
+
+        final movieItems = await fetchAndFilter('movie');
+        final tvItems = await fetchAndFilter('tv');
+
+        if (mounted) {
+          setState(() {
+            _trendingMovies = movieItems;
+            _trendingTVShows = tvItems;
+          });
+        }
       }
     } catch (e) {
       print('Failed to load trending: $e');
