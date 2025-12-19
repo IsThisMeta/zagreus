@@ -16,7 +16,6 @@ import 'package:zagreus/modules/readarr/core/api/data/history.dart';
 import 'package:zagreus/modules/readarr/widgets/recently_downloaded_card.dart';
 import 'package:zagreus/modules/sabnzbd/core/api/api.dart';
 import 'package:zagreus/modules/tautulli.dart';
-import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/unraid/core/download_history_fetcher.dart';
 import 'package:zagreus/modules/unraid/routes/unraid/widgets/download_history_card.dart';
 import 'package:zagreus/router/routes/settings.dart';
@@ -53,7 +52,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   bool _tautulliEnabled = false;
   bool _tautulliLoading = false;
   String? _tautulliError;
-  int? _tautulliStreamCount;
   int? _tautulliDirectPlayCount;
   int? _tautulliDirectStreamCount;
   int? _tautulliTranscodeCount;
@@ -63,7 +61,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   void initState() {
     super.initState();
     _overseerrRequestFilter =
-        UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+        UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read();
     _loadData();
   }
 
@@ -320,7 +318,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       if (!mounted) return;
       setState(() {
         _tautulliStreams = activity?.sessions ?? [];
-        _tautulliStreamCount = activity?.streamCount;
         _tautulliDirectPlayCount = activity?.streamCountDirectPlay;
         _tautulliDirectStreamCount = activity?.streamCountDirectStream;
         _tautulliTranscodeCount = activity?.streamCountTranscode;
@@ -349,9 +346,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
 
     // Only load download history if SABnzbd is enabled
     try {
-      print(
-          '🔍 Loading download history - SABnzbd enabled: ${ZagProfile.current.sabnzbdEnabled}');
-
       if (ZagProfile.current.sabnzbdEnabled) {
         final sabnzbdApi = SABnzbdAPI.from(ZagProfile.current);
         final historyData =
@@ -360,44 +354,29 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
           weeksLookBack: _downloadHistoryWeeks, // Use 2 weeks
         );
 
-        print(
-            '🔍 Download history loaded: ${historyData.chartData.length} days, ${historyData.totalGB} GB');
-        print('🔍 Chart data: ${historyData.chartData}');
-
         if (!mounted) return;
         setState(() {
           _downloadHistoryChartData = historyData.chartData;
           _downloadHistoryTotalGB = historyData.totalGB;
         });
-
-        print('🔍 State updated with download history');
-      } else {
-        print('🔍 SABnzbd not enabled, skipping download history');
       }
     } catch (e, stackTrace) {
-      print('❌ Failed to load download history: $e');
-      print('❌ Stack trace: $stackTrace');
-      ZagLogger().debug('Failed to load download history: $e');
+      ZagLogger().error('Failed to load download history', e, stackTrace);
       // Fail silently - this is optional data
     }
   }
 
   Future<void> _loadLidarrRecentlyDownloaded() async {
-    print('🎵 _loadLidarrRecentlyDownloaded() called');
     if (!mounted) return;
 
     try {
-      print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
       if (ZagProfile.current.lidarrEnabled) {
-        print('🎵 Creating Lidarr API...');
         final api = LidarrAPI.from(ZagProfile.current);
-        print('🎵 Fetching Lidarr history...');
         final history = await api.getHistory(
           sortKey: 'date',
           sortDir: 'descending',
           pageSize: 100,
         );
-        print('🎵 Got ${history.length} history records');
 
         // Filter to only downloadImported events and dedupe by album
         final seenAlbumIds = <int>{};
@@ -436,40 +415,29 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
           }
         }
 
-        print('🎵 Processed ${albums.length} albums');
         if (!mounted) return;
         setState(() {
           _lidarrRecentlyDownloaded = albums;
         });
-        print(
-            '🎵 State updated with ${_lidarrRecentlyDownloaded.length} albums');
-      } else {
-        print('🎵 Lidarr is disabled, skipping');
       }
     } catch (e, stackTrace) {
-      print('❌ Failed to load Lidarr recently downloaded: $e');
-      print('❌ Stack trace: $stackTrace');
-      ZagLogger().debug('Failed to load Lidarr recently downloaded: $e');
+      ZagLogger()
+          .error('Failed to load Lidarr recently downloaded', e, stackTrace);
       // Fail silently - this is optional data
     }
   }
 
   Future<void> _loadReadarrRecentlyDownloaded() async {
-    print('📚 _loadReadarrRecentlyDownloaded() called');
     if (!mounted) return;
 
     try {
-      print('📚 Readarr enabled: ${ZagProfile.current.readarrEnabled}');
       if (ZagProfile.current.readarrEnabled) {
-        print('📚 Creating Readarr API...');
         final api = ReadarrAPI.from(ZagProfile.current);
-        print('📚 Fetching Readarr history...');
         final history = await api.getHistory(
           sortKey: 'date',
           sortDir: 'descending',
           pageSize: 100,
         );
-        print('📚 Got ${history.length} history records');
 
         // Filter to only downloadImported events and dedupe by book
         final seenBookIds = <int>{};
@@ -512,27 +480,20 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
 
               if (books.length >= 10) break; // Limit to 10 for card display
             } catch (e) {
-              print('📚 Failed to get book details for ${record.bookID}: $e');
               // Continue to next record if individual book fetch fails
               continue;
             }
           }
         }
 
-        print('📚 Processed ${books.length} books');
         if (!mounted) return;
         setState(() {
           _readarrRecentlyDownloaded = books;
         });
-        print(
-            '📚 State updated with ${_readarrRecentlyDownloaded.length} books');
-      } else {
-        print('📚 Readarr is disabled, skipping');
       }
     } catch (e, stackTrace) {
-      print('❌ Failed to load Readarr recently downloaded: $e');
-      print('❌ Stack trace: $stackTrace');
-      ZagLogger().debug('Failed to load Readarr recently downloaded: $e');
+      ZagLogger()
+          .error('Failed to load Readarr recently downloaded', e, stackTrace);
       // Fail silently - this is optional data
     }
   }
@@ -601,7 +562,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     }
 
     // Get section order from database
-    final sectionOrder = UIPreferencesDatabase.SECTION_ORDER.read() as List;
+    final sectionOrder = UIPreferencesDatabase.SECTION_ORDER.read();
     final orderedSections = sectionOrder.isNotEmpty
         ? List<String>.from(sectionOrder)
         : [
@@ -613,10 +574,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
             'lidarr_recent',
             'readarr_recent'
           ];
-
-    print('🎵 Ordered sections: $orderedSections');
-    print('🎵 Lidarr enabled: ${ZagProfile.current.lidarrEnabled}');
-    print('📚 Readarr enabled: ${ZagProfile.current.readarrEnabled}');
 
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
@@ -633,8 +590,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       if (ZagProfile.current.readarrEnabled)
         'readarr_recent': _buildReadarrRecentSection(),
     };
-
-    print('🎵 Section widgets keys: ${sectionWidgets.keys.toList()}');
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -1073,7 +1028,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
             children: [
               Expanded(
                 child: Text(
-                  diskSpace.zagPath ?? '',
+                  diskSpace.zagPath ?? ZagUI.TEXT_EMDASH,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1082,7 +1037,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
                 ),
               ),
               Text(
-                diskSpace.zagPercentageString ?? '',
+                diskSpace.zagPercentageString,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -1097,7 +1052,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         SizedBox(
           height: 14,
           child: Text(
-            diskSpace.zagSpace ?? '',
+            diskSpace.zagSpace,
             style: TextStyle(
               fontSize: 14,
               height: 1.0,
@@ -1183,8 +1138,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   }
 
   List<Widget> _buildLidarrRecentSection() {
-    print(
-        '🎵 _buildLidarrRecentSection() called with ${_lidarrRecentlyDownloaded.length} albums');
     return [
       LidarrRecentlyDownloadedCard(
         albums: _lidarrRecentlyDownloaded,
