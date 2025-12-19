@@ -32,8 +32,31 @@ import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/rou
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
+import 'package:zagreus/modules/discover/routes/discover/tabs/movies_tab.dart';
+import 'package:zagreus/modules/discover/routes/discover/tabs/shows_tab.dart';
 import 'package:zagreus/modules/discover/routes/discover/tabs/server_tab.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
+import 'package:zagreus/modules/discover/widgets/sections/deep_cuts_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/downloading_soon_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/empty_custom_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/magic_shows_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/magic_shows_cast_crew_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/magic_movies_cast_crew_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/magic_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/magic_people_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/most_anticipated_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/most_anticipated_shows_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/missing_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/popular_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/popular_people_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/popular_tv_shows_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/recommended_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/recently_downloaded_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/recently_downloaded_shows_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/recently_released_movies_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/trending_new_tv_shows_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/up_next_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/airing_next_section.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/ui_preferences.dart';
@@ -206,222 +229,217 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.groups_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicPeopleSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.groups_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 260,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String? message;
-                  IconData icon = Icons.groups_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error == MagicPeopleError.notSynced;
-                  bool showRetryButton = true;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicPeopleError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic People requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.fetchFailed:
-                      case MagicPeopleError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 240,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 260,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (message != null) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Text(
-                                message,
-                                style: TextStyle(
-                                  color: (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                      .withOpacity(0.5),
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicPeopleService();
-                                        setState(() {
-                                          _magicPeopleShowsFuture =
-                                              refreshService
-                                                  .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                  ),
-                          ] else if (showRetryButton) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.refresh_rounded,
-                              onTap: () {
-                                final refreshService = MagicPeopleService();
-                                setState(() {
-                                  _magicPeopleShowsFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String? message;
+                IconData icon = Icons.groups_rounded;
+                final showLibrarySyncCta =
+                    (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                        snapshot.data?.error == MagicPeopleError.notSynced;
+                bool showRetryButton = true;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicPeopleError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic People requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.fetchFailed:
+                    case MagicPeopleError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
                 }
 
-                final recommendations =
-                    snapshot.data!.recommendations ?? <MagicPerson>[];
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (recommendations.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Tap for details • Long press to preview',
+                return Container(
+                  height: 240,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.color
-                                ?.withOpacity(0.6),
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 320,
-                      child: ListView.builder(
-                        controller:
-                            _sectionScrollController(_scrollIdMagicPeople),
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: recommendations.length,
-                        itemBuilder: (context, index) {
-                          final person = recommendations[index];
-                          return _buildMagicPersonCard(person);
-                        },
+                        if (message != null) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicPeopleService();
+                                      setState(() {
+                                        _magicPeopleShowsFuture =
+                                            refreshService
+                                                .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ),
+                        ] else if (showRetryButton) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.refresh_rounded,
+                            onTap: () {
+                              final refreshService = MagicPeopleService();
+                              setState(() {
+                                _magicPeopleShowsFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final recommendations =
+                  snapshot.data!.recommendations ?? <MagicPerson>[];
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (recommendations.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Tap for details • Long press to preview',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.color
+                              ?.withOpacity(0.6),
+                        ),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
-          ],
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 320,
+                    child: ListView.builder(
+                      controller: _sectionScrollController(_scrollIdMagicPeople),
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: recommendations.length,
+                      itemBuilder: (context, index) {
+                        final person = recommendations[index];
+                        return _buildMagicPersonCard(person);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         );
       },
     );
@@ -2206,8 +2224,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
-        _moviesPage(),
-        _tvShowsPage(),
+        _moviesTab(),
+        _showsTab(),
         if (enableCalendar) _calendarTab(),
         _serverTab(),
       ],
@@ -2778,216 +2796,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _moviesPage() {
-    if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6688FF)),
+  Widget _moviesTab() {
+    return DiscoverMoviesTab(
+      data: DiscoverMoviesTabData(
+        isLoading: _isLoading,
+        error: _error,
+        onRefresh: _loadRecentlyDownloaded,
+        onRetry: () {
+          _loadRecentlyDownloaded();
+        },
+        scrollController: _DiscoverNavigationBar.moviesScrollController,
+        heroCarousel: _showHeroCarousel
+            ? _heroCarousel(
+                controller: _moviesHeroPageController,
+                storageKey: 'discoverHeroCarouselMovies',
+                isMovieTab: true,
+              )
+            : null,
+        sections: buildMovieSections(
+          DiscoverMoviesSectionData(
+            showTitles: _showTitles,
+            hasAiAccess: _hasAiAccess,
+            hasRecentlyDownloaded: _recentlyDownloaded.isNotEmpty,
+            hasMissingMovies: _missingMovies.isNotEmpty,
+            recentlyDownloadedSection: _recentlyDownloadedSection,
+            recommendedMoviesSection: _recommendedMoviesSection,
+            missingMoviesSection: _missingMoviesSection,
+            downloadingSoonSection: _downloadingSoonSection,
+            popularMoviesSection: _popularMoviesSection,
+            recentlyReleasedMoviesSection: _recentlyReleasedMoviesSection,
+            mostAnticipatedMoviesSection: _mostAnticipatedMoviesSection,
+            popularPeopleSection: _popularPeopleSection,
+            deepCutsSection: _deepCutsSection,
+            magicMoviesSection: _magicMoviesSection,
+            magicMoviesCastCrewSection: _magicMoviesCastCrewSection,
+            magicPeopleSection: _magicPeopleSection,
+          ),
         ),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 60,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Failed to load recently downloaded',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey
-                    : Colors.grey.shade600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadRecentlyDownloaded,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6688FF),
-              ),
-              child: Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadRecentlyDownloaded,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics()),
-        controller: _DiscoverNavigationBar.moviesScrollController,
-        padding: EdgeInsets.zero,
-        children: [
-          // Hero carousel
-          if (_showHeroCarousel)
-            _heroCarousel(
-              controller: _moviesHeroPageController,
-              storageKey: 'discoverHeroCarouselMovies',
-              isMovieTab: true,
-            ),
-          // Content sections in custom order
-          ..._buildMovieSections(),
-          // Single grouped sign-in gate for all AI sections (Deep Cuts / Magic / Custom Sections)
-          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
-          // Custom user-defined sections (Mega/Ultra only)
-          _customSectionsArea(mediaType: 'movie'),
-          _discoverSectionsButton(),
-          _zAutoRefreshNote(),
-          _metadataCredits(),
-          const SizedBox(height: 32),
-        ],
+        aiSignInGate: (_hasAiTier && !_isSignedIn)
+            ? _accountRequiredAiGroupState()
+            : null,
+        customSectionsArea: _customSectionsArea(mediaType: 'movie'),
+        discoverSectionsButton: _discoverSectionsButton(),
+        zAutoRefreshNote: _zAutoRefreshNote(),
+        metadataCredits: _metadataCredits(),
       ),
     );
-  }
-
-  List<Widget> _buildMovieSections() {
-    // Default section order - keep in sync with _defaultMovieSections in discover_sections_editor.dart
-    const defaultOrder = [
-      'recently_downloaded',
-      'recommended',
-      'missing',
-      'downloading_soon',
-      'popular_movies',
-      'recently_released_movies',
-      'most_anticipated_movies',
-      'popular_people',
-      'deep_cuts',
-      'magic_movies',
-      'magic_movies_cast_crew',
-      'magic_people',
-    ];
-
-    List<String> ensureContainsDefaultSections({
-      required List<String> currentOrder,
-      required List<String> defaultOrder,
-    }) {
-      final updated = List<String>.from(currentOrder);
-      for (final sectionKey in defaultOrder) {
-        if (updated.contains(sectionKey)) continue;
-
-        var insertAt = updated.length;
-        final defaultIndex = defaultOrder.indexOf(sectionKey);
-        for (var i = defaultIndex - 1; i >= 0; i--) {
-          final previousKey = defaultOrder[i];
-          final previousIndex = updated.indexOf(previousKey);
-          if (previousIndex != -1) {
-            insertAt = previousIndex + 1;
-            break;
-          }
-        }
-        updated.insert(insertAt, sectionKey);
-      }
-      return updated;
-    }
-
-    // Get saved order or use default
-    final savedOrder =
-        ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.read() as List;
-    var sectionOrder =
-        savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
-
-    // One-time migration: ensure older saved orders include newer default sections.
-    // Guarded so user-deleted sections are not re-added on every rebuild.
-    final migrated =
-        ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.read();
-    if (savedOrder.isNotEmpty && migrated != true) {
-      sectionOrder = ensureContainsDefaultSections(
-        currentOrder: sectionOrder,
-        defaultOrder: defaultOrder,
-      );
-      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER.update(sectionOrder);
-      ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.update(true);
-    }
-
-    // Map of section builders
-    final sectionBuilders = <String, Widget Function()>{
-      'recently_downloaded': () => _recentlyDownloaded.isNotEmpty
-          ? Column(children: [
-              _recentlyDownloadedSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'recommended': () => Column(children: [
-            _recommendedMoviesSection(),
-            if (_showTitles) const SizedBox(height: 4)
-          ]),
-      'missing': () => _missingMovies.isNotEmpty
-          ? Column(children: [
-              _missingMoviesSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'downloading_soon': () => Column(children: [
-            _downloadingSoonSection(),
-            if (_showTitles) const SizedBox(height: 4)
-          ]),
-      'popular_movies': () => Column(children: [
-            _popularMoviesSection(),
-            if (_showTitles) const SizedBox(height: 4)
-          ]),
-      'recently_released_movies': () => Column(children: [
-            _recentlyReleasedMoviesSection(),
-            if (_showTitles) const SizedBox(height: 4)
-          ]),
-      'most_anticipated_movies': () =>
-          _mostAnticipatedMoviesSection(), // Works even if empty
-      'popular_people': () => Column(children: [
-            _popularPeopleSection(),
-            if (_showTitles) const SizedBox(height: 4)
-          ]),
-      'deep_cuts': () => _hasAiAccess
-          ? Column(children: [
-              _deepCutsSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_movies': () => _hasAiAccess
-          ? Column(children: [
-              _magicMoviesSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_movies_cast_crew': () => _hasAiAccess
-          ? Column(children: [
-              _magicMoviesCastCrewSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_people': () => _hasAiAccess
-          ? Column(children: [
-              _magicPeopleSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-    };
-
-    // Build sections in saved order
-    final sections = <Widget>[];
-    for (final sectionKey in sectionOrder) {
-      final builder = sectionBuilders[sectionKey];
-      if (builder != null) {
-        sections.add(builder());
-      }
-    }
-    return sections;
   }
 
   Widget _modulesPage() {
@@ -2999,142 +2853,43 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _tvShowsPage() {
-    return RefreshIndicator(
-      onRefresh: _loadRecentlyDownloadedShows,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics()),
-        controller: _DiscoverNavigationBar.showsScrollController,
-        padding: EdgeInsets.zero,
-        children: [
-          // Hero carousel (could be TV shows specific)
-          if (_showHeroCarousel)
-            _heroCarousel(
-              controller: _tvHeroPageController,
-              storageKey: 'discoverHeroCarouselTv',
-              isMovieTab: false,
-            ),
-          // TV shows sections in custom order
-          ..._buildTVSections(),
-          // Single grouped sign-in gate for all AI sections (Up Next / Magic / Custom Sections)
-          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
-          // Custom user-defined sections (Mega/Ultra only)
-          _customSectionsArea(mediaType: 'tv'),
-          const SizedBox(height: 16),
-          _discoverSectionsButton(isShows: true),
-          _zAutoRefreshNote(),
-          _metadataCredits(),
-          const SizedBox(height: 32),
-        ],
+  Widget _showsTab() {
+    return DiscoverShowsTab(
+      data: DiscoverShowsTabData(
+        onRefresh: _loadRecentlyDownloadedShows,
+        scrollController: _DiscoverNavigationBar.showsScrollController,
+        heroCarousel: _showHeroCarousel
+            ? _heroCarousel(
+                controller: _tvHeroPageController,
+                storageKey: 'discoverHeroCarouselTv',
+                isMovieTab: false,
+              )
+            : null,
+        sections: buildTvSections(
+          DiscoverTvSectionData(
+            showTitles: _showTitles,
+            hasAiAccess: _hasAiAccess,
+            hasRecentlyDownloadedShows: _recentlyDownloadedShows.isNotEmpty,
+            recentlyDownloadedShowsSection: _recentlyDownloadedShowsSection,
+            airingNextSection: _airingNextSection,
+            popularTvShowsSection: _popularTVShowsSection,
+            trendingNewTvShowsSection: _trendingNewTVShowsSection,
+            mostAnticipatedShowsSection: _mostAnticipatedShowsSection,
+            upNextSection: _upNextSection,
+            magicShowsSection: _magicShowsSection,
+            magicShowsCastCrewSection: _magicShowsCastCrewSection,
+            magicPeopleShowsSection: _magicPeopleShowsSection,
+          ),
+        ),
+        aiSignInGate: (_hasAiTier && !_isSignedIn)
+            ? _accountRequiredAiGroupState()
+            : null,
+        customSectionsArea: _customSectionsArea(mediaType: 'tv'),
+        discoverSectionsButton: _discoverSectionsButton(isShows: true),
+        zAutoRefreshNote: _zAutoRefreshNote(),
+        metadataCredits: _metadataCredits(),
       ),
     );
-  }
-
-  List<Widget> _buildTVSections() {
-    // Default section order - keep in sync with _defaultTVSections in discover_sections_editor.dart
-    const defaultOrder = [
-      'recently_downloaded_shows',
-      'airing_next',
-      'popular_tv_shows',
-      'trending_new_tv_shows',
-      'most_anticipated',
-      'up_next',
-      'magic_shows',
-      'magic_shows_cast_crew',
-      'magic_people',
-    ];
-
-    List<String> ensureContainsDefaultSections({
-      required List<String> currentOrder,
-      required List<String> defaultOrder,
-    }) {
-      final updated = List<String>.from(currentOrder);
-      for (final sectionKey in defaultOrder) {
-        if (updated.contains(sectionKey)) continue;
-
-        var insertAt = updated.length;
-        final defaultIndex = defaultOrder.indexOf(sectionKey);
-        for (var i = defaultIndex - 1; i >= 0; i--) {
-          final previousKey = defaultOrder[i];
-          final previousIndex = updated.indexOf(previousKey);
-          if (previousIndex != -1) {
-            insertAt = previousIndex + 1;
-            break;
-          }
-        }
-        updated.insert(insertAt, sectionKey);
-      }
-      return updated;
-    }
-
-    // Get saved order or use default
-    final savedOrder = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.read() as List;
-    var sectionOrder =
-        savedOrder.isNotEmpty ? List<String>.from(savedOrder) : defaultOrder;
-
-    // One-time migration: ensure older saved orders include newer default sections.
-    // Guarded so user-deleted sections are not re-added on every rebuild.
-    final migrated = ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.read();
-    if (savedOrder.isNotEmpty && migrated != true) {
-      sectionOrder = ensureContainsDefaultSections(
-        currentOrder: sectionOrder,
-        defaultOrder: defaultOrder,
-      );
-      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER.update(sectionOrder);
-      ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.update(true);
-    }
-
-    // Map of section builders
-    final sectionBuilders = <String, Widget Function()>{
-      'recently_downloaded_shows': () => _recentlyDownloadedShows.isNotEmpty
-          ? _recentlyDownloadedShowsSection()
-          : const SizedBox.shrink(),
-      'airing_next': () => _airingNextSection(),
-      'popular_tv_shows': () => Column(children: [
-            _popularTVShowsSection(),
-            if (_showTitles) const SizedBox(height: 12)
-          ]),
-      'trending_new_tv_shows': () => Column(children: [
-            _trendingNewTVShowsSection(),
-            if (_showTitles) const SizedBox(height: 12)
-          ]),
-      'most_anticipated': () => _mostAnticipatedShowsSection(),
-      'up_next': () => _hasAiAccess
-          ? Column(children: [
-              _upNextSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_shows': () => _hasAiAccess
-          ? Column(children: [
-              _magicShowsSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_shows_cast_crew': () => _hasAiAccess
-          ? Column(children: [
-              _magicShowsCastCrewSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-      'magic_people': () => _hasAiAccess
-          ? Column(children: [
-              _magicPeopleShowsSection(),
-              if (_showTitles) const SizedBox(height: 4)
-            ])
-          : const SizedBox.shrink(),
-    };
-
-    // Build sections in saved order
-    final sections = <Widget>[];
-    for (final sectionKey in sectionOrder) {
-      final builder = sectionBuilders[sectionKey];
-      if (builder != null) {
-        sections.add(builder());
-      }
-    }
-    return sections;
   }
 
   Widget _discoverSectionsButton({bool isShows = false}) {
@@ -7065,263 +6820,242 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _recommendedMovies.take(_discoverPreviewLimit).toList();
     final previewShows =
         _trendingNewTVShows.take(_discoverPreviewLimit).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: ZagIcons.RADARR,
-          leadingIconColor: const Color(0xFFFEC333),
-          moduleLabel: 'Radarr',
-          moduleLabelColor: const Color(0xFFFEC333),
-          title: _discoverSectionTitle('recommended'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DiscoverRecommendedRoute(
-                  initialData: _recommendedMovies,
-                ),
+    return RecommendedMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.RADARR,
+        leadingIconColor: const Color(0xFFFEC333),
+        moduleLabel: 'Radarr',
+        moduleLabelColor: const Color(0xFFFEC333),
+        title: _discoverSectionTitle('recommended'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DiscoverRecommendedRoute(
+                initialData: _recommendedMovies,
               ),
-            );
-          },
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdRecommended,
-            loader: _loadRecommendedMovies,
-            sectionLabel: _discoverSectionTitle('recommended'),
-          ),
+            ),
+          );
+        },
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdRecommended,
+          loader: _loadRecommendedMovies,
+          sectionLabel: _discoverSectionTitle('recommended'),
         ),
-        // Movie list or placeholder
-        previewMovies.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _recommendedMoviesListKey,
-                  controller: _sectionScrollController(_scrollIdRecommended),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: previewMovies.length,
-                  itemBuilder: (context, index) {
-                    final movie = previewMovies[index];
-                    return _movieCard(movie);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+      ),
+      content: previewMovies.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _recommendedMoviesListKey,
+                controller: _sectionScrollController(_scrollIdRecommended),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Tap to view recommended movies',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: previewMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = previewMovies[index];
+                  return _movieCard(movie);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Tap to view recommended movies',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
   Widget _missingMoviesSection() {
     final previewMovies = _missingMovies.take(_discoverPreviewLimit).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: ZagIcons.RADARR,
-          leadingIconColor: const Color(0xFFFEC333),
-          moduleLabel: 'Radarr',
-          moduleLabelColor: const Color(0xFFFEC333),
-          title: _discoverSectionTitle('missing'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DiscoverMissingRoute(
-                  initialData: _missingMovies,
-                ),
+    return MissingMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.RADARR,
+        leadingIconColor: const Color(0xFFFEC333),
+        moduleLabel: 'Radarr',
+        moduleLabelColor: const Color(0xFFFEC333),
+        title: _discoverSectionTitle('missing'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DiscoverMissingRoute(
+                initialData: _missingMovies,
               ),
-            );
+            ),
+          );
+        },
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdMissing,
+          loader: _loadMissingMovies,
+          sectionLabel: _discoverSectionTitle('missing'),
+        ),
+      ),
+      list: SizedBox(
+        height: _posterListHeight,
+        child: ListView.builder(
+          key: _missingMoviesListKey,
+          controller: _sectionScrollController(_scrollIdMissing),
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: previewMovies.length,
+          itemBuilder: (context, index) {
+            final movie = previewMovies[index];
+            return _missingMovieCard(movie);
           },
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdMissing,
-            loader: _loadMissingMovies,
-            sectionLabel: _discoverSectionTitle('missing'),
-          ),
         ),
-        // Movie list
-        SizedBox(
-          height: _posterListHeight,
-          child: ListView.builder(
-            key: _missingMoviesListKey,
-            controller: _sectionScrollController(_scrollIdMissing),
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: previewMovies.length,
-            itemBuilder: (context, index) {
-              final movie = previewMovies[index];
-              return _missingMovieCard(movie);
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _downloadingSoonSection() {
     final previewMovies = _downloadingSoon.take(_discoverPreviewLimit).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.schedule_rounded,
-          leadingIconColor: Colors.orange,
-          moduleLabel: 'Radarr',
-          moduleLabelColor: const Color(0xFFFEC333),
-          title: _discoverSectionTitle('downloading_soon'),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DiscoverDownloadingSoonRoute(
-                  initialData: _downloadingSoon,
-                ),
+    return DownloadingSoonSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.schedule_rounded,
+        leadingIconColor: Colors.orange,
+        moduleLabel: 'Radarr',
+        moduleLabelColor: const Color(0xFFFEC333),
+        title: _discoverSectionTitle('downloading_soon'),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DiscoverDownloadingSoonRoute(
+                initialData: _downloadingSoon,
               ),
-            );
-          },
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdDownloadingSoon,
-            loader: _loadDownloadingSoon,
-            sectionLabel: _discoverSectionTitle('downloading_soon'),
-          ),
+            ),
+          );
+        },
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdDownloadingSoon,
+          loader: _loadDownloadingSoon,
+          sectionLabel: _discoverSectionTitle('downloading_soon'),
         ),
-        // Movie list
-        SizedBox(
-          height: _posterListHeight,
-          child: _downloadingSoon.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.schedule_rounded,
-                          size: 48,
-                          color: Colors.grey.withOpacity(0.5),
+      ),
+      content: SizedBox(
+        height: _posterListHeight,
+        child: _downloadingSoon.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 48,
+                        color: Colors.grey.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No movies downloading soon',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No movies downloading soon',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Monitored movies releasing within 28 days will appear here',
+                        style: TextStyle(
+                          color: Colors.grey.withOpacity(0.7),
+                          fontSize: 14,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Monitored movies releasing within 28 days will appear here',
-                          style: TextStyle(
-                            color: Colors.grey.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                )
-              : ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  key: _downloadingSoonListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdDownloadingSoon),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: previewMovies.length,
-                  itemBuilder: (context, index) {
-                    final movie = previewMovies[index];
-                    return _downloadingSoonCard(movie);
-                  },
                 ),
-        ),
-      ],
+              )
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                key: _downloadingSoonListKey,
+                controller: _sectionScrollController(_scrollIdDownloadingSoon),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: previewMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = previewMovies[index];
+                  return _downloadingSoonCard(movie);
+                },
+              ),
+      ),
     );
   }
 
   Widget _popularMoviesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.local_fire_department_rounded,
-          leadingIconColor: const Color(0xFF6688FF),
-          moduleLabel: 'TMDB',
-          moduleLabelColor: const Color(0xFF6688FF),
-          title: _discoverSectionTitle('popular_movies'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _popularMovies.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TMDBPopularMoviesRoute(
-                        initialData: _popularMovies,
-                      ),
+    return PopularMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.local_fire_department_rounded,
+        leadingIconColor: const Color(0xFF6688FF),
+        moduleLabel: 'TMDB',
+        moduleLabelColor: const Color(0xFF6688FF),
+        title: _discoverSectionTitle('popular_movies'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _popularMovies.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TMDBPopularMoviesRoute(
+                      initialData: _popularMovies,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdPopularMovies,
-            loader: _loadPopularMovies,
-            sectionLabel: _discoverSectionTitle('popular_movies'),
-          ),
-          showArrow: _popularMovies.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdPopularMovies,
+          loader: _loadPopularMovies,
+          sectionLabel: _discoverSectionTitle('popular_movies'),
         ),
-        // Movie list or loading placeholder
-        _popularMovies.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _popularMoviesListKey,
-                  controller: _sectionScrollController(_scrollIdPopularMovies),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _popularMovies.length,
-                  itemBuilder: (context, index) {
-                    final movie = _popularMovies[index];
-                    return _popularMovieCard(movie);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _popularMovies.isNotEmpty,
+      ),
+      content: _popularMovies.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _popularMoviesListKey,
+                controller: _sectionScrollController(_scrollIdPopularMovies),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading popular movies...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _popularMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = _popularMovies[index];
+                  return _popularMovieCard(movie);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading popular movies...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -7495,70 +7229,65 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyReleasedMoviesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.new_releases_rounded,
-          leadingIconColor: const Color(0xFF6688FF),
-          moduleLabel: 'TMDB',
-          moduleLabelColor: const Color(0xFF6688FF),
-          title: _discoverSectionTitle('recently_released_movies'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _recentlyReleasedMovies.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TMDBRecentlyReleasedMoviesRoute(
-                        initialData: _recentlyReleasedMovies,
-                      ),
+    return RecentlyReleasedMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.new_releases_rounded,
+        leadingIconColor: const Color(0xFF6688FF),
+        moduleLabel: 'TMDB',
+        moduleLabelColor: const Color(0xFF6688FF),
+        title: _discoverSectionTitle('recently_released_movies'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _recentlyReleasedMovies.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TMDBRecentlyReleasedMoviesRoute(
+                      initialData: _recentlyReleasedMovies,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdRecentlyReleasedMovies,
-            loader: _loadRecentlyReleasedMovies,
-            sectionLabel: _discoverSectionTitle('recently_released_movies'),
-          ),
-          showArrow: _recentlyReleasedMovies.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdRecentlyReleasedMovies,
+          loader: _loadRecentlyReleasedMovies,
+          sectionLabel: _discoverSectionTitle('recently_released_movies'),
         ),
-        // Movie list or loading placeholder
-        _recentlyReleasedMovies.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _recentlyReleasedMoviesListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdRecentlyReleasedMovies),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _recentlyReleasedMovies.length,
-                  itemBuilder: (context, index) {
-                    final movie = _recentlyReleasedMovies[index];
-                    return _recentlyReleasedMovieCard(movie);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _recentlyReleasedMovies.isNotEmpty,
+      ),
+      content: _recentlyReleasedMovies.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _recentlyReleasedMoviesListKey,
+                controller:
+                    _sectionScrollController(_scrollIdRecentlyReleasedMovies),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading recently released movies...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _recentlyReleasedMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = _recentlyReleasedMovies[index];
+                  return _recentlyReleasedMovieCard(movie);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading recently released movies...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -7733,69 +7462,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _popularTVShowsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.local_fire_department_rounded,
-          leadingIconColor: const Color(0xFF6688FF),
-          moduleLabel: 'TMDB',
-          moduleLabelColor: const Color(0xFF6688FF),
-          title: _discoverSectionTitle('popular_tv_shows'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _popularTVShows.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TMDBPopularTVShowsRoute(
-                        initialData: _popularTVShows,
-                      ),
+    return PopularTvShowsSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.local_fire_department_rounded,
+        leadingIconColor: const Color(0xFF6688FF),
+        moduleLabel: 'TMDB',
+        moduleLabelColor: const Color(0xFF6688FF),
+        title: _discoverSectionTitle('popular_tv_shows'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _popularTVShows.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TMDBPopularTVShowsRoute(
+                      initialData: _popularTVShows,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdPopularTv,
-            loader: _loadPopularTVShows,
-            sectionLabel: _discoverSectionTitle('popular_tv_shows'),
-          ),
-          showArrow: _popularTVShows.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdPopularTv,
+          loader: _loadPopularTVShows,
+          sectionLabel: _discoverSectionTitle('popular_tv_shows'),
         ),
-        // TV show list or loading placeholder
-        _popularTVShows.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _popularTvShowsListKey,
-                  controller: _sectionScrollController(_scrollIdPopularTv),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _popularTVShows.length,
-                  itemBuilder: (context, index) {
-                    final show = _popularTVShows[index];
-                    return _popularTVShowCard(show);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _popularTVShows.isNotEmpty,
+      ),
+      content: _popularTVShows.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _popularTvShowsListKey,
+                controller: _sectionScrollController(_scrollIdPopularTv),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading popular TV shows...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _popularTVShows.length,
+                itemBuilder: (context, index) {
+                  final show = _popularTVShows[index];
+                  return _popularTVShowCard(show);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading popular TV shows...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -7976,69 +7700,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _trendingNewTVShowsSection() {
     final previewShows =
         _trendingNewTVShows.take(_discoverPreviewLimit).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.trending_up_rounded,
-          leadingIconColor: const Color(0xFF6688FF),
-          moduleLabel: 'TMDB',
-          moduleLabelColor: const Color(0xFF6688FF),
-          title: _discoverSectionTitle('trending_new_tv_shows'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _trendingNewTVShows.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TMDBTrendingNewTVShowsRoute(
-                        initialData: _trendingNewTVShows,
-                      ),
+    return TrendingNewTvShowsSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.trending_up_rounded,
+        leadingIconColor: const Color(0xFF6688FF),
+        moduleLabel: 'TMDB',
+        moduleLabelColor: const Color(0xFF6688FF),
+        title: _discoverSectionTitle('trending_new_tv_shows'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _trendingNewTVShows.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TMDBTrendingNewTVShowsRoute(
+                      initialData: _trendingNewTVShows,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdTrendingTv,
-            loader: _loadTrendingNewTVShows,
-            sectionLabel: _discoverSectionTitle('trending_new_tv_shows'),
-          ),
-          showArrow: _trendingNewTVShows.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdTrendingTv,
+          loader: _loadTrendingNewTVShows,
+          sectionLabel: _discoverSectionTitle('trending_new_tv_shows'),
         ),
-        // TV show list or loading placeholder
-        previewShows.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _trendingTvShowsListKey,
-                  controller: _sectionScrollController(_scrollIdTrendingTv),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: previewShows.length,
-                  itemBuilder: (context, index) {
-                    final show = previewShows[index];
-                    return _trendingNewTVShowCard(show);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _trendingNewTVShows.isNotEmpty,
+      ),
+      content: previewShows.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _trendingTvShowsListKey,
+                controller: _sectionScrollController(_scrollIdTrendingTv),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading trending new TV shows...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: previewShows.length,
+                itemBuilder: (context, index) {
+                  final show = previewShows[index];
+                  return _trendingNewTVShowCard(show);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading trending new TV shows...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -8913,70 +8632,65 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _mostAnticipatedShowsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.auto_awesome_rounded,
-          leadingIconColor: const Color(0xFFED2224),
-          moduleLabel: 'Trakt',
-          moduleLabelColor: const Color(0xFFED2224),
-          title: _discoverSectionTitle('most_anticipated'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _mostAnticipatedShows.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TraktMostAnticipatedShowsRoute(
-                        initialData: _mostAnticipatedShows,
-                      ),
+    return MostAnticipatedShowsSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.auto_awesome_rounded,
+        leadingIconColor: const Color(0xFFED2224),
+        moduleLabel: 'Trakt',
+        moduleLabelColor: const Color(0xFFED2224),
+        title: _discoverSectionTitle('most_anticipated'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _mostAnticipatedShows.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TraktMostAnticipatedShowsRoute(
+                      initialData: _mostAnticipatedShows,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdMostAnticipatedShows,
-            loader: _loadMostAnticipatedShows,
-            sectionLabel: _discoverSectionTitle('most_anticipated'),
-          ),
-          showArrow: _mostAnticipatedShows.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdMostAnticipatedShows,
+          loader: _loadMostAnticipatedShows,
+          sectionLabel: _discoverSectionTitle('most_anticipated'),
         ),
-        // TV show list or loading placeholder
-        _mostAnticipatedShows.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _mostAnticipatedShowsListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdMostAnticipatedShows),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _mostAnticipatedShows.length,
-                  itemBuilder: (context, index) {
-                    final show = _mostAnticipatedShows[index];
-                    return _mostAnticipatedShowCard(show);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _mostAnticipatedShows.isNotEmpty,
+      ),
+      content: _mostAnticipatedShows.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _mostAnticipatedShowsListKey,
+                controller:
+                    _sectionScrollController(_scrollIdMostAnticipatedShows),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading most anticipated shows...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _mostAnticipatedShows.length,
+                itemBuilder: (context, index) {
+                  final show = _mostAnticipatedShows[index];
+                  return _mostAnticipatedShowCard(show);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading most anticipated shows...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -9141,68 +8855,65 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _mostAnticipatedMoviesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.auto_awesome_rounded,
-          leadingIconColor: const Color(0xFFED2224),
-          moduleLabel: 'Trakt',
-          moduleLabelColor: const Color(0xFFED2224),
-          title: _discoverSectionTitle('most_anticipated_movies'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _mostAnticipatedMovies.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TraktMostAnticipatedMoviesRoute(
-                        initialData: _mostAnticipatedMovies,
-                      ),
+    return MostAnticipatedMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.auto_awesome_rounded,
+        leadingIconColor: const Color(0xFFED2224),
+        moduleLabel: 'Trakt',
+        moduleLabelColor: const Color(0xFFED2224),
+        title: _discoverSectionTitle('most_anticipated_movies'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _mostAnticipatedMovies.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TraktMostAnticipatedMoviesRoute(
+                      initialData: _mostAnticipatedMovies,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdMostAnticipatedMovies,
-            loader: _loadMostAnticipatedMovies,
-            sectionLabel: _discoverSectionTitle('most_anticipated_movies'),
-          ),
-          showArrow: _mostAnticipatedMovies.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdMostAnticipatedMovies,
+          loader: _loadMostAnticipatedMovies,
+          sectionLabel: _discoverSectionTitle('most_anticipated_movies'),
         ),
-        _mostAnticipatedMovies.isNotEmpty
-            ? SizedBox(
-                height: _posterListHeight,
-                child: ListView.builder(
-                  key: _mostAnticipatedMoviesListKey,
-                  controller:
-                      _sectionScrollController(_scrollIdMostAnticipatedMovies),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _mostAnticipatedMovies.length,
-                  itemBuilder: (context, index) {
-                    final movie = _mostAnticipatedMovies[index];
-                    return _mostAnticipatedMovieCard(movie);
-                  },
-                ),
-              )
-            : Container(
-                height: _posterHeight,
+        showArrow: _mostAnticipatedMovies.isNotEmpty,
+      ),
+      content: _mostAnticipatedMovies.isNotEmpty
+          ? SizedBox(
+              height: _posterListHeight,
+              child: ListView.builder(
+                key: _mostAnticipatedMoviesListKey,
+                controller:
+                    _sectionScrollController(_scrollIdMostAnticipatedMovies),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading most anticipated movies...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _mostAnticipatedMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = _mostAnticipatedMovies[index];
+                  return _mostAnticipatedMovieCard(movie);
+                },
+              ),
+            )
+          : Container(
+              height: _posterHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading most anticipated movies...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -9385,69 +9096,64 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _popularPeopleSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: Icons.people_rounded,
-          leadingIconColor: const Color(0xFF6688FF),
-          moduleLabel: 'TMDB',
-          moduleLabelColor: const Color(0xFF6688FF),
-          title: _discoverSectionTitle('popular_people'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          onTap: _popularPeople.isNotEmpty
-              ? () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => TMDBPopularPeopleRoute(
-                        initialData: _popularPeople,
-                      ),
+    return PopularPeopleSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: Icons.people_rounded,
+        leadingIconColor: const Color(0xFF6688FF),
+        moduleLabel: 'TMDB',
+        moduleLabelColor: const Color(0xFF6688FF),
+        title: _discoverSectionTitle('popular_people'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        onTap: _popularPeople.isNotEmpty
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TMDBPopularPeopleRoute(
+                      initialData: _popularPeople,
                     ),
-                  );
-                }
-              : null,
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdPopularPeople,
-            loader: _loadPopularPeople,
-            sectionLabel: _discoverSectionTitle('popular_people'),
-          ),
-          showArrow: _popularPeople.isNotEmpty,
+                  ),
+                );
+              }
+            : null,
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdPopularPeople,
+          loader: _loadPopularPeople,
+          sectionLabel: _discoverSectionTitle('popular_people'),
         ),
-        // People list or loading placeholder
-        _popularPeople.isNotEmpty
-            ? SizedBox(
-                height: 150,
-                child: ListView.builder(
-                  key: _popularPeopleListKey,
-                  controller: _sectionScrollController(_scrollIdPopularPeople),
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _popularPeople.length,
-                  itemBuilder: (context, index) {
-                    final person = _popularPeople[index];
-                    return _popularPersonCard(person);
-                  },
-                ),
-              )
-            : Container(
-                height: 150,
+        showArrow: _popularPeople.isNotEmpty,
+      ),
+      content: _popularPeople.isNotEmpty
+          ? SizedBox(
+              height: 150,
+              child: ListView.builder(
+                key: _popularPeopleListKey,
+                controller: _sectionScrollController(_scrollIdPopularPeople),
+                scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Center(
-                  child: Text(
-                    'Loading popular people...',
-                    style: TextStyle(
-                      color: (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black)
-                          .withOpacity(0.5),
-                      fontSize: 14,
-                    ),
+                itemCount: _popularPeople.length,
+                itemBuilder: (context, index) {
+                  final person = _popularPeople[index];
+                  return _popularPersonCard(person);
+                },
+              ),
+            )
+          : Container(
+              height: 150,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: Text(
+                  'Loading popular people...',
+                  style: TextStyle(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withOpacity(0.5),
+                    fontSize: 14,
                   ),
                 ),
               ),
-      ],
+            ),
     );
   }
 
@@ -9649,80 +9355,75 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<DeepCutsResult>(
       future: _deepCutsFuture,
       builder: (context, futureSnapshot) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Section title with sync button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.auto_awesome_rounded,
-                    color: ZagColours.purple,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      sectionTitle,
-                      style: TextStyle(
-                        fontSize: _moduleSectionTitleFontSize,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
-                      ),
+        return DeepCutsSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: ZagColours.purple,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    sectionTitle,
+                    style: TextStyle(
+                      fontSize: _moduleSectionTitleFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Content
-            Builder(
-              builder: (context) {
-                if (futureSnapshot.hasData &&
-                    futureSnapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(
-                      futureSnapshot.data!.nextGenerationAt);
-                }
-                if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (!futureSnapshot.hasData ||
-                    !futureSnapshot.data!.success ||
-                    futureSnapshot.data!.recommendations == null ||
-                    futureSnapshot.data!.recommendations!.isEmpty) {
-                  return _deepCutsEmptyState(
-                    futureSnapshot.data,
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                  );
-                }
-
-                final recommendations = futureSnapshot.data!.recommendations!;
-
+          ),
+          content: Builder(
+            builder: (context) {
+              if (futureSnapshot.hasData &&
+                  futureSnapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(
+                    futureSnapshot.data!.nextGenerationAt);
+              }
+              if (futureSnapshot.connectionState == ConnectionState.waiting) {
                 return Container(
                   height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    key: _deepCutsListKey,
-                    controller: _sectionScrollController(_scrollIdDeepCuts),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) {
-                      return _deepCutMovieCard(recommendations[index]);
-                    },
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Center(child: CircularProgressIndicator()),
                 );
-              },
-            ),
-          ],
+              }
+
+              if (!futureSnapshot.hasData ||
+                  !futureSnapshot.data!.success ||
+                  futureSnapshot.data!.recommendations == null ||
+                  futureSnapshot.data!.recommendations!.isEmpty) {
+                return _deepCutsEmptyState(
+                  futureSnapshot.data,
+                  profileKey: profileKey,
+                  instanceKey: instanceKey,
+                );
+              }
+
+              final recommendations = futureSnapshot.data!.recommendations!;
+
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  key: _deepCutsListKey,
+                  controller: _sectionScrollController(_scrollIdDeepCuts),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) {
+                    return _deepCutMovieCard(recommendations[index]);
+                  },
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -10026,89 +9727,84 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return FutureBuilder<UpNextResult>(
       future: _upNextFuture,
       builder: (context, futureSnapshot) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Section title with sync button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.auto_awesome_rounded,
+        return UpNextSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  color: ZagColours.purple,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Z',
+                  style: TextStyle(
+                    fontSize: _moduleSectionTitleFontSize,
+                    fontWeight: FontWeight.bold,
                     color: ZagColours.purple,
-                    size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Z',
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    sectionTitle,
                     style: TextStyle(
                       fontSize: _moduleSectionTitleFontSize,
                       fontWeight: FontWeight.bold,
-                      color: ZagColours.purple,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      sectionTitle,
-                      style: TextStyle(
-                        fontSize: _moduleSectionTitleFontSize,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            // Content
-            Builder(
-              builder: (context) {
-                if (futureSnapshot.hasData &&
-                    futureSnapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(
-                      futureSnapshot.data!.nextGenerationAt);
-                }
-                if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (!futureSnapshot.hasData ||
-                    !futureSnapshot.data!.success ||
-                    futureSnapshot.data!.recommendations == null ||
-                    futureSnapshot.data!.recommendations!.isEmpty) {
-                  return _upNextEmptyState(
-                    futureSnapshot.data,
-                    profileKey: profileKey,
-                    instanceKey: instanceKey,
-                  );
-                }
-
-                final recommendations = futureSnapshot.data!.recommendations!;
-
+          ),
+          content: Builder(
+            builder: (context) {
+              if (futureSnapshot.hasData &&
+                  futureSnapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(
+                    futureSnapshot.data!.nextGenerationAt);
+              }
+              if (futureSnapshot.connectionState == ConnectionState.waiting) {
                 return Container(
                   height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    key: _upNextListKey,
-                    controller: _sectionScrollController(_scrollIdUpNext),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) {
-                      return _upNextShowCard(recommendations[index]);
-                    },
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Center(child: CircularProgressIndicator()),
                 );
-              },
-            ),
-          ],
+              }
+
+              if (!futureSnapshot.hasData ||
+                  !futureSnapshot.data!.success ||
+                  futureSnapshot.data!.recommendations == null ||
+                  futureSnapshot.data!.recommendations!.isEmpty) {
+                return _upNextEmptyState(
+                  futureSnapshot.data,
+                  profileKey: profileKey,
+                  instanceKey: instanceKey,
+                );
+              }
+
+              final recommendations = futureSnapshot.data!.recommendations!;
+
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  key: _upNextListKey,
+                  controller: _sectionScrollController(_scrollIdUpNext),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) {
+                    return _upNextShowCard(recommendations[index]);
+                  },
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -10413,190 +10109,186 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_fix_high_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicMoviesSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.auto_fix_high_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 390,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String message = 'Auto-updates weekly';
-                  IconData icon = Icons.auto_fix_high_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error == MagicMoviesError.notSynced;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicMoviesError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        break;
-                      case MagicMoviesError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic Movies requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        break;
-                      case MagicMoviesError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        break;
-                      case MagicMoviesError.fetchFailed:
-                      case MagicMoviesError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 260,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String message = 'Auto-updates weekly';
+                IconData icon = Icons.auto_fix_high_rounded;
+                final showLibrarySyncCta =
+                    (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                        snapshot.data?.error == MagicMoviesError.notSynced;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicMoviesError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      break;
+                    case MagicMoviesError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic Movies requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      break;
+                    case MagicMoviesError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      break;
+                    case MagicMoviesError.fetchFailed:
+                    case MagicMoviesError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
+                }
+
+                return Container(
+                  height: 260,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            message,
                             style: TextStyle(
                               color: (Theme.of(context).brightness ==
                                           Brightness.dark
                                       ? Colors.white
                                       : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                                  .withOpacity(0.5),
+                              fontSize: 14,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black)
-                                    .withOpacity(0.5),
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicMoviesService();
-                                        setState(() {
-                                          _magicMoviesFuture = refreshService
-                                              .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
+                        ),
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicMoviesService();
+                                      setState(() {
+                                        _magicMoviesFuture = refreshService
+                                            .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
                                   ),
-                          ],
-                          if (!showLibrarySyncCta &&
-                              snapshot.data?.error !=
-                                  MagicMoviesError.alreadyGenerating) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.auto_fix_high_rounded,
-                              onTap: () {
-                                final refreshService = MagicMoviesService();
-                                setState(() {
-                                  _magicMoviesFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
+                                ),
                         ],
-                      ),
+                        if (!showLibrarySyncCta &&
+                            snapshot.data?.error !=
+                                MagicMoviesError.alreadyGenerating) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.auto_fix_high_rounded,
+                            onTap: () {
+                              final refreshService = MagicMoviesService();
+                              setState(() {
+                                _magicMoviesFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-                final recommendations = snapshot.data!.recommendations!;
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    controller: _sectionScrollController(_scrollIdMagicMovies),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) =>
-                        _buildMagicMovieCard(recommendations[index]),
                   ),
                 );
-              },
-            ),
-          ],
+              }
+              final recommendations = snapshot.data!.recommendations!;
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  controller: _sectionScrollController(_scrollIdMagicMovies),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) =>
+                      _buildMagicMovieCard(recommendations[index]),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -10708,195 +10400,190 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.groups_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicMoviesCastCrewSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.groups_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 390,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String message = 'Auto-updates weekly';
-                  IconData icon = Icons.groups_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error ==
-                              MagicMoviesCastCrewError.notSynced;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicMoviesCastCrewError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        break;
-                      case MagicMoviesCastCrewError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic Movies requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        break;
-                      case MagicMoviesCastCrewError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        break;
-                      case MagicMoviesCastCrewError.fetchFailed:
-                      case MagicMoviesCastCrewError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 260,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String message = 'Auto-updates weekly';
+                IconData icon = Icons.groups_rounded;
+                final showLibrarySyncCta =
+                    (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                        snapshot.data?.error ==
+                            MagicMoviesCastCrewError.notSynced;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicMoviesCastCrewError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      break;
+                    case MagicMoviesCastCrewError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic Movies requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      break;
+                    case MagicMoviesCastCrewError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      break;
+                    case MagicMoviesCastCrewError.fetchFailed:
+                    case MagicMoviesCastCrewError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
+                }
+
+                return Container(
+                  height: 260,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            message,
                             style: TextStyle(
                               color: (Theme.of(context).brightness ==
                                           Brightness.dark
                                       ? Colors.white
                                       : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                                  .withOpacity(0.5),
+                              fontSize: 14,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              message,
-                              style: TextStyle(
-                                color: (Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black)
-                                    .withOpacity(0.5),
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicMoviesCastCrewService();
-                                        setState(() {
-                                          _magicMoviesCastCrewFuture =
-                                              refreshService
-                                                  .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
+                        ),
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicMoviesCastCrewService();
+                                      setState(() {
+                                        _magicMoviesCastCrewFuture =
+                                            refreshService
+                                                .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
                                   ),
-                          ],
-                          if (!showLibrarySyncCta &&
-                              snapshot.data?.error !=
-                                  MagicMoviesCastCrewError
-                                      .alreadyGenerating) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.groups_rounded,
-                              onTap: () {
-                                final refreshService =
-                                    MagicMoviesCastCrewService();
-                                setState(() {
-                                  _magicMoviesCastCrewFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
+                                ),
                         ],
-                      ),
+                        if (!showLibrarySyncCta &&
+                            snapshot.data?.error !=
+                                MagicMoviesCastCrewError.alreadyGenerating) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.groups_rounded,
+                            onTap: () {
+                              final refreshService =
+                                  MagicMoviesCastCrewService();
+                              setState(() {
+                                _magicMoviesCastCrewFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-                final recommendations = snapshot.data!.recommendations!;
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    controller:
-                        _sectionScrollController(_scrollIdMagicMoviesCastCrew),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) =>
-                        _buildMagicMovieCastCrewCard(recommendations[index]),
                   ),
                 );
-              },
-            ),
-          ],
+              }
+              final recommendations = snapshot.data!.recommendations!;
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  controller:
+                      _sectionScrollController(_scrollIdMagicMoviesCastCrew),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) =>
+                      _buildMagicMovieCastCrewCard(recommendations[index]),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -10995,195 +10682,191 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.groups_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicPeopleSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.groups_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 260,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String? message;
-                  IconData icon = Icons.groups_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error == MagicPeopleError.notSynced;
-                  bool showRetryButton = true;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicPeopleError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic People requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicPeopleError.fetchFailed:
-                      case MagicPeopleError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 240,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 260,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String? message;
+                IconData icon = Icons.groups_rounded;
+                final showLibrarySyncCta =
+                    (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                        snapshot.data?.error == MagicPeopleError.notSynced;
+                bool showRetryButton = true;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicPeopleError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic People requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicPeopleError.fetchFailed:
+                    case MagicPeopleError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
+                }
+
+                return Container(
+                  height: 240,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (message != null) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          if (message != null) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Text(
-                                message,
-                                style: TextStyle(
-                                  color: (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                      .withOpacity(0.5),
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicPeopleService();
-                                        setState(() {
-                                          _magicPeopleMoviesFuture =
-                                              refreshService
-                                                  .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                  ),
-                          ] else if (showRetryButton) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.refresh_rounded,
-                              onTap: () {
-                                final refreshService = MagicPeopleService();
-                                setState(() {
-                                  _magicPeopleMoviesFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
                         ],
-                      ),
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicPeopleService();
+                                      setState(() {
+                                        _magicPeopleMoviesFuture =
+                                            refreshService
+                                                .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ),
+                        ] else if (showRetryButton) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.refresh_rounded,
+                            onTap: () {
+                              final refreshService = MagicPeopleService();
+                              setState(() {
+                                _magicPeopleMoviesFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-                final recommendations = snapshot.data!.recommendations!;
-                return Container(
-                  height: 260,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    controller: _sectionScrollController(_scrollIdMagicPeople),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) =>
-                        _buildMagicPersonCard(recommendations[index]),
                   ),
                 );
-              },
-            ),
-          ],
+              }
+              final recommendations = snapshot.data!.recommendations!;
+              return Container(
+                height: 260,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  controller: _sectionScrollController(_scrollIdMagicPeople),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) =>
+                      _buildMagicPersonCard(recommendations[index]),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -11423,194 +11106,190 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_fix_high_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicShowsSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.auto_fix_high_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 390,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String? message;
-                  IconData icon = Icons.auto_fix_high_rounded;
-                  final showLibrarySyncCta =
-                      (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
-                          snapshot.data?.error == MagicShowsError.notSynced;
-                  bool showRetryButton = true;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicShowsError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic Shows requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsError.fetchFailed:
-                      case MagicShowsError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 260,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String? message;
+                IconData icon = Icons.auto_fix_high_rounded;
+                final showLibrarySyncCta =
+                    (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
+                        snapshot.data?.error == MagicShowsError.notSynced;
+                bool showRetryButton = true;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicShowsError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic Shows requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsError.fetchFailed:
+                    case MagicShowsError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
+                }
+
+                return Container(
+                  height: 260,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (message != null) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          if (message != null) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Text(
-                                message,
-                                style: TextStyle(
-                                  color: (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                      .withOpacity(0.5),
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicShowsService();
-                                        setState(() {
-                                          _magicShowsFuture = refreshService
-                                              .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                  ),
-                          ] else if (showRetryButton) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.refresh_rounded,
-                              onTap: () {
-                                final refreshService = MagicShowsService();
-                                setState(() {
-                                  _magicShowsFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
                         ],
-                      ),
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicShowsService();
+                                      setState(() {
+                                        _magicShowsFuture = refreshService
+                                            .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ),
+                        ] else if (showRetryButton) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.refresh_rounded,
+                            onTap: () {
+                              final refreshService = MagicShowsService();
+                              setState(() {
+                                _magicShowsFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-                final recommendations = snapshot.data!.recommendations!;
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    controller: _sectionScrollController(_scrollIdMagicShows),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) =>
-                        _buildMagicShowCard(recommendations[index]),
                   ),
                 );
-              },
-            ),
-          ],
+              }
+              final recommendations = snapshot.data!.recommendations!;
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  controller: _sectionScrollController(_scrollIdMagicShows),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) =>
+                      _buildMagicShowCard(recommendations[index]),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -11722,197 +11401,193 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, snapshot) {
         final sectionTitle = snapshot.data?.sectionTitle ?? defaultSectionTitle;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.person_search_rounded,
-                      color: ZagColours.purple, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(sectionTitle,
-                        style: TextStyle(
-                            fontSize: _moduleSectionTitleFontSize,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+        return MagicShowsCastCrewSection(
+          header: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(Icons.person_search_rounded,
+                    color: ZagColours.purple, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(sectionTitle,
+                      style: TextStyle(
+                          fontSize: _moduleSectionTitleFontSize,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            Builder(
-              builder: (context) {
-                if (snapshot.hasData &&
-                    snapshot.data!.nextGenerationAt != null) {
-                  _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                      height: 390,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Center(child: CircularProgressIndicator()));
-                }
-                if (!snapshot.hasData ||
-                    !snapshot.data!.success ||
-                    snapshot.data!.recommendations == null ||
-                    snapshot.data!.recommendations!.isEmpty) {
-                  String title = 'No recommendations yet';
-                  String? message;
-                  IconData icon = Icons.person_search_rounded;
-                  final showLibrarySyncCta = (ZagreusMega.isEnabled &&
-                          !libraryCacheEnabled) ||
-                      snapshot.data?.error == MagicShowsCastCrewError.notSynced;
-                  bool showRetryButton = true;
-
-                  if (snapshot.hasData &&
-                      !snapshot.data!.success &&
-                      snapshot.data!.error != null) {
-                    switch (snapshot.data!.error!) {
-                      case MagicShowsCastCrewError.notSynced:
-                        title = 'Library not synced';
-                        message = snapshot.data!.errorMessage ??
-                            'Please sync your library first';
-                        icon = Icons.sync_problem_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsCastCrewError.noMegaOrUltra:
-                        title = 'Mega subscription required';
-                        message = snapshot.data!.errorMessage ??
-                            'Magic Shows requires Mega or Ultra';
-                        icon = Icons.lock_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsCastCrewError.alreadyGenerating:
-                        title = 'Generation in progress';
-                        message = snapshot.data!.errorMessage ??
-                            'Please wait while recommendations are being generated';
-                        icon = Icons.hourglass_empty_rounded;
-                        showRetryButton = false;
-                        break;
-                      case MagicShowsCastCrewError.fetchFailed:
-                      case MagicShowsCastCrewError.unknown:
-                        title = 'Something went wrong';
-                        message = snapshot.data!.errorMessage ??
-                            'Please try again later';
-                        icon = Icons.error_outline_rounded;
-                        break;
-                    }
-                  }
-
-                  return Container(
-                    height: 260,
+          ),
+          content: Builder(
+            builder: (context) {
+              if (snapshot.hasData &&
+                  snapshot.data!.nextGenerationAt != null) {
+                _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                    height: 390,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 48,
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.3)),
-                          const SizedBox(height: 16),
-                          Text(
-                            title,
-                            style: TextStyle(
-                              color: (Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black)
-                                  .withOpacity(0.7),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                    child: const Center(child: CircularProgressIndicator()));
+              }
+              if (!snapshot.hasData ||
+                  !snapshot.data!.success ||
+                  snapshot.data!.recommendations == null ||
+                  snapshot.data!.recommendations!.isEmpty) {
+                String title = 'No recommendations yet';
+                String? message;
+                IconData icon = Icons.person_search_rounded;
+                final showLibrarySyncCta = (ZagreusMega.isEnabled &&
+                        !libraryCacheEnabled) ||
+                    snapshot.data?.error == MagicShowsCastCrewError.notSynced;
+                bool showRetryButton = true;
+
+                if (snapshot.hasData &&
+                    !snapshot.data!.success &&
+                    snapshot.data!.error != null) {
+                  switch (snapshot.data!.error!) {
+                    case MagicShowsCastCrewError.notSynced:
+                      title = 'Library not synced';
+                      message = snapshot.data!.errorMessage ??
+                          'Please sync your library first';
+                      icon = Icons.sync_problem_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsCastCrewError.noMegaOrUltra:
+                      title = 'Mega subscription required';
+                      message = snapshot.data!.errorMessage ??
+                          'Magic Shows requires Mega or Ultra';
+                      icon = Icons.lock_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsCastCrewError.alreadyGenerating:
+                      title = 'Generation in progress';
+                      message = snapshot.data!.errorMessage ??
+                          'Please wait while recommendations are being generated';
+                      icon = Icons.hourglass_empty_rounded;
+                      showRetryButton = false;
+                      break;
+                    case MagicShowsCastCrewError.fetchFailed:
+                    case MagicShowsCastCrewError.unknown:
+                      title = 'Something went wrong';
+                      message = snapshot.data!.errorMessage ??
+                          'Please try again later';
+                      icon = Icons.error_outline_rounded;
+                      break;
+                  }
+                }
+
+                return Container(
+                  height: 260,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icon,
+                            size: 48,
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: (Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black)
+                                .withOpacity(0.7),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (message != null) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                color: (Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black)
+                                    .withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          if (message != null) ...[
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Text(
-                                message,
-                                style: TextStyle(
-                                  color: (Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black)
-                                      .withOpacity(0.5),
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                          if (showLibrarySyncCta) ...[
-                            const SizedBox(height: 16),
-                            _isSyncing
-                                ? const CircularProgressIndicator(
-                                    strokeWidth: 2)
-                                : ZagButton.text(
-                                    text: libraryCacheEnabled
-                                        ? 'Sync library now'
-                                        : 'Enable library sync',
-                                    icon: Icons.sync,
-                                    onTap: () => _enableLibrarySyncForSection(
-                                      sectionName: defaultSectionTitle,
-                                      onSynced: () {
-                                        final refreshService =
-                                            MagicShowsCastCrewService();
-                                        setState(() {
-                                          _magicShowsCastCrewFuture =
-                                              refreshService
-                                                  .generateRecommendations(
-                                            profileKey: profileKey,
-                                            instanceKey: instanceKey,
-                                            force: true,
-                                          );
-                                        });
-                                      },
-                                    ),
-                                  ),
-                          ] else if (showRetryButton) ...[
-                            const SizedBox(height: 16),
-                            ZagButton.text(
-                              text: 'Generate now',
-                              icon: Icons.refresh_rounded,
-                              onTap: () {
-                                final refreshService =
-                                    MagicShowsCastCrewService();
-                                setState(() {
-                                  _magicShowsCastCrewFuture =
-                                      refreshService.generateRecommendations(
-                                    profileKey: profileKey,
-                                    instanceKey: instanceKey,
-                                    force: true,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
                         ],
-                      ),
+                        if (showLibrarySyncCta) ...[
+                          const SizedBox(height: 16),
+                          _isSyncing
+                              ? const CircularProgressIndicator(strokeWidth: 2)
+                              : ZagButton.text(
+                                  text: libraryCacheEnabled
+                                      ? 'Sync library now'
+                                      : 'Enable library sync',
+                                  icon: Icons.sync,
+                                  onTap: () => _enableLibrarySyncForSection(
+                                    sectionName: defaultSectionTitle,
+                                    onSynced: () {
+                                      final refreshService =
+                                          MagicShowsCastCrewService();
+                                      setState(() {
+                                        _magicShowsCastCrewFuture =
+                                            refreshService
+                                                .generateRecommendations(
+                                          profileKey: profileKey,
+                                          instanceKey: instanceKey,
+                                          force: true,
+                                        );
+                                      });
+                                    },
+                                  ),
+                                ),
+                        ] else if (showRetryButton) ...[
+                          const SizedBox(height: 16),
+                          ZagButton.text(
+                            text: 'Generate now',
+                            icon: Icons.refresh_rounded,
+                            onTap: () {
+                              final refreshService =
+                                  MagicShowsCastCrewService();
+                              setState(() {
+                                _magicShowsCastCrewFuture =
+                                    refreshService.generateRecommendations(
+                                  profileKey: profileKey,
+                                  instanceKey: instanceKey,
+                                  force: true,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                  );
-                }
-                final recommendations = snapshot.data!.recommendations!;
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.only(left: 16),
-                  child: ListView.builder(
-                    controller:
-                        _sectionScrollController(_scrollIdMagicShowsCastCrew),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) =>
-                        _buildMagicShowCastCrewCard(recommendations[index]),
                   ),
                 );
-              },
-            ),
-          ],
+              }
+              final recommendations = snapshot.data!.recommendations!;
+              return Container(
+                height: 390,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  controller:
+                      _sectionScrollController(_scrollIdMagicShowsCastCrew),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommendations.length,
+                  itemBuilder: (context, index) =>
+                      _buildMagicShowCastCrewCard(recommendations[index]),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -12300,57 +11975,52 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _recentlyDownloadedSection() {
     final previewMovies =
         _recentlyDownloaded.take(_discoverPreviewLimit).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: ZagIcons.RADARR,
-          leadingIconColor: const Color(0xFFFEC333),
-          moduleLabel: 'Radarr',
-          moduleLabelColor: const Color(0xFFFEC333),
-          title: _discoverSectionTitle('recently_downloaded'),
-          titleStyle: TextStyle(
-            fontSize: _moduleSectionTitleFontSize,
-            fontWeight: FontWeight.w600,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DiscoverRecentlyDownloadedRoute(
-                  initialData: _recentlyDownloaded,
-                ),
+    return RecentlyDownloadedMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.RADARR,
+        leadingIconColor: const Color(0xFFFEC333),
+        moduleLabel: 'Radarr',
+        moduleLabelColor: const Color(0xFFFEC333),
+        title: _discoverSectionTitle('recently_downloaded'),
+        titleStyle: TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.w600,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DiscoverRecentlyDownloadedRoute(
+                initialData: _recentlyDownloaded,
               ),
-            );
+            ),
+          );
+        },
+        onLongPress: () => _refreshSection(
+          scrollKey: _scrollIdRecentlyDownloaded,
+          loader: () => _loadRecentlyDownloaded(showGlobalLoader: false),
+          sectionLabel: _discoverSectionTitle('recently_downloaded'),
+        ),
+        trailingIcon: Icons.chevron_right_rounded,
+        trailingColor: Colors.grey,
+        trailingSize: 24,
+        showArrow: true,
+      ),
+      list: SizedBox(
+        height: _posterListHeight,
+        child: ListView.builder(
+          key: _recentlyDownloadedListKey,
+          controller: _sectionScrollController(_scrollIdRecentlyDownloaded),
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: previewMovies.length,
+          itemBuilder: (context, index) {
+            final item = previewMovies[index];
+            return _movieCard(item);
           },
-          onLongPress: () => _refreshSection(
-            scrollKey: _scrollIdRecentlyDownloaded,
-            loader: () => _loadRecentlyDownloaded(showGlobalLoader: false),
-            sectionLabel: _discoverSectionTitle('recently_downloaded'),
-          ),
-          trailingIcon: Icons.chevron_right_rounded,
-          trailingColor: Colors.grey,
-          trailingSize: 24,
-          showArrow: true,
         ),
-        // Movie list
-        SizedBox(
-          height: _posterListHeight,
-          child: ListView.builder(
-            key: _recentlyDownloadedListKey,
-            controller: _sectionScrollController(_scrollIdRecentlyDownloaded),
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: previewMovies.length,
-            itemBuilder: (context, index) {
-              final item = previewMovies[index];
-              return _movieCard(item);
-            },
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -12529,45 +12199,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Limit to 3 items for the home view
     final displayItems = _recentlyDownloadedShows.take(3).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title with navigation
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: ZagIcons.SONARR,
-          leadingIconColor: ZagColours.blue,
-          moduleLabel: 'Sonarr',
-          moduleLabelColor: ZagColours.blue,
-          title: _discoverSectionTitle('recently_downloaded_shows'),
-          titleStyle: TextStyle(
-            fontSize: _moduleSectionTitleFontSize,
-            fontWeight: FontWeight.w600,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SonarrRecentlyDownloadedRoute(
-                  initialData: _recentlyDownloadedShows,
-                ),
+    return RecentlyDownloadedShowsSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.SONARR,
+        leadingIconColor: ZagColours.blue,
+        moduleLabel: 'Sonarr',
+        moduleLabelColor: ZagColours.blue,
+        title: _discoverSectionTitle('recently_downloaded_shows'),
+        titleStyle: TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.w600,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SonarrRecentlyDownloadedRoute(
+                initialData: _recentlyDownloadedShows,
               ),
-            );
-          },
-          onLongPress: () => _loadRecentlyDownloadedShows(),
-          trailingColor: Colors.grey.withOpacity(0.7),
-          showArrow: true,
-        ),
-        // TV show list with thin cards (limited to 3)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              ...displayItems.map((episode) => _tvShowCard(episode)).toList(),
-            ],
-          ),
-        ),
-      ],
+            ),
+          );
+        },
+        onLongPress: () => _loadRecentlyDownloadedShows(),
+        trailingColor: Colors.grey.withOpacity(0.7),
+        showArrow: true,
+      ),
+      items: displayItems.map((episode) => _tvShowCard(episode)).toList(),
     );
   }
 
@@ -12575,71 +12233,60 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     // Limit to 3 items for the home view
     final displayItems = _airingNextShows.take(3).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title with navigation
-        _sectionTitleRow(
-          context: context,
-          leadingIcon: ZagIcons.SONARR,
-          leadingIconColor: ZagColours.blue,
-          moduleLabel: 'Sonarr',
-          moduleLabelColor: ZagColours.blue,
-          title: _discoverSectionTitle('airing_next'),
-          titleStyle: TextStyle(
-            fontSize: _moduleSectionTitleFontSize,
-            fontWeight: FontWeight.w600,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SonarrAiringNextRoute(
-                  initialData: _airingNextShows,
+    return AiringNextSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.SONARR,
+        leadingIconColor: ZagColours.blue,
+        moduleLabel: 'Sonarr',
+        moduleLabelColor: ZagColours.blue,
+        title: _discoverSectionTitle('airing_next'),
+        titleStyle: TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.w600,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SonarrAiringNextRoute(
+                initialData: _airingNextShows,
+              ),
+            ),
+          );
+        },
+        onLongPress: () => _loadSonarrAiringNext(),
+        trailingColor: Colors.grey.withOpacity(0.7),
+        showArrow: true,
+      ),
+      content: Column(
+        children: [
+          if (displayItems.isEmpty)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              decoration: BoxDecoration(
+                color: ZagColours.blue.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: ZagColours.blue.withOpacity(0.2),
+                  width: 1,
                 ),
               ),
-            );
-          },
-          onLongPress: () => _loadSonarrAiringNext(),
-          trailingColor: Colors.grey.withOpacity(0.7),
-          showArrow: true,
-        ),
-        // TV show list with thin cards (limited to 3)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              if (displayItems.isEmpty)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                  decoration: BoxDecoration(
-                    color: ZagColours.blue.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: ZagColours.blue.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'No Shows Airing Soon',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              child: const Center(
+                child: Text(
+                  'No Shows Airing Soon',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ...displayItems
-                  .map((episode) => _airingNextCard(episode))
-                  .toList(),
-            ],
-          ),
-        ),
-      ],
+              ),
+            ),
+          ...displayItems.map((episode) => _airingNextCard(episode)).toList(),
+        ],
+      ),
     );
   }
 
@@ -13215,51 +12862,48 @@ class _DiscoverNavigationBar extends StatelessWidget {
   }
 
   Widget _buildEmptyCustomSection(CustomSectionConfig config) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader(
-          title: config.title,
-          subtitle: config.description,
-          icon: Icons.auto_awesome_rounded,
-          showSeeAll: false,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: ZagColours.GREY_800.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  color: ZagColours.currentAccent.withOpacity(0.5),
-                  size: 28,
+    return EmptyCustomSection(
+      header: _buildSectionHeader(
+        title: config.title,
+        subtitle: config.description,
+        icon: Icons.auto_awesome_rounded,
+        showSeeAll: false,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: ZagColours.GREY_800.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: ZagColours.currentAccent.withOpacity(0.5),
+                size: 28,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'No recommendations yet',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: ZagColours.TEXT_GREY,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'No recommendations yet',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: ZagColours.TEXT_GREY,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ZagButton(
-                  type: ZagButtonType.OUTLINED,
-                  text: 'Generate Recommendations',
-                  icon: Icons.refresh_rounded,
-                  color: ZagColours.currentAccent,
-                  onTap: () => _regenerateCustomSection(config),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              ZagButton(
+                type: ZagButtonType.OUTLINED,
+                text: 'Generate Recommendations',
+                icon: Icons.refresh_rounded,
+                color: ZagColours.currentAccent,
+                onTap: () => _regenerateCustomSection(config),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
