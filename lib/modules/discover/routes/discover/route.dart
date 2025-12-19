@@ -32,9 +32,7 @@ import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_shows/rou
 import 'package:zagreus/modules/discover/routes/trakt_most_anticipated_movies/route.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/discover/routes/discover/z_chat_overlay.dart';
-import 'package:zagreus/modules/discover/routes/discover/tabs/movies_tab.dart';
 import 'package:zagreus/modules/discover/routes/discover/tabs/server_tab.dart';
-import 'package:zagreus/modules/discover/routes/discover/tabs/shows_tab.dart';
 import 'package:zagreus/modules/discover/widgets/discover_sections_editor.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -2781,25 +2779,81 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _moviesPage() {
-    return DiscoverMoviesTab(
-      viewModel: DiscoverMoviesTabViewModel(
-        isLoading: _isLoading,
-        error: _error,
-        onRefresh: _loadRecentlyDownloaded,
-        scrollController: _DiscoverNavigationBar.moviesScrollController,
-        showHeroCarousel: _showHeroCarousel,
-        heroCarousel: () => _heroCarousel(
-          controller: _moviesHeroPageController,
-          storageKey: 'discoverHeroCarouselMovies',
-          isMovieTab: true,
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6688FF)),
         ),
-        buildSections: _buildMovieSections,
-        showAiSignInGate: _hasAiTier && !_isSignedIn,
-        aiSignInGate: _accountRequiredAiGroupState,
-        customSectionsArea: () => _customSectionsArea(mediaType: 'movie'),
-        discoverSectionsButton: _discoverSectionsButton,
-        autoRefreshNote: _zAutoRefreshNote,
-        metadataCredits: _metadataCredits,
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 60,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load recently downloaded',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey
+                    : Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadRecentlyDownloaded,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6688FF),
+              ),
+              child: Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadRecentlyDownloaded,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics()),
+        controller: _DiscoverNavigationBar.moviesScrollController,
+        padding: EdgeInsets.zero,
+        children: [
+          // Hero carousel
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _moviesHeroPageController,
+              storageKey: 'discoverHeroCarouselMovies',
+              isMovieTab: true,
+            ),
+          // Content sections in custom order
+          ..._buildMovieSections(),
+          // Single grouped sign-in gate for all AI sections (Deep Cuts / Magic / Custom Sections)
+          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
+          // Custom user-defined sections (Mega/Ultra only)
+          _customSectionsArea(mediaType: 'movie'),
+          _discoverSectionsButton(),
+          _zAutoRefreshNote(),
+          _metadataCredits(),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
@@ -2946,23 +3000,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _tvShowsPage() {
-    return DiscoverShowsTab(
-      viewModel: DiscoverShowsTabViewModel(
-        onRefresh: _loadRecentlyDownloadedShows,
-        scrollController: _DiscoverNavigationBar.showsScrollController,
-        showHeroCarousel: _showHeroCarousel,
-        heroCarousel: () => _heroCarousel(
-          controller: _tvHeroPageController,
-          storageKey: 'discoverHeroCarouselTv',
-          isMovieTab: false,
-        ),
-        buildSections: _buildTVSections,
-        showAiSignInGate: _hasAiTier && !_isSignedIn,
-        aiSignInGate: _accountRequiredAiGroupState,
-        customSectionsArea: () => _customSectionsArea(mediaType: 'tv'),
-        discoverSectionsButton: () => _discoverSectionsButton(isShows: true),
-        autoRefreshNote: _zAutoRefreshNote,
-        metadataCredits: _metadataCredits,
+    return RefreshIndicator(
+      onRefresh: _loadRecentlyDownloadedShows,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics()),
+        controller: _DiscoverNavigationBar.showsScrollController,
+        padding: EdgeInsets.zero,
+        children: [
+          // Hero carousel (could be TV shows specific)
+          if (_showHeroCarousel)
+            _heroCarousel(
+              controller: _tvHeroPageController,
+              storageKey: 'discoverHeroCarouselTv',
+              isMovieTab: false,
+            ),
+          // TV shows sections in custom order
+          ..._buildTVSections(),
+          // Single grouped sign-in gate for all AI sections (Up Next / Magic / Custom Sections)
+          if (_hasAiTier && !_isSignedIn) _accountRequiredAiGroupState(),
+          // Custom user-defined sections (Mega/Ultra only)
+          _customSectionsArea(mediaType: 'tv'),
+          const SizedBox(height: 16),
+          _discoverSectionsButton(isShows: true),
+          _zAutoRefreshNote(),
+          _metadataCredits(),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
