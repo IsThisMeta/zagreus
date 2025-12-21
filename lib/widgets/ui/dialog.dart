@@ -291,7 +291,7 @@ abstract class ZagDialog {
             ZagDialog.cancel(
               context,
               text: cancelButtonText,
-              textColor: buttons == null ? ZagColours.currentAccentLight : null,
+              textColor: buttons == null ? ZagColours.accentColor(context) : null,
             ),
           if (buttons != null) ...buttons,
         ],

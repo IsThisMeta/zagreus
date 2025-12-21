@@ -163,7 +163,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
             onPressed: () => Navigator.of(context).pop(passwordController.text),
             child: Text(
               'Continue',
-              style: TextStyle(color: ZagColours.currentAccentLight),
+              style: TextStyle(color: ZagColours.accentColor(context)),
             ),
           ),
         ],

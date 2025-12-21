@@ -29,7 +29,7 @@ class ZagHeader extends StatelessWidget {
         width: ZagUI.DEFAULT_MARGIN_SIZE * 3,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ZagUI.BORDER_RADIUS),
-          color: Theme.of(context).brightness == Brightness.light ? ZagColours.currentAccentLight : ZagColours.currentAccent,
+          color: ZagColours.accentColor(context),
         ),
       ),
       padding: const EdgeInsets.only(

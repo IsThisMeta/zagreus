@@ -382,7 +382,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
                       child: Text(
                         item.year.toString(),
                         style: TextStyle(
-                          color: ZagColours.currentAccentLight,
+                          color: ZagColours.accentColor(context),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),

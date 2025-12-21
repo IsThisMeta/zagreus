@@ -1212,7 +1212,6 @@ class SettingsDialogs {
       buttons: [
         ZagDialog.button(
           text: 'zagreus.BackUp'.tr(),
-          textColor: ZagColours.currentAccentLight,
           onPressed: () => _setValues(true),
         ),
       ],

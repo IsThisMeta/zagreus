@@ -59,9 +59,7 @@ class ZagDrawerHeader extends StatelessWidget {
             ],
           ),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.light
-                ? ZagColours.currentAccentLight
-                : ZagColours.currentAccent,
+            color: ZagColours.accentColor(context),
             image: DecorationImage(
               image: const AssetImage(ZagAssets.brandingLogo),
               colorFilter: ColorFilter.mode(
