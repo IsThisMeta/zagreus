@@ -16,6 +16,7 @@ import 'package:zagreus/vendor.dart';
 import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/supabase/types.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SettingsDialogs {
   Future<Tuple2<bool, int>> setDefaultOption(
@@ -1383,6 +1384,15 @@ class SettingsDialogs {
       final enabled = module.isEnabled;
       final featureFlag = module.featureFlag;
       final homeRoute = module.homeRoute != null;
+
+      // Filter Dashboard/Discover based on subscription status
+      // Pro users see Discover, free users see Dashboard (not both)
+      if (module == ZagModule.DISCOVER && !ZagreusPro.isEnabled) {
+        return false;
+      }
+      if (module == ZagModule.DASHBOARD && ZagreusPro.isEnabled) {
+        return false;
+      }
 
       return homeRoute && enabled && featureFlag;
     }).toList();

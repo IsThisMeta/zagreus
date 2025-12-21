@@ -138,9 +138,17 @@ class ZagreusPro {
     try {
       final currentModule = BIOSDatabase.BOOT_MODULE.read();
 
-      // If already on Discover, nothing to do
+      // If already on Discover, just ensure we've captured that preference
       if (currentModule == ZagModule.DISCOVER) {
-        print('Boot module already set to Discover');
+        if (ZagreusDatabase.USER_BOOT_MODULE.read().isEmpty) {
+          ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
+        }
+        return;
+      }
+
+      // Only set to Discover if it's the first time (captured as an empty user preference)
+      if (ZagreusDatabase.USER_BOOT_MODULE.read().isNotEmpty) {
+        print('User preference already captured ($currentModule), skipping Discover forcing');
         return;
       }
 

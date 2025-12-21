@@ -57,7 +57,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   ZAGREUS_SUPREME_EXPIRY<String>(''),
   ZAGREUS_SUPREME_SUBSCRIPTION_TYPE<String>(''),
   LAST_SUBSCRIPTION_VERIFY<String>(''),
-  USER_BOOT_MODULE<String>('dashboard'),
+  USER_BOOT_MODULE<String>(''),
   DEVICE_ID<String>(''),
   DEVICE_HMAC_KEY<String>(''),
   DEVICE_REGISTERED<bool>(false),
