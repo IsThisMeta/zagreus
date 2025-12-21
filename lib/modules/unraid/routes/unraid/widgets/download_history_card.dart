@@ -148,7 +148,8 @@ class DownloadHistoryCard extends StatelessWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 36, // Less space
+                reservedSize: 40, // Slightly more space for labels
+                interval: maxValue > 0 ? maxValue / 2 : 1, // Show only 2 labels to prevent overlap
                 getTitlesWidget: (value, meta) {
                   if (value == 0) return const Text('');
                   return Text(
