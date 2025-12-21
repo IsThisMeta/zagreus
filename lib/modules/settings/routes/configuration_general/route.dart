@@ -365,7 +365,7 @@ class _State extends State<ConfigurationGeneralRoute>
         title: 'Confirm Unraid Actions',
         body: const [
           TextSpan(
-            text: 'Show confirmation dialog before starting, stopping, or rebooting VMs and Docker containers',
+            text: 'Show confirmation dialogue before actions',
           ),
         ],
         trailing: ZagSwitch(
