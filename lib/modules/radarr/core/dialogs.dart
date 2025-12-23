@@ -681,6 +681,8 @@ class RadarrDialogs {
   }
 
   Future<void> addMovieOptions(BuildContext context) async {
+    final state = context.read<RadarrAddMovieDetailsState>();
+
     await ZagDialog.dialog(
       context: context,
       title: 'zagreus.Options'.tr(),
@@ -692,13 +694,26 @@ class RadarrDialogs {
       ],
       showCancelButton: false,
       content: [
-        RadarrDatabase.ADD_MOVIE_SEARCH_FOR_MISSING.listenableBuilder(
-          builder: (context, _) => ZagDialog.checkbox(
-            title: 'radarr.StartSearchForMissingMovie'.tr(),
-            value: RadarrDatabase.ADD_MOVIE_SEARCH_FOR_MISSING.read(),
-            onChanged: (value) =>
-                RadarrDatabase.ADD_MOVIE_SEARCH_FOR_MISSING.update(value!),
-          ),
+        ZagDialog.tile(
+          text: 'Minimum Availability: ${state.availability.readable}',
+          icon: Icons.folder_rounded,
+          onTap: () async {
+            Navigator.of(context, rootNavigator: true).pop();
+            final result = await editMinimumAvailability(context);
+            if (result.item1 && result.item2 != null) {
+              state.availability = result.item2!;
+            }
+            await addMovieOptions(context);
+          },
+        ),
+        ZagDialog.tile(
+          text: 'Tags: ${state.tags.isEmpty ? 'None' : state.tags.map((t) => t.label).join(', ')}',
+          icon: ZagIcons.FILTER,
+          onTap: () async {
+            Navigator.of(context, rootNavigator: true).pop();
+            await setAddTags(context);
+            await addMovieOptions(context);
+          },
         ),
       ],
       contentPadding: ZagDialog.listDialogContentPadding(),

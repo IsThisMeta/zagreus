@@ -13,6 +13,10 @@ class RadarrAddMovieDetailsActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ZagBottomActionBar(
       actions: [
+        ZagActionBarCard(
+          title: 'zagreus.Options'.tr(),
+          onTap: () async => RadarrDialogs().addMovieOptions(context),
+        ),
         ZagButton(
           type: ZagButtonType.TEXT,
           text: 'zagreus.Add'.tr(),
