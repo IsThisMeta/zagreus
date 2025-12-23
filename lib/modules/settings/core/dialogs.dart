@@ -1393,8 +1393,14 @@ class SettingsDialogs {
         return false;
       }
 
+      // Filter out Settings module - nobody boots into Settings
+      if (module == ZagModule.SETTINGS) {
+        return false;
+      }
+
       return homeRoute && enabled && featureFlag;
-    }).toList();
+    }).toList()
+      ..sort((a, b) => a.title.compareTo(b.title));
 
     await ZagDialog.dialog(
       context: context,
