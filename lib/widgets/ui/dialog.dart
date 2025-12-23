@@ -212,7 +212,7 @@ abstract class ZagDialog {
     required IconData? icon,
     Color? iconColor,
     required String text,
-    RichText? subtitle,
+    Widget? subtitle,
     Function? onTap,
   }) =>
       ListTile(

@@ -238,7 +238,7 @@ class LidarrDialogs {
                 fontSize: ZagDialog.BUTTON_SIZE,
               ),
             ],
-          ) as RichText?,
+          ),
           icon: Icons.folder_rounded,
           iconColor: ZagColours().byListIndex(index),
           onTap: () => _setValues(true, folders[index]),

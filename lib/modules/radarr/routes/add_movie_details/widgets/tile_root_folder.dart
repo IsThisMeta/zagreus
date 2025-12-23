@@ -20,9 +20,10 @@ class RadarrAddMovieDetailsRootFolderTile extends StatelessWidget {
               await context.read<RadarrState>().rootFolders!;
           Tuple2<bool, RadarrRootFolder?> values =
               await RadarrDialogs().editRootFolder(context, folders);
-          if (values.item1)
+          if (values.item1) {
             context.read<RadarrAddMovieDetailsState>().rootFolder =
                 values.item2!;
+          }
         },
       ),
     );

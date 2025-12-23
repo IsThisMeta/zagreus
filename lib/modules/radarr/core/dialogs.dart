@@ -574,7 +574,7 @@ class RadarrDialogs {
       content: List.generate(
         folders.length,
         (index) => ZagDialog.tile(
-          text: folders[index].path!,
+          text: folders[index].path ?? ZagUI.TEXT_EMDASH,
           subtitle: ZagDialog.richText(
             children: [
               ZagDialog.bolded(
@@ -582,7 +582,7 @@ class RadarrDialogs {
                 fontSize: ZagDialog.BUTTON_SIZE,
               ),
             ],
-          ) as RichText?,
+          ),
           icon: Icons.folder_rounded,
           iconColor: ZagColours().byListIndex(index),
           onTap: () => _setValues(true, folders[index]),
