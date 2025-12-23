@@ -676,6 +676,27 @@ class SonarrDialogs {
       ],
       showCancelButton: false,
       content: [
+        ZagDialog.tile(
+          text: 'Series Type: ${state.seriesType.value?.toTitleCase() ?? 'None'}',
+          icon: Icons.folder_open_rounded,
+          onTap: () async {
+            Navigator.of(context, rootNavigator: true).pop();
+            final result = await editSeriesType(context);
+            if (result.item1 && result.item2 != null) {
+              state.seriesType = result.item2!;
+              SonarrDatabase.ADD_SERIES_DEFAULT_SERIES_TYPE.update(result.item2!.value!);
+            }
+            await addSeriesOptions(context);
+          },
+        ),
+        ZagDialog.checkbox(
+          title: 'Season Folders',
+          value: state.useSeasonFolders,
+          onChanged: (value) {
+            state.useSeasonFolders = value!;
+            SonarrDatabase.ADD_SERIES_DEFAULT_USE_SEASON_FOLDERS.update(value);
+          },
+        ),
         if (languageProfiles.isNotEmpty)
           ZagDialog.tile(
             text: 'Language Profile: ${state.languageProfile?.name ?? 'None'}',

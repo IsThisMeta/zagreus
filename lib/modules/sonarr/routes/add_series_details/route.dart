@@ -198,8 +198,6 @@ class _State extends State<AddSeriesDetailsRoute>
         const SonarrAddSeriesDetailsSearchForMissingTile(),
         const SonarrAddSeriesDetailsSearchForCutoffTile(),
         const SonarrSeriesAddDetailsQualityProfileTile(),
-        const SonarrSeriesAddDetailsSeriesTypeTile(),
-        const SonarrSeriesAddDetailsUseSeasonFoldersTile(),
       ],
     );
   }
