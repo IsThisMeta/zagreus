@@ -195,9 +195,9 @@ class _State extends State<AddSeriesDetailsRoute>
         ),
         const SonarrSeriesAddDetailsRootFolderTile(),
         const SonarrSeriesAddDetailsMonitorTile(),
+        const SonarrSeriesAddDetailsQualityProfileTile(),
         const SonarrAddSeriesDetailsSearchForMissingTile(),
         const SonarrAddSeriesDetailsSearchForCutoffTile(),
-        const SonarrSeriesAddDetailsQualityProfileTile(),
       ],
     );
   }
