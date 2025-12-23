@@ -195,10 +195,10 @@ class _State extends State<AddMovieDetailsRoute>
           ),
           const RadarrAddMovieDetailsRootFolderTile(),
           const RadarrAddMovieDetailsMonitoredTile(),
+          const RadarrAddMovieDetailsSearchOnAddTile(),
           const RadarrAddMovieDetailsMinimumAvailabilityTile(),
           const RadarrAddMovieDetailsQualityProfileTile(),
           const RadarrAddMovieDetailsTagsTile(),
-          const RadarrAddMovieDetailsSearchOnAddTile(),
         ],
       ),
     );

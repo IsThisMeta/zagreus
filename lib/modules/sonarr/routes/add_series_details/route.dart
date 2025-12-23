@@ -195,11 +195,11 @@ class _State extends State<AddSeriesDetailsRoute>
         ),
         const SonarrSeriesAddDetailsRootFolderTile(),
         const SonarrSeriesAddDetailsMonitorTile(),
+        const SonarrAddSeriesDetailsSearchForMissingTile(),
+        const SonarrAddSeriesDetailsSearchForCutoffTile(),
         const SonarrSeriesAddDetailsQualityProfileTile(),
         const SonarrSeriesAddDetailsSeriesTypeTile(),
         const SonarrSeriesAddDetailsUseSeasonFoldersTile(),
-        const SonarrAddSeriesDetailsSearchForMissingTile(),
-        const SonarrAddSeriesDetailsSearchForCutoffTile(),
       ],
     );
   }
