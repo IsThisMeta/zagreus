@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:zagreus/api/omdb/omdb_api.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -119,6 +120,11 @@ class _RadarrRottenTomatoesTileState extends State<RadarrRottenTomatoesTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if ratings are hidden in settings
+    if (ZagreusDatabase.APPEARANCE_HIDE_RATINGS.read()) {
+      return const SizedBox.shrink();
+    }
+
     // Only show for Pro/Mega/Ultra users (checked once in initState)
     if (!_isPremium) {
       return const SizedBox.shrink();

@@ -40,6 +40,8 @@ class _State extends State<ConfigurationAppearanceRoute>
         _amoledTheme(),
         _amoledThemeBorders(),
         _lightThemeBorders(),
+        _hideRatings(),
+        _hideStreamingProviders(),
       ],
     );
   }
@@ -208,6 +210,38 @@ class _State extends State<ConfigurationAppearanceRoute>
           ),
         );
       },
+    );
+  }
+
+  Widget _hideRatings() {
+    const db = ZagreusDatabase.APPEARANCE_HIDE_RATINGS;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Hide Ratings',
+        body: const [
+          TextSpan(text: 'Hide all rating badges'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _hideStreamingProviders() {
+    const db = ZagreusDatabase.APPEARANCE_HIDE_STREAMING_PROVIDERS;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Hide Streaming Providers',
+        body: const [
+          TextSpan(text: 'Hide streaming and buy/rent providers'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
     );
   }
 

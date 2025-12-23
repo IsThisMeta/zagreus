@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/widgets/ui/colors.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -87,6 +88,11 @@ class _RadarrAddMovieStreamingProvidersTileState
 
   @override
   Widget build(BuildContext context) {
+    // Check if streaming providers are hidden in settings
+    if (ZagreusDatabase.APPEARANCE_HIDE_STREAMING_PROVIDERS.read()) {
+      return const SizedBox.shrink();
+    }
+
     if (!_isPremium) {
       return const SizedBox.shrink();
     }

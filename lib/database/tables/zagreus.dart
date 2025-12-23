@@ -29,6 +29,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   THEME_MODE<String>('dark'),
   THEME_FOLLOW_SYSTEM<bool>(false),
   THEME_USE_LUNASEA_COLORS<bool>(false),
+  APPEARANCE_HIDE_RATINGS<bool>(false),
+  APPEARANCE_HIDE_STREAMING_PROVIDERS<bool>(false),
   QUICK_ACTIONS_LIDARR<bool>(false),
   QUICK_ACTIONS_RADARR<bool>(false),
   QUICK_ACTIONS_SONARR<bool>(false),
