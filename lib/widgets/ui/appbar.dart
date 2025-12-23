@@ -250,6 +250,11 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _default(BuildContext context) {
+    // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
+    final effectiveActions = (widget.actions == null || widget.actions!.isEmpty)
+        ? const [SizedBox.shrink()]
+        : widget.actions;
+    
     return AppBar(
       backgroundColor: widget.backgroundColor,
       title: Text(
@@ -261,7 +266,7 @@ class _State extends State<ZagAppBar> {
       automaticallyImplyLeading: !(widget.hideLeading),
       centerTitle: false,
       elevation: 0,
-      actions: widget.actions,
+      actions: effectiveActions,
       bottom: widget.bottom,
     );
   }
@@ -281,6 +286,11 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _dropdown(BuildContext context) {
+    // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
+    final effectiveActions = (widget.actions == null || widget.actions!.isEmpty)
+        ? const [SizedBox.shrink()]
+        : widget.actions;
+    
     return AppBar(
       backgroundColor: widget.backgroundColor,
       automaticallyImplyLeading: !(widget.hideLeading),
@@ -332,7 +342,7 @@ class _State extends State<ZagAppBar> {
       leading: _sharedLeading(context),
       centerTitle: false,
       elevation: 0,
-      actions: widget.actions,
+      actions: effectiveActions,
       bottom: widget.bottom,
     );
   }
