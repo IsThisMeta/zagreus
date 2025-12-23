@@ -31,8 +31,6 @@ class _State extends State<ManualImportRoute> with ZagScrollControllerMixin {
     return ZagAppBar(
       title: 'radarr.ManualImport'.tr(),
       scrollControllers: [scrollController],
-      // Hide the endDrawer icon while keeping drawer accessible via swipe
-      actions: const [SizedBox.shrink()],
       bottom: ZagAppBar.empty(
         height: ZagTextInputBar.defaultAppBarHeight,
         child: RadarrManualImportPathBar(scrollController: scrollController),

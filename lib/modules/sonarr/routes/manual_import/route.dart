@@ -31,8 +31,6 @@ class _State extends State<SonarrManualImportRoute> with ZagScrollControllerMixi
     return ZagAppBar(
       title: 'sonarr.ManualImport'.tr(),
       scrollControllers: [scrollController],
-      // Hide the endDrawer icon while keeping drawer accessible via swipe
-      actions: const [SizedBox.shrink()],
       bottom: ZagAppBar.empty(
         height: ZagTextInputBar.defaultAppBarHeight,
         child: SonarrManualImportPathBar(scrollController: scrollController),

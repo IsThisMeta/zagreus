@@ -42,7 +42,6 @@ class _State extends State<UnraidRoute> {
       appBar: ZagAppBar(
         title: 'Unraid',
         useDrawer: true,
-        actions: _buildAppBarActions(),
       ),
       bottomNavigationBar: UnraidNavigationBar(pageController: _pageController),
       body: _body(),
@@ -59,12 +58,6 @@ class _State extends State<UnraidRoute> {
         const UnraidVmPage(),
       ],
     );
-  }
-
-  List<Widget>? _buildAppBarActions() {
-    // Keep the downloads drawer accessible via the end-drawer gesture, but hide the action icon.
-    // Providing a placeholder action prevents Flutter from auto-inserting the end-drawer icon.
-    return const [SizedBox.shrink()];
   }
 
   void _openQueueDrawer() {
