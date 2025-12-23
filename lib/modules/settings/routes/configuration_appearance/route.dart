@@ -187,29 +187,18 @@ class _State extends State<ConfigurationAppearanceRoute>
   }
 
   Widget _lightThemeBorders() {
-    return ZagBox.zagreus.listenableBuilder(
-      selectItems: [
-        ZagreusDatabase.THEME_LIGHT_BORDER,
-        ZagreusDatabase.THEME_MODE,
-        ZagreusDatabase.THEME_FOLLOW_SYSTEM,
-      ],
-      builder: (context, _) {
-        final isFollowingSystem = ZagreusDatabase.THEME_FOLLOW_SYSTEM.read();
-        final currentMode = ZagreusDatabase.THEME_MODE.read();
-        final isLightMode = !isFollowingSystem && currentMode == 'light';
-
-        return ZagBlock(
-          title: 'Light Theme Borders',
-          body: const [
-            TextSpan(text: 'Add subtle borders to cards in light theme'),
-          ],
-          trailing: ZagSwitch(
-            value: ZagreusDatabase.THEME_LIGHT_BORDER.read(),
-            onChanged:
-                isLightMode ? ZagreusDatabase.THEME_LIGHT_BORDER.update : null,
-          ),
-        );
-      },
+    const db = ZagreusDatabase.THEME_LIGHT_BORDER;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Light Theme Borders',
+        body: const [
+          TextSpan(text: 'Add subtle borders to cards in light theme'),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
     );
   }
 
