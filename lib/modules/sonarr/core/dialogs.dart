@@ -689,14 +689,6 @@ class SonarrDialogs {
             await addSeriesOptions(context);
           },
         ),
-        ZagDialog.checkbox(
-          title: 'Season Folders',
-          value: state.useSeasonFolders,
-          onChanged: (value) {
-            state.useSeasonFolders = value!;
-            SonarrDatabase.ADD_SERIES_DEFAULT_USE_SEASON_FOLDERS.update(value);
-          },
-        ),
         if (languageProfiles.isNotEmpty)
           ZagDialog.tile(
             text: 'Language Profile: ${state.languageProfile?.name ?? 'None'}',
@@ -721,6 +713,18 @@ class SonarrDialogs {
             await setAddTags(context);
             await addSeriesOptions(context);
           },
+        ),
+        StatefulBuilder(
+          builder: (context, setState) => ZagDialog.checkbox(
+            title: 'Season Folders',
+            value: state.useSeasonFolders,
+            onChanged: (value) {
+              setState(() {
+                state.useSeasonFolders = value!;
+                SonarrDatabase.ADD_SERIES_DEFAULT_USE_SEASON_FOLDERS.update(value);
+              });
+            },
+          ),
         ),
       ],
       contentPadding: ZagDialog.listDialogContentPadding(),
