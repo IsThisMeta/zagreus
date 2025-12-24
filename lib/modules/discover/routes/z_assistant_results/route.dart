@@ -92,7 +92,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
 
       if (operation == null) {
         setState(() {
-          _error = 'Failed to load Z Assistant results';
+          _error = 'Failed to load Z-Bot results';
           _loading = false;
         });
         return;
@@ -103,7 +103,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
         _loading = false;
       });
     } catch (e, stack) {
-      ZagLogger().error('Error loading Z Assistant results', e, stack);
+      ZagLogger().error('Error loading Z-Bot results', e, stack);
       setState(() {
         _error = 'Error loading results: $e';
         _loading = false;
@@ -263,7 +263,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
             ),
             SizedBox(height: 8),
             Text(
-              'Z Assistant couldn\'t find any matches',
+              'Z-Bot couldn\'t find any matches',
               style: TextStyle(
                 color: Colors.grey,
               ),
@@ -274,7 +274,7 @@ class _ZAssistantResultsRouteState extends State<ZAssistantResultsRoute> with Za
     }
 
     final screenWidth = MediaQuery.sizeOf(context).width;
-    // Z Assistant always uses 2 columns, ignoring dashboard setting
+    // Z-Bot always uses 2 columns, ignoring dashboard setting
     const fixedColumns = 2;
     const horizontalPadding = 16.0;
     const gridSpacing = 12.0;

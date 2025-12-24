@@ -1112,9 +1112,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isSupreme
-                  ? "You have an active Supreme subscription.\n\nEnjoy world leading AI models for Z Assistant and recommendations, plus all Ultra, Mega, and Pro features."
+                  ? "You have an active Supreme subscription.\n\nEnjoy world leading AI models for Z-Bot and recommendations, plus all Ultra, Mega, and Pro features."
                   : 'Zagreus Supreme unlocks:\n'
-                      '• World leading AI models for Z Assistant\n'
+                      '• World leading AI models for Z-Bot\n'
                       '• All Ultra, Mega, and Pro features',
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,

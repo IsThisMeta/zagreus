@@ -175,7 +175,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
         ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
         showZagSuccessSnackBar(
           title: 'User Selected',
-          message: 'Z Agent will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
+          message: 'Z-Bot will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
         );
       } else {
         showZagErrorSnackBar(
@@ -202,7 +202,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
 
   Widget _appBar() {
     return ZagAppBar(
-      title: 'Z Agent',
+      title: 'Z-Bot settings',
       scrollControllers: [scrollController],
     );
   }
@@ -219,8 +219,8 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
           body: [
             TextSpan(
               text: enabled
-                  ? 'Library is synced to Z Agent'
-                  : 'Let Z Agent analyze your library',
+                  ? 'Library is synced to Z-Bot'
+                  : 'Let Z-Bot analyze your library',
             ),
           ],
               trailing: ZagSwitch(
@@ -230,12 +230,12 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
                   if (value) {
                     showZagInfoSnackBar(
                       title: 'Library Cache Enabled',
-                      message: 'Z Agent will now sync your library periodically',
+                      message: 'Z-Bot will now sync your library periodically',
                     );
                   } else {
                     showZagInfoSnackBar(
                       title: 'Library Cache Disabled',
-                      message: 'Z Agent will no longer sync your library',
+                      message: 'Z-Bot will no longer sync your library',
                     );
                   }
                 },
@@ -251,7 +251,7 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
           body: [
             TextSpan(
               text: enabled
-                  ? 'Tautulli watch history synced to Z Agent'
+                  ? 'Tautulli watch history synced to Z-Bot'
                   : 'Sync your Tautulli watch history',
             ),
           ],
@@ -262,13 +262,13 @@ class _State extends State<ZAgentSettingsRoute> with ZagScrollControllerMixin, W
                   if (value) {
                     showZagInfoSnackBar(
                       title: 'Watch History Cache Enabled',
-                      message: 'Z Agent will now sync your Tautulli watch history',
+                      message: 'Z-Bot will now sync your Tautulli watch history',
                     );
                     _loadAvailableUsers();
                   } else {
                     showZagInfoSnackBar(
                       title: 'Watch History Cache Disabled',
-                      message: 'Z Agent will no longer sync watch history',
+                      message: 'Z-Bot will no longer sync watch history',
                     );
                   }
                 },

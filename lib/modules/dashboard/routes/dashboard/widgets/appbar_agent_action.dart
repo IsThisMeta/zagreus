@@ -12,7 +12,7 @@ class DashboardAppBarAgentAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.smart_toy),
-      tooltip: 'Z Agent',
+      tooltip: 'Z-Bot',
       onPressed: onPressed,
     );
   }

@@ -179,6 +179,11 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     });
   }
 
+  void clearConversationIfCurrent(String conversationId) {
+    if (_currentConversationId != conversationId) return;
+    clearChat();
+  }
+
   void onPersistenceChanged(bool enabled) {
     if (!enabled) {
       // Stop persisting and clear stored history
@@ -380,7 +385,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     if (!_isSignedIn) {
       showZagInfoSnackBar(
         title: 'Sign in required',
-        message: 'Sign in to your Zagreus account to use Z Agent.',
+        message: 'Sign in to your Zagreus account to use Z-Bot.',
       );
       SettingsRoutes.ACCOUNT.go();
       return;
@@ -447,7 +452,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       }
 
       ZagLogger().debug(
-          '📨 Z Assistant response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
+          '📨 Z-Bot response - isStaged: ${response.isStaged}, stageId: ${response.stageId}, text: ${response.text}');
 
       // Execute any commands from the response
       if (response.commands.isNotEmpty) {
@@ -1673,7 +1678,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
 
   Future<void> _loadTestZAssistantResults() async {
     try {
-      print('🧪 Creating mock Z Assistant results');
+      print('🧪 Creating mock Z-Bot results');
 
       // Mock Christopher Nolan movies with posters + reasons for testing
       final mockItems = [
@@ -1821,7 +1826,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       if (!mounted) return;
       _openExploreResults(stageId);
     } catch (e) {
-      print('❌ Test Z Assistant error: $e');
+      print('❌ Test Z-Bot error: $e');
       showZagSnackBar(
         title: 'Test Error',
         message: 'Failed to create mock results: $e',

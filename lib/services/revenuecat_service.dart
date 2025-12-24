@@ -17,7 +17,7 @@ class RevenueCatService {
   static const String _apiKey = 'appl_rUDwskSqmGCotcUTmqthnGgYCFq';
   static const String _proEntitlementId = 'Pro';  // Monthly Pro
   static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
-  static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z Assistant
+  static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z-Bot
   static const String _ultraEntitlementId = 'Ultra';  // Ultra entitlement for top-tier AI
   static const String _supremeEntitlementId = 'Supreme';  // Supreme entitlement for GPT-5-Pro
   static const String proMonthlyProductId = 'com.zagreus.pro.monthly.v2';
@@ -455,7 +455,7 @@ class RevenueCatService {
 
       showZagInfoSnackBar(
         title: 'Welcome to Zagreus Mega!',
-        message: 'Z Assistant features are now unlocked.',
+        message: 'Z-Bot features are now unlocked.',
       );
       return true;
     } catch (e) {

@@ -179,7 +179,7 @@ class _State extends State<DashboardRoute> {
   PreferredSizeWidget _appBar() {
     if (_isAgentActive) {
       return ZagAppBar(
-        title: 'Z Agent',
+        title: 'Z-Bot',
         useDrawer: true,
         actions: [
           IconButton(
@@ -190,7 +190,7 @@ class _State extends State<DashboardRoute> {
           IconButton(
             icon: const Icon(Icons.tune),
             onPressed: _showZAssistantSettings,
-            tooltip: 'Z Agent Settings',
+            tooltip: 'Z-Bot settings',
           ),
           IconButton(
             icon: const Icon(Icons.close),

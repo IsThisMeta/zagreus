@@ -478,7 +478,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   final Set<String> _precachedHeroBackdrops = {};
   final Map<String, ScrollController> _sectionScrollControllers = {};
 
-  // Z Assistant navigation history
+  // Z-Bot navigation history
   String? _lastZAssistantStageId;
 
   // Library sync state
@@ -486,7 +486,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   bool _deviceSettingsLoaded = false;
 
-  // Z Assistant Radarr/Sonarr settings
+  // Z-Bot Radarr/Sonarr settings
   int? _radarrQualityProfileId;
   String? _radarrQualityProfileName;
   String? _radarrRootFolder;
@@ -502,7 +502,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool _sonarrSearchForCutoffUnmet = false;
   Set<int> _sonarrSelectedSeasons = {};
 
-  // Z Assistant user selection
+  // Z-Bot user selection
   List<_UserOption> _availableUsers = [];
   bool _loadingUsers = false;
   String? _selectedUser;
@@ -2185,7 +2185,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final appBar = ZagAppBar(
       title: _isSearchActive
           ? 'Search'
-          : (_isAgentActive ? 'Z Agent' : ZagModule.DISCOVER.title),
+          : (_isAgentActive ? 'Z-Bot' : ZagModule.DISCOVER.title),
       useDrawer: true,
       actions: _buildAppBarActions(),
     );
@@ -2378,13 +2378,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           key: const ValueKey('discover_action_agent_info'),
           icon: const Icon(Icons.info_outline),
           onPressed: _showZAgentQuickSetup,
-          tooltip: 'Z Agent setup',
+          tooltip: 'Z-Bot setup',
         ),
         IconButton(
           key: const ValueKey('discover_action_agent_settings'),
           icon: const Icon(Icons.tune),
           onPressed: _showZAssistantSettings,
-          tooltip: 'Z Assistant Settings',
+          tooltip: 'Z-Bot settings',
         ),
         if (persistLocal && !supabaseSync)
           IconButton(
@@ -2405,7 +2405,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             key: const ValueKey('discover_action_agent_return_results'),
             icon: const Icon(Icons.arrow_forward),
             onPressed: _navigateToLastZAssistantResults,
-            tooltip: 'Return to Z Assistant Results',
+            tooltip: 'Return to Z-Bot Results',
           ),
         IconButton(
           key: const ValueKey('discover_action_agent_close'),
@@ -2452,7 +2452,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             IconButton(
               key: const ValueKey('discover_action_agent'),
               icon: const Icon(Icons.smart_toy),
-              tooltip: 'Z Agent',
+              tooltip: 'Z-Bot',
               onPressed: _openAgentOverlay,
             ),
           );
@@ -2499,7 +2499,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_movies'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z Agent',
+            tooltip: 'Z-Bot',
             onPressed: _openAgentOverlay,
           ),
         );
@@ -2532,7 +2532,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_shows'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z Agent',
+            tooltip: 'Z-Bot',
             onPressed: _openAgentOverlay,
           ),
         );
@@ -2552,7 +2552,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_server'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z Agent',
+            tooltip: 'Z-Bot',
             onPressed: _openAgentOverlay,
           ),
         );
@@ -3693,7 +3693,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool _isSearching = false;
   Timer? _searchDebounce;
 
-  // Z Assistant state
+  // Z-Bot state
   bool _isAskingZAssistant = false;
 
   Widget _searchPage() {
@@ -4150,7 +4150,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     });
 
     try {
-      print('🤖 Asking Z Assistant: $query');
+      print('🤖 Asking Z-Bot: $query');
       final service = ZAssistantService();
       final stageId = await service.sendExploreQuery(query: query);
 
@@ -4158,7 +4158,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _isAskingZAssistant = false;
       });
 
-      print('🤖 Z Assistant returned stage ID: $stageId');
+      print('🤖 Z-Bot returned stage ID: $stageId');
 
       // Store stage ID for navigation history
       setState(() {
@@ -4197,13 +4197,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         }
       });
     } catch (e) {
-      print('❌ Z Assistant error: $e');
+      print('❌ Z-Bot error: $e');
       setState(() {
         _isAskingZAssistant = false;
       });
       showZagSnackBar(
-        title: 'Z Assistant Error',
-        message: 'Failed to get results from Z Assistant. Please try again.',
+        title: 'Z-Bot Error',
+        message: 'Failed to get results from Z-Bot. Please try again.',
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -4237,7 +4237,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         if (result.success) {
           showZagSnackBar(
             title: 'Library Synced',
-            message: 'Your library has been synced to Z Assistant',
+            message: 'Your library has been synced to Z-Bot',
             type: ZagSnackbarType.SUCCESS,
           );
 
@@ -4501,7 +4501,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         showZagSuccessSnackBar(
           title: 'User Selected',
           message:
-              'Z Agent will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
+              'Z-Bot will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
         );
       } else {
         showZagErrorSnackBar(
@@ -4634,7 +4634,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               color: theme.colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Z Agent setup',
+                            'Z-Bot setup',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -4643,7 +4643,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Turn on these caches so the agent has library and watch history context. Your credentials are never used — all server commands are sent back to your device and processed locally. We also send media path names (including *nix paths), which could potentially be sensitive.',
+                        'Turn on these caches so the agent has library and watch history context. Your credentials are never used — all server commands are sent back to your device and processed locally. For privacy, usernames from Tautulli are filtered out.',
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 16),
@@ -4658,8 +4658,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Library is synced to Z Agent'
-                                    : 'Let Z Agent analyze your library',
+                                    ? 'Library is synced to Z-Bot'
+                                    : 'Let Z-Bot analyze your library',
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -4672,13 +4672,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   showZagInfoSnackBar(
                                     title: 'Library Cache Enabled',
                                     message:
-                                        'Z Agent will now sync your library periodically',
+                                        'Z-Bot will now sync your library periodically',
                                   );
                                 } else {
                                   showZagInfoSnackBar(
                                     title: 'Library Cache Disabled',
                                     message:
-                                        'Z Agent will no longer sync your library',
+                                        'Z-Bot will no longer sync your library',
                                   );
                                 }
                               },
@@ -4698,7 +4698,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Tautulli watch history synced to Z Agent'
+                                    ? 'Tautulli watch history synced to Z-Bot'
                                     : 'Sync your Tautulli watch history',
                               ),
                             ],
@@ -4712,14 +4712,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   showZagInfoSnackBar(
                                     title: 'Watch History Cache Enabled',
                                     message:
-                                        'Z Agent will now sync your Tautulli watch history',
+                                        'Z-Bot will now sync your Tautulli watch history',
                                   );
                                   _loadAvailableUsers();
                                 } else {
                                   showZagInfoSnackBar(
                                     title: 'Watch History Cache Disabled',
                                     message:
-                                        'Z Agent will no longer sync watch history',
+                                        'Z-Bot will no longer sync watch history',
                                   );
                                   setState(() {
                                     _availableUsers = [];
@@ -4760,8 +4760,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                       ? 'Chat storage enabled'
                                       : 'Chat storage disabled',
                                   message: value
-                                      ? 'Z Agent will keep chat history locally'
-                                      : 'Z Agent will act stateless',
+                                      ? 'Z-Bot will keep chat history locally'
+                                      : 'Z-Bot will act stateless',
                                 );
                               },
                             ),
@@ -5112,8 +5112,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                               );
                               if (confirmed == true && mounted) {
-                                await conversationService.deleteConversation(
-                                  conversation.conversationId,
+                                final conversationId =
+                                    conversation.conversationId;
+                                await conversationService
+                                    .deleteConversation(conversationId);
+                                _agentChatKey.currentState
+                                    ?.clearConversationIfCurrent(
+                                  conversationId,
                                 );
                                 Navigator.of(context).pop();
                                 _showConversationHistory(); // Refresh list
@@ -5125,6 +5130,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             _agentChatKey.currentState?.loadConversation(
                               conversation.conversationId,
                             );
+                            _dismissQuickSetupIfOpen();
                           },
                         );
                       },
@@ -5134,6 +5140,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       ),
     );
+  }
+
+  void _dismissQuickSetupIfOpen() {
+    if (_quickSetupModalSetState == null || !mounted) return;
+    Navigator.of(context).pop();
   }
 
   String _formatDate(DateTime date) {
@@ -5799,16 +5810,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Future<void> _loadTestZAssistantResults() async {
     try {
-      print('🧪 Creating mock Z Assistant results');
+      print('🧪 Creating mock Z-Bot results');
 
       // Make a real API call to test authentication and rate limiting
       final zAssistant = ZAssistantService();
       try {
-        print('📡 Testing Z Assistant API call...');
+        print('📡 Testing Z-Bot API call...');
         await zAssistant.sendExploreQuery(query: 'test rate limiting');
-        print('✅ Z Assistant API call successful');
+        print('✅ Z-Bot API call successful');
       } catch (e) {
-        print('⚠️ Z Assistant API call failed (expected if not Mega): $e');
+        print('⚠️ Z-Bot API call failed (expected if not Mega): $e');
       }
 
       // Mock Christopher Nolan movies with posters
@@ -5974,7 +5985,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
       );
     } catch (e) {
-      print('❌ Test Z Assistant error: $e');
+      print('❌ Test Z-Bot error: $e');
       showZagSnackBar(
         title: 'Test Error',
         message: 'Failed to create test results: $e',
