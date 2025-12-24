@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:home_widget/home_widget.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/system/platform.dart';
 
 /// Service for managing the upcoming movies/shows home screen widget
 /// Uses Radarr and Sonarr upcoming data instead of TMDB
 class UpcomingWidgetService {
   static const String _appGroupId = 'group.app.zagreus';
+  static const String _iOSWidgetKind = 'UpcomingWidget';
   static bool _initialUpdateCompleted = false;
 
   /// Initialize the widget service (call this in main.dart bootstrap)
@@ -166,6 +168,11 @@ class UpcomingWidgetService {
       print('ℹ️ Flutter: Initial widget update already completed; skipping duplicate call.');
       return false;
     }
+    final isWidgetActive = await _isWidgetActive();
+    if (isWidgetActive == false) {
+      print('ℹ️ Flutter: Upcoming widget not active; skipping update.');
+      return false;
+    }
     try {
       print('📱 Flutter: Updating upcoming widget...');
 
@@ -198,10 +205,7 @@ class UpcomingWidgetService {
       );
 
       // Update the widget UI
-      await HomeWidget.updateWidget(
-        iOSName: 'UpcomingWidget',
-        androidName: 'UpcomingWidgetProvider',
-      );
+      await HomeWidget.updateWidget(iOSName: _iOSWidgetKind);
 
       print('✅ Flutter: Widget updated with ${widgetData.length} items');
       _initialUpdateCompleted = true;
@@ -231,6 +235,22 @@ class UpcomingWidgetService {
     await HomeWidget.registerBackgroundCallback(backgroundCallback);
 
     print('📅 Widget updates scheduled');
+  }
+
+  static Future<bool?> _isWidgetActive() async {
+    if (!ZagPlatform.isIOS) {
+      return null;
+    }
+    try {
+      final widgets = await HomeWidget.getInstalledWidgets();
+      if (widgets.isEmpty) {
+        return false;
+      }
+      return widgets.any((widget) => widget.iOSKind == _iOSWidgetKind);
+    } catch (e) {
+      print('⚠️ Flutter: Unable to check installed widgets: $e');
+      return null;
+    }
   }
 }
 
