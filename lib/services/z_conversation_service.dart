@@ -1,5 +1,5 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/services/device_id_service.dart';
 import 'package:zagreus/supabase/auth.dart';
 import 'package:uuid/uuid.dart';
@@ -56,7 +56,7 @@ class ZConversation {
   }
 }
 
-/// Service for managing Z Agent conversation histories in Supabase
+/// Service for managing Z Agent conversation histories locally
 class ZConversationService {
   static final ZConversationService _instance =
       ZConversationService._internal();
@@ -64,7 +64,6 @@ class ZConversationService {
   ZConversationService._internal();
 
   static const _uuid = Uuid();
-  SupabaseClient get _client => Supabase.instance.client;
 
   /// Get device ID for this device
   String get _deviceId => DeviceIdService().deviceId;
@@ -72,19 +71,30 @@ class ZConversationService {
   /// Get user ID if signed in
   String? get _userId => ZagSupabaseAuth().isSignedIn ? ZagSupabaseAuth().uid : null;
 
+  List<Map<String, dynamic>> _readConversations() {
+    final stored = ZagreusDatabase.Z_ASSISTANT_CHAT_CONVERSATIONS.read();
+    if (stored is! List) return [];
+    return stored
+        .whereType<Map>()
+        .map((item) => item.cast<String, dynamic>())
+        .toList();
+  }
+
+  void _writeConversations(List<Map<String, dynamic>> conversations) {
+    ZagreusDatabase.Z_ASSISTANT_CHAT_CONVERSATIONS.update(conversations);
+  }
+
   /// List all conversations for this device (or user if signed in)
   /// Sorted by most recently updated first
   Future<List<ZConversation>> listConversations() async {
     try {
-      final response = await _client
-          .from('z_agent_conversations')
-          .select()
-          .eq('device_id', _deviceId)
-          .order('updated_at', ascending: false);
-
-      return (response as List)
+      final deviceId = _deviceId;
+      final conversations = _readConversations()
+          .where((json) => json['device_id'] == deviceId)
           .map((json) => ZConversation.fromJson(json))
           .toList();
+      conversations.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return conversations;
     } catch (error, stack) {
       ZagLogger().error('Failed to list conversations', error, stack);
       return [];
@@ -94,14 +104,14 @@ class ZConversationService {
   /// Get a specific conversation by ID
   Future<ZConversation?> getConversation(String conversationId) async {
     try {
-      final response = await _client
-          .from('z_agent_conversations')
-          .select()
-          .eq('conversation_id', conversationId)
-          .eq('device_id', _deviceId)
-          .single();
-
-      return ZConversation.fromJson(response);
+      final deviceId = _deviceId;
+      for (final json in _readConversations()) {
+        if (json['conversation_id'] == conversationId &&
+            json['device_id'] == deviceId) {
+          return ZConversation.fromJson(json);
+        }
+      }
+      return null;
     } catch (error, stack) {
       ZagLogger().error('Failed to get conversation', error, stack);
       return null;
@@ -117,18 +127,22 @@ class ZConversationService {
     try {
       final conversationId = _uuid.v4();
       final now = DateTime.now().toUtc();
+      final messages = initialMessages ?? [];
 
       final data = {
         'conversation_id': conversationId,
         'device_id': _deviceId,
         'user_id': _userId,
         'title': title ?? 'New Chat',
-        'messages': initialMessages ?? [],
+        'messages': messages,
+        'message_count': messages.length,
         'created_at': now.toIso8601String(),
         'updated_at': now.toIso8601String(),
       };
 
-      await _client.from('z_agent_conversations').insert(data);
+      final conversations = _readConversations();
+      conversations.add(data);
+      _writeConversations(conversations);
 
       ZagLogger().debug('Created conversation: $conversationId');
       return conversationId;
@@ -146,17 +160,28 @@ class ZConversationService {
     List<Map<String, dynamic>>? messages,
   }) async {
     try {
+      final conversations = _readConversations();
+      final index = conversations.indexWhere(
+        (json) =>
+            json['conversation_id'] == conversationId &&
+            json['device_id'] == _deviceId,
+      );
+      if (index == -1) return false;
+
       final updates = <String, dynamic>{};
       if (title != null) updates['title'] = title;
-      if (messages != null) updates['messages'] = messages;
+      if (messages != null) {
+        updates['messages'] = messages;
+        updates['message_count'] = messages.length;
+      }
 
       if (updates.isEmpty) return true; // Nothing to update
 
-      await _client
-          .from('z_agent_conversations')
-          .update(updates)
-          .eq('conversation_id', conversationId)
-          .eq('device_id', _deviceId);
+      updates['updated_at'] = DateTime.now().toUtc().toIso8601String();
+
+      final existing = conversations[index];
+      conversations[index] = {...existing, ...updates};
+      _writeConversations(conversations);
 
       ZagLogger().debug('Updated conversation: $conversationId');
       return true;
@@ -170,18 +195,27 @@ class ZConversationService {
   /// Returns true on success, false on failure
   Future<bool> deleteConversation(String conversationId) async {
     try {
-      await _client
-          .from('z_agent_conversations')
-          .delete()
-          .eq('conversation_id', conversationId)
-          .eq('device_id', _deviceId);
+      final conversations = _readConversations();
+      final before = conversations.length;
+      conversations.removeWhere(
+        (json) =>
+            json['conversation_id'] == conversationId &&
+            json['device_id'] == _deviceId,
+      );
+      if (conversations.length == before) return false;
 
+      _writeConversations(conversations);
       ZagLogger().debug('Deleted conversation: $conversationId');
       return true;
     } catch (error, stack) {
       ZagLogger().error('Failed to delete conversation', error, stack);
       return false;
     }
+  }
+
+  /// Delete all local conversations
+  void clearConversations() {
+    _writeConversations([]);
   }
 
   /// Auto-generate a title based on the first user message

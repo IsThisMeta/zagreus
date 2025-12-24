@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/services/z_assistant_service.dart';
-import 'package:zagreus/services/z_conversation_service.dart';
 import 'package:zagreus/services/staged_operations_service.dart';
 import 'package:zagreus/services/library_sync_service.dart';
+import 'package:zagreus/services/z_conversation_service.dart';
 import 'package:zagreus/database/config.dart';
 import 'package:zagreus/modules/discover/routes/z_assistant_results/route.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -45,7 +45,8 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
 
   bool get _persistenceEnabled =>
       ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY.read();
-  bool get _supabaseEnabled =>
+
+  bool get _conversationHistoryEnabled =>
       ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read();
 
   @override
@@ -120,11 +121,11 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   void _persistHistory() {
     if (!_persistenceEnabled) {
       ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update([]);
-      // Still allow Supabase sync if enabled (stateless locally)
-      if (!_supabaseEnabled) return;
+      // Still allow local conversation history if enabled (stateless locally)
+      if (!_conversationHistoryEnabled) return;
     }
 
-    if (!_persistenceEnabled && _messages.isEmpty && !_supabaseEnabled) {
+    if (!_persistenceEnabled && _messages.isEmpty && !_conversationHistoryEnabled) {
       return;
     }
 
@@ -138,7 +139,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       ZagreusDatabase.Z_ASSISTANT_DASHBOARD_CHAT_HISTORY.update(serialized);
     }
 
-    if (_supabaseEnabled && serialized.isNotEmpty) {
+    if (_conversationHistoryEnabled && serialized.isNotEmpty) {
       if (_currentConversationId != null) {
         final title = _conversationService.generateTitle(serialized);
         _conversationService.updateConversation(
@@ -168,6 +169,16 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     _persistHistory();
   }
 
+  void clearHistory() {
+    if (!mounted) return;
+    setState(() {
+      _messages.clear();
+      _isThinking = false;
+      _thinkingStatus = null;
+      _currentConversationId = null;
+    });
+  }
+
   void onPersistenceChanged(bool enabled) {
     if (!enabled) {
       // Stop persisting and clear stored history
@@ -187,7 +198,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       return;
     }
 
-    // If enabling supabase and we already have messages, push them up
+    // If enabling conversation history and we already have messages, store them
     if (_messages.isNotEmpty) {
       _persistHistory();
     }
@@ -200,7 +211,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
       _currentConversationId = null;
     });
 
-    if (_supabaseEnabled) {
+    if (_conversationHistoryEnabled) {
       final id =
           await _conversationService.createConversation(title: 'New Chat');
       if (mounted) {
@@ -211,9 +222,9 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
     _persistHistory();
   }
 
-  /// Load a specific conversation from Supabase
+  /// Load a specific conversation from local history
   Future<void> loadConversation(String conversationId) async {
-    if (!_supabaseEnabled) return;
+    if (!_conversationHistoryEnabled) return;
 
     final conversation = await _conversationService.getConversation(conversationId);
     if (conversation == null || !mounted) return;
@@ -242,7 +253,7 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
   }
 
   Future<void> _showConversationHistory() async {
-    if (!_supabaseEnabled) return;
+    if (!_conversationHistoryEnabled) return;
 
     final conversations = await _conversationService.listConversations();
 
@@ -1199,20 +1210,6 @@ class ZChatPageState extends State<ZChatPage> with AutomaticKeepAliveClientMixin
                                 color: ZagColours.currentAccent.withOpacity(0.18),
                               ),
                             ),
-                            if (_supabaseEnabled) ...[
-                              const SizedBox(height: 24),
-                              OutlinedButton.icon(
-                                onPressed: _showConversationHistory,
-                                icon: const Icon(Icons.history),
-                                label: const Text('Open history'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: ZagColours.currentAccent,
-                                  side: BorderSide(
-                                    color: ZagColours.currentAccent.withOpacity(0.5),
-                                  ),
-                                ),
-                              ),
-                            ],
                             if (!_isSignedIn) ...[
                               const SizedBox(height: 24),
                               OutlinedButton.icon(
