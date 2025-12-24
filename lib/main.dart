@@ -144,6 +144,52 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeNotificationListeners();
+    _checkAndShowNotificationPrompt();
+  }
+
+  void _checkAndShowNotificationPrompt() {
+    // Check if we should show the notification prompt
+    if (ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.read() &&
+        !ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read()) {
+      // Show dialog after frame is rendered
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showNotificationPromptDialog();
+      });
+    }
+  }
+
+  Future<void> _showNotificationPromptDialog() async {
+    final context = ZagRouter.navigatorKey.currentContext;
+    if (context == null) return;
+
+    final result = await ZagDialog.dialog(
+      context: context,
+      title: ZagDialog.title(text: 'Enable Free Notifications'),
+      content: ZagDialog.textContent(
+        text:
+            'Get notified when new movies and TV shows are added to your library! Notifications are completely free and work across all your devices.',
+      ),
+      buttons: [
+        ZagDialog.button(
+          text: 'No',
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        ZagDialog.button(
+          text: 'Yes',
+          textColor: Colors.white,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+
+    // Mark as shown (regardless of choice)
+    ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.update(false);
+    ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.update(true);
+
+    // Navigate to notifications settings if user said yes
+    if (result == true && context.mounted) {
+      ZagRouter.router.pushNamed('settings/notifications');
+    }
   }
 
   void _initializeNotificationListeners() {

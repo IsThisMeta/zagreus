@@ -81,6 +81,9 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
   // Overseerr notifications
   OVERSEERR_NOTIFICATIONS_ENABLED<bool>(true),
+  // Notification prompt (one-time)
+  SHOULD_SHOW_NOTIFICATION_PROMPT<bool>(false),
+  HAS_SHOWN_NOTIFICATION_PROMPT<bool>(false),
   // Radarr toast events
   RADARR_TOAST_ON_GRAB<bool>(true),
   RADARR_TOAST_ON_DOWNLOAD<bool>(true),
