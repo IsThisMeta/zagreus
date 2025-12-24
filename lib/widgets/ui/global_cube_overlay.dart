@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -13,12 +15,23 @@ class ZagGlobalCubeManager {
   final ValueNotifier<String> currentModuleNotifier = ValueNotifier<String>('');
   OverlayEntry? _overlayEntry;
   bool _isInjected = false;
+  BuildContext? _lastContext;
+  StreamSubscription? _speedCubeSubscription;
 
   // Track current route for saving when switching modules
   String _currentRoute = '';
   String _currentModule = '';
 
+  bool get isCubeEnabled {
+    return ZagreusDatabase.SPEED_CUBE_ENABLED.read() && ZagreusPro.isEnabled;
+  }
+
   void injectCube(BuildContext context, {GlobalKey<ScaffoldState>? scaffoldKey}) {
+    _lastContext = context;
+    _ensureSpeedCubeListener();
+    if (!isCubeEnabled) {
+      return;
+    }
     if (_isInjected) {
       print('🔍 CubeManager: Cube already injected, skipping');
       return;
@@ -28,7 +41,11 @@ class ZagGlobalCubeManager {
     print('🔍 CubeManager: Setting enabled: ${ZagreusDatabase.SPEED_CUBE_ENABLED.read()}');
 
     try {
-      final overlay = Overlay.of(context, rootOverlay: true);
+      final overlay = Overlay.maybeOf(context, rootOverlay: true);
+      if (overlay == null) {
+        print('🔍 CubeManager: Overlay not ready, skipping injection');
+        return;
+      }
       print('🔍 CubeManager: Overlay found: $overlay');
 
       _overlayEntry = OverlayEntry(
@@ -85,6 +102,36 @@ class ZagGlobalCubeManager {
       print('🔍 CubeManager: ERROR injecting cube: $e');
       print('🔍 CubeManager: Stack: $stack');
     }
+  }
+
+  void _ensureSpeedCubeListener() {
+    if (_speedCubeSubscription != null) return;
+    _speedCubeSubscription =
+        ZagreusDatabase.SPEED_CUBE_ENABLED.watch().listen((_) {
+      if (!isCubeEnabled) {
+        if (_isInjected) {
+          _removeCube();
+        }
+        return;
+      }
+
+      if (_isInjected) return;
+      final context = _lastContext;
+      if (context == null) return;
+      if (context is Element && !context.mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final retryContext = _lastContext;
+        if (retryContext == null) return;
+        if (retryContext is Element && !retryContext.mounted) return;
+        injectCube(retryContext);
+      });
+    });
+  }
+
+  void _removeCube() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    _isInjected = false;
   }
 
   void updateModule(String routeName) {

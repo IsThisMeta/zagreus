@@ -60,6 +60,7 @@ class _CubeRouteObserver extends NavigatorObserver {
 
   void _tryInjectCube({int attempt = 0}) {
     if (navigator?.context == null) return;
+    if (!ZagGlobalCubeManager.instance.isCubeEnabled) return;
 
     // Check if Overlay is available
     final overlay = Overlay.maybeOf(navigator!.context, rootOverlay: true);
