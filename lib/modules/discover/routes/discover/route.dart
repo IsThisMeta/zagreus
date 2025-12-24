@@ -4775,49 +4775,33 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           final enabled = ZagreusDatabase
                               .Z_ASSISTANT_SUPABASE_CHAT_SYNC
                               .read();
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              ZagBlock(
-                                title: 'Conversation history',
-                                body: const [
-                                  TextSpan(
-                                    text:
-                                        'Save multiple chats locally and switch between them',
-                                  ),
-                                ],
-                                trailing: ZagSwitch(
-                                  value: enabled,
-                                  onChanged: (value) {
-                                    ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
-                                        .update(value);
-                                    setState(() => _supabaseChatSync = value);
-
-                                    _agentChatKey.currentState
-                                        ?.onSupabaseSyncChanged(value);
-                                    showZagInfoSnackBar(
-                                      title: value
-                                          ? 'Conversation history enabled'
-                                          : 'Conversation history disabled',
-                                      message: value
-                                          ? 'Chats will be stored locally as separate conversations'
-                                          : 'Chats will stay in the current session only',
-                                    );
-                                  },
-                                ),
+                          return ZagBlock(
+                            title: 'Conversation history',
+                            body: const [
+                              TextSpan(
+                                text:
+                                    'Save multiple chats locally and switch between them',
                               ),
-                              if (enabled)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: ZagButton(
-                                    type: ZagButtonType.TEXT,
-                                    text: 'View chat history',
-                                    icon: Icons.chat_bubble_outline,
-                                    color: ZagColours.currentAccent,
-                                    onTap: _showConversationHistory,
-                                  ),
-                                ),
                             ],
+                            trailing: ZagSwitch(
+                              value: enabled,
+                              onChanged: (value) {
+                                ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC
+                                    .update(value);
+                                setState(() => _supabaseChatSync = value);
+
+                                _agentChatKey.currentState
+                                    ?.onSupabaseSyncChanged(value);
+                                showZagInfoSnackBar(
+                                  title: value
+                                      ? 'Conversation history enabled'
+                                      : 'Conversation history disabled',
+                                  message: value
+                                      ? 'Chats will be stored locally as separate conversations'
+                                      : 'Chats will stay in the current session only',
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
@@ -4869,6 +4853,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           );
                         },
                       ),
+                      if (ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read())
+                        Center(
+                          child: TextButton(
+                            onPressed: _showConversationHistory,
+                            style: TextButton.styleFrom(
+                              foregroundColor: ZagColours.currentAccent,
+                            ),
+                            child: const Text('View chat history'),
+                          ),
+                        ),
                       if (ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
                               .read() ||
                           ZagreusDatabase.Z_ASSISTANT_SUPABASE_CHAT_SYNC.read())
@@ -5052,16 +5046,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ),
                 ],
               ),
-            ),
-            const Divider(height: 1),
-            // New Chat button
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('New Chat'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _agentChatKey.currentState?.clearChat();
-              },
             ),
             const Divider(height: 1),
             // Conversation list
