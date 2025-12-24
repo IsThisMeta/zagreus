@@ -164,10 +164,10 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
 
     final result = await ZagDialog.dialog(
       context: context,
-      title: ZagDialog.title(text: 'Enable Free Notifications'),
+      title: ZagDialog.title(text: 'Enable Notifications'),
       content: ZagDialog.textContent(
         text:
-            'Get notified when new movies and TV shows are added to your library! Notifications are completely free and work across all your devices.',
+            'Would you like to enable notifications for your services? They are free and one-click!',
       ),
       buttons: [
         ZagDialog.button(
