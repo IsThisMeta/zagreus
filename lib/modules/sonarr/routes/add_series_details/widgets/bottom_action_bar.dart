@@ -12,6 +12,7 @@ class SonarrAddSeriesDetailsActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ZagBottomActionBar(
+      landscapeScale: 0.75,
       actions: [
         ZagActionBarCard(
           title: 'zagreus.Options'.tr(),
