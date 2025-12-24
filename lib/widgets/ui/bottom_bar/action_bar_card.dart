@@ -8,6 +8,7 @@ class ZagActionBarCard extends StatelessWidget {
   final Color? backgroundColor;
   final Color? color;
   final IconData icon;
+  final bool centerText;
   final Function? onTap;
   final Function? onLongPress;
   final bool? checkboxState;
@@ -22,6 +23,7 @@ class ZagActionBarCard extends StatelessWidget {
     this.backgroundColor,
     this.color,
     this.icon = ZagIcons.ARROW_RIGHT,
+    this.centerText = false,
     this.checkboxState,
     this.checkboxOnChanged,
   }) : super(key: key);
@@ -35,16 +37,22 @@ class ZagActionBarCard extends StatelessWidget {
           child: Padding(
             child: Row(
               children: [
+                if (centerText && checkboxState == null)
+                  const SizedBox(width: 30.0),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: centerText
+                        ? CrossAxisAlignment.center
+                        : CrossAxisAlignment.start,
                     children: [
                       ZagText(
                         text: title,
                         maxLines: 1,
                         softWrap: false,
                         overflow: TextOverflow.fade,
+                        textAlign:
+                            centerText ? TextAlign.center : TextAlign.start,
                         style: TextStyle(
                           fontSize: ZagUI.FONT_SIZE_BUTTON,
                           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -57,6 +65,8 @@ class ZagActionBarCard extends StatelessWidget {
                           maxLines: 1,
                           softWrap: false,
                           overflow: TextOverflow.fade,
+                          textAlign:
+                              centerText ? TextAlign.center : TextAlign.start,
                           style: const TextStyle(
                             fontSize: ZagUI.FONT_SIZE_SUBHEADER,
                             color: ZagColours.grey,
