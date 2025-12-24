@@ -95,9 +95,13 @@ class ZagScaffold extends StatelessWidget {
         final effectiveEndDrawer = endDrawer ?? globalEndDrawer;
         final effectiveEndDrawerDragWidth = endDrawerEnableOpenDragGesture ?? 25.0;
 
+        final isLandscape =
+            MediaQuery.of(context).orientation == Orientation.landscape;
+        final effectiveAppBar = isLandscape ? null : appBar;
+
         return Scaffold(
           key: scaffoldKey,
-          appBar: appBar,
+          appBar: effectiveAppBar,
           body: body,
           drawer: drawer,
           endDrawer: effectiveEndDrawer,

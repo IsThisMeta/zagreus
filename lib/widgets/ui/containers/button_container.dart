@@ -5,12 +5,14 @@ class ZagButtonContainer extends StatelessWidget {
   final List<Widget> children;
   final EdgeInsets padding;
   final int buttonsPerRow;
+  final double? buttonHeight;
 
   const ZagButtonContainer({
     Key? key,
     required this.children,
     this.buttonsPerRow = 2,
     this.padding = const EdgeInsets.symmetric(horizontal: 6.0),
+    this.buttonHeight,
   }) : super(key: key);
 
   @override
@@ -22,7 +24,14 @@ class ZagButtonContainer extends StatelessWidget {
             .chunked(buttonsPerRow)
             .map((child) => Row(
                   children: child
-                      .map<Expanded>((button) => Expanded(child: button))
+                      .map<Expanded>((button) => Expanded(
+                            child: buttonHeight == null
+                                ? button
+                                : SizedBox(
+                                    height: buttonHeight,
+                                    child: button,
+                                  ),
+                          ))
                       .toList(),
                 ))
             .toList(),

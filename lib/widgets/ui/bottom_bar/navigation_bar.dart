@@ -83,10 +83,26 @@ class _State extends State<ZagBottomNavigationBar> {
       actions: widget.topActions,
       useSafeArea: false,
       padding: ZagUI.MARGIN_HALF,
+      compactLandscape: false,
+      landscapeScale: 0.75,
     );
   }
 
   Widget get _navigationBar {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final navPadding = isLandscape
+        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0)
+        : (widget.topActions?.isNotEmpty ?? false)
+            ? ZagUI.MARGIN_DEFAULT.copyWith(top: 0.0)
+            : ZagUI.MARGIN_DEFAULT;
+    final buttonPadding = isLandscape
+        ? const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0)
+        : const EdgeInsets.all(10.0);
+    final iconSize =
+        isLandscape ? ZagUI.ICON_SIZE * 0.85 : ZagUI.ICON_SIZE;
+    final fontSize =
+        isLandscape ? ZagUI.FONT_SIZE_H4 : ZagUI.FONT_SIZE_H3;
     return Container(
       child: SafeArea(
         child: Padding(
@@ -101,9 +117,9 @@ class _State extends State<ZagBottomNavigationBar> {
                       icon: widget.icons[index],
                       text: widget.titles[index],
                       active: _index == index,
-                      iconSize: ZagUI.ICON_SIZE,
+                      iconSize: iconSize,
                       haptic: true,
-                      padding: const EdgeInsets.all(10.0).add(EdgeInsets.only(
+                      padding: buttonPadding.add(EdgeInsets.only(
                         left: _index == index ? ZagUI.MARGIN_SIZE_HALF : 0.0,
                       )),
                       iconColor: Theme.of(context).brightness == Brightness.dark
@@ -111,7 +127,7 @@ class _State extends State<ZagBottomNavigationBar> {
                           : Colors.black87,
                       textStyle: TextStyle(
                         fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-                        fontSize: ZagUI.FONT_SIZE_H3,
+                        fontSize: fontSize,
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
                             : Colors.black87,
@@ -130,9 +146,7 @@ class _State extends State<ZagBottomNavigationBar> {
             selectedIndex: _index,
             onTabChange: _onDestinationSelected,
           ),
-          padding: (widget.topActions?.isNotEmpty ?? false)
-              ? ZagUI.MARGIN_DEFAULT.copyWith(top: 0.0)
-              : ZagUI.MARGIN_DEFAULT,
+          padding: navPadding,
         ),
         top: false,
       ),

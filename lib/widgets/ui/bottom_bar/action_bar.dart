@@ -10,6 +10,8 @@ class ZagBottomActionBar extends StatelessWidget {
   final int actionsPerRow;
   final bool useSafeArea;
   final Color? backgroundColor;
+  final bool compactLandscape;
+  final double landscapeScale;
 
   ZagBottomActionBar({
     required this.actions,
@@ -17,6 +19,8 @@ class ZagBottomActionBar extends StatelessWidget {
     this.actionsPerRow = 2,
     this.useSafeArea = true,
     this.backgroundColor,
+    this.compactLandscape = true,
+    this.landscapeScale = 0.5,
     Key? key,
   }) : super(key: key) {
     assert(actions?.isNotEmpty ?? false);
@@ -24,6 +28,21 @@ class ZagBottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final shouldCompact = isLandscape && compactLandscape;
+    final clampedScale = landscapeScale.clamp(0.4, 1.0);
+    final effectivePadding = shouldCompact
+        ? EdgeInsets.fromLTRB(
+            padding.left,
+            padding.top * clampedScale,
+            padding.right,
+            padding.bottom * clampedScale,
+          )
+        : padding;
+    final effectiveButtonHeight =
+        shouldCompact ? ZagButton.DEFAULT_HEIGHT * clampedScale : null;
+
     return Container(
       child: SafeArea(
         top: useSafeArea,
@@ -35,8 +54,9 @@ class ZagBottomActionBar extends StatelessWidget {
             children: actions!,
             padding: EdgeInsets.zero,
             buttonsPerRow: actionsPerRow,
+            buttonHeight: effectiveButtonHeight,
           ),
-          padding: padding,
+          padding: effectivePadding,
         ),
       ),
       decoration: BoxDecoration(
