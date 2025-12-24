@@ -213,7 +213,7 @@ class RadarrState extends ZagModuleState {
   Future<List<RadarrRootFolder>>? _rootFolders;
   Future<List<RadarrRootFolder>>? get rootFolders => _rootFolders;
   void fetchRootFolders() {
-    if (_enabled) _rootFolders = _api!.rootFolder.get();
+    if (_api != null) _rootFolders = _api!.rootFolder.get();
     notifyListeners();
   }
 
