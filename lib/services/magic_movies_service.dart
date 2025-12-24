@@ -87,7 +87,7 @@ class MagicMovie {
 
 /// Service for managing Magic Movies AI-powered recommendations
 /// Magic Movies are dynamically themed film recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class MagicMoviesService {
   static final MagicMoviesService _instance = MagicMoviesService._internal();
   factory MagicMoviesService() => _instance;
@@ -249,7 +249,7 @@ class MagicMoviesService {
 
   /// Generate new Magic Movies recommendations
   /// This triggers the backend to analyze library + watch history with AI
-  /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
+  /// Mega users get GPT-5-mini, Ultra users get GPT-5.2
   Future<MagicMoviesResult> generateRecommendations({
     String? profileKey,
     String? instanceKey,

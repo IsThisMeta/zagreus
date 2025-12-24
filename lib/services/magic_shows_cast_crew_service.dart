@@ -104,7 +104,7 @@ class MagicShowCastCrew {
 
 /// Service for managing Magic Shows Cast & Crew AI-powered recommendations
 /// Features people-based TV recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class MagicShowsCastCrewService {
   static final MagicShowsCastCrewService _instance = MagicShowsCastCrewService._internal();
   factory MagicShowsCastCrewService() => _instance;

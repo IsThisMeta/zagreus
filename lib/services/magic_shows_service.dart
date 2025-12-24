@@ -87,7 +87,7 @@ class MagicShow {
 
 /// Service for managing Magic Shows AI-powered recommendations
 /// Magic Shows are dynamically themed TV recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class MagicShowsService {
   static final MagicShowsService _instance = MagicShowsService._internal();
   factory MagicShowsService() => _instance;

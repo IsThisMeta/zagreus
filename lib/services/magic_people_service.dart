@@ -81,7 +81,7 @@ class MagicPerson {
 
 /// Service for managing Magic People AI-powered recommendations
 /// Magic People are dynamically themed person recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class MagicPeopleService {
   static final MagicPeopleService _instance = MagicPeopleService._internal();
   factory MagicPeopleService() => _instance;
@@ -243,7 +243,7 @@ class MagicPeopleService {
 
   /// Generate new Magic People recommendations
   /// This triggers the backend to analyze library + watch history with AI
-  /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
+  /// Mega users get GPT-5-mini, Ultra users get GPT-5.2
   Future<MagicPeopleResult> generateRecommendations({
     String? profileKey,
     String? instanceKey,

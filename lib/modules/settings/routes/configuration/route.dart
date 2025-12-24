@@ -183,7 +183,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Zagreus Pro unlocks Dashboard with limited Ask Z access.\n\n'
+              'Zagreus Pro unlocks Dashboard with limited Z-Bot access.\n\n'
               '• Beautiful movie & TV discovery\n'
               '• Trending & popular content\n'
               '• Recommended based on your library\n'

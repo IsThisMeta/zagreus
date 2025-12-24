@@ -81,7 +81,7 @@ class UpNextShow {
 
 /// Service for managing Up Next AI-powered show recommendations
 /// Up Next shows are personalized series recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class UpNextService {
   static final UpNextService _instance = UpNextService._internal();
   factory UpNextService() => _instance;
@@ -226,7 +226,7 @@ class UpNextService {
 
   /// Generate new Up Next recommendations
   /// This triggers the backend to analyze library + watch history with AI
-  /// Mega users get GPT-5-mini, Ultra users get GPT-5.1
+  /// Mega users get GPT-5-mini, Ultra users get GPT-5.2
   Future<UpNextResult> generateRecommendations({
     String? profileKey,
     String? instanceKey,

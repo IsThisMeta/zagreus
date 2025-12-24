@@ -157,7 +157,7 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "GPT-5.1 powered Ask Z and premium AI features",
+              "description" : "GPT-5.2 powered Z-Bot and premium AI features",
               "displayName" : "Zagreus Ultra Monthly",
               "locale" : "en_US"
             }

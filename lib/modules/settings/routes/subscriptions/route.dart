@@ -603,11 +603,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           'Ultra already includes every Mega feature.\n\nWant to downgrade? Pick a Mega plan below.';
     } else if (isMega) {
       megaIntro =
-          "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Ask Z powered by GPT-5 mini (15 messages every 12 hours).";
+          "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Z-Bot powered by GPT-5 mini (15 messages every 12 hours).";
     } else {
       megaIntro = 'Zagreus Mega unlocks:\n'
           '• Fully unlocked AI agent and Dashboard recommendations\n'
-          '• Ask Z powered by GPT-5 mini (15 messages every 12 hours)\n'
+          '• Z-Bot powered by GPT-5 mini (15 messages every 12 hours)\n'
           '• All Pro features';
     }
 
@@ -924,9 +924,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final String introText = isSupreme
         ? 'Supreme already includes every Ultra feature.\n\nWant to downgrade? Pick an Ultra plan below.'
         : isUltra
-            ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.1 Ask Z responses, GPT-5.1 Dashboard results, and every Mega perk."
+            ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.2 Z-Bot responses, GPT-5.2 Dashboard results, and every Mega perk."
             : 'Zagreus Ultra unlocks:\n'
-                '• GPT-5.1 responses for Ask Z and Dashboard\n'
+                '• GPT-5.2 responses for Z-Bot and Dashboard\n'
                 '• All Pro and Mega features';
 
     ZagDialog.dialog(

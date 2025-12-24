@@ -104,7 +104,7 @@ class MagicMovieCastCrew {
 
 /// Service for managing Magic Movies Cast & Crew AI-powered recommendations
 /// Features people-based film recommendations generated weekly by AI
-/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.1) subscribers
+/// Available to Mega (GPT-5-mini) and Ultra (GPT-5.2) subscribers
 class MagicMoviesCastCrewService {
   static final MagicMoviesCastCrewService _instance = MagicMoviesCastCrewService._internal();
   factory MagicMoviesCastCrewService() => _instance;
