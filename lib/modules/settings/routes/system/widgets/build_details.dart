@@ -1,11 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/links.dart';
-import 'package:zagreus/system/environment.dart';
-import 'package:zagreus/system/flavor.dart';
 import 'package:zagreus/system/platform.dart';
 import 'package:zagreus/supabase/core.dart';
 
@@ -74,16 +70,8 @@ class _State extends State<BuildDetails> {
         return ZagTableCard(
           content: [
             ZagTableContent(
-              title: 'settings.Version'.tr(),
-              body: package.data?.version ?? 'zagreus.Unknown'.tr(),
-            ),
-            ZagTableContent(
-              title: 'settings.Channel'.tr(),
-              body: ZagFlavor.current.name,
-            ),
-            ZagTableContent(
-              title: 'settings.Build'.tr(),
-              body: '${ZagEnvironment.build} (${_shortCommit})',
+              body:
+                  'Version ${package.data?.version ?? 'zagreus.Unknown'.tr()}',
             ),
           ],
           buttons: [
@@ -93,11 +81,6 @@ class _State extends State<BuildDetails> {
         );
       },
     );
-  }
-
-  String get _shortCommit {
-    const commit = ZagEnvironment.commit;
-    return commit.substring(0, min(7, commit.length));
   }
 
   ZagButton _changelogButton() {
@@ -121,7 +104,7 @@ class _State extends State<BuildDetails> {
 
     if (isUpToDate) {
       return ZagButton.text(
-        icon: ZagIcons.CHECK_MARK,
+        icon: latestVersion == null ? null : ZagIcons.CHECK_MARK,
         color: ZagColours.currentAccent,
         text: latestVersion == null ? 'Check For Update' : 'settings.UpToDate'.tr(),
         onTap: _checkVersion,

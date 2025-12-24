@@ -16,6 +16,7 @@ class ZagTableContent extends StatelessWidget {
   final int titleFlex;
   final int bodyFlex;
   final double spacerSize;
+  final double bodyPaddingLeft;
   final TextAlign titleAlign;
   final TextAlign bodyAlign;
   final _Type type;
@@ -31,6 +32,7 @@ class ZagTableContent extends StatelessWidget {
     this.titleFlex = 5,
     this.bodyFlex = 10,
     this.spacerSize = ZagUI.DEFAULT_MARGIN_SIZE,
+    this.bodyPaddingLeft = ZagUI.DEFAULT_MARGIN_SIZE / 2,
     required this.type,
   });
 
@@ -54,6 +56,7 @@ class ZagTableContent extends StatelessWidget {
     TextAlign bodyAlign = TextAlign.start,
     int titleFlex = 1,
     int bodyFlex = 2,
+    double bodyPaddingLeft = ZagUI.DEFAULT_MARGIN_SIZE / 2,
   }) =>
       ZagTableContent._(
         key: key,
@@ -65,6 +68,7 @@ class ZagTableContent extends StatelessWidget {
         bodyAlign: bodyAlign,
         titleFlex: titleFlex,
         bodyFlex: bodyFlex,
+        bodyPaddingLeft: bodyPaddingLeft,
         type: _Type.CONTENT,
       );
 
@@ -117,10 +121,10 @@ class ZagTableContent extends StatelessWidget {
               fontSize: ZagUI.FONT_SIZE_H3,
             ),
           ),
-          padding: const EdgeInsets.only(
+          padding: EdgeInsets.only(
             top: ZagUI.DEFAULT_MARGIN_SIZE / 4,
             bottom: ZagUI.DEFAULT_MARGIN_SIZE / 4,
-            left: ZagUI.DEFAULT_MARGIN_SIZE / 2,
+            left: bodyPaddingLeft,
           ),
         ),
         borderRadius: BorderRadius.circular(ZagUI.BORDER_RADIUS),
