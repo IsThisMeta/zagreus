@@ -90,7 +90,7 @@ class _State extends State<ConfigurationNavigationRoute>
           title: 'Queue Drawer',
           body: const [
             TextSpan(
-              text: 'Access queues from the right edge',
+              text: 'Access queues from the right screen edge',
             ),
           ],
           trailing: ZagSwitch(
@@ -111,7 +111,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Show Modules Tab',
         body: const [
           TextSpan(
-            text: 'Shows Modules tab in Discover',
+            text: 'Shows modules tab in dashboard',
           ),
         ],
         trailing: ZagSwitch(
@@ -141,7 +141,7 @@ class _State extends State<ConfigurationNavigationRoute>
         title: 'Show Calendar Tab',
         body: const [
           TextSpan(
-            text: 'Shows Calendar tab in Dashboard and Discover',
+            text: 'Shows calendar tab in dashboard',
           ),
         ],
         trailing: ZagSwitch(
