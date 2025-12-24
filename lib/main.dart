@@ -12,6 +12,7 @@ import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/router.dart';
+import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/system/cache/image/image_cache.dart';
 import 'package:zagreus/system/cache/memory/memory_store.dart';
 import 'package:zagreus/system/network/network.dart';
@@ -149,46 +150,102 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
 
   void _checkAndShowNotificationPrompt() {
     // Check if we should show the notification prompt
-    if (ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.read() &&
-        !ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read()) {
-      // Show dialog after frame is rendered
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showNotificationPromptDialog();
-      });
-    }
+    final shouldShow = ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.read();
+    final hasShown = ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read();
+
+    print('🔔 Notification prompt check: shouldShow=$shouldShow, hasShown=$hasShown');
+
+    // TEMPORARY: Force show on every launch for debugging
+    print('🔔 FORCING dialog to show for debugging (ignoring flags)');
+    Future.delayed(const Duration(seconds: 3), () {
+      print('🔔 Delayed callback executing after 3 seconds...');
+      _showNotificationPromptDialog();
+    });
+
+    // Original logic (will restore after debugging):
+    // if (shouldShow && !hasShown) {
+    //   print('🔔 Scheduling notification prompt dialog');
+    //   Future.delayed(const Duration(seconds: 3), () {
+    //     print('🔔 Delayed callback executing after 3 seconds...');
+    //     _showNotificationPromptDialog();
+    //   });
+    // } else {
+    //   print('🔔 Skipping notification prompt (shouldShow=$shouldShow, hasShown=$hasShown)');
+    // }
   }
 
   Future<void> _showNotificationPromptDialog() async {
-    final context = ZagRouter.navigatorKey.currentContext;
-    if (context == null) return;
+    print('🔔 _showNotificationPromptDialog called');
+    
+    final context = ZagRouter.navigator.currentContext;
+    if (context == null) {
+      print('🔔 ERROR: Context is null, cannot show dialog');
+      return;
+    }
 
-    final result = await ZagDialog.dialog(
+    print('🔔 Context found, showing dialog...');
+
+    final result = await showDialog<bool>(
       context: context,
-      title: ZagDialog.title(text: 'Enable Notifications'),
-      content: ZagDialog.textContent(
-        text:
-            'Would you like to enable notifications for your services? They are free and one-click!',
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Enable Notifications',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: ZagDialog.HEADER_SIZE,
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            color: ZagColours.textColor(context),
+          ),
+        ),
+        content: Text(
+          'Would you like to enable notifications for your services? They are free and one-click!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: ZagColours.textColor(context).withOpacity(0.85),
+            fontSize: ZagDialog.BODY_SIZE,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'No',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Yes',
+              style: TextStyle(color: ZagColours.accentColor(context)),
+            ),
+          ),
+        ],
+        shape: ZagUI.shapeBorder,
       ),
-      buttons: [
-        ZagDialog.button(
-          text: 'No',
-          onPressed: () => Navigator.of(context).pop(false),
-        ),
-        ZagDialog.button(
-          text: 'Yes',
-          textColor: Colors.white,
-          onPressed: () => Navigator.of(context).pop(true),
-        ),
-      ],
     );
+
+    print('🔔 Dialog closed, result: $result');
 
     // Mark as shown (regardless of choice)
     ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.update(false);
     ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.update(true);
+    print('🔔 Flags updated - prompt marked as shown');
 
     // Navigate to notifications settings if user said yes
-    if (result == true && context.mounted) {
-      ZagRouter.router.pushNamed('settings/notifications');
+    if (result == true) {
+      print('🔔 User clicked Yes - attempting navigation...');
+      print('🔔 Context mounted: ${context.mounted}');
+      
+      if (context.mounted) {
+        print('🔔 Calling SettingsRoutes.NOTIFICATIONS.go()');
+        SettingsRoutes.NOTIFICATIONS.go();
+        print('🔔 Navigation command sent');
+      } else {
+        print('🔔 ERROR: Context not mounted, cannot navigate');
+      }
+    } else {
+      print('🔔 User said No or dismissed dialog (result=$result)');
     }
   }
 
