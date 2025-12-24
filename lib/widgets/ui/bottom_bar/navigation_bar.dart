@@ -83,7 +83,7 @@ class _State extends State<ZagBottomNavigationBar> {
       actions: widget.topActions,
       useSafeArea: false,
       padding: ZagUI.MARGIN_HALF,
-      compactLandscape: false,
+      compactLandscape: true,
       landscapeScale: 0.75,
     );
   }
