@@ -115,11 +115,11 @@ class API {
       }
     }
     
-    // Dedupe: if same title appears in multiple instances, keep only the first (main profile preferred)
+    // Dedupe: collapse identical items across instances without hiding distinct episodes/releases.
     for (final date in _upcoming.keys) {
       final seen = <String>{};
       _upcoming[date] = _upcoming[date]!.where((item) {
-        final key = '${item.runtimeType}:${item.title}';
+        final key = _dedupeKey(item);
         if (seen.contains(key)) return false;
         seen.add(key);
         return true;
@@ -309,5 +309,18 @@ class API {
 
   bool _isDateWithinBounds(DateTime date, DateTime today) {
     return date.isBetween(_startBoundDate(today), _endBoundDate(today));
+  }
+
+  String _dedupeKey(CalendarData item) {
+    if (item is CalendarSonarrData) {
+      return 'sonarr:${item.title}:${item.seasonNumber}:${item.episodeNumber}:${item.airTime}';
+    }
+    if (item is CalendarRadarrData) {
+      return 'radarr:${item.title}:${item.year}:${item.releaseDate.toIso8601String()}';
+    }
+    if (item is CalendarLidarrData) {
+      return 'lidarr:${item.title}:${item.albumTitle}';
+    }
+    return '${item.runtimeType}:${item.title}:${item.id}';
   }
 }
