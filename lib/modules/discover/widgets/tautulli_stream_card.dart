@@ -22,6 +22,9 @@ class TautulliStreamCard extends StatelessWidget {
       posterUrl: session.zagArtworkPath(context),
       posterHeaders: context.read<TautulliState>().headers,
       posterPlaceholderIcon: ZagIcons.VIDEO_CAM,
+      onPosterTap: session.ratingKey != null && session.mediaType != null
+          ? () => _enterMediaDetails(context)
+          : null,
       backgroundUrl: context.watch<TautulliState>().getImageURLFromPath(
             session.art,
             width: MediaQuery.of(context).size.width.truncate(),
@@ -111,6 +114,13 @@ class TautulliStreamCard extends StatelessWidget {
   Future<void> _enterDetails(BuildContext context) async {
     TautulliRoutes.ACTIVITY_DETAILS.go(params: {
       'session': session.sessionKey.toString(),
+    });
+  }
+
+  void _enterMediaDetails(BuildContext context) {
+    TautulliRoutes.MEDIA_DETAILS.go(params: {
+      'rating_key': session.ratingKey.toString(),
+      'media_type': session.mediaType!.value,
     });
   }
 }

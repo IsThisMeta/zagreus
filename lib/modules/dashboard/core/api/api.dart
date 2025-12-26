@@ -276,8 +276,8 @@ class API {
             fileQualityProfile: entry['hasFile']
                 ? entry['episodeFile']['quality']['quality']['name']
                 : '',
-            monitored:
-                entry['monitored'] ?? entry['series']?['monitored'] ?? true,
+            monitored: (entry['monitored'] ?? true) &&
+                (entry['series']?['monitored'] ?? true),
             runtime: entry['series']?['runtime'] ?? 0,
             instanceKey: instanceKey,
           ));

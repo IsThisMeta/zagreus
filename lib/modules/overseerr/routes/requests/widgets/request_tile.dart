@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/modules/overseerr.dart';
+import 'package:zagreus/modules/radarr/core/state.dart';
+import 'package:zagreus/modules/sonarr/core/state.dart';
+import 'package:zagreus/router/routes/radarr.dart';
+import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/system/logger.dart';
 
 class OverseerrRequestTile extends StatefulWidget {
   static final itemExtent = ZagBlock.calculateItemExtent(2, hasBottom: true);
@@ -43,6 +48,7 @@ class _State extends State<OverseerrRequestTile> {
       posterPlaceholderIcon: media.mediaType == 'movie'
           ? ZagIcons.VIDEO_CAM
           : Icons.tv_rounded,
+      onPosterTap: _onPosterTap,
       title: media.getTitle(),
       body: [
         _subtitle1(),
@@ -247,6 +253,163 @@ class _State extends State<OverseerrRequestTile> {
 
   Future<void> _onLongPress() async {
     await _showRequestActions();
+  }
+
+  Future<void> _onPosterTap() async {
+    final media = widget.request.media;
+    final serviceId = media.externalServiceId;
+
+    // If already in Radarr/Sonarr, navigate directly to details
+    if (serviceId != null) {
+      if (media.mediaType == 'movie') {
+        RadarrRoutes.MOVIE.go(params: {'movie': serviceId.toString()});
+      } else if (media.mediaType == 'tv') {
+        SonarrRoutes.SERIES.go(params: {'series': serviceId.toString()});
+      }
+      return;
+    }
+
+    // Not in Radarr/Sonarr, lookup by TMDB ID and navigate to add page
+    if (media.mediaType == 'movie') {
+      await _openRadarrAddFlow(media.tmdbId);
+    } else if (media.mediaType == 'tv') {
+      await _openSonarrAddFlow(media.tmdbId);
+    }
+  }
+
+  Future<void> _openRadarrAddFlow(int tmdbId) async {
+    final radarrState = context.read<RadarrState>();
+    if (radarrState.api == null) {
+      showZagInfoSnackBar(
+        title: 'Radarr Not Configured',
+        message: 'Please configure Radarr in settings',
+      );
+      return;
+    }
+
+    bool loaderShown = false;
+    void dismissLoader() {
+      if (loaderShown && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loaderShown = false;
+      }
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: ZagLoader()),
+    );
+    loaderShown = true;
+
+    try {
+      final results = await radarrState.api!.movieLookup.get(
+        term: 'tmdb:$tmdbId',
+      );
+
+      if (!mounted) {
+        dismissLoader();
+        return;
+      }
+
+      dismissLoader();
+
+      if (results.isEmpty) {
+        showZagErrorSnackBar(
+          title: 'Movie Not Found',
+          message: 'Could not find TMDB ID $tmdbId in Radarr',
+        );
+        return;
+      }
+
+      final radarrMovie = results.first;
+
+      // If movie already exists in Radarr, go to details
+      if (radarrMovie.id != null) {
+        RadarrRoutes.MOVIE.go(params: {'movie': radarrMovie.id!.toString()});
+        return;
+      }
+
+      // Movie doesn't exist, go to add page
+      RadarrRoutes.ADD_MOVIE_DETAILS.go(
+        extra: radarrMovie,
+        queryParams: {'isDiscovery': 'false'},
+      );
+    } catch (error, stack) {
+      dismissLoader();
+      if (!mounted) return;
+      ZagLogger().error('Failed to open Radarr add flow', error, stack);
+      showZagErrorSnackBar(
+        title: 'Error',
+        message: 'Something went wrong talking to Radarr',
+      );
+    }
+  }
+
+  Future<void> _openSonarrAddFlow(int tmdbId) async {
+    final sonarrState = context.read<SonarrState>();
+    if (sonarrState.api == null) {
+      showZagInfoSnackBar(
+        title: 'Sonarr Not Configured',
+        message: 'Please configure Sonarr in settings',
+      );
+      return;
+    }
+
+    bool loaderShown = false;
+    void dismissLoader() {
+      if (loaderShown && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loaderShown = false;
+      }
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: ZagLoader()),
+    );
+    loaderShown = true;
+
+    try {
+      final results = await sonarrState.api!.seriesLookup.get(
+        term: 'tmdb:$tmdbId',
+      );
+
+      if (!mounted) {
+        dismissLoader();
+        return;
+      }
+
+      dismissLoader();
+
+      if (results.isEmpty) {
+        showZagErrorSnackBar(
+          title: 'Series Not Found',
+          message: 'Could not find TMDB ID $tmdbId in Sonarr',
+        );
+        return;
+      }
+
+      final sonarrSeries = results.first;
+
+      // If series already exists in Sonarr, go to details
+      if (sonarrSeries.id != null) {
+        SonarrRoutes.SERIES.go(params: {'series': sonarrSeries.id!.toString()});
+        return;
+      }
+
+      // Series doesn't exist, go to add page
+      SonarrRoutes.ADD_SERIES_DETAILS.go(extra: sonarrSeries);
+    } catch (error, stack) {
+      dismissLoader();
+      if (!mounted) return;
+      ZagLogger().error('Failed to open Sonarr add flow', error, stack);
+      showZagErrorSnackBar(
+        title: 'Error',
+        message: 'Something went wrong talking to Sonarr',
+      );
+    }
   }
 
   Future<void> _showRequestActions() async {

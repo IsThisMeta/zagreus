@@ -153,29 +153,16 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
     final shouldShow = ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.read();
     final hasShown = ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read();
 
-    print('🔔 Notification prompt check: shouldShow=$shouldShow, hasShown=$hasShown');
-
     if (shouldShow && !hasShown) {
-      print('🔔 Scheduling notification prompt dialog');
       Future.delayed(const Duration(seconds: 3), () {
-        print('🔔 Delayed callback executing after 3 seconds...');
         _showNotificationPromptDialog();
       });
-    } else {
-      print('🔔 Skipping notification prompt (shouldShow=$shouldShow, hasShown=$hasShown)');
     }
   }
 
   Future<void> _showNotificationPromptDialog() async {
-    print('🔔 _showNotificationPromptDialog called');
-    
     final context = ZagRouter.navigator.currentContext;
-    if (context == null) {
-      print('🔔 ERROR: Context is null, cannot show dialog');
-      return;
-    }
-
-    print('🔔 Context found, showing dialog...');
+    if (context == null) return;
 
     final result = await showDialog<bool>(
       context: context,
@@ -217,27 +204,13 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
       ),
     );
 
-    print('🔔 Dialog closed, result: $result');
-
     // Mark as shown (regardless of choice)
     ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.update(false);
     ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.update(true);
-    print('🔔 Flags updated - prompt marked as shown');
 
     // Navigate to notifications settings if user said yes
-    if (result == true) {
-      print('🔔 User clicked Yes - attempting navigation...');
-      print('🔔 Context mounted: ${context.mounted}');
-      
-      if (context.mounted) {
-        print('🔔 Calling SettingsRoutes.NOTIFICATIONS.go()');
-        SettingsRoutes.NOTIFICATIONS.go();
-        print('🔔 Navigation command sent');
-      } else {
-        print('🔔 ERROR: Context not mounted, cannot navigate');
-      }
-    } else {
-      print('🔔 User said No or dismissed dialog (result=$result)');
+    if (result == true && context.mounted) {
+      SettingsRoutes.NOTIFICATIONS.go();
     }
   }
 

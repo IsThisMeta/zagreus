@@ -334,11 +334,7 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
 
   void _checkBothModulesConfigured() {
     // Only check if we haven't shown the prompt yet
-    final hasShown = ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read();
-    print('🔔 [Sonarr Config] Checking both modules - hasShown=$hasShown');
-    
-    if (hasShown) {
-      print('🔔 [Sonarr Config] Already shown prompt, skipping');
+    if (ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read()) {
       return;
     }
 
@@ -354,14 +350,9 @@ class _State extends State<ConfigurationSonarrConnectionDetailsRoute>
         radarrProfile.effectiveRadarrHost().isNotEmpty &&
         radarrProfile.radarrKey.isNotEmpty;
 
-    print('🔔 [Sonarr Config] sonarrConfigured=$sonarrConfigured, radarrConfigured=$radarrConfigured');
-
     // If both are configured, set the flag to show prompt on next app start
     if (sonarrConfigured && radarrConfigured) {
-      print('🔔 [Sonarr Config] Both configured - setting notification prompt flag!');
       ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.update(true);
-    } else {
-      print('🔔 [Sonarr Config] Not both configured yet');
     }
   }
 }

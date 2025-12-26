@@ -39,6 +39,7 @@ class ZagBlock extends StatelessWidget {
   final String? posterUrl;
   final Map? posterHeaders;
   final bool posterIsSquare;
+  final Function? onPosterTap;
   final String? backgroundUrl;
   final Map? backgroundHeaders;
 
@@ -63,6 +64,7 @@ class ZagBlock extends StatelessWidget {
     this.posterUrl,
     this.posterHeaders = const {},
     this.posterIsSquare = false,
+    this.onPosterTap,
     this.backgroundUrl,
     this.backgroundHeaders = const {},
     this.onTap,
@@ -241,16 +243,25 @@ class ZagBlock extends StatelessWidget {
       return const SizedBox(width: 0.0, height: 0.0);
     }
 
+    Widget poster = ZagNetworkImage(
+      context: context,
+      url: posterUrl ?? '',
+      headers: posterHeaders,
+      placeholderIcon: posterPlaceholderIcon,
+      height: _dimension,
+      width: _dimension / (posterIsSquare ? 1.0 : 1.5),
+    );
+
+    if (onPosterTap != null) {
+      poster = InkWell(
+        onTap: onPosterTap as void Function()?,
+        child: poster,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(left: ZagUI.MARGIN_SIZE_HALF),
-      child: ZagNetworkImage(
-        context: context,
-        url: posterUrl ?? '',
-        headers: posterHeaders,
-        placeholderIcon: posterPlaceholderIcon,
-        height: _dimension,
-        width: _dimension / (posterIsSquare ? 1.0 : 1.5),
-      ),
+      child: poster,
     );
   }
 
