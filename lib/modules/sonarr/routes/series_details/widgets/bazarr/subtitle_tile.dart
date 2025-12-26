@@ -95,14 +95,14 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   @override
   Widget build(BuildContext context) {
-    // Show lock for non-Pro users
-    if (!ZagreusPro.isEnabled) {
-      return _proLockedTile();
-    }
-
     // Don't show if Bazarr is not enabled
     if (!ZagProfile.current.bazarrEnabled) {
       return const SizedBox.shrink();
+    }
+
+    // Show lock for non-Pro users
+    if (!ZagreusPro.isEnabled) {
+      return _proLockedTile();
     }
 
     // Don't show if Bazarr is not configured
