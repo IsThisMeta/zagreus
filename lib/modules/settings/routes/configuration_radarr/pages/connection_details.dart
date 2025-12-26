@@ -29,8 +29,6 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
       // Ensure we have the latest SSID when the page opens so status renders immediately.
       ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
     }
-    // Check if both modules are configured when page loads
-    _checkBothModulesConfigured();
   }
 
   @override

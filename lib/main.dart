@@ -155,23 +155,15 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
 
     print('🔔 Notification prompt check: shouldShow=$shouldShow, hasShown=$hasShown');
 
-    // TEMPORARY: Force show on every launch for debugging
-    print('🔔 FORCING dialog to show for debugging (ignoring flags)');
-    Future.delayed(const Duration(seconds: 3), () {
-      print('🔔 Delayed callback executing after 3 seconds...');
-      _showNotificationPromptDialog();
-    });
-
-    // Original logic (will restore after debugging):
-    // if (shouldShow && !hasShown) {
-    //   print('🔔 Scheduling notification prompt dialog');
-    //   Future.delayed(const Duration(seconds: 3), () {
-    //     print('🔔 Delayed callback executing after 3 seconds...');
-    //     _showNotificationPromptDialog();
-    //   });
-    // } else {
-    //   print('🔔 Skipping notification prompt (shouldShow=$shouldShow, hasShown=$hasShown)');
-    // }
+    if (shouldShow && !hasShown) {
+      print('🔔 Scheduling notification prompt dialog');
+      Future.delayed(const Duration(seconds: 3), () {
+        print('🔔 Delayed callback executing after 3 seconds...');
+        _showNotificationPromptDialog();
+      });
+    } else {
+      print('🔔 Skipping notification prompt (shouldShow=$shouldShow, hasShown=$hasShown)');
+    }
   }
 
   Future<void> _showNotificationPromptDialog() async {
