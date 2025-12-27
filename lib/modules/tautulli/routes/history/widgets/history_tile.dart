@@ -30,6 +30,9 @@ class TautulliHistoryTile extends StatelessWidget {
           context.watch<TautulliState>().getImageURLFromPath(history.thumb),
       posterHeaders: context.watch<TautulliState>().headers,
       posterPlaceholderIcon: ZagIcons.VIDEO_CAM,
+      onPosterTap: history.ratingKey != null && history.mediaType != null
+          ? () => _enterMediaDetails(context)
+          : null,
       backgroundHeaders: context.watch<TautulliState>().headers,
       backgroundUrl: context.watch<TautulliState>().getImageURLFromRatingKey(
             history.grandparentRatingKey ??
@@ -86,5 +89,12 @@ class TautulliHistoryTile extends StatelessWidget {
 
   TextSpan _subtitle3() {
     return TextSpan(text: history.friendlyName ?? 'Unknown User');
+  }
+
+  void _enterMediaDetails(BuildContext context) {
+    TautulliRoutes.MEDIA_DETAILS.go(params: {
+      'rating_key': history.ratingKey.toString(),
+      'media_type': history.mediaType!.value,
+    });
   }
 }
