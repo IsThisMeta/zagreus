@@ -232,12 +232,12 @@ class _State extends State<TMDBPopularMoviesRoute>
     });
 
     try {
-      final locale = Localizations.localeOf(context);
-      final region = locale.countryCode ?? 'US';
+    final locale = Localizations.localeOf(context);
+    final region = locale.countryCode ?? 'US';
 
-      final nextPage = _currentPage + 1;
-      final movies =
-          await TMDBApi.getPopularMovies(page: nextPage, region: region);
+    final nextPage = _currentPage + 1;
+    final movies =
+        await TMDBApi.getPopularMovies(page: nextPage, region: region);
 
       // Check against Radarr library if available
       final radarrState = context.read<RadarrState>();

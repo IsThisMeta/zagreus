@@ -52,7 +52,7 @@ class StagedMediaItem {
 
   String get posterUrl {
     if (posterPath == null) return '';
-    return 'https://image.tmdb.org/t/p/w500$posterPath';
+    return 'https://image.tmdb.org/t/p/w342$posterPath';
   }
 
   String get profileUrl {

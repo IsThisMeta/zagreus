@@ -85,7 +85,7 @@ class MagicShowCastCrew {
 
   String? get posterUrl {
     if (posterPath == null || posterPath!.isEmpty) return null;
-    return 'https://image.tmdb.org/t/p/w500$posterPath';
+    return 'https://image.tmdb.org/t/p/w342$posterPath';
   }
 
   factory MagicShowCastCrew.fromJson(Map<String, dynamic> json) {

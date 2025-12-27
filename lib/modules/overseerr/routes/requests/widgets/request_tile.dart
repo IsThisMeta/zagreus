@@ -35,7 +35,7 @@ class _State extends State<OverseerrRequestTile> {
 
     // Build TMDB image URLs
     final posterUrl = posterPath != null
-        ? 'https://image.tmdb.org/t/p/w500$posterPath'
+        ? 'https://image.tmdb.org/t/p/w342$posterPath'
         : null;
     final backdropUrl = backdropPath != null
         ? 'https://image.tmdb.org/t/p/w1280$backdropPath'

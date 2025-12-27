@@ -625,7 +625,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
 
       movie['poster'] = TMDBApi.getImageUrl(
         details['poster_path'],
-        size: 'w500',
+        size: 'w342',
       );
       movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
       movie['overview'] ??= details['overview'];

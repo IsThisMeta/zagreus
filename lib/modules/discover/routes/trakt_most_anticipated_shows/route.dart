@@ -221,7 +221,7 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
       if (tmdbDetails == null) continue;
 
       show['poster'] =
-          TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w500');
+          TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w342');
       show['backdrop'] = TMDBApi.getImageUrl(tmdbDetails['backdrop_path']);
 
       final overview = show['overview'] as String?;

@@ -1935,7 +1935,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           final tmdbDetails = await TMDBApi.getTVShowDetails(tmdbId);
           if (tmdbDetails != null) {
             show['poster'] =
-                TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w500');
+                TMDBApi.getImageUrl(tmdbDetails['poster_path'], size: 'w342');
             show['backdrop'] =
                 TMDBApi.getImageUrl(tmdbDetails['backdrop_path']);
             // Use TMDB overview if Trakt doesn't have one
@@ -2022,7 +2022,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           if (details != null) {
             movie['poster'] = TMDBApi.getImageUrl(
               details['poster_path'],
-              size: 'w500',
+              size: 'w342',
             );
             movie['backdrop'] = TMDBApi.getImageUrl(details['backdrop_path']);
             movie['overview'] ??= details['overview'];

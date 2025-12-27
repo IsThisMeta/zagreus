@@ -64,7 +64,7 @@ class MagicPerson {
 
   String? get profileUrl {
     if (profilePath == null || profilePath!.isEmpty) return null;
-    return 'https://image.tmdb.org/t/p/w500$profilePath';
+    return 'https://image.tmdb.org/t/p/w342$profilePath';
   }
 
   factory MagicPerson.fromJson(Map<String, dynamic> json) {

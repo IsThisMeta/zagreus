@@ -216,7 +216,7 @@ func buildTMDBImageURL(path string) string {
 	if path == "" {
 		return ""
 	}
-	return fmt.Sprintf("https://image.tmdb.org/t/p/w500%s", path)
+	return fmt.Sprintf("https://image.tmdb.org/t/p/w342%s", path)
 }
 
 func getPosterFromCache(mediaType string, tmdbID int) (string, bool) {
