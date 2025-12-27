@@ -57,7 +57,7 @@ class _State extends State<AddSeriesDetailsRoute>
     final hasInstances = instances.isNotEmpty;
     
     return ZagAppBar(
-      title: 'sonarr.MonitorSeries'.tr(),
+      title: 'sonarr.AddSeries'.tr(),
       scrollControllers: [scrollController],
       actions: [
         if (hasInstances)

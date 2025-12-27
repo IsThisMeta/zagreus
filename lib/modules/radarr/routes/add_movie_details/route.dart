@@ -61,7 +61,7 @@ class _State extends State<AddMovieDetailsRoute>
     final hasInstances = instances.isNotEmpty;
     
     return ZagAppBar(
-      title: 'radarr.MonitorMovie'.tr(),
+      title: 'radarr.AddMovie'.tr(),
       scrollControllers: [scrollController],
       actions: [
         if (hasInstances)
