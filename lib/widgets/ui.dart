@@ -76,7 +76,7 @@ class ZagUI {
 
   // <--> Animations
   static const int ANIMATION_SPEED = 250;
-  static const int ANIMATION_SPEED_IMAGES = ANIMATION_SPEED ~/ 2;
+  static const int ANIMATION_SPEED_IMAGES = ANIMATION_SPEED ~/ 4;
   static const int ANIMATION_SPEED_SCROLLING = ANIMATION_SPEED * 2;
   static const int ANIMATION_SPEED_SHIMMER = ANIMATION_SPEED * 4;
 
