@@ -3536,7 +3536,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 'assets/images/tmdb_long.svg',
                 isSvg: true,
                 fullWidth: true,
-                height: 20,
+                height: 18,
                 gradientOverride: const LinearGradient(
                   colors: [
                     Color(0xFF90CEA1),
@@ -3550,7 +3550,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               _metadataIcon(
                 'assets/images/justwatch_long.png',
                 fullWidth: true,
-                height: 28,
+                height: 26,
               ),
             ],
           ),
