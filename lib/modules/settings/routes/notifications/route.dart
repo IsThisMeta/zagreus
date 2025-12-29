@@ -304,20 +304,38 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         ),
         _enableNotifications(),
         _multiDeviceSyncToggle(),
+        _enableInAppToasts(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
-        if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) ...[
-          ZagDivider(),
-          _radarrEventsSection(),
-          _sonarrEventsSection(),
-        ],
-        ZagDivider(),
-        _enableInAppToasts(),
-        if (ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) ...[
-          _radarrToastEventsSection(),
-          _sonarrToastEventsSection(),
-        ],
+        ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+          builder: (context, _) {
+            if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: [
+                ZagDivider(),
+                _radarrEventsButton(),
+                _sonarrEventsButton(),
+              ],
+            );
+          },
+        ),
+        ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
+          builder: (context, _) {
+            if (!ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              children: [
+                ZagDivider(),
+                _radarrToastEventsButton(),
+                _sonarrToastEventsButton(),
+              ],
+            );
+          },
+        ),
         ZagDivider(),
         _overseerrWebhookSection(),
       ],
@@ -466,32 +484,30 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                   final newAnonymousMode = !value;
 
                   // Show confirmation dialog
-                  final confirmed = await showDialog<bool>(
+                  bool confirmed = false;
+                  await ZagDialog.dialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(value
-                          ? 'Enable Multi-Device Sync?'
-                          : 'Disable Multi-Device Sync?'),
-                      content: Text(
-                        value
+                    title: value
+                        ? 'Enable Multi-Device Sync?'
+                        : 'Disable Multi-Device Sync?',
+                    content: [
+                      ZagDialog.textContent(
+                        text: value
                             ? 'Notifications will sync across all devices with this account.'
                             : 'Notifications will only work on this device.',
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: Text(
-                            'Continue',
-                            style:
-                                TextStyle(color: ZagColours.accentColor(context)),
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
+                    contentPadding: ZagDialog.textDialogContentPadding(),
+                    buttons: [
+                      ZagDialog.button(
+                        text: 'Continue',
+                        textColor: ZagColours.accentColor(context),
+                        onPressed: () {
+                          confirmed = true;
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
                   );
 
                   if (confirmed == true) {
@@ -561,202 +577,107 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _radarrEventsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'Radarr Events',
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
-        _eventToggle(
-          'On Grab',
-          ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB,
-        ),
-        _eventToggle(
-          'On Import',
-          ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD,
-        ),
-        _eventToggle(
-          'On Upgrade',
-          ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE,
-        ),
-        _eventToggle(
-          'On Add',
-          ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED,
-        ),
-        _eventToggle(
-          'On Manual Interaction',
-          ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION,
-        ),
-      ],
-    );
-  }
-
-  Widget _sonarrEventsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'Sonarr Events',
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
-        _eventToggle(
-          'On Grab',
-          ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB,
-        ),
-        _eventToggle(
-          'On Import',
-          ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD,
-        ),
-        _eventToggle(
-          'On Upgrade',
-          ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE,
-        ),
-        _eventToggle(
-          'On Series Added',
-          ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD,
-        ),
-        _eventToggle(
-          'On Manual Interaction',
-          ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION,
-        ),
-      ],
-    );
-  }
-
-  Widget _eventToggle<T>(
-    String title,
-    ZagreusDatabase<T> db,
-  ) {
+  Widget _radarrEventsButton() {
     return ZagBlock(
-      title: title,
-      body: [],
-      trailing: db.listenableBuilder(
-        builder: (context, _) => ZagSwitch(
-          value: db.read() as bool,
-          onChanged: (value) async {
-            db.update(value as T);
-            // Trigger webhook sync after changing settings
-            if (ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
-              _syncWebhooksInBackground();
-            }
-          },
-        ),
+      title: 'Radarr Events',
+      body: [TextSpan(text: 'Configure which events trigger notifications')],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showEventsPage(
+        title: 'Radarr Events',
+        events: [
+          _EventConfig('On Grab', ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE),
+          _EventConfig('On Add', ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED),
+          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION),
+        ],
+        syncWebhooks: true,
       ),
     );
   }
 
-  Widget _radarrToastEventsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'Radarr Toast Events',
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
-        _toastToggle(
-          'On Grab',
-          ZagreusDatabase.RADARR_TOAST_ON_GRAB,
-        ),
-        _toastToggle(
-          'On Import',
-          ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD,
-        ),
-        _toastToggle(
-          'On Upgrade',
-          ZagreusDatabase.RADARR_TOAST_ON_UPGRADE,
-        ),
-        _toastToggle(
-          'On Add',
-          ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED,
-        ),
-        _toastToggle(
-          'On Manual Interaction',
-          ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION,
-        ),
-      ],
-    );
-  }
-
-  Widget _sonarrToastEventsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'Sonarr Toast Events',
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
-        _toastToggle(
-          'On Grab',
-          ZagreusDatabase.SONARR_TOAST_ON_GRAB,
-        ),
-        _toastToggle(
-          'On Import',
-          ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD,
-        ),
-        _toastToggle(
-          'On Upgrade',
-          ZagreusDatabase.SONARR_TOAST_ON_UPGRADE,
-        ),
-        _toastToggle(
-          'On Series Added',
-          ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD,
-        ),
-        _toastToggle(
-          'On Manual Interaction',
-          ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION,
-        ),
-      ],
-    );
-  }
-
-  Widget _toastToggle<T>(
-    String title,
-    ZagreusDatabase<T> db,
-  ) {
+  Widget _sonarrEventsButton() {
     return ZagBlock(
-      title: title,
-      body: [],
-      trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
-        builder: (context, _) {
-          final notificationsEnabled =
-              ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
-          return db.listenableBuilder(
-            builder: (context, _) => ZagSwitch(
-              value: db.read() as bool,
-              onChanged: notificationsEnabled
-                  ? (value) {
-                      db.update(value as T);
-                    }
-                  : null, // Disabled when notifications are off
-            ),
-          );
-        },
+      title: 'Sonarr Events',
+      body: [TextSpan(text: 'Configure which events trigger notifications')],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showEventsPage(
+        title: 'Sonarr Events',
+        events: [
+          _EventConfig('On Grab', ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE),
+          _EventConfig('On Series Added', ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD),
+          _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION),
+        ],
+        syncWebhooks: true,
+      ),
+    );
+  }
+
+  Widget _radarrToastEventsButton() {
+    return ZagBlock(
+      title: 'Radarr Toast Events',
+      body: [TextSpan(text: 'Configure which events show in-app toasts')],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showEventsPage(
+        title: 'Radarr Toast Events',
+        events: [
+          _EventConfig('On Grab', ZagreusDatabase.RADARR_TOAST_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_TOAST_ON_UPGRADE),
+          _EventConfig('On Add', ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED),
+          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION),
+        ],
+        syncWebhooks: false,
+      ),
+    );
+  }
+
+  Widget _sonarrToastEventsButton() {
+    return ZagBlock(
+      title: 'Sonarr Toast Events',
+      body: [TextSpan(text: 'Configure which events show in-app toasts')],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showEventsPage(
+        title: 'Sonarr Toast Events',
+        events: [
+          _EventConfig('On Grab', ZagreusDatabase.SONARR_TOAST_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.SONARR_TOAST_ON_UPGRADE),
+          _EventConfig('On Series Added', ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD),
+          _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION),
+        ],
+        syncWebhooks: false,
+      ),
+    );
+  }
+
+  void _showEventsPage({
+    required String title,
+    required List<_EventConfig> events,
+    required bool syncWebhooks,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => _EventsPage(
+          title: title,
+          events: events,
+          syncWebhooks: syncWebhooks,
+          onSync: syncWebhooks ? _syncWebhooksInBackground : null,
+        ),
       ),
     );
   }
@@ -889,6 +810,73 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           },
         ),
       ],
+    );
+  }
+}
+
+/// Helper class to hold event configuration data
+class _EventConfig {
+  final String title;
+  final ZagreusDatabase<bool> database;
+
+  _EventConfig(this.title, this.database);
+}
+
+/// Full page widget for configuring events
+class _EventsPage extends StatefulWidget {
+  final String title;
+  final List<_EventConfig> events;
+  final bool syncWebhooks;
+  final VoidCallback? onSync;
+
+  const _EventsPage({
+    required this.title,
+    required this.events,
+    required this.syncWebhooks,
+    this.onSync,
+  });
+
+  @override
+  State<_EventsPage> createState() => _EventsPageState();
+}
+
+class _EventsPageState extends State<_EventsPage> with ZagScrollControllerMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagScaffold(
+      scaffoldKey: _scaffoldKey,
+      appBar: ZagAppBar(
+        title: widget.title,
+        scrollControllers: [scrollController],
+      ),
+      body: ZagListView(
+        controller: scrollController,
+        children: [
+          for (final event in widget.events)
+            _buildEventToggle(context, event),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventToggle(BuildContext context, _EventConfig event) {
+    return ZagBlock(
+      title: event.title,
+      body: [],
+      trailing: event.database.listenableBuilder(
+        builder: (context, _) => ZagSwitch(
+          value: event.database.read(),
+          onChanged: (value) async {
+            event.database.update(value);
+            // Trigger webhook sync after changing settings if needed
+            if (widget.syncWebhooks && widget.onSync != null) {
+              widget.onSync!();
+            }
+          },
+        ),
+      ),
     );
   }
 }

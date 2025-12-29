@@ -58,8 +58,9 @@ class ZagSupabaseMessaging {
           _apnsToken = token;
           _tokenController.add(token);
           ZagLogger().debug('Received APNS token: $token');
-          // Automatically register with server when we get a new token
-          await _registerDeviceWithServer(token, anonymous: false);
+          // Note: We no longer auto-register here to avoid race conditions
+          // and duplicate registrations. Registration happens explicitly
+          // when the user enables notifications via registerDeviceToken().
           break;
         case 'onMessage':
           // Handle foreground notification from iOS
