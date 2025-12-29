@@ -351,24 +351,10 @@ class _State extends State<RadarrBazarrSubtitleTile> {
           ],
           trailing: _searchingSubtitles
               ? const ZagLoader()
-              : OverflowBox(
-                  maxWidth: 96,
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ZagIconButton(
-                        icon: Icons.person_rounded,
-                        color: hasMissing ? ZagColours.currentAccent : null,
-                        onPressed: _manualSearchSubtitles,
-                      ),
-                      ZagIconButton(
-                        icon: Icons.search_rounded,
-                        color: hasMissing ? ZagColours.currentAccent : null,
-                        onPressed: _autoSearchSubtitles,
-                      ),
-                    ],
-                  ),
+              : ZagIconButton(
+                  icon: Icons.search_rounded,
+                  color: hasMissing ? ZagColours.currentAccent : null,
+                  onPressed: _autoSearchSubtitles,
                 ),
         ),
         // Downloaded subtitles list
