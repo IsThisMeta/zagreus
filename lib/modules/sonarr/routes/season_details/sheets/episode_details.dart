@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/api/bazarr/bazarr.dart';
+import 'package:zagreus/api/bazarr/models.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/datetime.dart';
 import 'package:zagreus/extensions/int/bytes.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
   BuildContext context;
@@ -187,6 +190,37 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
     ];
   }
 
+  BazarrAPI? _getBazarrApi() {
+    if (!ZagreusPro.isEnabled) return null;
+    final profile = ZagProfile.current;
+    if (!profile.bazarrEnabled) return null;
+    final host = profile.effectiveBazarrHost();
+    if (host.isEmpty || profile.bazarrKey.isEmpty) return null;
+    return BazarrAPI(
+      host: host,
+      apiKey: profile.bazarrKey,
+      headers: Map<String, dynamic>.from(profile.bazarrHeaders),
+    );
+  }
+
+  List<Widget> _bazarrSubtitles(BuildContext context) {
+    // Only show if episode has a file and Bazarr is configured
+    if (!episode!.hasFile! || episodeFile == null) return [];
+    if (!ZagProfile.current.bazarrEnabled) return [];
+    if (!ZagreusPro.isEnabled) return [];
+
+    final api = _getBazarrApi();
+    if (api == null) return [];
+
+    return [
+      _BazarrSubtitleButtons(
+        api: api,
+        seriesId: episode!.seriesId!,
+        episodeId: episode!.id!,
+      ),
+    ];
+  }
+
   List<Widget> _queue(BuildContext context) {
     if (queueRecords?.isNotEmpty ?? false) {
       return queueRecords!
@@ -325,6 +359,7 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
                 ..._episodeDetails(context),
                 ..._queue(context),
                 ..._files(context),
+                ..._bazarrSubtitles(context),
                 ..._history(context),
               ],
               actionBar: _actionBar(context) as ZagBottomActionBar?,
@@ -333,5 +368,351 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
         ),
       ),
     );
+  }
+}
+
+/// Bazarr subtitle search buttons for an episode
+class _BazarrSubtitleButtons extends StatefulWidget {
+  final BazarrAPI api;
+  final int seriesId;
+  final int episodeId;
+
+  const _BazarrSubtitleButtons({
+    required this.api,
+    required this.seriesId,
+    required this.episodeId,
+  });
+
+  @override
+  State<_BazarrSubtitleButtons> createState() => _BazarrSubtitleButtonsState();
+}
+
+class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
+  ZagLoadingState _autoSearchState = ZagLoadingState.INACTIVE;
+  ZagLoadingState _manualSearchState = ZagLoadingState.INACTIVE;
+
+  Future<void> _autoSearch() async {
+    setState(() => _autoSearchState = ZagLoadingState.ACTIVE);
+    try {
+      await widget.api.episode.autoSearch(
+        seriesId: widget.seriesId,
+        episodeId: widget.episodeId,
+      );
+      showZagSuccessSnackBar(
+        title: 'Subtitle Search Started',
+        message: 'Bazarr is searching for subtitles...',
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Failed to auto-search subtitles', e, stack);
+      showZagErrorSnackBar(
+        title: 'Subtitle Search Failed',
+        error: e,
+      );
+    } finally {
+      if (mounted) setState(() => _autoSearchState = ZagLoadingState.INACTIVE);
+    }
+  }
+
+  Future<void> _manualSearch() async {
+    setState(() => _manualSearchState = ZagLoadingState.ACTIVE);
+    try {
+      final results = await widget.api.provider.searchEpisodeSubtitles(
+        episodeId: widget.episodeId,
+      );
+
+      if (!mounted) return;
+      setState(() => _manualSearchState = ZagLoadingState.INACTIVE);
+
+      if (results.isEmpty) {
+        showZagInfoSnackBar(
+          title: 'No Subtitles Found',
+          message: 'No subtitles available from providers',
+        );
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => _EpisodeSubtitleSearchResultsPage(
+            results: results,
+            api: widget.api,
+            seriesId: widget.seriesId,
+            episodeId: widget.episodeId,
+          ),
+        ),
+      );
+    } catch (e, stack) {
+      ZagLogger().error('Failed to search subtitles', e, stack);
+      showZagErrorSnackBar(
+        title: 'Subtitle Search Failed',
+        error: e,
+      );
+      if (mounted) setState(() => _manualSearchState = ZagLoadingState.INACTIVE);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagTableCard(
+      title: 'Subtitles',
+      content: const [],
+      buttons: [
+        ZagButton.text(
+          text: 'Automatic',
+          icon: Icons.search_rounded,
+          onTap: _autoSearch,
+          loadingState: _autoSearchState,
+        ),
+        ZagButton.text(
+          text: 'Interactive',
+          icon: Icons.person_rounded,
+          onTap: _manualSearch,
+          loadingState: _manualSearchState,
+        ),
+      ],
+    );
+  }
+}
+
+/// Full page for displaying episode subtitle search results
+class _EpisodeSubtitleSearchResultsPage extends StatefulWidget {
+  final List<BazarrSubtitleSearchResult> results;
+  final BazarrAPI api;
+  final int seriesId;
+  final int episodeId;
+
+  const _EpisodeSubtitleSearchResultsPage({
+    required this.results,
+    required this.api,
+    required this.seriesId,
+    required this.episodeId,
+  });
+
+  @override
+  State<_EpisodeSubtitleSearchResultsPage> createState() =>
+      _EpisodeSubtitleSearchResultsPageState();
+}
+
+class _EpisodeSubtitleSearchResultsPageState
+    extends State<_EpisodeSubtitleSearchResultsPage>
+    with ZagScrollControllerMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<void> _downloadSubtitle(BazarrSubtitleSearchResult result) async {
+    try {
+      await widget.api.provider.downloadEpisodeSubtitle(
+        seriesId: widget.seriesId,
+        episodeId: widget.episodeId,
+        language: result.language ?? '',
+        provider: result.provider ?? '',
+        subtitle: result.subtitle ?? '',
+        hearingImpaired: result.hearingImpaired == 'True',
+        forced: result.forced == 'True',
+      );
+      showZagSuccessSnackBar(
+        title: 'Subtitle Downloaded',
+        message: '${result.language} subtitle from ${result.provider}',
+      );
+      if (mounted) Navigator.of(context).pop();
+    } catch (e, stack) {
+      ZagLogger().error('Failed to download subtitle', e, stack);
+      showZagErrorSnackBar(
+        title: 'Download Failed',
+        error: e,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagScaffold(
+      scaffoldKey: _scaffoldKey,
+      appBar: ZagAppBar(
+        title: 'Subtitles (${widget.results.length})',
+        scrollControllers: [scrollController],
+      ),
+      body: widget.results.isEmpty
+          ? ZagMessage(text: 'No Subtitles Found')
+          : ZagListViewBuilder(
+              controller: scrollController,
+              itemCount: widget.results.length,
+              itemBuilder: (context, index) => _EpisodeSubtitleResultTile(
+                result: widget.results[index],
+                onDownload: () => _downloadSubtitle(widget.results[index]),
+              ),
+            ),
+    );
+  }
+}
+
+/// Individual subtitle result tile
+class _EpisodeSubtitleResultTile extends StatefulWidget {
+  final BazarrSubtitleSearchResult result;
+  final VoidCallback onDownload;
+
+  const _EpisodeSubtitleResultTile({
+    required this.result,
+    required this.onDownload,
+  });
+
+  @override
+  State<_EpisodeSubtitleResultTile> createState() =>
+      _EpisodeSubtitleResultTileState();
+}
+
+class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> {
+  ZagLoadingState _downloadState = ZagLoadingState.INACTIVE;
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagExpandableListTile(
+      title: _title(),
+      collapsedSubtitles: [_subtitle1(), _subtitle2()],
+      collapsedTrailing: _trailing(),
+      expandedHighlightedNodes: _highlightedNodes(),
+      expandedTableContent: _tableContent(),
+      expandedTableButtons: _tableButtons(),
+    );
+  }
+
+  String _title() {
+    if (widget.result.releaseInfo?.isNotEmpty ?? false) {
+      return widget.result.releaseInfo!.first;
+    }
+    return widget.result.provider ?? 'Unknown Provider';
+  }
+
+  TextSpan _subtitle1() {
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: widget.result.language ?? 'Unknown',
+          style: TextStyle(
+            color: ZagColours.currentAccent,
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+          ),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(text: widget.result.provider ?? 'Unknown'),
+        if (widget.result.score != null) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: '${widget.result.score}',
+            style: TextStyle(
+              color: _scoreColor(widget.result.score!),
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  TextSpan _subtitle2() {
+    final flags = <String>[];
+    if (widget.result.hearingImpaired == 'True') flags.add('HI');
+    if (widget.result.forced == 'True') flags.add('Forced');
+
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: '${widget.result.matches?.length ?? 0} Matches',
+          style: const TextStyle(color: Colors.green),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(
+          text: '${widget.result.dontMatches?.length ?? 0} Missing',
+          style: TextStyle(color: ZagColours.red),
+        ),
+        if (flags.isNotEmpty) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(text: flags.join(' • ')),
+        ],
+      ],
+    );
+  }
+
+  Widget _trailing() {
+    return ZagIconButton(
+      icon: Icons.download_rounded,
+      color: ZagColours.currentAccent,
+      onPressed: _startDownload,
+      loadingState: _downloadState,
+    );
+  }
+
+  List<ZagHighlightedNode> _highlightedNodes() {
+    final nodes = <ZagHighlightedNode>[
+      ZagHighlightedNode(
+        text: widget.result.language ?? 'Unknown',
+        backgroundColor: ZagColours.currentAccent,
+      ),
+    ];
+
+    if (widget.result.hearingImpaired == 'True') {
+      nodes.add(ZagHighlightedNode(
+        text: 'HI',
+        backgroundColor: ZagColours.orange,
+      ));
+    }
+    if (widget.result.forced == 'True') {
+      nodes.add(ZagHighlightedNode(
+        text: 'Forced',
+        backgroundColor: ZagColours.purple,
+      ));
+    }
+
+    return nodes;
+  }
+
+  List<ZagTableContent> _tableContent() {
+    return [
+      ZagTableContent(title: 'provider', body: widget.result.provider),
+      ZagTableContent(title: 'language', body: widget.result.language),
+      ZagTableContent(title: 'score', body: '${widget.result.score ?? 0}'),
+      ZagTableContent(
+        title: 'matches',
+        body: '${widget.result.matches?.length ?? 0}',
+      ),
+      ZagTableContent(
+        title: 'missing',
+        body: '${widget.result.dontMatches?.length ?? 0}',
+      ),
+      if (widget.result.uploader?.isNotEmpty ?? false)
+        ZagTableContent(title: 'uploader', body: widget.result.uploader),
+      if (widget.result.releaseInfo?.isNotEmpty ?? false)
+        ZagTableContent(
+          title: 'release',
+          body: widget.result.releaseInfo!.join('\n'),
+        ),
+    ];
+  }
+
+  List<ZagButton> _tableButtons() {
+    return [
+      ZagButton(
+        type: ZagButtonType.TEXT,
+        text: 'Download',
+        icon: Icons.download_rounded,
+        onTap: _startDownload,
+        loadingState: _downloadState,
+      ),
+    ];
+  }
+
+  Future<void> _startDownload() async {
+    setState(() => _downloadState = ZagLoadingState.ACTIVE);
+    try {
+      widget.onDownload();
+    } catch (e) {
+      if (mounted) setState(() => _downloadState = ZagLoadingState.ERROR);
+    }
+  }
+
+  Color _scoreColor(int score) {
+    if (score >= 80) return Colors.green;
+    if (score >= 50) return ZagColours.orange;
+    return ZagColours.red;
   }
 }
