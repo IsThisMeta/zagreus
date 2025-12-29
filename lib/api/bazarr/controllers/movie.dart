@@ -16,10 +16,23 @@ class BazarrControllerMovie {
   /// Handler for auto-searching subtitles for a movie.
   ///
   /// Triggers automatic subtitle search for the given Radarr movie ID.
-  Future<void> autoSearch({required int radarrId}) async {
+  /// Optionally specify a [language] code (code2) to search for a specific language.
+  Future<void> autoSearch({
+    required int radarrId,
+    String? language,
+    bool? hearingImpaired,
+    bool? forced,
+  }) async {
     await _client.patch(
       'movies/subtitles',
       queryParameters: {'radarrid': radarrId},
+      data: language != null
+          ? {
+              'language': language,
+              'hi': (hearingImpaired ?? false) ? 'True' : 'False',
+              'forced': (forced ?? false) ? 'True' : 'False',
+            }
+          : null,
     );
   }
 }
