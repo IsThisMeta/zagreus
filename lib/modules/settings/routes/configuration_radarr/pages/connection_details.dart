@@ -330,32 +330,5 @@ class _State extends State<ConfigurationRadarrConnectionDetailsRoute>
     } catch (e, stack) {
       ZagLogger().error('Failed to sync webhook after configuration', e, stack);
     }
-
-    // Check if we should trigger notification prompt
-    _checkBothModulesConfigured();
-  }
-
-  void _checkBothModulesConfigured() {
-    // Only check if we haven't shown the prompt yet
-    if (ZagreusDatabase.HAS_SHOWN_NOTIFICATION_PROMPT.read()) {
-      return;
-    }
-
-    final profile = ZagProfile.forModule('radarr');
-    final sonarrProfile = ZagProfile.forModule('sonarr');
-
-    // Check if both Sonarr and Radarr are configured with valid credentials
-    final radarrConfigured = profile.radarrEnabled &&
-        profile.effectiveRadarrHost().isNotEmpty &&
-        profile.radarrKey.isNotEmpty;
-
-    final sonarrConfigured = sonarrProfile.sonarrEnabled &&
-        sonarrProfile.effectiveSonarrHost().isNotEmpty &&
-        sonarrProfile.sonarrKey.isNotEmpty;
-
-    // If both are configured, set the flag to show prompt on next app start
-    if (radarrConfigured && sonarrConfigured) {
-      ZagreusDatabase.SHOULD_SHOW_NOTIFICATION_PROMPT.update(true);
-    }
   }
 }
