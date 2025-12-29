@@ -130,9 +130,9 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
 
     // Bazarr lives inside Radarr/Sonarr.
     // TODO(next release): re-enable the fallback tile once the new Bazaar config ships.
-    // if (!modules.contains(ZagModule.BAZARR)) {
-    //   modules.add(ZagModule.BAZARR);
-    // }
+    if (!modules.contains(ZagModule.BAZARR)) {
+      modules.add(ZagModule.BAZARR);
+    }
 
     // Remove Discover module (redundant - settings moved elsewhere)
     modules.removeWhere(
