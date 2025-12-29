@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/bazarr/bazarr.dart';
 import 'package:zagreus/api/bazarr/models.dart';
+import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
 class RadarrBazarrSubtitleTile extends StatefulWidget {
@@ -16,8 +16,6 @@ class RadarrBazarrSubtitleTile extends StatefulWidget {
   @override
   State<RadarrBazarrSubtitleTile> createState() => _State();
 }
-
-enum _SearchType { auto, manual }
 
 class _State extends State<RadarrBazarrSubtitleTile> {
   BazarrMovie? _bazarrMovie;
@@ -194,55 +192,12 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Future<void> _showManualSearchResults(
       List<BazarrSubtitleSearchResult> results) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (ctx, scrollController) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(
-                    'Subtitles (${results.length})',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView.separated(
-                controller: scrollController,
-                itemCount: results.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (ctx, index) {
-                  final result = results[index];
-                  return _SubtitleResultTile(
-                    result: result,
-                    onDownload: () => _downloadSubtitle(result),
-                  );
-                },
-              ),
-            ),
-          ],
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _SubtitleSearchResultsPage(
+          results: results,
+          onDownload: _downloadSubtitle,
         ),
       ),
     );
@@ -251,8 +206,6 @@ class _State extends State<RadarrBazarrSubtitleTile> {
   Future<void> _downloadSubtitle(BazarrSubtitleSearchResult result) async {
     final api = _getApi();
     if (api == null) return;
-
-    Navigator.of(context).pop(); // Close the bottom sheet
 
     try {
       await api.provider.downloadMovieSubtitle(
@@ -267,7 +220,8 @@ class _State extends State<RadarrBazarrSubtitleTile> {
         title: 'Subtitle Downloaded',
         message: '${result.language} subtitle from ${result.provider}',
       );
-      // Reload data
+      // Pop the search results page and reload data
+      if (mounted) Navigator.of(context).pop();
       await _loadBazarrData();
     } catch (e, stack) {
       ZagLogger().error('Failed to download subtitle', e, stack);
@@ -276,57 +230,6 @@ class _State extends State<RadarrBazarrSubtitleTile> {
         error: e,
       );
     }
-  }
-
-  void _showSearchMenu() {
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
-    final position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero),
-            ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    HapticFeedback.selectionClick();
-    showMenu<_SearchType>(
-      context: context,
-      position: position,
-      shape: ZagUI.shapeBorder,
-      items: [
-        PopupMenuItem(
-          value: _SearchType.auto,
-          child: Row(
-            children: [
-              Icon(Icons.auto_awesome_rounded,
-                  size: 20, color: ZagColours.currentAccent),
-              const SizedBox(width: 12),
-              const Text('Auto Search'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: _SearchType.manual,
-          child: Row(
-            children: [
-              Icon(Icons.search_rounded,
-                  size: 20, color: ZagColours.currentAccent),
-              const SizedBox(width: 12),
-              const Text('Manual Search'),
-            ],
-          ),
-        ),
-      ],
-    ).then((value) {
-      if (value == _SearchType.auto) {
-        _autoSearchSubtitles();
-      } else if (value == _SearchType.manual) {
-        _manualSearchSubtitles();
-      }
-    });
   }
 
   @override
@@ -448,10 +351,24 @@ class _State extends State<RadarrBazarrSubtitleTile> {
           ],
           trailing: _searchingSubtitles
               ? const ZagLoader()
-              : ZagIconButton(
-                  icon: Icons.search_rounded,
-                  color: hasMissing ? ZagColours.currentAccent : null,
-                  onPressed: _showSearchMenu,
+              : OverflowBox(
+                  maxWidth: 96,
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ZagIconButton(
+                        icon: Icons.person_rounded,
+                        color: hasMissing ? ZagColours.currentAccent : null,
+                        onPressed: _manualSearchSubtitles,
+                      ),
+                      ZagIconButton(
+                        icon: Icons.search_rounded,
+                        color: hasMissing ? ZagColours.currentAccent : null,
+                        onPressed: _autoSearchSubtitles,
+                      ),
+                    ],
+                  ),
                 ),
         ),
         // Downloaded subtitles list
@@ -498,7 +415,49 @@ class _State extends State<RadarrBazarrSubtitleTile> {
   }
 }
 
-class _SubtitleResultTile extends StatelessWidget {
+/// Full page for displaying subtitle search results, matching Radarr releases style.
+class _SubtitleSearchResultsPage extends StatefulWidget {
+  final List<BazarrSubtitleSearchResult> results;
+  final Future<void> Function(BazarrSubtitleSearchResult) onDownload;
+
+  const _SubtitleSearchResultsPage({
+    required this.results,
+    required this.onDownload,
+  });
+
+  @override
+  State<_SubtitleSearchResultsPage> createState() =>
+      _SubtitleSearchResultsPageState();
+}
+
+class _SubtitleSearchResultsPageState extends State<_SubtitleSearchResultsPage>
+    with ZagScrollControllerMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagScaffold(
+      scaffoldKey: _scaffoldKey,
+      appBar: ZagAppBar(
+        title: 'Subtitles (${widget.results.length})',
+        scrollControllers: [scrollController],
+      ),
+      body: widget.results.isEmpty
+          ? ZagMessage(text: 'No Subtitles Found')
+          : ZagListViewBuilder(
+              controller: scrollController,
+              itemCount: widget.results.length,
+              itemBuilder: (context, index) => _SubtitleResultTile(
+                result: widget.results[index],
+                onDownload: () => widget.onDownload(widget.results[index]),
+              ),
+            ),
+    );
+  }
+}
+
+/// Individual subtitle result tile using ZagExpandableListTile pattern.
+class _SubtitleResultTile extends StatefulWidget {
   final BazarrSubtitleSearchResult result;
   final VoidCallback onDownload;
 
@@ -508,129 +467,171 @@ class _SubtitleResultTile extends StatelessWidget {
   });
 
   @override
+  State<_SubtitleResultTile> createState() => _SubtitleResultTileState();
+}
+
+class _SubtitleResultTileState extends State<_SubtitleResultTile> {
+  ZagLoadingState _downloadState = ZagLoadingState.INACTIVE;
+
+  @override
   Widget build(BuildContext context) {
-    final flags = <String>[];
-    if (result.hearingImpaired == 'True') flags.add('HI');
-    if (result.forced == 'True') flags.add('Forced');
-
-    final releaseInfo = result.releaseInfo?.join(' ') ?? '';
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              result.language ?? 'Unknown',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          if (result.score != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _scoreColor(result.score!).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '${result.score}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: _scoreColor(result.score!),
-                ),
-              ),
-            ),
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(Icons.cloud_outlined, size: 14, color: Colors.grey[500]),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  result.provider ?? 'Unknown provider',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (flags.isNotEmpty)
-                Text(
-                  flags.join(' • '),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: ZagColours.currentAccent,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-            ],
-          ),
-          // Matches info (like nzb360)
-          if ((result.matches?.isNotEmpty ?? false) ||
-              (result.dontMatches?.isNotEmpty ?? false)) ...[
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                Icon(Icons.check_circle_outline,
-                    size: 12, color: Colors.green[400]),
-                const SizedBox(width: 4),
-                Text(
-                  '${result.matches?.length ?? 0} Matches',
-                  style: TextStyle(fontSize: 11, color: Colors.green[400]),
-                ),
-                const SizedBox(width: 8),
-                Icon(Icons.cancel_outlined, size: 12, color: Colors.red[400]),
-                const SizedBox(width: 4),
-                Text(
-                  '${result.dontMatches?.length ?? 0} Missing',
-                  style: TextStyle(fontSize: 11, color: Colors.red[400]),
-                ),
-              ],
-            ),
-          ],
-          if (releaseInfo.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              releaseInfo,
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          if (result.uploader != null && result.uploader!.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                Icon(Icons.person_outline, size: 12, color: Colors.grey[500]),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    result.uploader!,
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-      trailing: IconButton(
-        icon: Icon(Icons.download_rounded, color: ZagColours.currentAccent),
-        onPressed: onDownload,
-      ),
-      onTap: onDownload,
+    return ZagExpandableListTile(
+      title: _title(),
+      collapsedSubtitles: [
+        _subtitle1(),
+        _subtitle2(),
+      ],
+      collapsedTrailing: _trailing(),
+      expandedHighlightedNodes: _highlightedNodes(),
+      expandedTableContent: _tableContent(),
+      expandedTableButtons: _tableButtons(),
     );
+  }
+
+  String _title() {
+    // Use first release info element as title (like nzb360), fallback to provider
+    if (widget.result.releaseInfo?.isNotEmpty ?? false) {
+      return widget.result.releaseInfo!.first;
+    }
+    return widget.result.provider ?? 'Unknown Provider';
+  }
+
+  TextSpan _subtitle1() {
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: widget.result.language ?? 'Unknown',
+          style: TextStyle(
+            color: ZagColours.currentAccent,
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+          ),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(text: widget.result.provider ?? 'Unknown'),
+        if (widget.result.score != null) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: '${widget.result.score}',
+            style: TextStyle(
+              color: _scoreColor(widget.result.score!),
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  TextSpan _subtitle2() {
+    final flags = <String>[];
+    if (widget.result.hearingImpaired == 'True') flags.add('HI');
+    if (widget.result.forced == 'True') flags.add('Forced');
+
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: '${widget.result.matches?.length ?? 0} Matches',
+          style: TextStyle(color: Colors.green),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(
+          text: '${widget.result.dontMatches?.length ?? 0} Missing',
+          style: TextStyle(color: ZagColours.red),
+        ),
+        if (flags.isNotEmpty) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(text: flags.join(' • ')),
+        ],
+      ],
+    );
+  }
+
+  Widget _trailing() {
+    return ZagIconButton(
+      icon: Icons.download_rounded,
+      color: ZagColours.currentAccent,
+      onPressed: _startDownload,
+      loadingState: _downloadState,
+    );
+  }
+
+  List<ZagHighlightedNode> _highlightedNodes() {
+    final nodes = <ZagHighlightedNode>[
+      ZagHighlightedNode(
+        text: widget.result.language ?? 'Unknown',
+        backgroundColor: ZagColours.currentAccent,
+      ),
+    ];
+
+    if (widget.result.hearingImpaired == 'True') {
+      nodes.add(ZagHighlightedNode(
+        text: 'HI',
+        backgroundColor: ZagColours.orange,
+      ));
+    }
+    if (widget.result.forced == 'True') {
+      nodes.add(ZagHighlightedNode(
+        text: 'Forced',
+        backgroundColor: ZagColours.purple,
+      ));
+    }
+
+    return nodes;
+  }
+
+  List<ZagTableContent> _tableContent() {
+    return [
+      ZagTableContent(title: 'provider', body: widget.result.provider),
+      ZagTableContent(title: 'language', body: widget.result.language),
+      ZagTableContent(title: 'score', body: '${widget.result.score ?? 0}'),
+      ZagTableContent(
+        title: 'matches',
+        body: '${widget.result.matches?.length ?? 0}',
+      ),
+      ZagTableContent(
+        title: 'missing',
+        body: '${widget.result.dontMatches?.length ?? 0}',
+      ),
+      if (widget.result.uploader?.isNotEmpty ?? false)
+        ZagTableContent(title: 'uploader', body: widget.result.uploader),
+      if (widget.result.releaseInfo?.isNotEmpty ?? false)
+        ZagTableContent(
+          title: 'release',
+          body: widget.result.releaseInfo!.join('\n'),
+        ),
+    ];
+  }
+
+  List<ZagButton> _tableButtons() {
+    return [
+      ZagButton(
+        type: ZagButtonType.TEXT,
+        text: 'Download',
+        icon: Icons.download_rounded,
+        onTap: _startDownload,
+        loadingState: _downloadState,
+      ),
+    ];
+  }
+
+  Future<void> _startDownload() async {
+    setState(() => _downloadState = ZagLoadingState.ACTIVE);
+    try {
+      widget.onDownload();
+      if (mounted) {
+        setState(() => _downloadState = ZagLoadingState.INACTIVE);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _downloadState = ZagLoadingState.ERROR);
+      }
+    }
   }
 
   Color _scoreColor(int score) {
     if (score >= 80) return Colors.green;
-    if (score >= 50) return Colors.orange;
-    return Colors.red;
+    if (score >= 50) return ZagColours.orange;
+    return ZagColours.red;
   }
 }
 

@@ -236,6 +236,12 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       sonarrKey: demoConfig['sonarr_key'] ?? '',
       sonarrHeaders: {},
 
+      // Bazarr
+      bazarrEnabled: demoConfig['bazarr_enabled'] ?? false,
+      bazarrHost: demoConfig['bazarr_host'] ?? '',
+      bazarrKey: demoConfig['bazarr_key'] ?? '',
+      bazarrHeaders: {},
+
       // Tautulli
       tautulliEnabled: demoConfig['tautulli_enabled'] ?? false,
       tautulliHost: demoConfig['tautulli_host'] ?? '',

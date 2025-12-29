@@ -976,7 +976,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               text: 'Monthly • \$3.99/month',
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Includes all Mega + Pro features',
+                  text: '2 week free trial',
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -998,7 +998,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               text: 'Yearly • \$34.99/year',
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Best value • save over 25%',
+                  text: '2 week free trial',
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
