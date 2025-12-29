@@ -40,76 +40,7 @@ class _State extends State<ProfilesRoute> with ZagScrollControllerMixin {
         _addProfile(),
         _renameProfile(),
         _deleteProfile(),
-        ZagDivider(),
-        _migrateToMultiInstance(),
       ],
-    );
-  }
-
-  Widget _migrateToMultiInstance() {
-    return ZagBlock(
-      title: 'Migrate to Multi-Instance',
-      body: [
-        const TextSpan(
-          text: 'Convert all profiles into a single profile',
-        ),
-      ],
-      trailing: const ZagIconButton(icon: ZagIcons.ARROW_RIGHT),
-      onTap: () async {
-        final profiles = ZagProfile.visibleList;
-        if (profiles.length <= 1) {
-          showZagInfoSnackBar(
-            title: 'Nothing to Migrate',
-            message: 'You only have one profile. Add more profiles first.',
-          );
-          return;
-        }
-
-        // Check if shadow instances already exist
-        final allKeys = ZagBox.profiles.keys.toList();
-        final hasShadow = allKeys.any((key) => ZagProfile.isShadowProfile(key));
-        if (hasShadow) {
-          showZagInfoSnackBar(
-            title: 'Cannot Migrate',
-            message: 'You already have multi-instance setups. Remove them first.',
-          );
-          return;
-        }
-
-        bool confirmed = false;
-        await ZagDialog.dialog(
-          context: context,
-          title: 'Migrate Profiles',
-          buttons: [
-            ZagDialog.button(
-              text: 'Migrate',
-              textColor: ZagColours.currentAccent,
-              onPressed: () {
-                confirmed = true;
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-            ),
-          ],
-          content: [
-            Text(
-              'This will merge all ${profiles.length} profiles into one profile with multi-instance support.\n\n'
-              'Each enabled module from each profile will become a separate instance.\n\n'
-              'This cannot be undone. Continue?',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
-          contentPadding: ZagDialog.textDialogContentPadding(),
-        );
-
-        if (confirmed) {
-          await ZagProfile.migrateToMultiInstance(targetProfileName: 'default');
-          showZagSuccessSnackBar(
-            title: 'Migration Complete',
-            message: 'All profiles merged into multi-instance setup.',
-          );
-          setState(() {});
-        }
-      },
     );
   }
 

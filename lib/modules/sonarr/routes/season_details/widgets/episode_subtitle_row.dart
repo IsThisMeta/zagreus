@@ -89,14 +89,7 @@ class _SubtitleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    String label = subtitle.name ?? subtitle.code2 ?? 'Unknown';
-
-    // Add indicators for forced/HI subtitles
-    if (subtitle.forced == true) {
-      label = '$label (F)';
-    } else if (subtitle.hearingImpaired == true) {
-      label = '$label (HI)';
-    }
+    final String label = subtitle.name ?? subtitle.code2 ?? 'Unknown';
 
     // Downloaded: accent color border, Missing: gray border
     final borderColor = isDownloaded

@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 
@@ -103,6 +104,7 @@ class _State extends State<ConfigurationRadarrRoute>
   Widget _body() {
     final instanceName = ZagProfile.getActiveInstanceName('radarr');
     final isInstance = instanceName != null;
+    final isPro = ZagreusPro.isEnabled;
     
     return ZagListView(
       controller: scrollController,
@@ -116,11 +118,11 @@ class _State extends State<ConfigurationRadarrRoute>
         _discoverUseRadarrSuggestionsToggle(),
         _queueSize(),
         ZagDivider(),
-        // Show "Add Duplicate Instance" on main, "Rename/Delete Instance" on shadows
+        // Show "Add Duplicate Instance" on main for Pro+, "Rename/Delete Instance" on shadows
         if (isInstance) ...[
           _renameInstance(),
           _deleteInstance(),
-        ] else _addDuplicateInstance(),
+        ] else if (isPro) _addDuplicateInstance(),
       ],
     );
   }

@@ -3,6 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/core.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
 
@@ -101,6 +102,7 @@ class _State extends State<ConfigurationSonarrRoute>
   Widget _body() {
     final instanceName = ZagProfile.getActiveInstanceName('sonarr');
     final isInstance = instanceName != null;
+    final isPro = ZagreusPro.isEnabled;
     
     return ZagListView(
       controller: scrollController,
@@ -116,7 +118,7 @@ class _State extends State<ConfigurationSonarrRoute>
         if (isInstance) ...[
           _renameInstance(),
           _deleteInstance(),
-        ] else _addDuplicateInstance(),
+        ] else if (isPro) _addDuplicateInstance(),
       ],
     );
   }

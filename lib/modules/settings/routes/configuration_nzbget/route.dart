@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationNZBGetRoute extends StatefulWidget {
   const ConfigurationNZBGetRoute({
@@ -90,6 +91,7 @@ class _State extends State<ConfigurationNZBGetRoute>
   Widget _body() {
     final instanceName = ZagProfile.getActiveInstanceName('nzbget');
     final isInstance = instanceName != null;
+    final isPro = ZagreusPro.isEnabled;
     
     return ZagListView(
       controller: scrollController,
@@ -103,7 +105,7 @@ class _State extends State<ConfigurationNZBGetRoute>
         if (isInstance) ...[
           _renameInstance(),
           _deleteInstance(),
-        ] else _addDuplicateInstance(),
+        ] else if (isPro) _addDuplicateInstance(),
       ],
     );
   }

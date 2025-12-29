@@ -20,7 +20,6 @@ class _State extends State<SonarrBazarrSubtitleTile> {
   BazarrSeries? _bazarrSeries;
   bool _loading = true;
   String? _error;
-  bool _searchingSubtitles = false;
 
   @override
   void initState() {
@@ -64,32 +63,6 @@ class _State extends State<SonarrBazarrSubtitleTile> {
         _loading = false;
         _error = e.toString();
       });
-    }
-  }
-
-  Future<void> _autoSearchSubtitles() async {
-    final api = _getApi();
-    if (api == null) return;
-
-    setState(() => _searchingSubtitles = true);
-
-    try {
-      await api.series.autoSearch(seriesId: widget.sonarrSeriesId);
-      showZagSuccessSnackBar(
-        title: 'Subtitle Search Started',
-        message: 'Bazarr is searching for subtitles for all episodes...',
-      );
-      // Reload data after a short delay
-      await Future.delayed(const Duration(seconds: 2));
-      await _loadBazarrData();
-    } catch (e, stack) {
-      ZagLogger().error('Failed to search subtitles', e, stack);
-      showZagErrorSnackBar(
-        title: 'Subtitle Search Failed',
-        error: e,
-      );
-    } finally {
-      setState(() => _searchingSubtitles = false);
     }
   }
 
@@ -209,16 +182,18 @@ class _State extends State<SonarrBazarrSubtitleTile> {
       subtitle = 'Subtitles available for all $episodeCount episodes';
     }
 
+    // Note: No search button for series - Bazarr only supports per-episode subtitle search
+    // Users can search for subtitles from individual episode tiles
     return ZagBlock(
       title: title,
       body: [TextSpan(text: subtitle)],
-      trailing: _searchingSubtitles
-          ? const ZagLoader()
-          : ZagIconButton(
-              icon: Icons.search_rounded,
-              color: hasMissing ? ZagColours.currentAccent : null,
-              onPressed: hasMissing ? _autoSearchSubtitles : null,
-            ),
+      trailing: ZagIconButton(
+        icon: Icons.refresh_rounded,
+        onPressed: () {
+          setState(() => _loading = true);
+          _loadBazarrData();
+        },
+      ),
     );
   }
 

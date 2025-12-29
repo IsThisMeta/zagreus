@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class ConfigurationTautulliRoute extends StatefulWidget {
   const ConfigurationTautulliRoute({
@@ -90,6 +91,7 @@ class _State extends State<ConfigurationTautulliRoute>
   Widget _body() {
     final instanceName = ZagProfile.getActiveInstanceName('tautulli');
     final isInstance = instanceName != null;
+    final isPro = ZagreusPro.isEnabled;
     
     return ZagListView(
       controller: scrollController,
@@ -106,7 +108,7 @@ class _State extends State<ConfigurationTautulliRoute>
         if (isInstance) ...[
           _renameInstance(),
           _deleteInstance(),
-        ] else _addDuplicateInstance(),
+        ] else if (isPro) _addDuplicateInstance(),
       ],
     );
   }
