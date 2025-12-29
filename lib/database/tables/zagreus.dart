@@ -91,6 +91,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   LIDARR_TOAST_ON_ARTIST_ADD<bool>(true),
   // Overseerr notifications
   OVERSEERR_NOTIFICATIONS_ENABLED<bool>(true),
+  // Tautulli notifications
+  TAUTULLI_NOTIFICATIONS_ENABLED<bool>(true),
   // Notification prompt (one-time)
   SHOULD_SHOW_NOTIFICATION_PROMPT<bool>(false),
   HAS_SHOWN_NOTIFICATION_PROMPT<bool>(false),
