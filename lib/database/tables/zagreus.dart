@@ -79,6 +79,16 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   SONARR_WEBHOOK_ON_UPGRADE<bool>(true),
   SONARR_WEBHOOK_ON_SERIES_ADD<bool>(true),
   SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Lidarr webhook events
+  LIDARR_WEBHOOK_ON_GRAB<bool>(true),
+  LIDARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
+  LIDARR_WEBHOOK_ON_UPGRADE<bool>(true),
+  LIDARR_WEBHOOK_ON_ARTIST_ADD<bool>(true),
+  // Lidarr toast events
+  LIDARR_TOAST_ON_GRAB<bool>(true),
+  LIDARR_TOAST_ON_DOWNLOAD<bool>(true),
+  LIDARR_TOAST_ON_UPGRADE<bool>(true),
+  LIDARR_TOAST_ON_ARTIST_ADD<bool>(true),
   // Overseerr notifications
   OVERSEERR_NOTIFICATIONS_ENABLED<bool>(true),
   // Notification prompt (one-time)

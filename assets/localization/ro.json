@@ -37,6 +37,7 @@
     "lidarr.StartSearchFor": "Începe Căutarea Pentru…",
     "lidarr.StartSearchForMissingAlbums": "Începe căutarea pentru albume lipsă",
     "radarr.More": "Mai multe",
+    "settings.LanguageProfileRequiredMessage": "Conectat, dar trebuie să adaugi un profil de limbă în {}.",
     "sonarr.AddedOn": "Adăugat La",
     "sonarr.AddedSeries": "Seriale Adăugate",
     "sonarr.AddedTag": "Etichetă Adăugată",

@@ -227,6 +227,7 @@
     "settings.Clear": "Καθαρισμός",
     "settings.CopiedDeviceURL": "Αντιγράφηκε η διεύθυνση URL που βασίζεται στη συσκευή σας στο πρόχειρο",
     "settings.ConnectedSuccessfullyMessage": "Το {} είναι έτοιμο για χρήση με το Zagreus!",
+    "settings.LanguageProfileRequiredMessage": "Συνδέθηκε, αλλά πρέπει να προσθέσετε ένα προφίλ γλώσσας στο {}.",
     "settings.ConnectionDetails": "Λεπτομέρειες σύνδεσης",
     "settings.CopiedURLFor": "Αντιγράφηκε διεύθυνση URL για {}",
     "settings.ConnectionDetailsDescription": "Λεπτομέρειες σύνδεσης για το {}",

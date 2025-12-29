@@ -130,12 +130,17 @@ async function handler(request: express.Request, response: express.Response): Pr
         const radarrModule = await import('../radarr/payloads');
         payload = await handleRadarrWebhook(data, radarrModule);
         break;
-        
+
       case 'sonarr':
         const sonarrModule = await import('../sonarr/payloads');
         payload = await handleSonarrWebhook(data, sonarrModule);
         break;
-        
+
+      case 'lidarr':
+        const lidarrModule = await import('../lidarr/payloads');
+        payload = await handleLidarrWebhook(data, lidarrModule);
+        break;
+
       default:
         logger.warn({ service }, 'Unsupported service type');
         return;
@@ -155,12 +160,17 @@ function detectService(data: any): string | null {
   if (data.movie || data.remoteMovie) {
     return 'radarr';
   }
-  
+
   // Check for Sonarr-specific fields
   if (data.series || data.episodes) {
     return 'sonarr';
   }
-  
+
+  // Check for Lidarr-specific fields
+  if (data.artist || data.albums || data.tracks) {
+    return 'lidarr';
+  }
+
   // Check eventType patterns
   if (data.eventType) {
     const eventType = data.eventType.toLowerCase();
@@ -170,8 +180,11 @@ function detectService(data: any): string | null {
     if (eventType.includes('series') || eventType.includes('episode')) {
       return 'sonarr';
     }
+    if (eventType.includes('artist') || eventType.includes('album') || eventType.includes('track')) {
+      return 'lidarr';
+    }
   }
-  
+
   return null;
 }
 
@@ -219,6 +232,26 @@ async function handleSonarrWebhook(data: any, payloads: any): Promise<Notificati
       return await payloads.test(data, profile);
     default:
       logger.warn({ eventType: data.eventType }, 'Unknown Sonarr event type');
+      return undefined;
+  }
+}
+
+async function handleLidarrWebhook(data: any, payloads: any): Promise<Notifications.Payload | undefined> {
+  const profile = 'default'; // Could be extracted from data if needed
+
+  switch (data.eventType) {
+    case 'Download':
+      return await payloads.download(data, profile);
+    case 'Grab':
+      return await payloads.grab(data, profile);
+    case 'Rename':
+      return await payloads.rename(data, profile);
+    case 'Retag':
+      return await payloads.retag(data, profile);
+    case 'Test':
+      return await payloads.test(data, profile);
+    default:
+      logger.warn({ eventType: data.eventType }, 'Unknown Lidarr event type');
       return undefined;
   }
 }

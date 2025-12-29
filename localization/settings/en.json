@@ -78,6 +78,7 @@
   "settings.ConfigurationDescription": "Configure & Setup Zagreus",
   "settings.ConnectedSuccessfully": "Connected",
   "settings.ConnectedSuccessfullyMessage": "{} is ready to use with Zagreus!",
+  "settings.LanguageProfileRequiredMessage": "Connected, but you need to add a language profile in {}.",
   "settings.ConnectionDetails": "Connection Details",
   "settings.ConnectionDetailsDescription": "Connection Details for {}",
   "settings.ConnectionTestFailed": "Connection Test Failed",

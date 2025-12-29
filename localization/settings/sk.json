@@ -23,5 +23,6 @@
     "settings.AmoledThemeDescription": "Čisto čierna tmavá téma",
     "settings.ApiKeyRequired": "API kľúč požadovaný",
     "settings.AppearanceDescription": "Prispôsobenie vzhľadu a funkcií",
-    "settings.Appearance": "Vzhľad"
+    "settings.Appearance": "Vzhľad",
+    "settings.LanguageProfileRequiredMessage": "Pripojené, ale v {} musíte pridať jazykový profil."
 }

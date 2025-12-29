@@ -240,6 +240,7 @@
     "settings.ConnectionDetailsDescription": "Dettagli di connessione per {}",
     "settings.ConnectionDetails": "Dettagli di connessione",
     "settings.ConnectedSuccessfullyMessage": "{} è pronto all'uso con Zagreus!",
+    "settings.LanguageProfileRequiredMessage": "Connesso, ma devi aggiungere un profilo lingua in {}.",
     "settings.ConnectedSuccessfully": "Collegato",
     "settings.ConfigurationDescription": "Configurare e impostare Zagreus",
     "settings.Configuration": "Configurazione",

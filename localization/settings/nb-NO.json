@@ -99,5 +99,6 @@
     "settings.EditModule": "Rediger modul",
     "settings.HeaderKey": "Hode-nøkkel",
     "settings.HeaderKeyValidation": "Hodenøkkel påkrevd",
-    "settings.Email": "E-post"
+    "settings.Email": "E-post",
+    "settings.LanguageProfileRequiredMessage": "Tilkoblet, men du må legge til en språkprofil i {}."
 }

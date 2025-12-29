@@ -57,5 +57,6 @@
     "settings.AddHeader": "Добавить заголовок",
     "settings.AccountHelp": "Аккаунт Zagreus",
     "settings.AccountDescription": "Ваш аккаунт в Zagreus",
-    "settings.Account": "Аккаунт"
+    "settings.Account": "Аккаунт",
+    "settings.LanguageProfileRequiredMessage": "Подключено, но нужно добавить языковой профиль в {}."
 }

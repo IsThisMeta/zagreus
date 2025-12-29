@@ -119,6 +119,7 @@
     "settings.ConnectionDetailsDescription": "{} için Bağlantı Ayrıntıları",
     "settings.ConnectionDetails": "Bağlantı Ayrıntıları",
     "settings.ConnectedSuccessfullyMessage": "{}, Zagreus ile kullanıma hazır!",
+    "settings.LanguageProfileRequiredMessage": "Bağlandı, ancak {} içinde bir dil profili eklemeniz gerekiyor.",
     "settings.ConnectedSuccessfully": "Bağlandı",
     "settings.ConfigurationDescription": "Zagreus'yi Kurun ve Yapılandırın",
     "settings.Configuration": "Yapılandırma",

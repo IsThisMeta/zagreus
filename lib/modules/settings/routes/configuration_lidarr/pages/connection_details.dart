@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/lidarr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/router/routes/settings.dart';
+import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 
@@ -104,6 +106,8 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
           ZagProfile.forModule('lidarr').lidarrHost = _values.item2;
           ZagProfile.forModule('lidarr').save();
           context.read<LidarrState>().reset();
+          // Sync webhook if user is authenticated
+          _syncWebhook();
         }
       },
     );
@@ -229,6 +233,8 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
           ZagProfile.forModule('lidarr').lidarrKey = _values.item2;
           ZagProfile.forModule('lidarr').save();
           context.read<LidarrState>().reset();
+          // Sync webhook if user is authenticated
+          _syncWebhook();
         }
       },
     );
@@ -237,10 +243,11 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
   Widget _testConnection() {
     return ZagButton.text(
       text: 'settings.TestConnection'.tr(),
-      icon: Icons.wifi_tethering_rounded,
+      icon: ZagIcons.CONNECTION_TEST,
       onTap: () async {
         ZagProfile _profile = ZagProfile.forModule('lidarr');
-        if (_profile.lidarrHost.isEmpty) {
+        final effectiveHost = _profile.effectiveLidarrHost();
+        if (effectiveHost.isEmpty) {
           showZagErrorSnackBar(
             title: 'settings.HostRequired'.tr(),
             message: 'settings.HostRequiredMessage'.tr(
@@ -261,12 +268,16 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
         LidarrAPI.from(ZagProfile.current)
             .testConnection()
             .then(
-              (_) => showZagSuccessSnackBar(
-                title: 'settings.ConnectedSuccessfully'.tr(),
-                message: 'settings.ConnectedSuccessfullyMessage'.tr(
-                  args: [ZagModule.LIDARR.title],
-                ),
+              (_) {
+            showZagSuccessSnackBar(
+              title: 'settings.ConnectedSuccessfully'.tr(),
+              message: 'settings.ConnectedSuccessfullyMessage'.tr(
+                args: [ZagModule.LIDARR.title],
               ),
+            );
+            // Sync webhook after successful connection
+            _syncWebhook();
+          },
             )
             .catchError((error, trace) {
           ZagLogger().error(
@@ -290,5 +301,40 @@ class _State extends State<ConfigurationLidarrConnectionDetailsRoute>
       trailing: const ZagIconButton.arrow(),
       onTap: SettingsRoutes.CONFIGURATION_LIDARR_CONNECTION_DETAILS_HEADERS.go,
     );
+  }
+
+  void _syncWebhook() async {
+    try {
+      // Only sync if user is authenticated
+      if (ZagSupabase.isSupported &&
+          ZagSupabase.client.auth.currentUser != null) {
+        final profile = ZagProfile.forModule('lidarr');
+        final effectiveHost = profile.effectiveLidarrHost();
+        if (profile.lidarrEnabled &&
+            effectiveHost.isNotEmpty &&
+            profile.lidarrKey.isNotEmpty) {
+          ZagLogger()
+              .debug('Syncing Lidarr webhook after configuration change');
+          final client = Dio(
+            BaseOptions(
+              baseUrl: effectiveHost.endsWith('/')
+                  ? '${effectiveHost}api/v1/'
+                  : '$effectiveHost/api/v1/',
+              queryParameters: {
+                'apikey': profile.lidarrKey,
+              },
+              headers: Map<String, dynamic>.from(profile.lidarrHeaders),
+              contentType: Headers.jsonContentType,
+              responseType: ResponseType.json,
+              followRedirects: true,
+              maxRedirects: 5,
+            ),
+          );
+          await LidarrWebhookManager.syncWebhook(client);
+        }
+      }
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync webhook after configuration', e, stack);
+    }
   }
 }

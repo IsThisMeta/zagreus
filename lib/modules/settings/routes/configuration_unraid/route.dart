@@ -39,7 +39,28 @@ class _State extends State<ConfigurationUnraidRoute>
         ZagModule.UNRAID.informationBanner(),
         _enabledToggle(),
         _connectionDetailsPage(),
+        ZagDivider(),
+        ZagHeader(text: 'zagreus.Options'.tr()),
+        _confirmActionsToggle(),
       ],
+    );
+  }
+
+  Widget _confirmActionsToggle() {
+    const db = ZagreusDatabase.UNRAID_CONFIRM_ACTIONS;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'Confirm Unraid Actions',
+        body: const [
+          TextSpan(
+            text: 'Show confirmation dialogue before actions',
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
     );
   }
 

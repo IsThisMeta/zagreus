@@ -66,6 +66,12 @@ func main() {
 			overseerr.POST("/:id", handleOverseerrWebhookWithID)
 		}
 
+		// Tautulli webhook route (uses webhook ID without signature)
+		tautulli := v1.Group("/tautulli/webhook")
+		{
+			tautulli.POST("/:id", handleTautulliWebhookWithID)
+		}
+
 		// Preferences routes
 		preferences := v1.Group("/preferences")
 		{

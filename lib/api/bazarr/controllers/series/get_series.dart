@@ -6,17 +6,24 @@ Future<BazarrSeries?> _controllerGetSeries(Dio client, int seriesId) async {
     queryParameters: {'seriesid[]': seriesId},
   );
 
-  // Response is a list, we want the first item matching our seriesId
-  if (response.data is List && (response.data as List).isNotEmpty) {
-    final data = response.data as List;
-    for (final item in data) {
-      if (item is Map<String, dynamic>) {
-        final series = BazarrSeries.fromJson(item);
-        if (series.sonarrSeriesId == seriesId) {
-          return series;
-        }
+  final List<dynamic> data;
+  if (response.data is Map && response.data['data'] is List) {
+    data = response.data['data'] as List;
+  } else if (response.data is List) {
+    data = response.data as List;
+  } else {
+    data = const [];
+  }
+
+  BazarrSeries? fallback;
+  for (final item in data) {
+    if (item is Map<String, dynamic>) {
+      final series = BazarrSeries.fromJson(item);
+      fallback ??= series;
+      if (series.sonarrSeriesId == seriesId) {
+        return series;
       }
     }
   }
-  return null;
+  return fallback;
 }

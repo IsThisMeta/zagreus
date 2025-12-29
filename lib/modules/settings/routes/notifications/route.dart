@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -9,12 +10,14 @@ import 'package:zagreus/supabase/core.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/lidarr.dart';
 import 'package:zagreus/database/box.dart';
 import 'package:zagreus/database/database.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
+import 'package:zagreus/modules/lidarr/core/webhook_manager.dart';
 import 'package:zagreus/system/webhooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -32,6 +35,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   String _radarrStatus = '';
   String _sonarrStatus = '';
+  String _lidarrStatus = '';
   bool _notificationsAuthorized = false;
 
   @override
@@ -63,6 +67,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         setState(() {
           _radarrStatus = 'Not configured';
           _sonarrStatus = 'Not configured';
+          _lidarrStatus = 'Not configured';
         });
         return;
       }
@@ -75,6 +80,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         setState(() {
           _radarrStatus = 'Sign in or enable Single Device Mode';
           _sonarrStatus = 'Sign in or enable Single Device Mode';
+          _lidarrStatus = 'Sign in or enable Single Device Mode';
         });
         return;
       }
@@ -150,12 +156,58 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           _sonarrStatus = 'Not configured';
         });
       }
+
+      // Sync Lidarr if configured
+      final lidarrHost = profile.effectiveLidarrHost();
+      if (profile.lidarrEnabled &&
+          lidarrHost.isNotEmpty &&
+          profile.lidarrKey.isNotEmpty) {
+        setState(() {
+          _lidarrStatus = 'Syncing...';
+        });
+
+        try {
+          final client = Dio(
+            BaseOptions(
+              baseUrl: lidarrHost.endsWith('/')
+                  ? '${lidarrHost}api/v1/'
+                  : '$lidarrHost/api/v1/',
+              queryParameters: {
+                'apikey': profile.lidarrKey,
+              },
+              headers: Map<String, dynamic>.from(profile.lidarrHeaders),
+              contentType: Headers.jsonContentType,
+              responseType: ResponseType.json,
+              followRedirects: true,
+              maxRedirects: 5,
+            ),
+          );
+          final success = await LidarrWebhookManager.syncWebhook(client);
+          setState(() {
+            _lidarrStatus = 'SUCCESS';
+          });
+        } catch (e) {
+          setState(() {
+            // Extract just the error message without the stack trace
+            String errorMsg = e.toString();
+            if (errorMsg.startsWith('Exception: ')) {
+              errorMsg = errorMsg.substring(11);
+            }
+            _lidarrStatus = 'FAILED: $errorMsg';
+          });
+        }
+      } else {
+        setState(() {
+          _lidarrStatus = 'Not configured';
+        });
+      }
     } catch (e, stack) {
       ZagLogger().error('Failed to sync notification webhooks', e, stack);
       if (!mounted) return;
       setState(() {
         if (_radarrStatus.isEmpty) _radarrStatus = 'Error syncing webhooks';
         if (_sonarrStatus.isEmpty) _sonarrStatus = 'Error syncing webhooks';
+        if (_lidarrStatus.isEmpty) _lidarrStatus = 'Error syncing webhooks';
       });
     }
   }
@@ -217,6 +269,41 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         } catch (e) {
           setState(() {
             _sonarrStatus = 'Failed to remove webhook';
+          });
+        }
+      }
+
+      // Remove Lidarr webhook if configured
+      if (profile.lidarrEnabled &&
+          profile.lidarrHost.isNotEmpty &&
+          profile.lidarrKey.isNotEmpty) {
+        setState(() {
+          _lidarrStatus = 'Removing webhook...';
+        });
+
+        try {
+          final client = Dio(
+            BaseOptions(
+              baseUrl: profile.lidarrHost.endsWith('/')
+                  ? '${profile.lidarrHost}api/v1/'
+                  : '${profile.lidarrHost}/api/v1/',
+              queryParameters: {
+                'apikey': profile.lidarrKey,
+              },
+              headers: Map<String, dynamic>.from(profile.lidarrHeaders),
+              contentType: Headers.jsonContentType,
+              responseType: ResponseType.json,
+              followRedirects: true,
+              maxRedirects: 5,
+            ),
+          );
+          await LidarrWebhookManager.removeWebhook(client);
+          setState(() {
+            _lidarrStatus = 'Webhook removed';
+          });
+        } catch (e) {
+          setState(() {
+            _lidarrStatus = 'Failed to remove webhook';
           });
         }
       }
@@ -303,11 +390,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           },
         ),
         _enableNotifications(),
-        _multiDeviceSyncToggle(),
         _enableInAppToasts(),
+        _multiDeviceSyncToggle(),
         ZagDivider(),
         _statusBlock('Radarr Status', _radarrStatus),
         _statusBlock('Sonarr Status', _sonarrStatus),
+        _statusBlock('Lidarr Status', _lidarrStatus),
         ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
           builder: (context, _) {
             if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
@@ -318,26 +406,15 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 ZagDivider(),
                 _radarrEventsButton(),
                 _sonarrEventsButton(),
-              ],
-            );
-          },
-        ),
-        ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
-          builder: (context, _) {
-            if (!ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) {
-              return const SizedBox.shrink();
-            }
-            return Column(
-              children: [
-                ZagDivider(),
-                _radarrToastEventsButton(),
-                _sonarrToastEventsButton(),
+                _lidarrEventsButton(),
               ],
             );
           },
         ),
         ZagDivider(),
         _overseerrWebhookSection(),
+        ZagDivider(),
+        _tautulliWebhookSection(),
       ],
     );
   }
@@ -580,21 +657,27 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   Widget _radarrEventsButton() {
     return ZagBlock(
       title: 'Radarr Events',
-      body: [TextSpan(text: 'Configure which events trigger notifications')],
+      body: [TextSpan(text: 'Configure push and toast notification events')],
       trailing: Icon(
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
-      onTap: () => _showEventsPage(
+      onTap: () => _showCombinedEventsPage(
         title: 'Radarr Events',
-        events: [
+        pushEvents: [
           _EventConfig('On Grab', ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB),
           _EventConfig('On Import', ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD),
           _EventConfig('On Upgrade', ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE),
           _EventConfig('On Add', ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED),
           _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION),
         ],
-        syncWebhooks: true,
+        toastEvents: [
+          _EventConfig('On Grab', ZagreusDatabase.RADARR_TOAST_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_TOAST_ON_UPGRADE),
+          _EventConfig('On Add', ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED),
+          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION),
+        ],
       ),
     );
   }
@@ -602,81 +685,69 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   Widget _sonarrEventsButton() {
     return ZagBlock(
       title: 'Sonarr Events',
-      body: [TextSpan(text: 'Configure which events trigger notifications')],
+      body: [TextSpan(text: 'Configure push and toast notification events')],
       trailing: Icon(
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
-      onTap: () => _showEventsPage(
+      onTap: () => _showCombinedEventsPage(
         title: 'Sonarr Events',
-        events: [
+        pushEvents: [
           _EventConfig('On Grab', ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB),
           _EventConfig('On Import', ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD),
           _EventConfig('On Upgrade', ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE),
           _EventConfig('On Series Added', ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD),
           _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION),
         ],
-        syncWebhooks: true,
-      ),
-    );
-  }
-
-  Widget _radarrToastEventsButton() {
-    return ZagBlock(
-      title: 'Radarr Toast Events',
-      body: [TextSpan(text: 'Configure which events show in-app toasts')],
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: ZagColours.grey,
-      ),
-      onTap: () => _showEventsPage(
-        title: 'Radarr Toast Events',
-        events: [
-          _EventConfig('On Grab', ZagreusDatabase.RADARR_TOAST_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_TOAST_ON_UPGRADE),
-          _EventConfig('On Add', ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED),
-          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION),
-        ],
-        syncWebhooks: false,
-      ),
-    );
-  }
-
-  Widget _sonarrToastEventsButton() {
-    return ZagBlock(
-      title: 'Sonarr Toast Events',
-      body: [TextSpan(text: 'Configure which events show in-app toasts')],
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: ZagColours.grey,
-      ),
-      onTap: () => _showEventsPage(
-        title: 'Sonarr Toast Events',
-        events: [
+        toastEvents: [
           _EventConfig('On Grab', ZagreusDatabase.SONARR_TOAST_ON_GRAB),
           _EventConfig('On Import', ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD),
           _EventConfig('On Upgrade', ZagreusDatabase.SONARR_TOAST_ON_UPGRADE),
           _EventConfig('On Series Added', ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD),
           _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION),
         ],
-        syncWebhooks: false,
       ),
     );
   }
 
-  void _showEventsPage({
+  Widget _lidarrEventsButton() {
+    return ZagBlock(
+      title: 'Lidarr Events',
+      body: [TextSpan(text: 'Configure push and toast notification events')],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showCombinedEventsPage(
+        title: 'Lidarr Events',
+        pushEvents: [
+          _EventConfig('On Grab', ZagreusDatabase.LIDARR_WEBHOOK_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.LIDARR_WEBHOOK_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.LIDARR_WEBHOOK_ON_UPGRADE),
+          _EventConfig('On Artist Added', ZagreusDatabase.LIDARR_WEBHOOK_ON_ARTIST_ADD),
+        ],
+        toastEvents: [
+          _EventConfig('On Grab', ZagreusDatabase.LIDARR_TOAST_ON_GRAB),
+          _EventConfig('On Import', ZagreusDatabase.LIDARR_TOAST_ON_DOWNLOAD),
+          _EventConfig('On Upgrade', ZagreusDatabase.LIDARR_TOAST_ON_UPGRADE),
+          _EventConfig('On Artist Added', ZagreusDatabase.LIDARR_TOAST_ON_ARTIST_ADD),
+        ],
+      ),
+    );
+  }
+
+  void _showCombinedEventsPage({
     required String title,
-    required List<_EventConfig> events,
-    required bool syncWebhooks,
+    required List<_EventConfig> pushEvents,
+    required List<_EventConfig> toastEvents,
   }) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => _EventsPage(
+        builder: (context) => _CombinedEventsPage(
           title: title,
-          events: events,
-          syncWebhooks: syncWebhooks,
-          onSync: syncWebhooks ? _syncWebhooksInBackground : null,
+          pushEvents: pushEvents,
+          toastEvents: toastEvents,
+          onSync: _syncWebhooksInBackground,
         ),
       ),
     );
@@ -812,6 +883,90 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ],
     );
   }
+
+  Widget _tautulliWebhookSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+          child: Text(
+            'Tautulli Webhook URL',
+            style: TextStyle(
+              fontSize: ZagUI.FONT_SIZE_H2,
+              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+            ),
+          ),
+        ),
+        ZagBlock(
+          title: 'Copy Webhook URL',
+          body: [
+            TextSpan(
+              text: 'Paste into Tautulli notification agent settings',
+            ),
+          ],
+          trailing: Icon(
+            Icons.copy_rounded,
+            color: ZagColours.accentColor(context),
+          ),
+          onTap: () async {
+            try {
+              // Get or create webhook ID (same system as other services)
+              final deviceToken = await ZagSupabaseMessaging.instance.getToken();
+              if (deviceToken == null) {
+                showZagErrorSnackBar(
+                  title: 'Error',
+                  message: 'Device token not available',
+                );
+                return;
+              }
+
+              // Check if we're in anonymous mode
+              final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+              final user = ZagSupabase.client.auth.currentUser;
+              final userID = (!isAnonymous && user != null) ? user.id : null;
+
+              // Call backend to get/create webhook ID
+              final response = await http.post(
+                Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
+                headers: {'Content-Type': 'application/json'},
+                body: json.encode({
+                  'user_id': userID,
+                  'device_token': deviceToken,
+                  'device_type': 'ios',
+                  'anonymous': isAnonymous,
+                }),
+              );
+
+              if (response.statusCode == 200) {
+                final data = json.decode(response.body);
+                final webhookID = data['webhook_id'] as String?;
+
+                if (webhookID == null) {
+                  throw Exception('No webhook ID returned');
+                }
+
+                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/tautulli/webhook/$webhookID';
+                await Clipboard.setData(ClipboardData(text: webhookUrl));
+                showZagInfoSnackBar(
+                  title: 'Copied',
+                  message: 'Webhook URL copied to clipboard',
+                );
+              } else {
+                throw Exception('Failed to get webhook ID: ${response.statusCode}');
+              }
+            } catch (e, stackTrace) {
+              ZagLogger().error('Failed to copy Tautulli webhook URL', e, stackTrace);
+              showZagErrorSnackBar(
+                title: 'Error',
+                message: 'Failed to generate webhook URL',
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
 }
 
 /// Helper class to hold event configuration data
@@ -822,25 +977,25 @@ class _EventConfig {
   _EventConfig(this.title, this.database);
 }
 
-/// Full page widget for configuring events
-class _EventsPage extends StatefulWidget {
+/// Combined events page showing both push and toast events with headers
+class _CombinedEventsPage extends StatefulWidget {
   final String title;
-  final List<_EventConfig> events;
-  final bool syncWebhooks;
+  final List<_EventConfig> pushEvents;
+  final List<_EventConfig> toastEvents;
   final VoidCallback? onSync;
 
-  const _EventsPage({
+  const _CombinedEventsPage({
     required this.title,
-    required this.events,
-    required this.syncWebhooks,
+    required this.pushEvents,
+    required this.toastEvents,
     this.onSync,
   });
 
   @override
-  State<_EventsPage> createState() => _EventsPageState();
+  State<_CombinedEventsPage> createState() => _CombinedEventsPageState();
 }
 
-class _EventsPageState extends State<_EventsPage> with ZagScrollControllerMixin {
+class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -854,14 +1009,35 @@ class _EventsPageState extends State<_EventsPage> with ZagScrollControllerMixin 
       body: ZagListView(
         controller: scrollController,
         children: [
-          for (final event in widget.events)
-            _buildEventToggle(context, event),
+          // Push Notifications Section
+          _buildSectionHeader('Push Notifications'),
+          for (final event in widget.pushEvents)
+            _buildPushEventToggle(context, event),
+          
+          // In-App Toasts Section
+          ZagDivider(),
+          _buildSectionHeader('In-App Toasts'),
+          for (final event in widget.toastEvents)
+            _buildToastEventToggle(context, event),
         ],
       ),
     );
   }
 
-  Widget _buildEventToggle(BuildContext context, _EventConfig event) {
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: ZagUI.FONT_SIZE_H2,
+          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPushEventToggle(BuildContext context, _EventConfig event) {
     return ZagBlock(
       title: event.title,
       body: [],
@@ -870,12 +1046,34 @@ class _EventsPageState extends State<_EventsPage> with ZagScrollControllerMixin 
           value: event.database.read(),
           onChanged: (value) async {
             event.database.update(value);
-            // Trigger webhook sync after changing settings if needed
-            if (widget.syncWebhooks && widget.onSync != null) {
+            // Trigger webhook sync after changing push notification settings
+            if (widget.onSync != null) {
               widget.onSync!();
             }
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildToastEventToggle(BuildContext context, _EventConfig event) {
+    return ZagBlock(
+      title: event.title,
+      body: [],
+      trailing: ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
+        builder: (context, _) {
+          final toastsEnabled = ZagreusDatabase.ENABLE_IN_APP_TOASTS.read();
+          return event.database.listenableBuilder(
+            builder: (context, _) => ZagSwitch(
+              value: event.database.read(),
+              onChanged: toastsEnabled
+                  ? (value) {
+                      event.database.update(value);
+                    }
+                  : null, // Disabled when toasts are off
+            ),
+          );
+        },
       ),
     );
   }

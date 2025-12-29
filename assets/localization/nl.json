@@ -212,6 +212,7 @@
     "settings.BasicAuthenticationHint1": "Gebruikersnaam mag geen dubbele punt bevatten",
     "settings.BasicAuthenticationHint2": "Wachtwoord mag wel een dubbele punt bevatten",
     "settings.BasicAuthenticationHint3": "Gebruikersnaam en wachtwoord worden automatisch geconverteerd naar base64 codering",
+    "settings.LanguageProfileRequiredMessage": "Verbonden, maar je moet een taalprofiel toevoegen in {}.",
     "sonarr.AddedSeries": "Series toegevoegd",
     "sonarr.AddedOn": "Toegevoegd Op",
     "sonarr.AddedTag": "Label toegevoegd",

@@ -257,31 +257,38 @@ class _State extends State<ConfigurationBazarrConnectionDetailsRoute>
           );
           return;
         }
-        BazarrAPI(
+        final api = BazarrAPI(
           host: effectiveHost,
           apiKey: _profile.bazarrKey,
           headers: Map<String, dynamic>.from(_profile.bazarrHeaders),
-        ).system.status().then(
-          (_) {
-            showZagSuccessSnackBar(
-              title: 'settings.ConnectedSuccessfully'.tr(),
-              message:
-                  'settings.ConnectedSuccessfullyMessage'.tr(args: ['Bazarr']),
-            );
-          },
-        ).catchError(
-          (error, trace) {
-            ZagLogger().error(
-              'Connection Test Failed',
-              error,
-              trace,
-            );
-            showZagErrorSnackBar(
-              title: 'settings.ConnectionTestFailed'.tr(),
-              error: error,
-            );
-          },
         );
+        try {
+          await api.system.status();
+          final profiles = await api.language.getProfiles();
+          if (profiles.isEmpty) {
+            showZagInfoSnackBar(
+              title: 'settings.ConnectedSuccessfully'.tr(),
+              message: 'settings.LanguageProfileRequiredMessage'
+                  .tr(args: ['Bazarr']),
+            );
+            return;
+          }
+          showZagSuccessSnackBar(
+            title: 'settings.ConnectedSuccessfully'.tr(),
+            message:
+                'settings.ConnectedSuccessfullyMessage'.tr(args: ['Bazarr']),
+          );
+        } catch (error, trace) {
+          ZagLogger().error(
+            'Connection Test Failed',
+            error,
+            trace,
+          );
+          showZagErrorSnackBar(
+            title: 'settings.ConnectionTestFailed'.tr(),
+            error: error,
+          );
+        }
       },
     );
   }

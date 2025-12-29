@@ -43,6 +43,7 @@
     "settings.ConfigurationDescription": "配置和设置 Zagreus",
     "settings.ConnectedSuccessfully": "连接的",
     "settings.ConnectedSuccessfullyMessage": "{} 已准备好与 Zagreus 一起使用！",
+    "settings.LanguageProfileRequiredMessage": "已连接，但你需要在 {} 中添加语言配置。",
     "settings.ConnectionDetails": "连接详情",
     "settings.ConnectionDetailsDescription": "{} 的连接详情",
     "settings.ConnectionTestFailed": "连接测试失败",

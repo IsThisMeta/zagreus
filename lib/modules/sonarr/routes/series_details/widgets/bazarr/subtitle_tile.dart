@@ -95,17 +95,27 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   @override
   Widget build(BuildContext context) {
-    // Don't show if Bazarr is not enabled
+    // Don't show anything if Bazarr is not enabled
     if (!ZagProfile.current.bazarrEnabled) {
       return const SizedBox.shrink();
     }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ZagHeader(text: 'Subtitles'),
+        _buildContent(),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
     // Show lock for non-Pro users
     if (!ZagreusPro.isEnabled) {
       return _proLockedTile();
     }
 
-    // Don't show if Bazarr is not configured
+    // Show not configured if Bazarr is not set up
     final host = ZagProfile.current.effectiveBazarrHost();
     if (host.isEmpty || ZagProfile.current.bazarrKey.isEmpty) {
       return _notConfiguredTile();
@@ -123,14 +133,14 @@ class _State extends State<SonarrBazarrSubtitleTile> {
       return _noDataTile();
     }
 
-    return _subtitleTile();
+    return _subtitleContent();
   }
 
   Widget _notConfiguredTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Bazarr Not Configured',
       body: const [
-        TextSpan(text: 'Bazarr is not configured. Configure it in Settings.'),
+        TextSpan(text: 'Set up Bazarr in Settings to manage subtitles'),
       ],
       trailing: ZagIconButton(
         icon: Icons.settings_rounded,
@@ -141,17 +151,17 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   Widget _loadingTile() {
     return const ZagBlock(
-      title: 'Subtitles (Bazarr)',
-      body: [TextSpan(text: 'Loading subtitle data...')],
+      title: 'Loading Subtitles',
+      body: [TextSpan(text: 'Fetching subtitle data from Bazarr...')],
       trailing: ZagLoader(),
     );
   }
 
   Widget _errorTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Connection Error',
       body: const [
-        TextSpan(text: 'Failed to load subtitle data'),
+        TextSpan(text: 'Could not load subtitle data from Bazarr'),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -165,9 +175,9 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   Widget _noDataTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Not Found in Bazarr',
       body: const [
-        TextSpan(text: 'Series not found in Bazarr'),
+        TextSpan(text: 'This wasn\'t found in your Bazarr library'),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -179,40 +189,51 @@ class _State extends State<SonarrBazarrSubtitleTile> {
     );
   }
 
-  Widget _subtitleTile() {
+  Widget _subtitleContent() {
     final episodeCount = _bazarrSeries?.episodeFileCount ?? 0;
     final missingCount = _bazarrSeries?.episodesMissing ?? 0;
     final downloadedCount = episodeCount - missingCount;
+    final hasMissing = missingCount > 0;
+
+    String title;
+    String subtitle;
+
+    if (episodeCount == 0) {
+      title = 'No Episodes With Files';
+      subtitle = 'Episodes need files before subtitles can be downloaded';
+    } else if (hasMissing) {
+      title = '$downloadedCount/$episodeCount Episodes Complete';
+      subtitle = '$missingCount episodes missing subtitles';
+    } else {
+      title = 'All Episodes Complete';
+      subtitle = 'Subtitles available for all $episodeCount episodes';
+    }
 
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
-      body: [
-        TextSpan(
-          text: episodeCount == 0
-              ? 'No episodes with files'
-              : '$downloadedCount/$episodeCount episodes have subtitles',
-        ),
-      ],
+      title: title,
+      body: [TextSpan(text: subtitle)],
       trailing: _searchingSubtitles
           ? const ZagLoader()
           : ZagIconButton(
               icon: Icons.search_rounded,
-              onPressed: missingCount == 0 ? null : _autoSearchSubtitles,
+              color: hasMissing ? ZagColours.currentAccent : null,
+              onPressed: hasMissing ? _autoSearchSubtitles : null,
             ),
     );
   }
 
   Widget _proLockedTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Zagreus Pro Required',
       body: const [
-        TextSpan(text: 'Zagreus Pro required to manage subtitles with Bazarr.'),
+        TextSpan(text: 'Upgrade to Pro to manage subtitles with Bazarr'),
       ],
       trailing: const ZagIconButton(icon: Icons.lock_rounded),
       onTap: () => showZagInfoSnackBar(
-        title: 'Zagreus Pro required',
-        message: 'Upgrade to access Bazarr subtitle actions.',
+        title: 'Zagreus Pro Required',
+        message: 'Upgrade to access Bazarr subtitle management',
       ),
     );
   }
 }
+

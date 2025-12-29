@@ -20,6 +20,7 @@
     "discover.section.magic_shows": "Chương trình kỳ diệu",
     "discover.section.magic_shows_cast_crew": "Chương trình kỳ diệu: diễn viên & đoàn làm phim",
     "radarr.More": "Thêm",
+    "settings.LanguageProfileRequiredMessage": "Đã kết nối, nhưng bạn cần thêm hồ sơ ngôn ngữ trong {}.",
     "sonarr.More": "Thêm",
     "sonarr.ParentDirectory": "Thư mục cha",
     "zagreus.Add": "Thêm",

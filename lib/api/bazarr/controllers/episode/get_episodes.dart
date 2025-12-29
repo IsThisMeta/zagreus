@@ -7,11 +7,17 @@ Future<List<BazarrEpisode>> _controllerGetEpisodes(Dio client, int seriesId) asy
   );
 
   final List<BazarrEpisode> episodes = [];
-  if (response.data is List) {
-    for (final item in response.data as List) {
-      if (item is Map<String, dynamic>) {
-        episodes.add(BazarrEpisode.fromJson(item));
-      }
+  final List<dynamic> data;
+  if (response.data is Map && response.data['data'] is List) {
+    data = response.data['data'] as List;
+  } else if (response.data is List) {
+    data = response.data as List;
+  } else {
+    data = const [];
+  }
+  for (final item in data) {
+    if (item is Map<String, dynamic>) {
+      episodes.add(BazarrEpisode.fromJson(item));
     }
   }
   return episodes;

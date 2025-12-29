@@ -119,6 +119,7 @@
     "settings.ConnectionDetailsDescription": "A(z) {} kapcsolatának részletei",
     "settings.ConnectionDetails": "Kapcsolat részletei",
     "settings.ConnectedSuccessfullyMessage": "{} készen áll a Zagreus használatára!",
+    "settings.LanguageProfileRequiredMessage": "Csatlakozva, de hozzá kell adnod egy nyelvi profilt a(z) {}-ben.",
     "settings.ConnectedSuccessfully": "Csatlakozva",
     "settings.ConfigurationDescription": "Konfigurálja és állítsa be a Zagreus-t",
     "settings.Configuration": "Konfiguráció",

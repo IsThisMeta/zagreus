@@ -137,6 +137,7 @@
     "settings.ApiKeyRequired": "API kľúč požadovaný",
     "settings.AppearanceDescription": "Prispôsobenie vzhľadu a funkcií",
     "settings.Appearance": "Vzhľad",
+    "settings.LanguageProfileRequiredMessage": "Pripojené, ale v {} musíte pridať jazykový profil.",
     "sonarr.More": "Viac",
     "sonarr.ParentDirectory": "Nadradený adresár",
     "tautulli.ActivityDetails": "Podrobnosti o aktivite",

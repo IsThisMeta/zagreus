@@ -95,17 +95,27 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   @override
   Widget build(BuildContext context) {
-    // Don't show if Bazarr is not enabled
+    // Don't show anything if Bazarr is not enabled
     if (!ZagProfile.current.bazarrEnabled) {
       return const SizedBox.shrink();
     }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ZagHeader(text: 'Subtitles'),
+        _buildContent(),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
     // Show lock for non-Pro users
     if (!ZagreusPro.isEnabled) {
       return _proLockedTile();
     }
 
-    // Don't show if Bazarr is not configured
+    // Show not configured if Bazarr is not set up
     final host = ZagProfile.current.effectiveBazarrHost();
     if (host.isEmpty || ZagProfile.current.bazarrKey.isEmpty) {
       return _notConfiguredTile();
@@ -123,14 +133,14 @@ class _State extends State<RadarrBazarrSubtitleTile> {
       return _noDataTile();
     }
 
-    return _subtitleTile();
+    return _subtitleContent();
   }
 
   Widget _notConfiguredTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Bazarr Not Configured',
       body: const [
-        TextSpan(text: 'Bazarr is not configured. Configure it in Settings.'),
+        TextSpan(text: 'Set up Bazarr in Settings to manage subtitles'),
       ],
       trailing: ZagIconButton(
         icon: Icons.settings_rounded,
@@ -141,17 +151,17 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Widget _loadingTile() {
     return const ZagBlock(
-      title: 'Subtitles (Bazarr)',
-      body: [TextSpan(text: 'Loading subtitle data...')],
+      title: 'Loading Subtitles',
+      body: [TextSpan(text: 'Fetching subtitle data from Bazarr...')],
       trailing: ZagLoader(),
     );
   }
 
   Widget _errorTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Connection Error',
       body: const [
-        TextSpan(text: 'Failed to load subtitle data'),
+        TextSpan(text: 'Could not load subtitle data from Bazarr'),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -165,9 +175,9 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Widget _noDataTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Not Found in Bazarr',
       body: const [
-        TextSpan(text: 'Movie not found in Bazarr'),
+        TextSpan(text: 'This wasn\'t found in your Bazarr library'),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -179,69 +189,76 @@ class _State extends State<RadarrBazarrSubtitleTile> {
     );
   }
 
-  Widget _subtitleTile() {
+  Widget _subtitleContent() {
     final existing = _bazarrMovie?.existingSubtitles ?? [];
     final missing = _bazarrMovie?.missingSubtitles ?? [];
+    final hasMissing = missing.isNotEmpty;
 
     return Column(
       children: [
+        // Status block with search action
         ZagBlock(
-          title: 'Subtitles (Bazarr)',
+          title: existing.isEmpty && missing.isEmpty
+              ? 'No Subtitle Requirements'
+              : '${existing.length} Downloaded${hasMissing ? ', ${missing.length} Missing' : ''}',
           body: [
             TextSpan(
               text: existing.isEmpty && missing.isEmpty
-                  ? 'No subtitle requirements configured'
-                  : '${existing.length} downloaded, ${missing.length} missing',
+                  ? 'Configure subtitle languages in Bazarr'
+                  : hasMissing
+                      ? 'Tap search to find missing subtitles'
+                      : 'All required subtitles are available',
             ),
           ],
           trailing: _searchingSubtitles
               ? const ZagLoader()
               : ZagIconButton(
                   icon: Icons.search_rounded,
-                  onPressed: missing.isEmpty ? null : _autoSearchSubtitles,
+                  color: hasMissing ? ZagColours.currentAccent : null,
+                  onPressed: hasMissing ? _autoSearchSubtitles : null,
                 ),
         ),
+        // Downloaded subtitles list
         if (existing.isNotEmpty)
           ZagTableCard(
-            title: 'Downloaded Subtitles',
+            title: 'Downloaded',
             content: existing.map((s) => ZagTableContent(
               title: s.name ?? s.code2 ?? 'Unknown',
-              body: [
-                if (s.forced == true) 'Forced',
-                if (s.hearingImpaired == true) 'HI',
-              ].join(', ').ifEmpty(null),
+              body: _formatSubtitleFlags(s),
             )).toList(),
           ),
+        // Missing subtitles list
         if (missing.isNotEmpty)
           ZagTableCard(
-            title: 'Missing Subtitles',
+            title: 'Missing',
             content: missing.map((s) => ZagTableContent(
               title: s.name ?? s.code2 ?? 'Unknown',
-              body: [
-                if (s.forced == true) 'Forced',
-                if (s.hearingImpaired == true) 'HI',
-              ].join(', ').ifEmpty(null),
+              body: _formatSubtitleFlags(s),
             )).toList(),
           ),
       ],
     );
   }
 
+  String? _formatSubtitleFlags(BazarrSubtitle s) {
+    final flags = <String>[];
+    if (s.forced == true) flags.add('Forced');
+    if (s.hearingImpaired == true) flags.add('HI');
+    return flags.isEmpty ? null : flags.join(' • ');
+  }
+
   Widget _proLockedTile() {
     return ZagBlock(
-      title: 'Subtitles (Bazarr)',
+      title: 'Zagreus Pro Required',
       body: const [
-        TextSpan(text: 'Zagreus Pro required to manage subtitles with Bazarr.'),
+        TextSpan(text: 'Upgrade to Pro to manage subtitles with Bazarr'),
       ],
       trailing: const ZagIconButton(icon: Icons.lock_rounded),
       onTap: () => showZagInfoSnackBar(
-        title: 'Zagreus Pro required',
-        message: 'Upgrade to access Bazarr subtitle actions.',
+        title: 'Zagreus Pro Required',
+        message: 'Upgrade to access Bazarr subtitle management',
       ),
     );
   }
 }
 
-extension _StringExtension on String {
-  String? ifEmpty(String? replacement) => isEmpty ? replacement : this;
-}

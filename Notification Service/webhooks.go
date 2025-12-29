@@ -941,6 +941,211 @@ func handleTautulliWebhook(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Tautulli webhook received"})
 }
 
+// handleTautulliWebhookWithID handles Tautulli webhooks using webhook ID for auth
+func handleTautulliWebhookWithID(c *gin.Context) {
+	webhookID := c.Param("id")
+	if webhookID == "" {
+		c.JSON(400, gin.H{"error": "Missing webhook ID"})
+		return
+	}
+
+	// Get device tokens for this webhook ID from database
+	deviceTokens, err := getDeviceTokensForWebhook(webhookID)
+	if err != nil {
+		log.Printf("Failed to get device tokens for webhook %s: %v", webhookID, err)
+		c.JSON(400, gin.H{"error": "Invalid webhook ID"})
+		return
+	}
+
+	if len(deviceTokens) == 0 {
+		log.Printf("No device tokens found for webhook %s", webhookID)
+		c.JSON(404, gin.H{"error": "No devices registered for this webhook"})
+		return
+	}
+
+	// Parse the webhook data
+	var webhookData map[string]interface{}
+	if err := c.ShouldBindJSON(&webhookData); err != nil {
+		log.Printf("Failed to parse Tautulli webhook: %v", err)
+		c.JSON(400, gin.H{"error": "Invalid webhook data"})
+		return
+	}
+
+	action := stringFromInterface(webhookData["action"])
+	if action == "" {
+		// Try event_type as fallback
+		action = stringFromInterface(webhookData["event_type"])
+	}
+
+	log.Printf("Received Tautulli webhook: %s for webhook %s (%d devices)", action, webhookID, len(deviceTokens))
+
+	// Extract common fields
+	userName := stringFromInterface(webhookData["user"])
+	mediaTitle := stringFromInterface(webhookData["title"])
+	serverName := stringFromInterface(webhookData["server_name"])
+
+	var title, body string
+	metadata := map[string]string{
+		"event_type":   action,
+		"content_type": "plex",
+	}
+	if userName != "" {
+		metadata["user"] = userName
+	}
+	if mediaTitle != "" {
+		metadata["title"] = mediaTitle
+	}
+
+	// Handle Tautulli events
+	switch action {
+	case "Test":
+		title = "Tautulli Test"
+		body = "Test notification from Tautulli"
+
+	case "PlaybackStart":
+		title = "Playback Started"
+		if userName != "" && mediaTitle != "" {
+			body = fmt.Sprintf("%s started watching %s", userName, mediaTitle)
+		} else if mediaTitle != "" {
+			body = fmt.Sprintf("Started playing: %s", mediaTitle)
+		} else {
+			body = "Playback started"
+		}
+
+	case "PlaybackStop":
+		title = "Playback Stopped"
+		if userName != "" && mediaTitle != "" {
+			body = fmt.Sprintf("%s stopped watching %s", userName, mediaTitle)
+		} else {
+			body = "Playback stopped"
+		}
+
+	case "PlaybackPause":
+		title = "Playback Paused"
+		if mediaTitle != "" {
+			body = fmt.Sprintf("Paused: %s", mediaTitle)
+		} else {
+			body = "Playback paused"
+		}
+
+	case "PlaybackResume":
+		title = "Playback Resumed"
+		if mediaTitle != "" {
+			body = fmt.Sprintf("Resumed: %s", mediaTitle)
+		} else {
+			body = "Playback resumed"
+		}
+
+	case "BufferWarning":
+		title = "Buffer Warning"
+		if userName != "" {
+			body = fmt.Sprintf("Buffering issues for %s", userName)
+		} else {
+			body = "Buffering issues detected"
+		}
+
+	case "RecentlyAdded":
+		title = "Recently Added"
+		if mediaTitle != "" {
+			body = fmt.Sprintf("%s has been added to Plex", mediaTitle)
+		} else {
+			body = "New content added to Plex"
+		}
+
+	case "PlexServerDown":
+		title = "Plex Server Down"
+		if serverName != "" {
+			body = fmt.Sprintf("%s is not responding", serverName)
+		} else {
+			body = "Plex server is not responding"
+		}
+
+	case "PlexServerBackUp":
+		title = "Plex Server Back Up"
+		if serverName != "" {
+			body = fmt.Sprintf("%s is back online", serverName)
+		} else {
+			body = "Plex server is back online"
+		}
+
+	case "PlexRemoteAccessDown":
+		title = "Remote Access Down"
+		body = "Plex remote access is down"
+
+	case "PlexRemoteAccessBackUp":
+		title = "Remote Access Restored"
+		body = "Plex remote access is back up"
+
+	case "PlexUpdateAvailable":
+		title = "Plex Update Available"
+		body = "A new version of Plex is available"
+
+	case "TautulliUpdateAvailable":
+		title = "Tautulli Update Available"
+		body = "A new version of Tautulli is available"
+
+	case "UserConcurrentStreams":
+		title = "Concurrent Streams"
+		if userName != "" {
+			body = fmt.Sprintf("%s has multiple concurrent streams", userName)
+		} else {
+			body = "Multiple concurrent streams detected"
+		}
+
+	case "UserNewDevice":
+		title = "New Device"
+		if userName != "" {
+			body = fmt.Sprintf("%s is streaming from a new device", userName)
+		} else {
+			body = "New device detected"
+		}
+
+	default:
+		log.Printf("Unknown Tautulli action: %s", action)
+		c.JSON(200, gin.H{"success": true, "message": "Action not handled: " + action})
+		return
+	}
+
+	// Build notification params
+	var params *NotificationParams
+	if len(metadata) > 0 {
+		params = &NotificationParams{
+			Metadata: metadata,
+		}
+	}
+
+	// Send notification to all device tokens
+	successCount := 0
+	payload := buildAPNsPayload(title, body, params)
+	for _, token := range deviceTokens {
+		isProduction := os.Getenv("APNS_ENVIRONMENT") == "production"
+		if err := apnsClient.SendRichNotification(token, payload, isProduction); err != nil {
+			log.Printf("Failed to send to token %s: %v", token, err)
+
+			// Check if error is 410 (Unregistered) - token is no longer valid
+			if strings.Contains(err.Error(), "status 410") || strings.Contains(err.Error(), "Unregistered") {
+				log.Printf("Token %s is unregistered, removing from database", token)
+				if removeErr := removeDeviceToken(token); removeErr != nil {
+					log.Printf("Failed to remove invalid token: %v", removeErr)
+				}
+				successCount++
+			}
+		} else {
+			successCount++
+		}
+	}
+
+	if successCount == 0 && len(deviceTokens) > 0 {
+		c.JSON(500, gin.H{"error": "Failed to send any notifications"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"success": true,
+		"message": fmt.Sprintf("Notification sent for %s to %d/%d devices", action, successCount, len(deviceTokens)),
+	})
+}
+
 // Handle webhook with user ID in URL path (Flutter app compatibility)
 func handleWebhookWithPayload(c *gin.Context) {
 	webhookID := c.Param("payload")
@@ -1184,6 +1389,202 @@ func handleWebhookWithPayload(c *gin.Context) {
 		default:
 			log.Printf("Unknown Sonarr event type: %s", eventType)
 			c.JSON(200, gin.H{"success": true, "message": "Event type not handled: " + eventType})
+			return
+		}
+
+	} else if genericWebhook["artist"] != nil {
+		// Lidarr event (has artist field)
+		artistName := "Unknown Artist"
+		if artist, ok := genericWebhook["artist"].(map[string]interface{}); ok {
+			if name := stringFromInterface(artist["name"]); name != "" {
+				artistName = name
+			}
+		}
+
+		// Extract album info if present
+		albumTitle := ""
+		if albums, ok := genericWebhook["albums"].([]interface{}); ok && len(albums) > 0 {
+			if album, ok := albums[0].(map[string]interface{}); ok {
+				albumTitle = stringFromInterface(album["title"])
+			}
+		}
+
+		metadata["event_type"] = eventType
+		metadata["content_type"] = "music"
+		metadata["artist"] = artistName
+		if albumTitle != "" {
+			metadata["album"] = albumTitle
+		}
+
+		// Handle Lidarr events
+		switch eventType {
+		case "Test":
+			title = "Lidarr Test"
+			body = "Test notification from Lidarr"
+
+		case "Grab":
+			title = "Album Grabbed"
+			if albumTitle != "" {
+				body = fmt.Sprintf("%s - %s has been grabbed", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Album by %s has been grabbed", artistName)
+			}
+
+		case "Download":
+			title = "Album Downloaded"
+			if albumTitle != "" {
+				body = fmt.Sprintf("%s - %s is ready to listen", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Album by %s is ready to listen", artistName)
+			}
+
+		case "Rename":
+			title = "Tracks Renamed"
+			body = fmt.Sprintf("Tracks for %s have been renamed", artistName)
+
+		case "Retag":
+			title = "Tracks Retagged"
+			body = fmt.Sprintf("Tracks for %s have been retagged", artistName)
+
+		case "ArtistAdd":
+			title = "Artist Added"
+			body = fmt.Sprintf("%s has been added to your library", artistName)
+
+		case "ArtistDelete":
+			title = "Artist Deleted"
+			body = fmt.Sprintf("%s has been removed from your library", artistName)
+
+		default:
+			log.Printf("Unknown Lidarr event type: %s", eventType)
+			c.JSON(200, gin.H{"success": true, "message": "Event type not handled: " + eventType})
+			return
+		}
+
+	} else if genericWebhook["action"] != nil {
+		// Tautulli event (has action field)
+		action := stringFromInterface(genericWebhook["action"])
+
+		// Extract common Tautulli fields
+		userName := stringFromInterface(genericWebhook["user"])
+		mediaTitle := stringFromInterface(genericWebhook["title"])
+		serverName := stringFromInterface(genericWebhook["server_name"])
+
+		metadata["event_type"] = action
+		metadata["content_type"] = "plex"
+		if userName != "" {
+			metadata["user"] = userName
+		}
+		if mediaTitle != "" {
+			metadata["title"] = mediaTitle
+		}
+
+		// Handle Tautulli events
+		switch action {
+		case "Test":
+			title = "Tautulli Test"
+			body = "Test notification from Tautulli"
+
+		case "PlaybackStart":
+			title = "Playback Started"
+			if userName != "" && mediaTitle != "" {
+				body = fmt.Sprintf("%s started watching %s", userName, mediaTitle)
+			} else if mediaTitle != "" {
+				body = fmt.Sprintf("Started playing: %s", mediaTitle)
+			} else {
+				body = "Playback started"
+			}
+
+		case "PlaybackStop":
+			title = "Playback Stopped"
+			if userName != "" && mediaTitle != "" {
+				body = fmt.Sprintf("%s stopped watching %s", userName, mediaTitle)
+			} else {
+				body = "Playback stopped"
+			}
+
+		case "PlaybackPause":
+			title = "Playback Paused"
+			if mediaTitle != "" {
+				body = fmt.Sprintf("Paused: %s", mediaTitle)
+			} else {
+				body = "Playback paused"
+			}
+
+		case "PlaybackResume":
+			title = "Playback Resumed"
+			if mediaTitle != "" {
+				body = fmt.Sprintf("Resumed: %s", mediaTitle)
+			} else {
+				body = "Playback resumed"
+			}
+
+		case "BufferWarning":
+			title = "Buffer Warning"
+			if userName != "" {
+				body = fmt.Sprintf("Buffering issues for %s", userName)
+			} else {
+				body = "Buffering issues detected"
+			}
+
+		case "RecentlyAdded":
+			title = "Recently Added"
+			if mediaTitle != "" {
+				body = fmt.Sprintf("%s has been added to Plex", mediaTitle)
+			} else {
+				body = "New content added to Plex"
+			}
+
+		case "PlexServerDown":
+			title = "Plex Server Down"
+			if serverName != "" {
+				body = fmt.Sprintf("%s is not responding", serverName)
+			} else {
+				body = "Plex server is not responding"
+			}
+
+		case "PlexServerBackUp":
+			title = "Plex Server Back Up"
+			if serverName != "" {
+				body = fmt.Sprintf("%s is back online", serverName)
+			} else {
+				body = "Plex server is back online"
+			}
+
+		case "PlexRemoteAccessDown":
+			title = "Remote Access Down"
+			body = "Plex remote access is down"
+
+		case "PlexRemoteAccessBackUp":
+			title = "Remote Access Restored"
+			body = "Plex remote access is back up"
+
+		case "PlexUpdateAvailable":
+			title = "Plex Update Available"
+			body = "A new version of Plex is available"
+
+		case "TautulliUpdateAvailable":
+			title = "Tautulli Update Available"
+			body = "A new version of Tautulli is available"
+
+		case "UserConcurrentStreams":
+			title = "Concurrent Streams"
+			if userName != "" {
+				body = fmt.Sprintf("%s has multiple concurrent streams", userName)
+			} else {
+				body = "Multiple concurrent streams detected"
+			}
+
+		case "UserNewDevice":
+			title = "New Device"
+			if userName != "" {
+				body = fmt.Sprintf("%s is streaming from a new device", userName)
+			} else {
+				body = "New device detected"
+			}
+
+		default:
+			log.Printf("Unknown Tautulli action: %s", action)
+			c.JSON(200, gin.H{"success": true, "message": "Action not handled: " + action})
 			return
 		}
 

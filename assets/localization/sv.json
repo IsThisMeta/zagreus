@@ -247,6 +247,7 @@
     "settings.ConnectionDetailsDescription": "Anslutningsinformation för {}",
     "settings.ConnectionDetails": "Anslutningsinformation",
     "settings.ConnectedSuccessfullyMessage": "{} är redo att användas med Zagreus!",
+    "settings.LanguageProfileRequiredMessage": "Ansluten, men du behöver lägga till en språkprofil i {}.",
     "settings.ConnectedSuccessfully": "Ansluten framgångsrikt",
     "settings.ConfigurationDescription": "Konfigurera & Ställ in Zagreus",
     "settings.Configuration": "Konfiguration",

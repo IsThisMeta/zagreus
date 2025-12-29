@@ -140,6 +140,7 @@
     "settings.ConnectionDetailsDescription": "Verbindungsdetails für {}",
     "settings.ConnectionDetails": "Verbindungsdetails",
     "settings.ConnectedSuccessfullyMessage": "{} ist bereit für die Verwendung mit Zagreus!",
+    "settings.LanguageProfileRequiredMessage": "Verbunden, aber du musst in {} ein Sprachprofil hinzufügen.",
     "settings.ConnectedSuccessfully": "Verbunden",
     "settings.ConfigureModule": "Konfiguriere {}",
     "settings.BackupToCloudSuccess": "Sicherung erfolgreich",

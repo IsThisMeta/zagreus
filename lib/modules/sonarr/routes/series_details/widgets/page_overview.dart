@@ -42,14 +42,14 @@ class _State extends State<SonarrSeriesDetailsOverviewPage>
           children: [
             SonarrSeriesDetailsOverviewDescriptionTile(series: widget.series),
             SonarrRatingsTile(series: widget.series),
-            if (widget.series.id != null)
-              SonarrBazarrSubtitleTile(sonarrSeriesId: widget.series.id!),
             SonarrSeriesDetailsOverviewInformationBlock(
               series: widget.series,
               qualityProfile: widget.qualityProfile,
               languageProfile: widget.languageProfile,
               tags: widget.tags,
-            )
+            ),
+            if (widget.series.id != null)
+              SonarrBazarrSubtitleTile(sonarrSeriesId: widget.series.id!),
           ],
         ),
       ),

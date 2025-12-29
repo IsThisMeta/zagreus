@@ -40,13 +40,13 @@ class _State extends State<RadarrMovieDetailsOverviewPage>
           children: [
             RadarrMovieDetailsOverviewDescriptionTile(movie: widget.movie),
             RadarrRottenTomatoesTile(movie: widget.movie),
-            if (widget.movie?.id != null)
-              RadarrBazarrSubtitleTile(radarrId: widget.movie!.id!),
             RadarrMovieDetailsOverviewInformationBlock(
               movie: widget.movie,
               qualityProfile: widget.qualityProfile,
               tags: widget.tags,
             ),
+            if (widget.movie?.id != null)
+              RadarrBazarrSubtitleTile(radarrId: widget.movie!.id!),
           ],
         ),
       ),

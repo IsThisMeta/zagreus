@@ -40,8 +40,14 @@ class BazarrSeries {
   @override
   String toString() => json.encode(this.toJson());
 
-  factory BazarrSeries.fromJson(Map<String, dynamic> json) =>
-      _$BazarrSeriesFromJson(json);
+  factory BazarrSeries.fromJson(Map<String, dynamic> json) {
+    final series = _$BazarrSeriesFromJson(json);
+    if (series.episodesMissing == null &&
+        json['episodeMissingCount'] is num) {
+      series.episodesMissing = (json['episodeMissingCount'] as num).toInt();
+    }
+    return series;
+  }
 
   Map<String, dynamic> toJson() => _$BazarrSeriesToJson(this);
 }
