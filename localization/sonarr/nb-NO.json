@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Mer",
-  "sonarr.ParentDirectory": "Overordnet mappe"
+  "sonarr.ParentDirectory": "Overordnet mappe",
+  "sonarr.MoveFiles": "Flytt filer",
+  "sonarr.MoveFilesDescription": "Vil du flytte filene?"
 }

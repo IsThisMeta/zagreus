@@ -298,6 +298,8 @@
     "settings.Email": "E-post",
     "sonarr.More": "Mer",
     "sonarr.ParentDirectory": "Overordnet mappe",
+    "sonarr.MoveFiles": "Flytt filer",
+    "sonarr.MoveFilesDescription": "Vil du flytte filene?",
     "tautulli.ETA": "Estimert tid igjen",
     "tautulli.Throttled": "Strupet",
     "tautulli.TerminationAttachMessage": "Du kan alternativt legge ved en avsluttingsmelding nedenfor.",

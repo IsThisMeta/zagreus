@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Més",
-  "sonarr.ParentDirectory": "Directori principal"
+  "sonarr.ParentDirectory": "Directori principal",
+  "sonarr.MoveFiles": "Mou fitxers",
+  "sonarr.MoveFilesDescription": "Voleu moure els fitxers?"
 }

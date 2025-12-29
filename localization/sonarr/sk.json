@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Viac",
-  "sonarr.ParentDirectory": "Nadradený adresár"
+  "sonarr.ParentDirectory": "Nadradený adresár",
+  "sonarr.MoveFiles": "Presunúť súbory",
+  "sonarr.MoveFilesDescription": "Chcete presunúť súbory?"
 }

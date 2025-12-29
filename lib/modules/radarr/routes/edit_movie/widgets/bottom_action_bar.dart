@@ -28,16 +28,11 @@ class RadarrEditMovieActionBar extends StatelessWidget {
     state.state = ZagLoadingState.ACTIVE;
 
     if (state.canExecuteAction && state.movie != null) {
-      bool moveFiles = false;
-      if (state.path != state.movie?.path) {
-        moveFiles = await RadarrDialogs().moveFiles();
-      }
-
       final movie = state.movie!.updateEdits(state);
       bool result = await RadarrAPIHelper().updateMovie(
         context: context,
         movie: movie,
-        moveFiles: moveFiles,
+        moveFiles: state.moveFiles,
       );
       if (result) ZagRouter().popSafely();
     }

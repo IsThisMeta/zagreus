@@ -223,5 +223,7 @@
   "sonarr.UseSeasonFoldersDescription": "Sort episodes into season folders",
   "sonarr.Video": "Video",
   "sonarr.ViewWebGUI": "View Web GUI",
-  "sonarr.WordScore": "Word Score"
+  "sonarr.WordScore": "Word Score",
+  "sonarr.MoveFiles": "Move Files",
+  "sonarr.MoveFilesDescription": "Would you like to move the files?"
 }

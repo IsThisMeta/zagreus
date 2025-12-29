@@ -33,14 +33,29 @@ class RadarrMoviesEditState extends ChangeNotifier {
   }
 
   String _path = '';
+  String _originalPath = '';
   String get path => _path;
   set path(String path) {
     _path = path;
+    if (!pathChanged) {
+      _moveFiles = false;
+    }
     notifyListeners();
   }
 
   void initializePath() {
     _path = movie!.path ?? '';
+    _originalPath = _path;
+    _moveFiles = false;
+  }
+
+  bool get pathChanged => _path != _originalPath;
+
+  bool _moveFiles = false;
+  bool get moveFiles => _moveFiles;
+  set moveFiles(bool moveFiles) {
+    _moveFiles = pathChanged ? moveFiles : false;
+    notifyListeners();
   }
 
   RadarrQualityProfile? _qualityProfile;

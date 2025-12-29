@@ -40,5 +40,7 @@
     "discover.section.magic_shows_cast_crew": "Magične serije: glumačka postava i ekipa",
     "radarr.More": "Više",
     "sonarr.More": "Više",
-    "sonarr.ParentDirectory": "Nadređeni direktorij"
+    "sonarr.ParentDirectory": "Nadređeni direktorij",
+    "sonarr.MoveFiles": "Premjesti datoteke",
+    "sonarr.MoveFilesDescription": "Želite li premjestiti datoteke?"
 }

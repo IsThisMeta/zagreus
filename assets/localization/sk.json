@@ -139,6 +139,8 @@
     "settings.Appearance": "Vzhľad",
     "sonarr.More": "Viac",
     "sonarr.ParentDirectory": "Nadradený adresár",
+    "sonarr.MoveFiles": "Presunúť súbory",
+    "sonarr.MoveFilesDescription": "Chcete presunúť súbory?",
     "tautulli.ActivityDetails": "Podrobnosti o aktivite",
     "tautulli.BackingUpConfiguration": "Zálohovanie konfigurácie…",
     "tautulli.BackingUpConfigurationDescription": "Zálohovanie konfigurácie na pozadí",

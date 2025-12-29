@@ -717,6 +717,8 @@
     "sonarr.FailedToSearchForMonitoredEpisodes": "Takip Edilen Bölümler Aranamadı",
     "sonarr.SearchingForMonitoredEpisodes": "Takip Edilen Bölümler Aranıyor…",
     "sonarr.SearchMonitored": "Takip Edilen Ara",
+    "sonarr.MoveFiles": "Dosyaları Taşı",
+    "sonarr.MoveFilesDescription": "Dosyaları taşımak istiyor musunuz?",
     "tautulli.Activity": "Etkinlik",
     "tautulli.Year": "Yıl",
     "tautulli.ViewWebGUI": "Web Grafiksel Kullanıcı Arayüzünü Görüntüle",

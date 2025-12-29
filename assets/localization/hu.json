@@ -717,6 +717,8 @@
     "sonarr.FailedToDeleteEpisodeFile": "Nem sikerült törölni az epizódfájlt",
     "sonarr.FailedToDownloadRelease": "Nem sikerült letölteni a kiadást",
     "sonarr.FailedToRemoveFromQueue": "Nem sikerült eltávolítani a sorból",
+    "sonarr.MoveFiles": "Fájlok átnevezése",
+    "sonarr.MoveFilesDescription": "Szeretné áthelyezni a fájlokat?",
     "tautulli.Throttled": "Throttle",
     "tautulli.Year": "Év",
     "tautulli.ViewWebGUI": "Webes kezelőfelület megjelenítése",

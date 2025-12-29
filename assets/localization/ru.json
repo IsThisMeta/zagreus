@@ -193,6 +193,8 @@
     "sonarr.DestinationRelative": "Относительное назначение",
     "sonarr.More": "Больше",
     "sonarr.ParentDirectory": "Родительская папка",
+    "sonarr.MoveFiles": "Переместить файлы",
+    "sonarr.MoveFilesDescription": "Хотите переместить файлы?",
     "tautulli.Year": "Год",
     "tautulli.Video": "Видео",
     "tautulli.Users": "Пользователи",

@@ -480,6 +480,8 @@
     "sonarr.DownloadedWaitingToImport": "Baixado: Aguardando para importar",
     "sonarr.DownloadedWaitingToProcess": "Baixado: Aguardando para processar",
     "sonarr.EmptyQueue": "Fila vazia",
+    "sonarr.MoveFiles": "Mover arquivos",
+    "sonarr.MoveFilesDescription": "Deseja mover os arquivos?",
     "tautulli.Terminate": "Terminar",
     "tautulli.Subtitle": "Legenda",
     "tautulli.Stream": "Transmissão",

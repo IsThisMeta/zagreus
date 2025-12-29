@@ -34,6 +34,7 @@ class SonarrEditSeriesActionBar extends StatelessWidget {
         bool result = await SonarrAPIController().updateSeries(
           context: context,
           series: series,
+          moveFiles: context.read<SonarrSeriesEditState>().moveFiles,
         );
         if (result) ZagRouter().popSafely();
       }

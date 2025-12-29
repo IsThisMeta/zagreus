@@ -759,6 +759,8 @@
     "sonarr.FailedToDeleteEpisodeFiles": "Löschen der Episodendateien fehlgeschlagen",
     "sonarr.NoEpisodeFilesFoundDeleteMessage": "Keine der ausgewählten Episoden haben Dateien zum Löschen",
     "sonarr.SearchingForEpisodes": "Suche nach Episoden…",
+    "sonarr.MoveFiles": "Datei verschieben",
+    "sonarr.MoveFilesDescription": "Möchten Sie die Dateien verschieben?",
     "tautulli.TerminateSessionFailed": "Abbrechen der Sitzung fehlgeschlagen",
     "tautulli.TerminateSession": "Sitzung abbrechen",
     "tautulli.TerminatedSession": "Abgebrochene Sitzung",

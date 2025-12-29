@@ -384,6 +384,7 @@ class SonarrAPIController {
   Future<bool> updateSeries({
     required BuildContext context,
     required SonarrSeries series,
+    bool moveFiles = false,
     bool showSnackbar = true,
   }) async {
     if (context.read<SonarrState>().enabled) {
@@ -391,7 +392,7 @@ class SonarrAPIController {
           .read<SonarrState>()
           .api!
           .series
-          .update(series: series)
+          .update(series: series, moveFiles: moveFiles)
           .then((_) async {
         return await context
             .read<SonarrState>()

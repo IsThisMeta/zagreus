@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Mer",
-  "sonarr.ParentDirectory": "Överordnad katalog"
+  "sonarr.ParentDirectory": "Överordnad katalog",
+  "sonarr.MoveFiles": "Flytta filer",
+  "sonarr.MoveFilesDescription": "Vill du flytta filerna?"
 }

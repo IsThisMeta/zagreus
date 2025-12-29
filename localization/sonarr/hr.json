@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Više",
-  "sonarr.ParentDirectory": "Nadređeni direktorij"
+  "sonarr.ParentDirectory": "Nadređeni direktorij",
+  "sonarr.MoveFiles": "Premjesti datoteke",
+  "sonarr.MoveFilesDescription": "Želite li premjestiti datoteke?"
 }

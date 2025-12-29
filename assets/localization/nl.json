@@ -421,6 +421,8 @@
     "sonarr.Usenet": "Usenet",
     "sonarr.UseSeasonFolders": "Gebruik seizoen mappen",
     "sonarr.WordScore": "Woord score",
+    "sonarr.MoveFiles": "Bestanden verplaatsen",
+    "sonarr.MoveFilesDescription": "Wil je de bestanden verplaatsen?",
     "tautulli.Activity": "Activiteit",
     "tautulli.ActivityDetails": "Activiteit Details",
     "tautulli.Audio": "Geluid",

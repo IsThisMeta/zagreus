@@ -293,6 +293,8 @@
     "settings.AccountHelp": "Account Zagreus",
     "sonarr.More": "Più",
     "sonarr.ParentDirectory": "Directory principale",
+    "sonarr.MoveFiles": "Sposta file",
+    "sonarr.MoveFilesDescription": "Vuoi spostare i file?",
     "tautulli.Bandwidth": "Larghezza di banda",
     "tautulli.BackingUpDatabase": "Backup della banca dati…",
     "tautulli.BackingUpConfiguration": "Backup della configurazione…",

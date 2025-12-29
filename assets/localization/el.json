@@ -777,6 +777,8 @@
     "sonarr.MissingEpisodesHint1": "Είστε βέβαιοι ότι θέλετε να αναζητήσετε όλα τα επεισόδια που λείπουν;",
     "sonarr.RelativePath": "Σχετική διαδρομή",
     "sonarr.RunningRSSSyncDescription": "Εκτέλεση συγχρονισμού RSS στο παρασκήνιο",
+    "sonarr.MoveFiles": "Μετακίνηση αρχείων",
+    "sonarr.MoveFilesDescription": "Θέλετε να μετακινήσετε τα αρχεία;",
     "tautulli.Activity": "Δραστηριότητα",
     "tautulli.ActivityDetails": "Λεπτομέρειες δραστηριότητας",
     "tautulli.ActivityRefreshRate": "Ρυθμός ανανέωσης δραστηριότητας",

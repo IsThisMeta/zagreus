@@ -789,6 +789,8 @@
     "sonarr.Video": "Video",
     "sonarr.ViewWebGUI": "View Web GUI",
     "sonarr.WordScore": "Word Score",
+    "sonarr.MoveFiles": "Move Files",
+    "sonarr.MoveFilesDescription": "Would you like to move the files?",
     "tautulli.Activity": "Activity",
     "tautulli.ActivityDetails": "Activity Details",
     "tautulli.ActivityRefreshRate": "Activity Refresh Rate",

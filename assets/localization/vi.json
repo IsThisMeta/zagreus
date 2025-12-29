@@ -22,6 +22,8 @@
     "radarr.More": "Thêm",
     "sonarr.More": "Thêm",
     "sonarr.ParentDirectory": "Thư mục cha",
+    "sonarr.MoveFiles": "Di chuyển tệp",
+    "sonarr.MoveFilesDescription": "Bạn có muốn di chuyển các tệp không?",
     "zagreus.Add": "Thêm",
     "zagreus.ChangeProfiles": "Thay đổi thông tin",
     "zagreus.Changelog": "Bản ghi các thay đổi",

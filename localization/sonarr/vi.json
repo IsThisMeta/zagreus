@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Thêm",
-  "sonarr.ParentDirectory": "Thư mục cha"
+  "sonarr.ParentDirectory": "Thư mục cha",
+  "sonarr.MoveFiles": "Di chuyển tệp",
+  "sonarr.MoveFilesDescription": "Bạn có muốn di chuyển các tệp không?"
 }

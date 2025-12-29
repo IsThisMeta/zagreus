@@ -1,4 +1,6 @@
 {
   "sonarr.More": "Più",
-  "sonarr.ParentDirectory": "Directory principale"
+  "sonarr.ParentDirectory": "Directory principale",
+  "sonarr.MoveFiles": "Sposta file",
+  "sonarr.MoveFilesDescription": "Vuoi spostare i file?"
 }
