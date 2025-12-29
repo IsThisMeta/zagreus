@@ -65,10 +65,15 @@ class EpisodeSubtitleRow extends StatelessWidget {
         ),
         const SizedBox(width: 4.0),
         Flexible(
-          child: Wrap(
-            spacing: 4.0,
-            runSpacing: 2.0,
-            children: tags,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: tags
+                  .expand((tag) => [tag, const SizedBox(width: 4.0)])
+                  .take(tags.length * 2 - 1) // Remove trailing spacer
+                  .toList(),
+            ),
           ),
         ),
       ],
