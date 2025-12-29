@@ -899,6 +899,53 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
+          title: 'Enable Tautulli Notifications',
+          body: [],
+          trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+            builder: (context, _) {
+              final notificationsEnabled =
+                  ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+              return ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.listenableBuilder(
+                builder: (context, _) => ZagSwitch(
+                  value: ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.read(),
+                  onChanged: notificationsEnabled
+                      ? (value) async {
+                          // Update local preference first
+                          ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.update(value);
+
+                          // Update backend preference
+                          try {
+                            final webhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
+                            if (webhookID.isEmpty) {
+                              ZagLogger().warning('No webhook ID found, skipping backend update');
+                              return;
+                            }
+
+                            final response = await http.post(
+                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/tautulli'),
+                              headers: {'Content-Type': 'application/json'},
+                              body: json.encode({
+                                'webhook_id': webhookID,
+                                'enabled': value,
+                              }),
+                            );
+
+                            if (response.statusCode == 200) {
+                              ZagLogger().debug('Tautulli preference updated: enabled=$value');
+                            } else {
+                              ZagLogger().warning('Failed to update Tautulli preference: ${response.statusCode}');
+                            }
+                          } catch (e, stackTrace) {
+                            ZagLogger().error('Failed to update Tautulli preference', e, stackTrace);
+                          }
+                        }
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+        ZagBlock(
           title: 'Copy Webhook URL',
           body: [
             TextSpan(
