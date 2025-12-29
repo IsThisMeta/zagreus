@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/api/bazarr/models.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 
@@ -119,6 +120,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
             state.episodes!,
             state.files!,
             state.queue,
+            state.bazarrEpisodes ?? Future.value(<int, BazarrEpisode>{}),
           ]),
           builder: (
             context,
@@ -139,6 +141,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
                 episodes: snapshot.data![0] as Map<int, SonarrEpisode>,
                 episodeFiles: snapshot.data![1] as Map<int, SonarrEpisodeFile>,
                 queue: snapshot.data![2] as List<SonarrQueueRecord>,
+                bazarrEpisodes: snapshot.data![3] as Map<int, BazarrEpisode>,
               );
             return const ZagLoader();
           },
@@ -151,6 +154,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
     required Map<int, SonarrEpisode> episodes,
     required Map<int, SonarrEpisodeFile> episodeFiles,
     required List<SonarrQueueRecord> queue,
+    required Map<int, BazarrEpisode> bazarrEpisodes,
   }) {
     if (episodes.isEmpty) {
       return ZagMessage(
@@ -164,6 +168,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
       episodes: episodes,
       episodeFiles: episodeFiles,
       queue: queue,
+      bazarrEpisodes: bazarrEpisodes,
     );
 
     return ZagListViewBuilder(
@@ -177,6 +182,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
     required Map<int, SonarrEpisode> episodes,
     required Map<int, SonarrEpisodeFile>? episodeFiles,
     required List<SonarrQueueRecord>? queue,
+    required Map<int, BazarrEpisode>? bazarrEpisodes,
   }) {
     List<SonarrEpisode> _episodes = episodes.values.toList()
       ..sort((a, b) {
@@ -195,6 +201,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
                     ? episodeFiles[episode.episodeFileId!]
                     : null,
                 queueRecords: _findQueueRecords(queue!, episode.id),
+                bazarrEpisode: bazarrEpisodes?[episode.id],
               ))
           .toList();
     }
@@ -211,6 +218,7 @@ class _State extends State<SonarrSeasonDetailsEpisodesPage>
               ? episodeFiles[episode.episodeFileId!]
               : null,
           queueRecords: _findQueueRecords(queue!, episode.id),
+          bazarrEpisode: bazarrEpisodes?[episode.id],
         ));
       });
     });

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
-import 'package:zagreus/modules/radarr/routes/movie_details/widgets/bazarr/subtitle_tile.dart';
 
 class RadarrMovieDetailsFilesPage extends StatefulWidget {
   const RadarrMovieDetailsFilesPage({
@@ -74,13 +73,11 @@ class _State extends State<RadarrMovieDetailsFilesPage>
         onTap: _refreshKey.currentState!.show,
       );
     }
-    final movieId = context.read<RadarrMovieDetailsState>().movie.id;
     return ZagListView(
       controller: RadarrMovieDetailsNavigationBar.scrollControllers[1],
       children: [
         if (movieFiles.isNotEmpty) ..._filesTiles(movieFiles),
         if (extraFiles.isNotEmpty) ..._extraFilesTiles(extraFiles),
-        if (movieId != null) RadarrBazarrSubtitleTile(radarrId: movieId),
       ],
     );
   }

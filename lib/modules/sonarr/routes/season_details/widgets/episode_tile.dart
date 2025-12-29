@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/api/bazarr/models.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
@@ -7,12 +8,14 @@ class SonarrEpisodeTile extends StatefulWidget {
   final SonarrEpisode episode;
   final SonarrEpisodeFile? episodeFile;
   final List<SonarrQueueRecord>? queueRecords;
+  final BazarrEpisode? bazarrEpisode;
 
   const SonarrEpisodeTile({
     Key? key,
     required this.episode,
     this.episodeFile,
     this.queueRecords,
+    this.bazarrEpisode,
   }) : super(key: key);
 
   @override
@@ -24,12 +27,20 @@ class _State extends State<SonarrEpisodeTile> {
 
   @override
   Widget build(BuildContext context) {
+    // Show subtitle row if there are any subtitles configured (existing or missing)
+    final hasAnySubtitles =
+        (widget.bazarrEpisode?.existingSubtitles?.isNotEmpty ?? false) ||
+        (widget.bazarrEpisode?.missingSubtitles?.isNotEmpty ?? false);
+
     return ZagBlock(
       disabled: !widget.episode.monitored!,
       title: widget.episode.title,
       body: _body(),
       leading: _leading(),
       trailing: _trailing(),
+      bottom: hasAnySubtitles
+          ? EpisodeSubtitleRow(bazarrEpisode: widget.bazarrEpisode)
+          : null,
       onTap: _onTap,
       onLongPress: _onLongPress,
       backgroundColor: context

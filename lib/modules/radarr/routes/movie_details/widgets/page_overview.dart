@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/routes/movie_details/widgets/bazarr/subtitle_tile.dart';
 import 'package:zagreus/modules/radarr/routes/movie_details/widgets/rotten_tomatoes_tile.dart';
 
 class RadarrMovieDetailsOverviewPage extends StatefulWidget {
@@ -44,6 +45,8 @@ class _State extends State<RadarrMovieDetailsOverviewPage>
               qualityProfile: widget.qualityProfile,
               tags: widget.tags,
             ),
+            if (widget.movie?.id != null)
+              RadarrBazarrSubtitleTile(radarrId: widget.movie!.id!),
           ],
         ),
       ),

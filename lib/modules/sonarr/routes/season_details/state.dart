@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/api/bazarr/bazarr.dart';
+import 'package:zagreus/api/bazarr/models.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SonarrSeasonDetailsState extends ChangeNotifier {
   final int seriesId;
@@ -24,6 +27,7 @@ class SonarrSeasonDetailsState extends ChangeNotifier {
     bool shouldFetchQueue = true,
     bool queueHardCheck = true,
     bool shouldFetchMostRecentEpisodeHistory = true,
+    bool shouldFetchBazarrEpisodes = true,
   }) async {
     if (shouldFetchEpisodes) fetchEpisodes(context);
     if (shouldFetchFiles) fetchFiles(context);
@@ -31,6 +35,7 @@ class SonarrSeasonDetailsState extends ChangeNotifier {
     if (shouldFetchQueue) fetchQueue(context, hardCheck: queueHardCheck);
     if (shouldFetchMostRecentEpisodeHistory)
       fetchEpisodeHistory(context, currentEpisodeId);
+    if (shouldFetchBazarrEpisodes) fetchBazarrEpisodes();
   }
 
   @override
@@ -209,6 +214,45 @@ class SonarrSeasonDetailsState extends ChangeNotifier {
       selectedEpisodes.addAll(eps);
     }
 
+    notifyListeners();
+  }
+
+  // Bazarr subtitle data for episodes
+  Future<Map<int, BazarrEpisode>>? _bazarrEpisodes;
+  Future<Map<int, BazarrEpisode>>? get bazarrEpisodes => _bazarrEpisodes;
+
+  BazarrAPI? _getBazarrApi() {
+    if (!ZagreusPro.isEnabled) return null;
+    final profile = ZagProfile.current;
+    if (!profile.bazarrEnabled) return null;
+    final host = profile.effectiveBazarrHost();
+    if (host.isEmpty || profile.bazarrKey.isEmpty) return null;
+    return BazarrAPI(
+      host: host,
+      apiKey: profile.bazarrKey,
+      headers: Map<String, dynamic>.from(profile.bazarrHeaders),
+    );
+  }
+
+  Future<void> fetchBazarrEpisodes() async {
+    final api = _getBazarrApi();
+    if (api == null) {
+      _bazarrEpisodes = Future.value({});
+      notifyListeners();
+      return;
+    }
+
+    _bazarrEpisodes = api.episode.getForSeries(seriesId: seriesId).then(
+      (episodes) {
+        return {
+          for (BazarrEpisode e in episodes)
+            if (e.sonarrEpisodeId != null) e.sonarrEpisodeId!: e,
+        };
+      },
+    ).catchError((e) {
+      ZagLogger().error('Failed to load Bazarr episodes', e, StackTrace.current);
+      return <int, BazarrEpisode>{};
+    });
     notifyListeners();
   }
 }
