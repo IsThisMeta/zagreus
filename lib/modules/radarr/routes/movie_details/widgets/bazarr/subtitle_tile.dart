@@ -159,25 +159,66 @@ class _State extends State<RadarrBazarrSubtitleTile> {
   Widget _subtitleContent() {
     final existing = _bazarrMovie?.existingSubtitles ?? [];
     final missing = _bazarrMovie?.missingSubtitles ?? [];
-    final hasMissing = missing.isNotEmpty;
-
-    String title;
-    String subtitle;
 
     if (existing.isEmpty && missing.isEmpty) {
-      title = 'No Subtitle Requirements';
-      subtitle = 'Configure subtitle languages in Bazarr';
-    } else if (hasMissing) {
-      title = '${existing.length} Downloaded, ${missing.length} Missing';
-      subtitle = 'Search for subtitles on the Files tab';
+      return ZagBlock(
+        title: 'No Subtitle Requirements',
+        body: const [TextSpan(text: 'Configure subtitle languages in Bazarr')],
+      );
+    }
+
+    // Determine CC icon color based on subtitle status
+    final bool hasAllSubtitles = missing.isEmpty && existing.isNotEmpty;
+    final bool hasSomeSubtitles = existing.isNotEmpty;
+
+    Color ccIconColor;
+    if (hasAllSubtitles) {
+      ccIconColor = ZagColours.currentAccent;
+    } else if (hasSomeSubtitles) {
+      ccIconColor = ZagColours.currentAccent.withOpacity(0.7);
     } else {
-      title = 'All Subtitles Downloaded';
-      subtitle = '${existing.length} subtitle${existing.length == 1 ? '' : 's'} available';
+      ccIconColor = Theme.of(context).brightness == Brightness.dark
+          ? ZagColours.grey
+          : Colors.grey.shade600;
+    }
+
+    // Build list of subtitle tags (existing first, then missing)
+    List<Widget> tags = [];
+
+    for (final subtitle in existing) {
+      tags.add(_SubtitleTag(subtitle: subtitle, isDownloaded: true));
+    }
+
+    for (final subtitle in missing) {
+      tags.add(_SubtitleTag(subtitle: subtitle, isDownloaded: false));
     }
 
     return ZagBlock(
-      title: title,
-      body: [TextSpan(text: subtitle)],
+      title: 'Subtitles',
+      body: const [],
+      bottom: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.closed_caption_rounded,
+            size: 16.0,
+            color: ccIconColor,
+          ),
+          const SizedBox(width: 4.0),
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: tags
+                    .expand((tag) => [tag, const SizedBox(width: 4.0)])
+                    .take(tags.length * 2 - 1)
+                    .toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -191,6 +232,51 @@ class _State extends State<RadarrBazarrSubtitleTile> {
       onTap: () => showZagInfoSnackBar(
         title: 'Zagreus Pro Required',
         message: 'Upgrade to access Bazarr subtitle management',
+      ),
+    );
+  }
+}
+
+class _SubtitleTag extends StatelessWidget {
+  final BazarrSubtitle subtitle;
+  final bool isDownloaded;
+
+  const _SubtitleTag({
+    Key? key,
+    required this.subtitle,
+    required this.isDownloaded,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final String label = subtitle.name ?? subtitle.code2 ?? 'Unknown';
+
+    // Downloaded: accent color border, Missing: gray border
+    final borderColor = isDownloaded
+        ? ZagColours.currentAccent
+        : (isDark ? ZagColours.grey : Colors.grey.shade500);
+
+    final textColor = isDownloaded
+        ? (isDark ? Colors.white : Colors.black87)
+        : (isDark ? ZagColours.grey : Colors.grey.shade600);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 1.0),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: borderColor,
+          width: 1.0,
+        ),
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.0,
+          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+          color: textColor,
+        ),
       ),
     );
   }
