@@ -16,12 +16,16 @@ class _QuickButtonService {
   final ZagModule module;
   final Color color;
   final VoidCallback onTap;
+  final String? labelOverride;
 
   const _QuickButtonService({
     required this.module,
     required this.color,
     required this.onTap,
+    this.labelOverride,
   });
+
+  String get label => labelOverride ?? module.title;
 }
 
 /// A horizontal wrap of quick access buttons to navigate to configured services.
@@ -97,12 +101,13 @@ class QuickButtonsSection extends StatelessWidget {
       ));
     }
 
-    // Overseerr
+    // Overseerr (displayed as "Seerr")
     if (enabledButtons.contains('overseerr') && context.read<OverseerrState>().enabled) {
       services.add(_QuickButtonService(
         module: ZagModule.OVERSEERR,
         color: ZagColours.overseerr,
         onTap: () => ZagModule.OVERSEERR.launch(restore: false),
+        labelOverride: 'Seerr',
       ));
     }
 
@@ -177,7 +182,7 @@ class _QuickButton extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                service.module.title,
+                service.label,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
