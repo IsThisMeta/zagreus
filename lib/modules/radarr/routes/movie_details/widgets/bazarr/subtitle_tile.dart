@@ -167,21 +167,6 @@ class _State extends State<RadarrBazarrSubtitleTile> {
       );
     }
 
-    // Determine CC icon color based on subtitle status
-    final bool hasAllSubtitles = missing.isEmpty && existing.isNotEmpty;
-    final bool hasSomeSubtitles = existing.isNotEmpty;
-
-    Color ccIconColor;
-    if (hasAllSubtitles) {
-      ccIconColor = ZagColours.currentAccent;
-    } else if (hasSomeSubtitles) {
-      ccIconColor = ZagColours.currentAccent.withOpacity(0.7);
-    } else {
-      ccIconColor = Theme.of(context).brightness == Brightness.dark
-          ? ZagColours.grey
-          : Colors.grey.shade600;
-    }
-
     // Build list of subtitle tags (existing first, then missing)
     List<Widget> tags = [];
 
@@ -196,28 +181,15 @@ class _State extends State<RadarrBazarrSubtitleTile> {
     return ZagBlock(
       title: 'Subtitles',
       body: const [],
-      bottom: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.closed_caption_rounded,
-            size: 16.0,
-            color: ccIconColor,
-          ),
-          const SizedBox(width: 4.0),
-          Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: tags
-                    .expand((tag) => [tag, const SizedBox(width: 4.0)])
-                    .take(tags.length * 2 - 1)
-                    .toList(),
-              ),
-            ),
-          ),
-        ],
+      bottom: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: tags
+              .expand((tag) => [tag, const SizedBox(width: 4.0)])
+              .take(tags.length * 2 - 1)
+              .toList(),
+        ),
       ),
     );
   }
