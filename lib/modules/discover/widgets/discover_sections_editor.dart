@@ -114,6 +114,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return 'NZBget';
       case 'unraid':
         return 'Unraid';
+      case 'search':
+        return 'Search';
       default:
         return service;
     }
@@ -143,6 +145,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'sabnzbd',
     'nzbget',
     'unraid',
+    'search',
   ];
 
   late Future<List<CustomSectionConfig>> _customMovieSectionsFuture;

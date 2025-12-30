@@ -8,6 +8,7 @@ import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
+import 'package:zagreus/modules/search/core/state.dart';
 import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/vendor.dart';
 
@@ -144,6 +145,15 @@ class QuickButtonsSection extends StatelessWidget {
         module: ZagModule.UNRAID,
         color: ZagColours.unraid,
         onTap: () => ZagModule.UNRAID.launch(restore: false),
+      ));
+    }
+
+    // Search
+    if (enabledButtons.contains('search') && ZagModule.SEARCH.isEnabled) {
+      services.add(_QuickButtonService(
+        module: ZagModule.SEARCH,
+        color: ZagModule.SEARCH.color,
+        onTap: () => ZagModule.SEARCH.launch(restore: false),
       ));
     }
 
