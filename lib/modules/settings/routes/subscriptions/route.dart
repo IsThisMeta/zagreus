@@ -372,13 +372,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades and premium features!";
     } else {
       introText = 'Zagreus Pro unlocks:\n'
-          '• Premium Dashboard\n'
+          '• Dashboard Pro\n'
           '• Unraid\n'
           '• Overseerr\n'
           '• Prowlarr\n'
-          '• Multiple instances per profile\n'
           '• Enhanced Cast & Crew\n'
           '• Ratings & Links\n'
+          '• Local/Remote Network Switching\n'
+          '• Multiple instances per profile\n'
           '• And more\n\n'
           'Choose a plan to get started.';
     }
