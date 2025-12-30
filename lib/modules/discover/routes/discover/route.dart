@@ -57,6 +57,7 @@ import 'package:zagreus/modules/discover/widgets/sections/recently_released_movi
 import 'package:zagreus/modules/discover/widgets/sections/trending_new_tv_shows_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/up_next_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/airing_next_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/quick_buttons_section.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/ui_preferences.dart';
@@ -2813,6 +2814,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 isMovieTab: true,
               )
             : null,
+        quickButtons: const QuickButtonsSection(),
         sections: buildMovieSections(
           DiscoverMoviesSectionData(
             showTitles: _showTitles,
@@ -2865,6 +2867,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 isMovieTab: false,
               )
             : null,
+        quickButtons: const QuickButtonsSection(),
         sections: buildTvSections(
           DiscoverTvSectionData(
             showTitles: _showTitles,

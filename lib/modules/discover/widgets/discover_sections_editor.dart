@@ -94,6 +94,31 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     return translated == key ? sectionKey : translated;
   }
 
+  String _getQuickButtonDisplayName(String service) {
+    switch (service) {
+      case 'radarr':
+        return 'Radarr';
+      case 'sonarr':
+        return 'Sonarr';
+      case 'lidarr':
+        return 'Lidarr';
+      case 'readarr':
+        return 'Readarr';
+      case 'overseerr':
+        return 'Overseerr';
+      case 'tautulli':
+        return 'Tautulli';
+      case 'sabnzbd':
+        return 'SABnzbd';
+      case 'nzbget':
+        return 'NZBget';
+      case 'unraid':
+        return 'Unraid';
+      default:
+        return service;
+    }
+  }
+
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
@@ -105,6 +130,20 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   bool _showHeroCarousel = true;
   bool _hideInLibraryFromHero = false;
   String _trendingTimeWindow = 'week';
+  List<String> _quickButtons = [];
+
+  // All available quick button services
+  static const List<String> _allQuickButtonServices = [
+    'radarr',
+    'sonarr',
+    'lidarr',
+    'readarr',
+    'overseerr',
+    'tautulli',
+    'sabnzbd',
+    'nzbget',
+    'unraid',
+  ];
 
   late Future<List<CustomSectionConfig>> _customMovieSectionsFuture;
   late Future<List<CustomSectionConfig>> _customTVSectionsFuture;
@@ -185,6 +224,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     if (savedTimeWindow == 'day' || savedTimeWindow == 'week') {
       _trendingTimeWindow = savedTimeWindow;
     }
+
+    // Load quick buttons setting (empty by default)
+    final savedQuickButtons =
+        ZagreusDatabase.DISCOVER_QUICK_BUTTONS.read() as List;
+    _quickButtons = List<String>.from(savedQuickButtons);
   }
 
   /// Load settings that are device-specific (poster height, hero height, columns per row)
@@ -256,6 +300,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO
         .update(_hideInLibraryFromHero);
     ZagreusDatabase.DISCOVER_TRENDING_TIME_WINDOW.update(_trendingTimeWindow);
+    ZagreusDatabase.DISCOVER_QUICK_BUTTONS.update(_quickButtons);
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
@@ -278,6 +323,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showHeroCarousel = true;
       _hideInLibraryFromHero = false;
       _trendingTimeWindow = 'week';
+      _quickButtons = [];
       _hasChanges = true;
     });
     widget.onHasChangesChanged?.call(_hasChanges);
@@ -632,6 +678,53 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   ? Colors.white54
                   : Colors.black45,
             ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Quick Buttons',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Show quick navigation buttons below the hero carousel.',
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _allQuickButtonServices.map((service) {
+              final isSelected = _quickButtons.contains(service);
+              final displayName = _getQuickButtonDisplayName(service);
+              return FilterChip(
+                label: Text(displayName),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      _quickButtons.add(service);
+                    } else {
+                      _quickButtons.remove(service);
+                    }
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+                selectedColor: ZagColours.accentColor(context).withOpacity(0.3),
+                checkmarkColor: ZagColours.accentColor(context),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 32),
           Text(

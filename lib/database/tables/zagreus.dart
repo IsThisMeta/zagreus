@@ -150,6 +150,9 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_IPAD_POSTER_HEIGHT<double>(250.0), // Range: 150-350
   DASHBOARD_SHOW_MODULES_TAB<bool>(true),
   DISCOVER_SHOW_MODULES_TAB<bool>(false),
+  // Quick Buttons: list of enabled service keys (empty = none shown by default)
+  // e.g. ["radarr", "sonarr", "lidarr"]
+  DISCOVER_QUICK_BUTTONS<List>([]),
   SHOW_CALENDAR_TAB<bool>(true),
   SHOW_AGENT_TAB<bool>(true),
   UNRAID_CONFIRM_ACTIONS<bool>(true),

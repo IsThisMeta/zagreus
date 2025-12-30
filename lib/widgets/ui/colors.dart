@@ -78,6 +78,17 @@ class ZagColours {
   static const Color search = Color(0xFFDF5D02);
   static const Color gold = Color(0xFFFFD700);  // Luminous gold for Supreme tier
 
+  // Service brand colors (for quick buttons)
+  static const Color radarr = Color(0xFFFFC230);    // Gold/amber
+  static const Color sonarr = Color(0xFF35C5BB);    // Teal
+  static const Color lidarr = Color(0xFF00BC8C);    // Green
+  static const Color readarr = Color(0xFF8E3B3F);   // Dark red/burgundy
+  static const Color overseerr = Color(0xFF6366F1); // Indigo
+  static const Color tautulli = Color(0xFFE5A00D);  // Gold/amber
+  static const Color sabnzbd = Color(0xFFF0A000);   // Orange
+  static const Color nzbget = Color(0xFF4CAF50);    // Green
+  static const Color unraid = Color(0xFFE22D2D);    // Red
+
   /// Shades of White
   static const Color white = Color(0xFFFFFFFF);
   static const Color white70 = Color(0xB3FFFFFF);

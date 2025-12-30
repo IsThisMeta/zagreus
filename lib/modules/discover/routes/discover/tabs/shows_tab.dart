@@ -5,6 +5,7 @@ class DiscoverShowsTabData {
   final RefreshCallback onRefresh;
   final ScrollController scrollController;
   final Widget? heroCarousel;
+  final Widget? quickButtons;
   final List<Widget> sections;
   final Widget? aiSignInGate;
   final Widget customSectionsArea;
@@ -21,6 +22,7 @@ class DiscoverShowsTabData {
     required this.zAutoRefreshNote,
     required this.metadataCredits,
     this.heroCarousel,
+    this.quickButtons,
     this.aiSignInGate,
   });
 }
@@ -45,6 +47,8 @@ class DiscoverShowsTab extends StatelessWidget {
         children: [
           // Hero carousel (could be TV shows specific)
           if (data.heroCarousel != null) data.heroCarousel!,
+          // Quick buttons for service navigation
+          if (data.quickButtons != null) data.quickButtons!,
           // TV shows sections in custom order
           ...data.sections,
           // Single grouped sign-in gate for all AI sections (Up Next / Magic / Custom Sections)

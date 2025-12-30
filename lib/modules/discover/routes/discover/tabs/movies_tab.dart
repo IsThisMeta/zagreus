@@ -8,6 +8,7 @@ class DiscoverMoviesTabData {
   final VoidCallback onRetry;
   final ScrollController scrollController;
   final Widget? heroCarousel;
+  final Widget? quickButtons;
   final List<Widget> sections;
   final Widget? aiSignInGate;
   final Widget customSectionsArea;
@@ -27,6 +28,7 @@ class DiscoverMoviesTabData {
     required this.zAutoRefreshNote,
     required this.metadataCredits,
     this.heroCarousel,
+    this.quickButtons,
     this.aiSignInGate,
   });
 }
@@ -269,6 +271,8 @@ class DiscoverMoviesTab extends StatelessWidget {
         children: [
           // Hero carousel
           if (data.heroCarousel != null) data.heroCarousel!,
+          // Quick buttons for service navigation
+          if (data.quickButtons != null) data.quickButtons!,
           // Content sections in custom order
           ...data.sections,
           // Single grouped sign-in gate for all AI sections (Deep Cuts / Magic / Custom Sections)
