@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:zagreus/api/prowlarr/prowlarr.dart';
 import 'package:zagreus/database/models/indexer.dart';
 

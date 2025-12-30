@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
-import 'package:zagreus/widgets/sheets/download_client/button.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/models/indexer.dart';
 
@@ -33,9 +32,6 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
       useDrawer: true,
       title: ZagModule.SEARCH.title,
       scrollControllers: [scrollController],
-      actions: const [
-        DownloadClientButton(),
-      ],
     );
   }
 
