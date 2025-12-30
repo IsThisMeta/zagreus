@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/prowlarr/core.dart';
+import 'package:zagreus/modules/prowlarr/widgets/widgets.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
@@ -482,275 +483,26 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
     final results = state.filteredAndSortedResults;
 
     if (results.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off_rounded, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              state.searchResults.isEmpty
-                  ? 'No results found'
-                  : 'No results match your filters',
-              style: const TextStyle(fontSize: 16),
-            ),
-            if (state.filterConfig.hasActiveFilters) ...[
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: state.clearFilters,
-                icon: const Icon(Icons.clear_all_rounded),
-                label: const Text('Clear Filters'),
-              ),
-            ],
-          ],
-        ),
+      return ZagMessage(
+        text: state.searchResults.isEmpty
+            ? 'search.NoResultsFound'.tr()
+            : 'No results match your filters',
+        buttonText: state.filterConfig.hasActiveFilters ? 'Clear Filters' : null,
+        onTap: state.filterConfig.hasActiveFilters ? state.clearFilters : null,
       );
     }
 
-    return Column(
-      children: [
-        // Results count and active sort indicator
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Text(
-                '${results.length} result${results.length == 1 ? '' : 's'}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
-              ),
-              if (state.filterConfig.hasActiveFilters) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: ZagColours.accentColor(context).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Filtered',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: ZagColours.accentColor(context),
-                    ),
-                  ),
-                ),
-              ],
-              const Spacer(),
-              Text(
-                state.sortOption.label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        // Results list
-        Expanded(
-          child: ListView.builder(
-            itemCount: results.length,
-            itemBuilder: (context, index) {
-              final item = results[index];
-              return _buildResultTile(context, item);
-            },
-          ),
-        ),
-      ],
+    return ListView.builder(
+      padding: MediaQuery.of(context).padding.add(ZagUI.MARGIN_HALF_VERTICAL),
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final item = results[index];
+        return ProwlarrResultTile(
+          item: item,
+          apiWrapper: _apiWrapper,
+        );
+      },
     );
-  }
-
-  Widget _buildResultTile(BuildContext context, ProwlarrItem item) {
-    final ageText = _formatAge(item.age, item.ageHours);
-    final seeders = item.seeders ?? 0;
-    final leechers = item.leechers ?? 0;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Text(
-              item.title ?? 'Unknown',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Indexer and Size row
-            Row(
-              children: [
-                Icon(
-                  Icons.dns_rounded,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    item.indexer ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.storage_rounded,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _formatBytes(item.size ?? 0),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Stats row: Age, Seeders, Leechers
-            Row(
-              children: [
-                // Age badge
-                _buildStatBadge(
-                  icon: Icons.schedule_rounded,
-                  value: ageText,
-                  color: _getAgeColor(item.age),
-                ),
-                const SizedBox(width: 8),
-                // Seeders badge
-                _buildStatBadge(
-                  icon: Icons.arrow_upward_rounded,
-                  value: seeders.toString(),
-                  color: _getSeedersColor(seeders),
-                  label: 'S',
-                ),
-                const SizedBox(width: 8),
-                // Leechers badge
-                _buildStatBadge(
-                  icon: Icons.arrow_downward_rounded,
-                  value: leechers.toString(),
-                  color: Colors.orange,
-                  label: 'L',
-                ),
-                const Spacer(),
-                // Download button
-                IconButton(
-                  icon: const Icon(Icons.download_rounded),
-                  onPressed: () async {
-                    if (item.guid != null && item.indexerId != null) {
-                      final success = await _apiWrapper.downloadToClient(
-                        guid: item.guid!,
-                        indexerId: item.indexerId!,
-                      );
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success
-                                  ? 'Download sent to client'
-                                  : 'Failed to send download',
-                            ),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatBadge({
-    required IconData icon,
-    required String value,
-    required Color color,
-    String? label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          if (label != null) ...[
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(width: 2),
-          ],
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getAgeColor(int? age) {
-    if (age == null) return Colors.grey;
-    if (age <= 1) return Colors.green;
-    if (age <= 7) return Colors.blue;
-    if (age <= 30) return Colors.orange;
-    return Colors.grey;
-  }
-
-  Color _getSeedersColor(int seeders) {
-    if (seeders >= 50) return Colors.green;
-    if (seeders >= 10) return Colors.blue;
-    if (seeders >= 1) return Colors.orange;
-    return Colors.red;
-  }
-
-  String _formatAge(int? days, double? hours) {
-    if (days == null) return '?';
-    if (days == 0) {
-      if (hours != null && hours < 1) return '<1h';
-      if (hours != null) return '${hours.round()}h';
-      return 'Today';
-    }
-    if (days == 1) return '1d';
-    return '${days}d';
-  }
-
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(2)} KB';
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-    }
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 }
 
