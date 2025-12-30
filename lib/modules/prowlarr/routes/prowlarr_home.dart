@@ -364,19 +364,115 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage> {
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
+        final hasSubcategories = category.subCategories != null &&
+                                 category.subCategories!.isNotEmpty;
+
         return ListTile(
           title: Text(category.name ?? 'Unknown'),
           subtitle: category.description != null
               ? Text(category.description!)
-              : null,
+              : hasSubcategories
+                  ? Text('${category.subCategories!.length} subcategories')
+                  : null,
           trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () {
+          onTap: () async {
             _state.setSelectedCategory(category);
-            if (category.subCategories != null &&
-                category.subCategories!.isNotEmpty) {
+
+            if (hasSubcategories) {
               // Show subcategories
+              _showSubcategoriesSheet(category);
+            } else {
+              // Perform a search with empty query to get all results for this category
+              _state.setLoading(true);
+              try {
+                final results = await _apiWrapper.search(
+                  '', // Empty query to get all results in category
+                  categoryId: category.id,
+                );
+                if (!mounted) return;
+                _state.setSearchResults(results.cast<ProwlarrItem>());
+                _state.clearError();
+              } catch (e) {
+                if (!mounted) return;
+                _state.setError(e.toString());
+              } finally {
+                if (mounted) {
+                  _state.setLoading(false);
+                }
+              }
             }
           },
+        );
+      },
+    );
+  }
+
+  void _showSubcategoriesSheet(ProwlarrCategory parentCategory) {
+    final backgroundColor = ZagTheme.themeMode == 'light'
+        ? ZagColours.primaryLight
+        : (ZagTheme.isAMOLEDTheme ? Colors.black : ZagColours.primary);
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: backgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  parentCategory.name ?? 'Subcategories',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: parentCategory.subCategories!.length,
+                  itemBuilder: (context, index) {
+                    final subcategory = parentCategory.subCategories![index];
+                    return ListTile(
+                      title: Text(subcategory.name ?? 'Unknown'),
+                      subtitle: subcategory.description != null
+                          ? Text(subcategory.description!)
+                          : null,
+                      onTap: () async {
+                        Navigator.of(sheetContext).pop();
+                        _state.setLoading(true);
+                        try {
+                          final results = await _apiWrapper.search(
+                            '', // Empty query to get all results in subcategory
+                            categoryId: subcategory.id,
+                          );
+                          if (!mounted) return;
+                          _state.setSearchResults(results.cast<ProwlarrItem>());
+                          _state.clearError();
+                        } catch (e) {
+                          if (!mounted) return;
+                          _state.setError(e.toString());
+                        } finally {
+                          if (mounted) {
+                            _state.setLoading(false);
+                          }
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         );
       },
     );
