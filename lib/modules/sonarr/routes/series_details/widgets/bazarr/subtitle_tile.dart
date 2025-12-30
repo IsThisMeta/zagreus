@@ -73,13 +73,7 @@ class _State extends State<SonarrBazarrSubtitleTile> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ZagHeader(text: 'Subtitles'),
-        _buildContent(),
-      ],
-    );
+    return _buildContent();
   }
 
   Widget _buildContent() {
@@ -182,18 +176,9 @@ class _State extends State<SonarrBazarrSubtitleTile> {
       subtitle = 'Subtitles available for all $episodeCount episodes';
     }
 
-    // Note: No search button for series - Bazarr only supports per-episode subtitle search
-    // Users can search for subtitles from individual episode tiles
     return ZagBlock(
       title: title,
       body: [TextSpan(text: subtitle)],
-      trailing: ZagIconButton(
-        icon: Icons.refresh_rounded,
-        onPressed: () {
-          setState(() => _loading = true);
-          _loadBazarrData();
-        },
-      ),
     );
   }
 
