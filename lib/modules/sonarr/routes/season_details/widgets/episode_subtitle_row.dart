@@ -43,16 +43,13 @@ class EpisodeSubtitleRow extends StatelessWidget {
     List<Widget> tags = [];
 
     // Add existing subtitles (highlighted)
-    for (final subtitle in existingSubtitles.take(4)) {
+    for (final subtitle in existingSubtitles) {
       tags.add(_SubtitleTag(subtitle: subtitle, isDownloaded: true));
     }
 
-    // Add missing subtitles (gray) if we have room
-    final remainingSlots = 4 - tags.length;
-    if (remainingSlots > 0) {
-      for (final subtitle in missingSubtitles.take(remainingSlots)) {
-        tags.add(_SubtitleTag(subtitle: subtitle, isDownloaded: false));
-      }
+    // Add missing subtitles (gray)
+    for (final subtitle in missingSubtitles) {
+      tags.add(_SubtitleTag(subtitle: subtitle, isDownloaded: false));
     }
 
     return Row(
