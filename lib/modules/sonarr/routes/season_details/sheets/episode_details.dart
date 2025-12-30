@@ -458,14 +458,14 @@ class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
       title: 'Subtitles',
       content: const [],
       buttons: [
-        ZagButton.text(
-          text: 'Automatic',
+        ZagButton(
+          type: ZagButtonType.ICON,
           icon: Icons.search_rounded,
           onTap: _autoSearch,
           loadingState: _autoSearchState,
         ),
-        ZagButton.text(
-          text: 'Interactive',
+        ZagButton(
+          type: ZagButtonType.ICON,
           icon: Icons.person_rounded,
           onTap: _manualSearch,
           loadingState: _manualSearchState,

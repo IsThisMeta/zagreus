@@ -83,7 +83,6 @@ class _State extends State<RadarrMovieDetailsFilesPage>
       children: [
         if (movieFiles.isNotEmpty) ..._filesTiles(movieFiles),
         if (extraFiles.isNotEmpty) ..._extraFilesTiles(extraFiles),
-        // Bazarr subtitle buttons (only show if movie has a file)
         if (movieFiles.isNotEmpty && radarrId != null)
           _RadarrBazarrSubtitleButtons(radarrId: radarrId),
       ],
@@ -136,7 +135,6 @@ class _RadarrBazarrSubtitleButtonsState
 
   @override
   Widget build(BuildContext context) {
-    // Don't show if Bazarr is not enabled or not Pro
     if (!ZagProfile.current.bazarrEnabled || !ZagreusPro.isEnabled) {
       return const SizedBox.shrink();
     }
@@ -148,14 +146,14 @@ class _RadarrBazarrSubtitleButtonsState
       title: 'Subtitles',
       content: const [],
       buttons: [
-        ZagButton.text(
-          text: 'Automatic',
+        ZagButton(
+          type: ZagButtonType.ICON,
           icon: Icons.search_rounded,
           onTap: _autoSearch,
           loadingState: _autoSearchState,
         ),
-        ZagButton.text(
-          text: 'Interactive',
+        ZagButton(
+          type: ZagButtonType.ICON,
           icon: Icons.person_rounded,
           onTap: _manualSearch,
           loadingState: _manualSearchState,
@@ -227,7 +225,6 @@ class _RadarrBazarrSubtitleButtonsState
   }
 }
 
-/// Full page for displaying subtitle search results.
 class _MovieSubtitleSearchResultsPage extends StatefulWidget {
   final List<BazarrSubtitleSearchResult> results;
   final int radarrId;
@@ -295,7 +292,6 @@ class _MovieSubtitleSearchResultsPageState
   }
 }
 
-/// Individual subtitle result tile.
 class _MovieSubtitleResultTile extends StatefulWidget {
   final BazarrSubtitleSearchResult result;
   final VoidCallback onDownload;
