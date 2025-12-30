@@ -27,9 +27,7 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
     with ZagScrollControllerMixin {
   late ProwlarrAPIWrapper _apiWrapper;
   late ProwlarrState _state;
-  final TextEditingController _searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -41,8 +39,6 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
 
   @override
   void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
     _state.dispose();
     super.dispose();
   }
@@ -117,52 +113,23 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: Text(widget.indexer.displayName),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(60),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      if (_searchController.text.isEmpty) {
-                        // Dismiss keyboard if text is already empty
-                        _searchFocusNode.unfocus();
-                      } else {
-                        _searchController.clear();
-                      }
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).cardColor,
-                ),
-                onSubmitted: (query) {
-                  if (query.isEmpty) return;
-                  // Navigate to search page with query
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ProwlarrSearchPage(
-                        apiWrapper: _apiWrapper,
-                        state: _state,
-                        categoryId: _state.selectedCategory?.id,
-                        categoryName: _state.selectedCategory?.name,
-                        initialQuery: query,
-                      ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              onPressed: () {
+                // Clear any previously selected category for global search
+                _state.setSelectedCategory(null);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ProwlarrSearchPage(
+                      apiWrapper: _apiWrapper,
+                      state: _state,
                     ),
-                  );
-                  _searchController.clear();
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          ),
+          ],
         ),
         body: SafeArea(
           child: Consumer<ProwlarrState>(
