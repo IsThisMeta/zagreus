@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/database/tables/bios.dart';
 import 'package:zagreus/modules.dart';
@@ -79,7 +80,46 @@ class ZagreusPro {
       ZagreusDatabase.SETTINGS_LOCK_USE_BIOMETRIC.update(false);
     }
 
+    // Disable Pro-only modules when subscription is lost
+    _disableProModules();
+
     restoreBootModule();
+  }
+
+  /// Disable all Pro-only modules when Pro access is lost
+  static void _disableProModules() {
+    try {
+      final profile = ZagProfile.current;
+      bool anyDisabled = false;
+
+      // Disable Bazarr (Pro-only)
+      if (profile.bazarrEnabled) {
+        profile.bazarrEnabled = false;
+        anyDisabled = true;
+        print('🔒 Pro: Disabled Bazarr module');
+      }
+
+      // Disable Overseerr (Pro-only)
+      if (profile.overseerrEnabled) {
+        profile.overseerrEnabled = false;
+        anyDisabled = true;
+        print('🔒 Pro: Disabled Overseerr module');
+      }
+
+      // Disable Unraid (Pro-only)
+      if (profile.unraidEnabled) {
+        profile.unraidEnabled = false;
+        anyDisabled = true;
+        print('🔒 Pro: Disabled Unraid module');
+      }
+
+      if (anyDisabled) {
+        profile.save();
+        print('✅ Pro: Pro-only modules have been disabled');
+      }
+    } catch (e) {
+      print('❌ Pro: Error disabling Pro modules: $e');
+    }
   }
 
   /// Restore boot module when all premium tiers are disabled
