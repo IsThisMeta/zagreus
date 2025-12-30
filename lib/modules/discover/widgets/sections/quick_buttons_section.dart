@@ -2,33 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/radarr/core/state.dart';
 import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/overseerr/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
-import 'package:zagreus/router/routes/radarr.dart';
-import 'package:zagreus/router/routes/sonarr.dart';
-import 'package:zagreus/router/routes/lidarr.dart';
-import 'package:zagreus/router/routes/readarr.dart';
-import 'package:zagreus/router/routes/sabnzbd.dart';
-import 'package:zagreus/router/routes/nzbget.dart';
-import 'package:zagreus/router/routes/tautulli.dart';
-import 'package:zagreus/router/routes/overseerr.dart';
-import 'package:zagreus/router/routes/unraid.dart';
 import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/vendor.dart';
 
 /// Data class for a quick button service
 class _QuickButtonService {
-  final String name;
-  final IconData icon;
+  final ZagModule module;
   final Color color;
   final VoidCallback onTap;
 
   const _QuickButtonService({
-    required this.name,
-    required this.icon,
+    required this.module,
     required this.color,
     required this.onTap,
   });
@@ -74,90 +64,81 @@ class QuickButtonsSection extends StatelessWidget {
     // Radarr - only show if enabled in quick buttons AND configured in app
     if (enabledButtons.contains('radarr') && context.read<RadarrState>().enabled) {
       services.add(_QuickButtonService(
-        name: 'Radarr',
-        icon: Icons.movie_rounded,
+        module: ZagModule.RADARR,
         color: ZagColours.radarr,
-        onTap: () => RadarrRoutes.HOME.go(),
+        onTap: () => ZagModule.RADARR.launch(restore: false),
       ));
     }
 
     // Sonarr
     if (enabledButtons.contains('sonarr') && context.read<SonarrState>().enabled) {
       services.add(_QuickButtonService(
-        name: 'Sonarr',
-        icon: Icons.tv_rounded,
+        module: ZagModule.SONARR,
         color: ZagColours.sonarr,
-        onTap: () => SonarrRoutes.HOME.go(),
+        onTap: () => ZagModule.SONARR.launch(restore: false),
       ));
     }
 
     // Lidarr
     if (enabledButtons.contains('lidarr') && profile.lidarrEnabled) {
       services.add(_QuickButtonService(
-        name: 'Lidarr',
-        icon: Icons.music_note_rounded,
+        module: ZagModule.LIDARR,
         color: ZagColours.lidarr,
-        onTap: () => LidarrRoutes.HOME.go(),
+        onTap: () => ZagModule.LIDARR.launch(restore: false),
       ));
     }
 
     // Readarr
     if (enabledButtons.contains('readarr') && profile.readarrEnabled) {
       services.add(_QuickButtonService(
-        name: 'Readarr',
-        icon: Icons.menu_book_rounded,
+        module: ZagModule.READARR,
         color: ZagColours.readarr,
-        onTap: () => ReadarrRoutes.HOME.go(),
+        onTap: () => ZagModule.READARR.launch(restore: false),
       ));
     }
 
     // Overseerr
     if (enabledButtons.contains('overseerr') && context.read<OverseerrState>().enabled) {
       services.add(_QuickButtonService(
-        name: 'Overseerr',
-        icon: Icons.request_page_rounded,
+        module: ZagModule.OVERSEERR,
         color: ZagColours.overseerr,
-        onTap: () => OverseerrRoutes.HOME.go(),
+        onTap: () => ZagModule.OVERSEERR.launch(restore: false),
       ));
     }
 
     // Tautulli
     if (enabledButtons.contains('tautulli') && context.read<TautulliState>().enabled) {
       services.add(_QuickButtonService(
-        name: 'Tautulli',
-        icon: Icons.bar_chart_rounded,
+        module: ZagModule.TAUTULLI,
         color: ZagColours.tautulli,
-        onTap: () => TautulliRoutes.HOME.go(),
+        onTap: () => ZagModule.TAUTULLI.launch(restore: false),
       ));
     }
 
     // SABnzbd
     if (enabledButtons.contains('sabnzbd') && profile.sabnzbdEnabled) {
       services.add(_QuickButtonService(
-        name: 'SABnzbd',
-        icon: Icons.download_rounded,
+        module: ZagModule.SABNZBD,
         color: ZagColours.sabnzbd,
-        onTap: () => SABnzbdRoutes.HOME.go(),
+        onTap: () => ZagModule.SABNZBD.launch(restore: false),
       ));
     }
 
     // NZBget
     if (enabledButtons.contains('nzbget') && profile.nzbgetEnabled) {
       services.add(_QuickButtonService(
-        name: 'NZBget',
-        icon: Icons.download_rounded,
+        module: ZagModule.NZBGET,
         color: ZagColours.nzbget,
-        onTap: () => NZBGetRoutes.HOME.go(),
+        onTap: () => ZagModule.NZBGET.launch(restore: false),
       ));
     }
 
     // Unraid
     if (enabledButtons.contains('unraid') && context.read<UnraidState>().enabled) {
       services.add(_QuickButtonService(
-        name: 'Unraid',
-        icon: Icons.storage_rounded,
+        module: ZagModule.UNRAID,
         color: ZagColours.unraid,
-        onTap: () => UnraidRoutes.HOME.go(),
+        onTap: () => ZagModule.UNRAID.launch(restore: false),
       ));
     }
 
@@ -165,7 +146,7 @@ class QuickButtonsSection extends StatelessWidget {
   }
 }
 
-/// Individual quick button widget styled like nzb360
+/// Individual quick button widget styled like discover section headers
 class _QuickButton extends StatelessWidget {
   final _QuickButtonService service;
 
@@ -190,24 +171,18 @@ class _QuickButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                service.icon,
-                size: 18,
+                service.module.icon,
                 color: service.color,
+                size: 20,
               ),
               const SizedBox(width: 8),
               Text(
-                service.name,
+                service.module.title,
                 style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                   color: service.color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
                 ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.north_east_rounded,
-                size: 14,
-                color: service.color.withOpacity(0.7),
               ),
             ],
           ),
