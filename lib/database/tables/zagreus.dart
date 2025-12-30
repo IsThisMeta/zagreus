@@ -164,7 +164,11 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   CALENDAR_INSTANCE_FILTER<List>([]),
   // Custom Sections: user-defined AI recommendation categories (Mega/Ultra only)
   // Stores list of section configs with id, title, description, mediaType
-  CUSTOM_SECTIONS<List>([]);
+  CUSTOM_SECTIONS<List>([]),
+  // Bazarr instance selection: which Radarr/Sonarr instance to use for subtitles
+  // null = main instance, otherwise shadow profile key
+  BAZARR_RADARR_INSTANCE<String?>(''),
+  BAZARR_SONARR_INSTANCE<String?>('');
 
   @override
   ZagTable get table => ZagTable.zagreus;

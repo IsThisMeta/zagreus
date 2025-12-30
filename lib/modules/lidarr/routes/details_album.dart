@@ -35,7 +35,7 @@ class _State extends State<ArtistAlbumDetailsRoute>
   }
 
   Future<void> _refresh() async {
-    final api = LidarrAPI.from(ZagProfile.current);
+    final api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     setState(() {
       _future = api.getAlbumTracks(widget.albumId);
     });
@@ -116,7 +116,7 @@ class _State extends State<ArtistAlbumDetailsRoute>
   }
 
   Future<void> _automaticSearch() async {
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     _api.searchAlbums([widget.albumId]).then((_) {
       showZagSuccessSnackBar(
         title: 'Searching...',

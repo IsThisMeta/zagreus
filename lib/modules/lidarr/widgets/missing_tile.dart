@@ -59,7 +59,7 @@ class _State extends State<LidarrMissingTile> {
   }
 
   Future<void> _search() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .searchAlbums([widget.entry.albumID])
         .then((_) => showZagSuccessSnackBar(

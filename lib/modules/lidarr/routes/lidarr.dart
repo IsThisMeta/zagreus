@@ -18,7 +18,7 @@ class _State extends State<LidarrRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
   String _profileState = ZagProfile.current.toString();
-  LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+  LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
 
   final List _refreshKeys = [
     GlobalKey<RefreshIndicatorState>(),
@@ -233,7 +233,7 @@ class _State extends State<LidarrRoute> {
   }
 
   void _refreshProfile() {
-    _api = LidarrAPI.from(ZagProfile.current);
+    _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     _profileState = ZagProfile.current.toString();
     _refreshAllPages();
   }

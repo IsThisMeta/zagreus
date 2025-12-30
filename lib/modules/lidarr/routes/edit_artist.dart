@@ -53,7 +53,7 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
   }
 
   Future<bool> _fetch() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     return _fetchProfiles(_api).then((_) => _fetchMetadata(_api)).then((_) {
       _path = widget.data!.path;
       _monitored = widget.data!.monitored;
@@ -176,7 +176,7 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _save() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .editArtist(
       widget.data!.artistID,

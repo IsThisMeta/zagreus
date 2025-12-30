@@ -50,7 +50,7 @@ class _State extends State<LidarrDetailsAlbumTile> {
   }
 
   Future<void> _toggleMonitoredStatus() async {
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .toggleAlbumMonitored(widget.data.albumID, !widget.data.monitored)
         .then((_) {

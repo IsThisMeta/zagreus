@@ -33,14 +33,14 @@ class _State extends State<AddArtistRoute> with ZagScrollControllerMixin {
 
   Future<void> _refresh() async {
     final _model = Provider.of<LidarrState>(context, listen: false);
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     setState(() {
       _future = _api.searchArtists(_model.addSearchQuery);
     });
   }
 
   Future<void> _fetchAvailableArtists() async {
-    await LidarrAPI.from(ZagProfile.current)
+    await LidarrAPI.from(ZagProfile.forModule('lidarr'))
         .getAllArtistIDs()
         .then((data) => _availableIDs = data)
         .catchError((error) => _availableIDs = []);

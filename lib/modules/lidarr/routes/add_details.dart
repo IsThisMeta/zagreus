@@ -39,7 +39,7 @@ class _State extends State<AddArtistDetailsRoute>
       });
 
   Future<void> _fetchParameters() async {
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     return _fetchRootFolders(_api)
         .then((_) => _fetchQualityProfiles(_api))
         .then((_) => _fetchMetadataProfiles(_api))
@@ -241,7 +241,7 @@ class _State extends State<AddArtistDetailsRoute>
   }
 
   Future<void> _addArtist() async {
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     bool? search = LidarrDatabase.ADD_ARTIST_SEARCH_FOR_MISSING.read();
     await _api
         .addArtist(

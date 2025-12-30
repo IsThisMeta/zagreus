@@ -37,7 +37,7 @@ class _State extends State<ArtistDetailsRoute> {
 
   Future<void> _fetch() async {
     if (mounted) setState(() => _error = false);
-    final api = LidarrAPI.from(ZagProfile.current);
+    final api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await api.getArtist(widget.artistId).then((newData) {
       if (mounted) {
         setState(() {

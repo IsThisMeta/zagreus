@@ -26,7 +26,7 @@ class _State extends State<ArtistAlbumReleasesRoute>
   @override
   Future<void> loadCallback() async {
     if (mounted) setState(() => _results = []);
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     setState(() {
       _future = _api.getReleases(widget.albumId);
     });

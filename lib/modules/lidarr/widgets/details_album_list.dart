@@ -32,7 +32,7 @@ class _State extends State<LidarrDetailsAlbumList>
 
   Future<void> _refresh() async {
     _results = [];
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     setState(() {
       _future = _api.getArtistAlbums(widget.artistID);
     });

@@ -95,7 +95,8 @@ class TautulliState extends ZagModuleState {
 
   /// Reset the profile data, reinitializes API instance
   void resetProfile() {
-    ZagProfile _profile = ZagProfile.current;
+    // Use forModule to get the correct profile for the active instance
+    ZagProfile _profile = ZagProfile.forModule('tautulli');
     // Copy profile into state
     _enabled = _profile.tautulliEnabled;
     _host = _normalizeHost(_profile.effectiveTautulliHost());

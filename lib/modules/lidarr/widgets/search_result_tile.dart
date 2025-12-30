@@ -163,7 +163,7 @@ class _State extends State<LidarrReleasesTile> {
 
   Future<void> _startDownload() async {
     setState(() => _downloadState = ZagLoadingState.ACTIVE);
-    LidarrAPI _api = LidarrAPI.from(ZagProfile.current);
+    LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .downloadRelease(widget.release.guid, widget.release.indexerId)
         .then((_) {

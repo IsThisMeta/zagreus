@@ -12,8 +12,8 @@ class LidarrQueueState extends ChangeNotifier {
   Future<LidarrQueuePage> get queue => _queue;
 
   Future<void> fetchQueue(BuildContext context) async {
-    if (!ZagProfile.current.lidarrEnabled) return;
-    _queue = LidarrAPI.from(ZagProfile.current).getQueue(pageSize: 50);
+    if (!ZagProfile.forModule('lidarr').lidarrEnabled) return;
+    _queue = LidarrAPI.from(ZagProfile.forModule('lidarr')).getQueue(pageSize: 50);
     notifyListeners();
   }
 }

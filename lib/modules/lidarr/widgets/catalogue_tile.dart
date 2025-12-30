@@ -59,7 +59,7 @@ class _State extends State<LidarrCatalogueTile> {
   }
 
   Future<void> _toggleMonitoredStatus() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .toggleArtistMonitored(widget.data.artistID, !widget.data.monitored!)
         .then((_) {
@@ -118,7 +118,7 @@ class _State extends State<LidarrCatalogueTile> {
   }
 
   Future<void> _refreshArtist() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     await _api
         .refreshArtist(widget.data.artistID)
         .then((_) => showZagSuccessSnackBar(
@@ -128,7 +128,7 @@ class _State extends State<LidarrCatalogueTile> {
   }
 
   Future<void> _removeArtist() async {
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     List values = await LidarrDialogs.deleteArtist(context);
     if (values[0]) {
       if (values[1]) {

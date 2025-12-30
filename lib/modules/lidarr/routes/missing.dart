@@ -33,7 +33,7 @@ class _State extends State<LidarrMissing> with AutomaticKeepAliveClientMixin {
 
   Future<void> _refresh() async {
     _results = [];
-    final _api = LidarrAPI.from(ZagProfile.current);
+    final _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     if (mounted)
       setState(() {
         _future = _api.getMissing();
