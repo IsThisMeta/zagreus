@@ -63,3 +63,6 @@ zagreus-cloud-functions/supabase/migrations/20241004_clean_12_subscription_funct
 # IDEs
 .idea/
 *.iml
+
+# Local repos workspace
+repos/
