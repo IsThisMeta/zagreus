@@ -19,40 +19,67 @@ enum ProwlarrSortOption {
   const ProwlarrSortOption(this.label, this.icon);
 }
 
+/// Protocol filter options
+enum ProwlarrProtocolFilter {
+  all,
+  usenet,
+  torrent,
+}
+
 /// Filter configuration for Prowlarr search results
 class ProwlarrFilterConfig {
   final Set<String> selectedIndexers;
-  final int? minSeeders;
-  final int? maxAgeDays;
+  final double minSizeGB;
+  final double maxSizeGB;
+  final int minGrabs;
+  final int maxGrabs;
+  final ProwlarrProtocolFilter protocol;
+
+  // Max values for sliders
+  static const double maxSizeValue = 30.0; // 30GB+
+  static const int maxGrabsValue = 300; // 300+ grabs
 
   const ProwlarrFilterConfig({
     this.selectedIndexers = const {},
-    this.minSeeders,
-    this.maxAgeDays,
+    this.minSizeGB = 0,
+    this.maxSizeGB = maxSizeValue,
+    this.minGrabs = 0,
+    this.maxGrabs = maxGrabsValue,
+    this.protocol = ProwlarrProtocolFilter.all,
   });
 
   ProwlarrFilterConfig copyWith({
     Set<String>? selectedIndexers,
-    int? minSeeders,
-    int? maxAgeDays,
-    bool clearMinSeeders = false,
-    bool clearMaxAgeDays = false,
+    double? minSizeGB,
+    double? maxSizeGB,
+    int? minGrabs,
+    int? maxGrabs,
+    ProwlarrProtocolFilter? protocol,
   }) {
     return ProwlarrFilterConfig(
       selectedIndexers: selectedIndexers ?? this.selectedIndexers,
-      minSeeders: clearMinSeeders ? null : (minSeeders ?? this.minSeeders),
-      maxAgeDays: clearMaxAgeDays ? null : (maxAgeDays ?? this.maxAgeDays),
+      minSizeGB: minSizeGB ?? this.minSizeGB,
+      maxSizeGB: maxSizeGB ?? this.maxSizeGB,
+      minGrabs: minGrabs ?? this.minGrabs,
+      maxGrabs: maxGrabs ?? this.maxGrabs,
+      protocol: protocol ?? this.protocol,
     );
   }
 
+  // Note: We only check min values since max values are dynamic based on results
+  // The actual filtering logic in ProwlarrState handles dynamic max checking
   bool get hasActiveFilters =>
-      selectedIndexers.isNotEmpty || minSeeders != null || maxAgeDays != null;
+      selectedIndexers.isNotEmpty ||
+      minSizeGB > 0 ||
+      minGrabs > 0 ||
+      protocol != ProwlarrProtocolFilter.all;
 
   int get activeFilterCount {
     int count = 0;
     if (selectedIndexers.isNotEmpty) count++;
-    if (minSeeders != null) count++;
-    if (maxAgeDays != null) count++;
+    if (minSizeGB > 0) count++;
+    if (minGrabs > 0) count++;
+    if (protocol != ProwlarrProtocolFilter.all) count++;
     return count;
   }
 }
@@ -89,11 +116,49 @@ class ProwlarrState extends ChangeNotifier {
         .toSet();
   }
 
+  /// Get max size in GB from search results (rounded up to nice values)
+  double get maxSizeInResults {
+    if (_searchResults.isEmpty) return ProwlarrFilterConfig.maxSizeValue;
+    final maxBytes = _searchResults
+        .map((item) => item.size ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+    final exactGB = maxBytes / (1024 * 1024 * 1024);
+
+    // Round up to nice increments
+    if (exactGB <= 1) return 1;
+    if (exactGB <= 5) return 5;
+    if (exactGB <= 10) return 10;
+    if (exactGB <= 20) return 20;
+    if (exactGB <= 30) return 30;
+    if (exactGB <= 50) return 50;
+    if (exactGB <= 100) return 100;
+    // Round to nearest 50GB for larger sizes
+    return ((exactGB / 50).ceil() * 50).toDouble();
+  }
+
+  /// Get max grabs from search results (rounded up to nice values)
+  int get maxGrabsInResults {
+    if (_searchResults.isEmpty) return ProwlarrFilterConfig.maxGrabsValue;
+    final maxGrabs = _searchResults
+        .map((item) => item.grabs ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+
+    // Round up to nice increments
+    if (maxGrabs <= 10) return 10;
+    if (maxGrabs <= 20) return 20;
+    if (maxGrabs <= 50) return 50;
+    if (maxGrabs <= 100) return 100;
+    if (maxGrabs <= 200) return 200;
+    if (maxGrabs <= 500) return 500;
+    // Round to nearest 100 for larger values
+    return ((maxGrabs / 100).ceil() * 100);
+  }
+
   /// Get filtered and sorted search results
   List<ProwlarrItem> get filteredAndSortedResults {
     var results = List<ProwlarrItem>.from(_searchResults);
 
-    // Apply filters
+    // Apply indexer filter
     if (_filterConfig.selectedIndexers.isNotEmpty) {
       results = results
           .where((item) =>
@@ -102,19 +167,35 @@ class ProwlarrState extends ChangeNotifier {
           .toList();
     }
 
-    if (_filterConfig.minSeeders != null) {
-      results = results
-          .where((item) =>
-              item.seeders != null &&
-              item.seeders! >= _filterConfig.minSeeders!)
-          .toList();
+    // Apply size filter (convert GB to bytes)
+    if (_filterConfig.minSizeGB > 0 || _filterConfig.maxSizeGB < maxSizeInResults) {
+      final minSizeBytes = (_filterConfig.minSizeGB * 1024 * 1024 * 1024).toInt();
+      final maxSizeBytes = (_filterConfig.maxSizeGB * 1024 * 1024 * 1024).toInt();
+      results = results.where((item) {
+        final size = item.size ?? 0;
+        return size >= minSizeBytes && size <= maxSizeBytes;
+      }).toList();
     }
 
-    if (_filterConfig.maxAgeDays != null) {
-      results = results
-          .where((item) =>
-              item.age != null && item.age! <= _filterConfig.maxAgeDays!)
-          .toList();
+    // Apply grabs filter
+    if (_filterConfig.minGrabs > 0 || _filterConfig.maxGrabs < maxGrabsInResults) {
+      results = results.where((item) {
+        final grabs = item.grabs ?? 0;
+        return grabs >= _filterConfig.minGrabs && grabs <= _filterConfig.maxGrabs;
+      }).toList();
+    }
+
+    // Apply protocol filter
+    if (_filterConfig.protocol != ProwlarrProtocolFilter.all) {
+      results = results.where((item) {
+        final protocol = item.protocol?.toLowerCase() ?? '';
+        final isTorrent = protocol == 'torrent' || item.seeders != null;
+        if (_filterConfig.protocol == ProwlarrProtocolFilter.torrent) {
+          return isTorrent;
+        } else {
+          return !isTorrent; // usenet
+        }
+      }).toList();
     }
 
     // Apply sorting

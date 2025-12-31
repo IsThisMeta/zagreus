@@ -335,50 +335,77 @@ class ProwlarrFilterSheetContent extends StatefulWidget {
 class _ProwlarrFilterSheetContentState
     extends State<ProwlarrFilterSheetContent> {
   late Set<String> _selectedIndexers;
-  late TextEditingController _minSeedersController;
-  late TextEditingController _maxAgeController;
+  late RangeValues _sizeRange;
+  late RangeValues _grabsRange;
+  late ProwlarrProtocolFilter _protocol;
+  late double _maxSizeGB;
+  late int _maxGrabs;
 
   @override
   void initState() {
     super.initState();
-    _selectedIndexers = Set.from(widget.state.filterConfig.selectedIndexers);
-    _minSeedersController = TextEditingController(
-      text: widget.state.filterConfig.minSeeders?.toString() ?? '',
+    final config = widget.state.filterConfig;
+    _selectedIndexers = Set.from(config.selectedIndexers);
+
+    // Get dynamic max values from search results
+    _maxSizeGB = widget.state.maxSizeInResults;
+    _maxGrabs = widget.state.maxGrabsInResults;
+
+    // Clamp existing filter values to actual data range
+    _sizeRange = RangeValues(
+      config.minSizeGB.clamp(0, _maxSizeGB),
+      config.maxSizeGB >= ProwlarrFilterConfig.maxSizeValue
+          ? _maxSizeGB
+          : config.maxSizeGB.clamp(0, _maxSizeGB),
     );
-    _maxAgeController = TextEditingController(
-      text: widget.state.filterConfig.maxAgeDays?.toString() ?? '',
+    _grabsRange = RangeValues(
+      config.minGrabs.toDouble().clamp(0, _maxGrabs.toDouble()),
+      config.maxGrabs >= ProwlarrFilterConfig.maxGrabsValue
+          ? _maxGrabs.toDouble()
+          : config.maxGrabs.toDouble().clamp(0, _maxGrabs.toDouble()),
     );
+    _protocol = config.protocol;
   }
 
-  @override
-  void dispose() {
-    _minSeedersController.dispose();
-    _maxAgeController.dispose();
-    super.dispose();
-  }
-
-  void _applyFilters() {
+  void _updateFilters() {
     widget.state.setFilterConfig(
       ProwlarrFilterConfig(
         selectedIndexers: _selectedIndexers,
-        minSeeders: int.tryParse(_minSeedersController.text),
-        maxAgeDays: int.tryParse(_maxAgeController.text),
+        minSizeGB: _sizeRange.start,
+        maxSizeGB: _sizeRange.end,
+        minGrabs: _grabsRange.start.toInt(),
+        maxGrabs: _grabsRange.end.toInt(),
+        protocol: _protocol,
       ),
     );
-    widget.onClose();
   }
 
   void _clearAll() {
     setState(() {
       _selectedIndexers.clear();
-      _minSeedersController.clear();
-      _maxAgeController.clear();
+      _sizeRange = RangeValues(0, _maxSizeGB);
+      _grabsRange = RangeValues(0, _maxGrabs.toDouble());
+      _protocol = ProwlarrProtocolFilter.all;
     });
+    _updateFilters();
+  }
+
+  String _formatSizeLabel(double value, {bool isMax = false}) {
+    if (isMax && value >= _maxSizeGB) return '${value.toInt()}GB';
+    return '${value.toInt()}GB';
+  }
+
+  String _formatGrabsLabel(int value, {bool isMax = false}) {
+    if (isMax && value >= _maxGrabs) return '$value Grabs';
+    return '$value Grabs';
   }
 
   @override
   Widget build(BuildContext context) {
     final availableIndexers = widget.state.availableIndexers.toList()..sort();
+    final accentColor = ZagColours.accentColor(context);
+    final filteredCount = widget.state.searchResults.length -
+        widget.state.filteredAndSortedResults.length;
 
     return SafeArea(
       child: Column(
@@ -388,16 +415,12 @@ class _ProwlarrFilterSheetContentState
             child: Row(
               children: [
                 Text(
-                  'Filter Results',
+                  '$filteredCount items filtered',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const Spacer(),
-                TextButton(
-                  onPressed: _clearAll,
-                  child: const Text('Clear All'),
-                ),
               ],
             ),
           ),
@@ -407,100 +430,268 @@ class _ProwlarrFilterSheetContentState
               controller: widget.scrollController,
               padding: const EdgeInsets.all(16),
               children: [
+                // Size Range Slider
                 Text(
-                  'Indexers',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  'Size',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 8),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: accentColor,
+                    inactiveTrackColor: accentColor.withValues(alpha: 0.3),
+                    thumbColor: accentColor,
+                    overlayColor: accentColor.withValues(alpha: 0.2),
+                    rangeThumbShape: const RoundRangeSliderThumbShape(
+                      enabledThumbRadius: 10,
+                    ),
+                  ),
+                  child: RangeSlider(
+                    values: _sizeRange,
+                    min: 0,
+                    max: _maxSizeGB,
+                    divisions: _maxSizeGB.toInt().clamp(1, 100),
+                    onChanged: (values) {
+                      setState(() => _sizeRange = values);
+                    },
+                    onChangeEnd: (_) => _updateFilters(),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Min: ',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    Text(
+                      _formatSizeLabel(_sizeRange.start),
+                      style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Max: ',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    Text(
+                      _formatSizeLabel(_sizeRange.end, isMax: true),
+                      style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Grabs Range Slider
+                Text(
+                  'Grabs',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: accentColor,
+                    inactiveTrackColor: accentColor.withValues(alpha: 0.3),
+                    thumbColor: accentColor,
+                    overlayColor: accentColor.withValues(alpha: 0.2),
+                    rangeThumbShape: const RoundRangeSliderThumbShape(
+                      enabledThumbRadius: 10,
+                    ),
+                  ),
+                  child: RangeSlider(
+                    values: _grabsRange,
+                    min: 0,
+                    max: _maxGrabs.toDouble(),
+                    divisions: _maxGrabs.clamp(1, 100),
+                    onChanged: (values) {
+                      setState(() => _grabsRange = values);
+                    },
+                    onChangeEnd: (_) => _updateFilters(),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Min: ',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    Text(
+                      _formatGrabsLabel(_grabsRange.start.toInt()),
+                      style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Max: ',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    Text(
+                      _formatGrabsLabel(_grabsRange.end.toInt(), isMax: true),
+                      style: TextStyle(
+                        color: accentColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Protocol Segmented Button
+                Text(
+                  'Protocol',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: accentColor),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: ProwlarrProtocolFilter.values.map((protocol) {
+                      final isSelected = _protocol == protocol;
+                      final label = protocol.name[0].toUpperCase() +
+                          protocol.name.substring(1);
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _protocol = protocol);
+                            _updateFilters();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? accentColor : Colors.transparent,
+                              borderRadius: BorderRadius.horizontal(
+                                left: protocol == ProwlarrProtocolFilter.all
+                                    ? const Radius.circular(7)
+                                    : Radius.zero,
+                                right: protocol == ProwlarrProtocolFilter.torrent
+                                    ? const Radius.circular(7)
+                                    : Radius.zero,
+                              ),
+                            ),
+                            child: Text(
+                              label,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : accentColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Indexer Dropdown
+                Text(
+                  'Indexer',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
                 if (availableIndexers.isEmpty)
                   Text(
                     'No indexers available',
                     style: TextStyle(color: Colors.grey[600]),
                   )
                 else
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: availableIndexers.map((indexer) {
-                      final isSelected = _selectedIndexers.contains(indexer);
-                      return FilterChip(
-                        label: Text(indexer),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedIndexers.add(indexer);
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[600]!),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedIndexers.isEmpty
+                          ? null
+                          : (_selectedIndexers.length == 1
+                              ? _selectedIndexers.first
+                              : null),
+                      hint: Text(
+                        _selectedIndexers.isEmpty
+                            ? 'All'
+                            : '${_selectedIndexers.length} selected',
+                      ),
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      icon: const Icon(Icons.arrow_drop_down),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: '__all__',
+                          child: Text('All'),
+                        ),
+                        ...availableIndexers.map((indexer) {
+                          return DropdownMenuItem<String>(
+                            value: indexer,
+                            child: Row(
+                              children: [
+                                if (_selectedIndexers.contains(indexer))
+                                  Icon(Icons.check, size: 18, color: accentColor)
+                                else
+                                  const SizedBox(width: 18),
+                                const SizedBox(width: 8),
+                                Text(indexer),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          if (value == '__all__') {
+                            _selectedIndexers.clear();
+                          } else if (value != null) {
+                            if (_selectedIndexers.contains(value)) {
+                              _selectedIndexers.remove(value);
                             } else {
-                              _selectedIndexers.remove(indexer);
+                              _selectedIndexers.add(value);
                             }
-                          });
-                        },
-                        selectedColor: ZagColours.accentColor(context)
-                            .withValues(alpha: 0.3),
-                        checkmarkColor: ZagColours.accentColor(context),
-                      );
-                    }).toList(),
-                  ),
-                const SizedBox(height: 24),
-                Text(
-                  'Minimum Seeders',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _minSeedersController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., 5',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                          }
+                        });
+                        _updateFilters();
+                      },
                     ),
-                    prefixIcon: const Icon(Icons.arrow_upward_rounded),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Maximum Age (days)',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _maxAgeController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., 30',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    prefixIcon: const Icon(Icons.schedule_rounded),
-                  ),
-                ),
                 const SizedBox(height: 32),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _applyFilters,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ZagColours.accentColor(context),
+              child: OutlinedButton(
+                onPressed: _clearAll,
+                style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.grey[600]!),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text(
-                  'Apply Filters',
+                  'CLEAR FILTERS',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
