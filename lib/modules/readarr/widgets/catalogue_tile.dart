@@ -36,7 +36,7 @@ class ReadarrCatalogueTile extends StatelessWidget {
       url: data.posterURI(),
       height: 90.0,
       width: 60.0,
-      headers: ZagProfile.current.readarrHeaders,
+      headers: ZagProfile.forModule('readarr').readarrHeaders,
     );
   }
 

@@ -24,7 +24,7 @@ class ReadarrAddSearchResultTile extends StatelessWidget {
         customBodyMaxLines: 3,
         trailing: alreadyAdded ? null : const ZagIconButton.arrow(),
         posterIsSquare: true,
-        posterHeaders: ZagProfile.current.readarrHeaders,
+        posterHeaders: ZagProfile.forModule('readarr').readarrHeaders,
         posterPlaceholderIcon: ZagIcons.USER,
         posterUrl: data.posterURI,
         onTap: () async => _enterDetails(context),

@@ -71,7 +71,7 @@ class _State extends State<SABnzbdQueue>
   }
 
   Future _fetch() async {
-    SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.current);
+    SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
     return _api.getStatusAndQueue().then((data) {
       try {
         _processStatus(data[0]);
@@ -145,7 +145,7 @@ class _State extends State<SABnzbdQueue>
             _queue!.remove(data);
             _queue!.insert(nIndex, data);
           });
-        await SABnzbdAPI.from(ZagProfile.current)
+        await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
             .moveQueue(data.nzoId, nIndex)
             .then(
               (_) => showZagSuccessSnackBar(

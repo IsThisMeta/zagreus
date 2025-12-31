@@ -36,7 +36,7 @@ class _State extends State<AuthorDetailsRoute> {
 
   Future<void> _fetch() async {
     if (mounted) setState(() => _error = false);
-    final api = ReadarrAPI.from(ZagProfile.current);
+    final api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     await api.getAuthor(widget.authorId).then((newData) {
       if (mounted) {
         setState(() {

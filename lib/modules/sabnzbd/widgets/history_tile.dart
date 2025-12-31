@@ -116,7 +116,7 @@ class _State extends State<SABnzbdHistoryTile> {
   Future<void> _delete() async {
     List values = await SABnzbdDialogs.deleteHistory(context);
     if (values[0]) {
-      SABnzbdAPI.from(ZagProfile.current)
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .deleteHistory(widget.data.nzoId)
           .then((_) => _handleRefresh('History Deleted'))
           .catchError((error) => showZagErrorSnackBar(
@@ -129,7 +129,7 @@ class _State extends State<SABnzbdHistoryTile> {
   Future<void> _password() async {
     List values = await SABnzbdDialogs.setPassword(context);
     if (values[0])
-      SABnzbdAPI.from(ZagProfile.current)
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .retryFailedJobPassword(widget.data.nzoId, values[1])
           .then((_) => _handleRefresh('Password Set / Retrying...'))
           .catchError((error) => showZagErrorSnackBar(
@@ -139,7 +139,7 @@ class _State extends State<SABnzbdHistoryTile> {
   }
 
   Future<void> _retry() async {
-    SABnzbdAPI.from(ZagProfile.current)
+    SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
         .retryFailedJob(widget.data.nzoId)
         .then((_) => _handleRefresh('Retrying Job'))
         .catchError((error) => showZagErrorSnackBar(

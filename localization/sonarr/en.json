@@ -223,5 +223,13 @@
   "sonarr.UseSeasonFoldersDescription": "Sort episodes into season folders",
   "sonarr.Video": "Video",
   "sonarr.ViewWebGUI": "View Web GUI",
-  "sonarr.WordScore": "Word Score"
+  "sonarr.WordScore": "Word Score",
+  "sonarr.MonitorAllEpisodes": "All Episodes",
+  "sonarr.MonitorFutureEpisodes": "Future Episodes",
+  "sonarr.MonitorMissingEpisodes": "Missing Episodes",
+  "sonarr.MonitorExistingEpisodes": "Existing Episodes",
+  "sonarr.MonitorPilotEpisode": "Pilot Episode",
+  "sonarr.MonitorFirstSeason": "Only First Season",
+  "sonarr.MonitorLatestSeason": "Only Latest Season",
+  "sonarr.MonitorNone": "None"
 }

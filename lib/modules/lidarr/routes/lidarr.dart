@@ -17,7 +17,7 @@ class LidarrRoute extends StatefulWidget {
 class _State extends State<LidarrRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  String _profileState = ZagProfile.current.toString();
+  String _profileState = ZagProfile.forModule('lidarr').toString();
   LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
 
   final List _refreshKeys = [
@@ -68,7 +68,7 @@ class _State extends State<LidarrRoute> {
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       onProfileChange: (_) {
-        if (_profileState != ZagProfile.current.toString()) _refreshProfile();
+        if (_profileState != ZagProfile.forModule('lidarr').toString()) _refreshProfile();
       },
     );
   }
@@ -76,13 +76,13 @@ class _State extends State<LidarrRoute> {
   Widget _drawer() => ZagDrawer(page: ZagModule.LIDARR.key);
 
   Widget? _bottomNavigationBar() {
-    if (ZagProfile.current.lidarrEnabled)
+    if (ZagProfile.forModule('lidarr').lidarrEnabled)
       return LidarrNavigationBar(pageController: _pageController);
     return null;
   }
 
   Widget _body() {
-    if (!ZagProfile.current.lidarrEnabled)
+    if (!ZagProfile.forModule('lidarr').lidarrEnabled)
       return ZagMessage.moduleNotEnabled(
         context: context,
         module: ZagModule.LIDARR.title,
@@ -124,7 +124,7 @@ class _State extends State<LidarrRoute> {
     profiles.addAll(instances);
     
     List<Widget>? actions;
-    if (ZagProfile.current.lidarrEnabled)
+    if (ZagProfile.forModule('lidarr').lidarrEnabled)
       actions = [
         ZagIconButton(
           icon: Icons.add_rounded,
@@ -183,7 +183,7 @@ class _State extends State<LidarrRoute> {
     if (values[0])
       switch (values[1]) {
         case 'web_gui':
-          ZagProfile profile = ZagProfile.current;
+          ZagProfile profile = ZagProfile.forModule('lidarr');
           await profile.effectiveLidarrHost().openLink();
           break;
         case 'update_library':
@@ -234,7 +234,7 @@ class _State extends State<LidarrRoute> {
 
   void _refreshProfile() {
     _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
-    _profileState = ZagProfile.current.toString();
+    _profileState = ZagProfile.forModule('lidarr').toString();
     _refreshAllPages();
   }
 

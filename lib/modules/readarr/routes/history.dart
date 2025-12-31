@@ -33,7 +33,7 @@ class _State extends State<ReadarrHistory> with AutomaticKeepAliveClientMixin {
 
   Future<void> _refresh() async {
     _results = [];
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     if (mounted)
       setState(() {
         _future = _api.getHistory();

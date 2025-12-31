@@ -18,7 +18,7 @@ class LidarrAPI {
         },
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
-        headers: ZagProfile.current.lidarrHeaders,
+        headers: ZagProfile.forModule('lidarr').lidarrHeaders,
         followRedirects: true,
         maxRedirects: 5,
       ),

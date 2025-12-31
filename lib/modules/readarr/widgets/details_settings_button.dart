@@ -56,7 +56,7 @@ class _State extends State<ReadarrDetailsSettingsButton> {
   }
 
   Future<void> _refreshAuthor(BuildContext context) async {
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     await _api
         .refreshAuthor(widget.data!.authorID)
         .then((_) => showZagSuccessSnackBar(
@@ -66,7 +66,7 @@ class _State extends State<ReadarrDetailsSettingsButton> {
   }
 
   Future<void> _removeAuthor(BuildContext context) async {
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     List values = await ReadarrDialogs.deleteAuthor(context);
     if (values[0]) {
       if (values[1]) {

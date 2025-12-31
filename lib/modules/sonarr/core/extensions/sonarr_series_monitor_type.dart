@@ -5,21 +5,21 @@ extension ZagSonarrSeriesMonitorTypeExtension on SonarrSeriesMonitorType {
   String get zagName {
     switch (this) {
       case SonarrSeriesMonitorType.ALL:
-        return 'All Episodes';
+        return 'sonarr.MonitorAllEpisodes'.tr();
       case SonarrSeriesMonitorType.FUTURE:
-        return 'Future Episodes';
+        return 'sonarr.MonitorFutureEpisodes'.tr();
       case SonarrSeriesMonitorType.MISSING:
-        return 'Missing Episodes';
+        return 'sonarr.MonitorMissingEpisodes'.tr();
       case SonarrSeriesMonitorType.EXISTING:
-        return 'Existing Episodes';
+        return 'sonarr.MonitorExistingEpisodes'.tr();
       case SonarrSeriesMonitorType.PILOT:
-        return 'Pilot Episode';
+        return 'sonarr.MonitorPilotEpisode'.tr();
       case SonarrSeriesMonitorType.FIRST_SEASON:
-        return 'Only First Season';
+        return 'sonarr.MonitorFirstSeason'.tr();
       case SonarrSeriesMonitorType.LATEST_SEASON:
-        return 'Only Latest Season';
+        return 'sonarr.MonitorLatestSeason'.tr();
       case SonarrSeriesMonitorType.NONE:
-        return 'None';
+        return 'sonarr.MonitorNone'.tr();
       default:
         return 'zagreus.Unknown'.tr();
     }

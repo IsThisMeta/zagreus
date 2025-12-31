@@ -33,7 +33,7 @@ class _State extends State<ReadarrDetailsOverview>
               : widget.data.overview,
           uri: widget.data.posterURI(),
           squareImage: true,
-          headers: ZagProfile.current.readarrHeaders,
+          headers: ZagProfile.forModule('readarr').readarrHeaders,
         ),
         ZagTableCard(
           content: [

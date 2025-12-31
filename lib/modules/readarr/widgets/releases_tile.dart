@@ -147,7 +147,7 @@ class _State extends State<ReadarrReleasesTile> {
 
   Future<void> _startDownload() async {
     setState(() => _downloadState = ZagLoadingState.ACTIVE);
-    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.current);
+    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     await _api
         .downloadRelease(widget.release.guid, widget.release.indexerId)
         .then((_) {

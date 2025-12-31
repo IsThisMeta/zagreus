@@ -29,7 +29,7 @@ class _State extends State<ReadarrCatalogue>
   @override
   Future<void> loadCallback() async {
     if (mounted) setState(() => _results = []);
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     if (mounted) {
       setState(() {
         _future = _api.getAllAuthors();

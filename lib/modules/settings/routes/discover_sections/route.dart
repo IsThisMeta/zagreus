@@ -19,7 +19,7 @@ class _State extends State<DashboardSectionsRoute> {
     return ZagScaffold(
       scaffoldKey: GlobalKey<ScaffoldState>(),
       appBar: ZagAppBar(
-        title: 'Dashboard Settings',
+        title: 'settings.DashboardSettingsTitle'.tr(),
         actions: [
           if (_hasChanges)
             IconButton(
@@ -33,10 +33,10 @@ class _State extends State<DashboardSectionsRoute> {
                 _editorKey.currentState?.resetToDefaults();
               }
             },
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'reset',
-                child: Text('Reset to Defaults'),
+                child: Text('settings.DashboardSettingsResetDefaults'.tr()),
               ),
             ],
           ),

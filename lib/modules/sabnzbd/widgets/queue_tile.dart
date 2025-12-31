@@ -87,7 +87,7 @@ class _Helper {
   );
 
   Future<void> _pauseJob() async {
-    await SABnzbdAPI.from(ZagProfile.current)
+    await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
         .pauseSingleJob(data.nzoId)
         .then((_) {
       showZagSuccessSnackBar(
@@ -104,7 +104,7 @@ class _Helper {
   }
 
   Future<void> _resumeJob() async {
-    await SABnzbdAPI.from(ZagProfile.current)
+    await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
         .resumeSingleJob(data.nzoId)
         .then((_) {
       showZagSuccessSnackBar(
@@ -122,10 +122,10 @@ class _Helper {
 
   Future<void> _category() async {
     List<SABnzbdCategoryData> categories =
-        await SABnzbdAPI.from(ZagProfile.current).getCategories();
+        await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd')).getCategories();
     List values = await SABnzbdDialogs.changeCategory(context, categories);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current)
+      await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .setCategory(data.nzoId, values[1])
           .then((_) {
         showZagSuccessSnackBar(
@@ -146,7 +146,7 @@ class _Helper {
   Future<void> _priority() async {
     List values = await SABnzbdDialogs.changePriority(context);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current)
+      await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .setJobPriority(data.nzoId, values[1])
           .then((_) {
         showZagSuccessSnackBar(
@@ -165,7 +165,7 @@ class _Helper {
   Future<void> _rename() async {
     List values = await SABnzbdDialogs.renameJob(context, data.name);
     if (values[0])
-      SABnzbdAPI.from(ZagProfile.current)
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .renameJob(data.nzoId, values[1])
           .then((_) {
         showZagSuccessSnackBar(
@@ -184,7 +184,7 @@ class _Helper {
   Future<void> _delete() async {
     List values = await SABnzbdDialogs.deleteJob(context);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current).deleteJob(data.nzoId).then((_) {
+      await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd')).deleteJob(data.nzoId).then((_) {
         showZagSuccessSnackBar(
           title: 'Job Deleted',
           message: data.name,
@@ -201,7 +201,7 @@ class _Helper {
   Future<void> _password() async {
     List values = await SABnzbdDialogs.setPassword(context);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current)
+      await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .setJobPassword(data.nzoId, data.name, values[1])
           .then((_) {
         showZagSuccessSnackBar(

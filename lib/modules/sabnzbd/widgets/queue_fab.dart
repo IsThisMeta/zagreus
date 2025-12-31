@@ -99,7 +99,7 @@ class _State extends State<SABnzbdQueueFAB> with TickerProviderStateMixin {
 
   Future<void> _toggle(BuildContext context, bool paused) async {
     HapticFeedback.lightImpact();
-    SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.current);
+    SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
     paused ? _resume(context, _api) : _pause(context, _api);
   }
 
@@ -110,7 +110,7 @@ class _State extends State<SABnzbdQueueFAB> with TickerProviderStateMixin {
       if (values[1] == -1) {
         List values = await SABnzbdDialogs.customPauseFor(context);
         if (values[0])
-          await SABnzbdAPI.from(ZagProfile.current)
+          await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
               .pauseQueueFor(values[1])
               .then((_) => showZagSuccessSnackBar(
                     title: 'Pausing Queue',
@@ -122,7 +122,7 @@ class _State extends State<SABnzbdQueueFAB> with TickerProviderStateMixin {
                     error: error,
                   ));
       } else {
-        await SABnzbdAPI.from(ZagProfile.current)
+        await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
             .pauseQueueFor(values[1])
             .then((_) => showZagSuccessSnackBar(
                   title: 'Pausing Queue',

@@ -16,8 +16,8 @@ class ReadarrRoute extends StatefulWidget {
 class _State extends State<ReadarrRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  String _profileState = ZagProfile.current.toString();
-  ReadarrAPI _api = ReadarrAPI.from(ZagProfile.current);
+  String _profileState = ZagProfile.forModule('readarr').toString();
+  ReadarrAPI _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
 
   final List _refreshKeys = [
     GlobalKey<RefreshIndicatorState>(),
@@ -65,7 +65,7 @@ class _State extends State<ReadarrRoute> {
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       onProfileChange: (_) {
-        if (_profileState != ZagProfile.current.toString()) _refreshProfile();
+        if (_profileState != ZagProfile.forModule('readarr').toString()) _refreshProfile();
       },
     );
   }
@@ -73,13 +73,13 @@ class _State extends State<ReadarrRoute> {
   Widget _drawer() => ZagDrawer(page: ZagModule.READARR.key);
 
   Widget? _bottomNavigationBar() {
-    if (ZagProfile.current.readarrEnabled)
+    if (ZagProfile.forModule('readarr').readarrEnabled)
       return ReadarrNavigationBar(pageController: _pageController);
     return null;
   }
 
   Widget _body() {
-    if (!ZagProfile.current.readarrEnabled)
+    if (!ZagProfile.forModule('readarr').readarrEnabled)
       return ZagMessage.moduleNotEnabled(
         context: context,
         module: ZagModule.READARR.title,
@@ -116,7 +116,7 @@ class _State extends State<ReadarrRoute> {
     profiles.addAll(instances);
     
     List<Widget>? actions;
-    if (ZagProfile.current.readarrEnabled)
+    if (ZagProfile.forModule('readarr').readarrEnabled)
       actions = [
         ZagIconButton(
           icon: Icons.add_rounded,
@@ -164,7 +164,7 @@ class _State extends State<ReadarrRoute> {
     if (values[0])
       switch (values[1]) {
         case 'web_gui':
-          ZagProfile profile = ZagProfile.current;
+          ZagProfile profile = ZagProfile.forModule('readarr');
           await profile.effectiveReadarrHost().openLink();
           break;
         case 'update_library':
@@ -214,8 +214,8 @@ class _State extends State<ReadarrRoute> {
   }
 
   void _refreshProfile() {
-    _api = ReadarrAPI.from(ZagProfile.current);
-    _profileState = ZagProfile.current.toString();
+    _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
+    _profileState = ZagProfile.forModule('readarr').toString();
     _refreshAllPages();
   }
 

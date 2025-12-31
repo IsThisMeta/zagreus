@@ -33,14 +33,14 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
 
   Future<void> _refresh() async {
     final _model = Provider.of<ReadarrState>(context, listen: false);
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     setState(() {
       _future = _api.searchAuthors(_model.addSearchQuery);
     });
   }
 
   Future<void> _fetchAvailableAuthors() async {
-    await ReadarrAPI.from(ZagProfile.current)
+    await ReadarrAPI.from(ZagProfile.forModule('readarr'))
         .getAllAuthorIDs()
         .then((data) => _availableIDs = data)
         .catchError((error) => _availableIDs = []);

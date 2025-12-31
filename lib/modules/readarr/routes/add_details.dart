@@ -40,7 +40,7 @@ class _State extends State<AddAuthorDetailsRoute>
       });
 
   Future<void> _fetchParameters() async {
-    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.current);
+    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     return _fetchRootFolders(_api)
         .then((_) => _fetchQualityProfiles(_api))
         .then((_) => _fetchMetadataProfiles(_api))
@@ -167,7 +167,7 @@ class _State extends State<AddAuthorDetailsRoute>
               : widget.data!.overview!,
           uri: widget.data?.posterURI ?? '',
           squareImage: true,
-          headers: ZagProfile.current.readarrHeaders,
+          headers: ZagProfile.forModule('readarr').readarrHeaders,
           onLongPress: () async {
             if (widget.data?.goodreadsLink?.isEmpty ?? true) {
               showZagInfoSnackBar(
@@ -267,7 +267,7 @@ class _State extends State<AddAuthorDetailsRoute>
   }
 
   Future<void> _addAuthor() async {
-    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.current);
+    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     bool? search =
         ReadarrDatabase.ADD_AUTHOR_SEARCH_FOR_MISSING_BOOKS.read();
 

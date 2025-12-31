@@ -154,7 +154,7 @@ class _State extends State<AddArtistDetailsRoute>
               : widget.data!.overview,
           uri: widget.data?.posterURI ?? '',
           squareImage: true,
-          headers: ZagProfile.current.lidarrHeaders,
+          headers: ZagProfile.forModule('lidarr').lidarrHeaders,
           onLongPress: () async {
             if (widget.data?.discogsLink?.isEmpty ?? true) {
               showZagInfoSnackBar(

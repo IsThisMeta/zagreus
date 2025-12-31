@@ -40,8 +40,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
   }
 
   void _autoSelectService() {
-    final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
-    final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
+    final sabnzbdEnabled = ZagProfile.hasEnabledInstance('sabnzbd');
+    final nzbgetEnabled = ZagProfile.hasEnabledInstance('nzbget');
 
     if (_selectedService == null) {
       if (sabnzbdEnabled) {
@@ -76,8 +76,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
   }
 
   Widget _buildHeader() {
-    final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
-    final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
+    final sabnzbdEnabled = ZagProfile.hasEnabledInstance('sabnzbd');
+    final nzbgetEnabled = ZagProfile.hasEnabledInstance('nzbget');
     final bothEnabled = sabnzbdEnabled && nzbgetEnabled;
 
     return Padding(
@@ -139,8 +139,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
   }
 
   Widget _buildContent() {
-    final sabnzbdEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.sabnzbdEnabled ?? false;
-    final nzbgetEnabled = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read())?.nzbgetEnabled ?? false;
+    final sabnzbdEnabled = ZagProfile.hasEnabledInstance('sabnzbd');
+    final nzbgetEnabled = ZagProfile.hasEnabledInstance('nzbget');
 
     if (!sabnzbdEnabled && !nzbgetEnabled) {
       return _buildEmptyState();
@@ -241,8 +241,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
 
   Future<Map<String, dynamic>?> _fetchSabnzbdQueue() async {
     try {
-      final profile = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read());
-      if (profile == null || profile.sabnzbdHost == null) return null;
+      final profile = ZagProfile.forModule('sabnzbd');
+      if (profile.sabnzbdHost.isEmpty) return null;
 
       // Use the SABnzbd API directly
       final api = SABnzbdAPI.from(profile);
@@ -302,8 +302,8 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
 
   Future<Map<String, dynamic>?> _fetchNzbgetQueue() async {
     try {
-      final profile = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read());
-      if (profile == null || profile.nzbgetHost == null) return null;
+      final profile = ZagProfile.forModule('nzbget');
+      if (profile.nzbgetHost.isEmpty) return null;
 
       // Use the NZBGet API directly  
       final api = NZBGetAPI.from(profile);
@@ -532,12 +532,10 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
 
   Future<void> _togglePlayPause(String serviceName, bool isPaused) async {
     try {
-      final profile = ZagBox.profiles.read(ZagreusDatabase.ENABLED_PROFILE.read());
-      if (profile == null) return;
-
       HapticFeedback.lightImpact();
 
       if (serviceName == 'SABnzbd') {
+        final profile = ZagProfile.forModule('sabnzbd');
         final api = SABnzbdAPI.from(profile);
         if (isPaused) {
           await api.resumeQueue();
@@ -553,6 +551,7 @@ class _ZagDownloadsDrawerState extends State<ZagDownloadsDrawer>
           );
         }
       } else if (serviceName == 'NZBGet') {
+        final profile = ZagProfile.forModule('nzbget');
         final api = NZBGetAPI.from(profile);
         if (isPaused) {
           await api.resumeQueue();

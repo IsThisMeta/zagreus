@@ -22,8 +22,8 @@ class SABnzbdRoute extends StatefulWidget {
 class _State extends State<SABnzbdRoute> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  String _profileState = ZagProfile.current.toString();
-  SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.current);
+  String _profileState = ZagProfile.forModule('sabnzbd').toString();
+  SABnzbdAPI _api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
 
   final List _refreshKeys = [
     GlobalKey<RefreshIndicatorState>(),
@@ -71,7 +71,7 @@ class _State extends State<SABnzbdRoute> {
       extendBodyBehindAppBar: false,
       extendBody: false,
       onProfileChange: (_) {
-        if (_profileState != ZagProfile.current.toString()) _refreshProfile();
+        if (_profileState != ZagProfile.forModule('sabnzbd').toString()) _refreshProfile();
       },
     );
   }
@@ -79,7 +79,7 @@ class _State extends State<SABnzbdRoute> {
   Widget _drawer() => ZagDrawer(page: ZagModule.SABNZBD.key);
 
   Widget? _bottomNavigationBar() {
-    if (ZagProfile.current.sabnzbdEnabled)
+    if (ZagProfile.forModule('sabnzbd').sabnzbdEnabled)
       return SABnzbdNavigationBar(pageController: _pageController);
     return null;
   }
@@ -97,7 +97,7 @@ class _State extends State<SABnzbdRoute> {
     profiles.addAll(instances);
     
     List<Widget>? actions;
-    if (ZagProfile.current.sabnzbdEnabled)
+    if (ZagProfile.forModule('sabnzbd').sabnzbdEnabled)
       actions = [
         Selector<SABnzbdState, bool>(
           selector: (_, model) => model.error,
@@ -137,7 +137,7 @@ class _State extends State<SABnzbdRoute> {
   }
 
   Widget _body() {
-    if (!ZagProfile.current.sabnzbdEnabled)
+    if (!ZagProfile.forModule('sabnzbd').sabnzbdEnabled)
       return ZagMessage.moduleNotEnabled(
         context: context,
         module: ZagModule.SABNZBD.title,
@@ -160,7 +160,7 @@ class _State extends State<SABnzbdRoute> {
     if (values[0])
       switch (values[1]) {
         case 'web_gui':
-          ZagProfile profile = ZagProfile.current;
+          ZagProfile profile = ZagProfile.forModule('sabnzbd');
           await profile.effectiveSabnzbdHost().openLink();
           break;
         case 'add_nzb':
@@ -188,7 +188,7 @@ class _State extends State<SABnzbdRoute> {
   Future<void> _completeAction() async {
     List values = await SABnzbdDialogs.changeOnCompleteAction(context);
     if (values[0])
-      SABnzbdAPI.from(ZagProfile.current)
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .setOnCompleteAction(values[1])
           .then((_) => showZagSuccessSnackBar(
                 title: 'On Complete Action Set',
@@ -203,7 +203,7 @@ class _State extends State<SABnzbdRoute> {
   Future<void> _clearHistory() async {
     List values = await SABnzbdDialogs.clearAllHistory(context);
     if (values[0])
-      SABnzbdAPI.from(ZagProfile.current)
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .clearHistory(values[1], values[2])
           .then((_) {
         showZagSuccessSnackBar(
@@ -222,7 +222,7 @@ class _State extends State<SABnzbdRoute> {
   Future<void> _sort() async {
     List values = await SABnzbdDialogs.sortQueue(context);
     if (values[0])
-      await SABnzbdAPI.from(ZagProfile.current)
+      await SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
           .sortQueue(values[1], values[2])
           .then((_) {
         showZagSuccessSnackBar(
@@ -304,8 +304,8 @@ class _State extends State<SABnzbdRoute> {
   }
 
   void _refreshProfile() {
-    _api = SABnzbdAPI.from(ZagProfile.current);
-    _profileState = ZagProfile.current.toString();
+    _api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+    _profileState = ZagProfile.forModule('sabnzbd').toString();
     _refreshAllPages();
   }
 

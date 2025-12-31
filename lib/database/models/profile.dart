@@ -855,6 +855,24 @@ class ZagProfile extends HiveObject {
     return parsed.name.replaceAll('-', ' ');
   }
 
+  /// Check if ANY instance (main profile or shadow) has the module enabled.
+  /// This is used to determine if a module should be shown in the UI at all.
+  static bool hasEnabledInstance(String moduleKey) {
+    // Check main profile first
+    if (_isModuleEnabled(current, moduleKey)) return true;
+
+    // Check shadow instances for this module
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final instances = getInstancesForModule(currentProfile, moduleKey);
+    for (final instanceKey in instances) {
+      final profile = ZagBox.profiles.read(instanceKey);
+      if (profile != null && _isModuleEnabled(profile, moduleKey)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /// Migrate all profiles to a single multi-instance profile.
   /// Takes all enabled modules from each profile and creates shadow instances.
   /// Returns the target profile name or null if migration failed.

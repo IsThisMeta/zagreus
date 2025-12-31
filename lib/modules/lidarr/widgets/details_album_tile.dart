@@ -25,7 +25,7 @@ class _State extends State<LidarrDetailsAlbumTile> {
     return ZagBlock(
       title: widget.data.title,
       disabled: !widget.data.monitored,
-      posterHeaders: ZagProfile.current.lidarrHeaders,
+      posterHeaders: ZagProfile.forModule('lidarr').lidarrHeaders,
       posterPlaceholderIcon: ZagIcons.MUSIC,
       posterIsSquare: true,
       posterUrl: widget.data.albumCoverURI(),

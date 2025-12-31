@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -263,7 +264,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
+                String title = 'discover.NoRecommendationsYet'.tr();
                 String? message;
                 IconData icon = Icons.groups_rounded;
                 final showLibrarySyncCta =
@@ -276,31 +277,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicPeopleError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic People requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.fetchFailed:
                     case MagicPeopleError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -358,8 +360,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -381,7 +383,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ] else if (showRetryButton) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
                             onTap: () {
                               final refreshService = MagicPeopleService();
@@ -412,7 +414,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Tap for details • Long press to preview',
+                        'discover.MagicPeopleTip'.tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context)
@@ -955,8 +957,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }) async {
     if (sectionLabel != null) {
       showZagSnackBar(
-        title: 'Refreshing',
-        message: 'Updating $sectionLabel…',
+        title: 'discover.RefreshingTitle'.tr(),
+        message: 'discover.UpdatingSectionMessage'.tr(args: [sectionLabel]),
         type: ZagSnackbarType.INFO,
         duration: const Duration(milliseconds: 1500),
       );
@@ -1612,11 +1614,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           }
 
           shows.add({
-            'seriesTitle': series.title ?? 'Unknown Series',
-            'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
+            'seriesTitle': series.title ?? 'discover.UnknownSeries'.tr(),
+            'episodeTitle': episode.title ??
+                'sonarr.EpisodeNumber'.tr(
+                  args: ['${episode.episodeNumber ?? 0}'],
+                ),
             'seasonNumber': episode.seasonNumber ?? 0,
             'episodeNumber': episode.episodeNumber ?? 0,
-            'network': 'Downloaded',
+            'network': 'discover.DownloadedLabel'.tr(),
             'thumbnail': imageUrl,
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
@@ -1731,11 +1736,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           }
 
           shows.add({
-            'seriesTitle': series.title ?? 'Unknown Series',
-            'episodeTitle': episode.title ?? 'Episode ${episode.episodeNumber}',
+            'seriesTitle': series.title ?? 'discover.UnknownSeries'.tr(),
+            'episodeTitle': episode.title ??
+                'sonarr.EpisodeNumber'.tr(
+                  args: ['${episode.episodeNumber ?? 0}'],
+                ),
             'seasonNumber': episode.seasonNumber ?? 0,
             'episodeNumber': episode.episodeNumber ?? 0,
-            'network': series.network ?? 'Network',
+            'network': series.network ?? 'discover.UnknownNetwork'.tr(),
             'thumbnail': imageUrl,
             'airDateUtc': episode.airDateUtc,
             'seriesId': series.id,
@@ -1767,36 +1775,16 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final episodeDay = DateTime(localTime.year, localTime.month, localTime.day);
 
     String dayLabel;
+    final locale = context.locale.toString();
     if (episodeDay == today) {
-      dayLabel = 'Today';
+      dayLabel = 'zagreus.Today'.tr();
     } else if (episodeDay == tomorrow) {
-      dayLabel = 'Tomorrow';
+      dayLabel = 'discover.Tomorrow'.tr();
     } else {
-      // Format as "Mon, Jan 15"
-      final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      final months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-      ];
-      dayLabel =
-          '${weekdays[localTime.weekday % 7]}, ${months[localTime.month - 1]} ${localTime.day}';
+      dayLabel = DateFormat('EEE, MMM d', locale).format(localTime);
     }
 
-    // Format time as "3:00 PM"
-    final hour = localTime.hour;
-    final minute = localTime.minute.toString().padLeft(2, '0');
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    final timeLabel = DateFormat('h:mm a', locale).format(localTime);
 
     // Truncate network name if too long
     final networkName = network ?? '';
@@ -1804,7 +1792,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ? '${networkName.substring(0, 12)}...'
         : networkName;
 
-    return '$dayLabel • $displayHour:$minute $period${truncatedNetwork.isNotEmpty ? ' on $truncatedNetwork' : ''}';
+    if (truncatedNetwork.isNotEmpty) {
+      return 'discover.AiringTimeWithNetwork'.tr(
+        args: [dayLabel, timeLabel, truncatedNetwork],
+      );
+    }
+    return 'discover.AiringTime'.tr(args: [dayLabel, timeLabel]);
   }
 
   Future<void> _loadPopularTVShows() async {
@@ -2139,8 +2132,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _promptSignInForAi() {
     showZagInfoSnackBar(
-      title: 'Sign in required',
-      message: 'Sign in to your Zagreus account to use AI features.',
+      title: 'discover.SignInRequiredTitle'.tr(),
+      message: 'discover.SignInRequiredMessage'.tr(),
     );
     SettingsRoutes.ACCOUNT.go();
   }
@@ -2362,7 +2355,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         IconButton(
           key: const ValueKey('discover_action_close_search'),
           icon: const Icon(Icons.close_rounded),
-          tooltip: 'Close Search',
+          tooltip: 'discover.TooltipCloseSearch'.tr(),
           onPressed: _closeSearchOverlay,
         ),
       ];
@@ -2379,39 +2372,39 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           key: const ValueKey('discover_action_agent_info'),
           icon: const Icon(Icons.info_outline),
           onPressed: _showZAgentQuickSetup,
-          tooltip: 'Z-Bot setup',
+          tooltip: 'discover.TooltipZBotSetup'.tr(),
         ),
         IconButton(
           key: const ValueKey('discover_action_agent_settings'),
           icon: const Icon(Icons.tune),
           onPressed: _showZAssistantSettings,
-          tooltip: 'Z-Bot settings',
+          tooltip: 'discover.TooltipZBotSettings'.tr(),
         ),
         if (persistLocal && !supabaseSync)
           IconButton(
             key: const ValueKey('discover_action_agent_clear_chat'),
             icon: const Icon(Icons.delete_outline),
             onPressed: () => _agentChatKey.currentState?.clearChat(),
-            tooltip: 'Clear chat',
+            tooltip: 'discover.TooltipClearChat'.tr(),
           ),
         if (supabaseSync)
           IconButton(
             key: const ValueKey('discover_action_agent_new_conversation'),
             icon: const Icon(Icons.add),
             onPressed: () => _agentChatKey.currentState?.startNewConversation(),
-            tooltip: 'New conversation',
+            tooltip: 'discover.TooltipNewConversation'.tr(),
           ),
         if (_lastZAssistantStageId != null)
           IconButton(
             key: const ValueKey('discover_action_agent_return_results'),
             icon: const Icon(Icons.arrow_forward),
             onPressed: _navigateToLastZAssistantResults,
-            tooltip: 'Return to Z-Bot Results',
+            tooltip: 'discover.TooltipReturnToZBotResults'.tr(),
           ),
         IconButton(
           key: const ValueKey('discover_action_agent_close'),
           icon: const Icon(Icons.close_rounded),
-          tooltip: 'Close Agent',
+          tooltip: 'discover.TooltipCloseAgent'.tr(),
           onPressed: _closeAgentOverlay,
         ),
       ];
@@ -2431,7 +2424,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_calendar_filter'),
             icon: const Icon(Icons.filter_list_rounded),
-            tooltip: 'Filter Instances',
+            tooltip: 'discover.TooltipFilterInstances'.tr(),
             onPressed: _showCalendarInstanceFilter,
           ),
         SwitchViewAction(
@@ -2453,7 +2446,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             IconButton(
               key: const ValueKey('discover_action_agent'),
               icon: const Icon(Icons.smart_toy),
-              tooltip: 'Z-Bot',
+              tooltip: 'discover.TooltipZBot'.tr(),
               onPressed: _openAgentOverlay,
             ),
           );
@@ -2462,7 +2455,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_search_modules'),
             icon: const Icon(Icons.search_rounded),
-            tooltip: 'Search',
+            tooltip: 'search.Search'.tr(),
             onPressed: _openSearchOverlay,
           ),
         );
@@ -2472,7 +2465,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_search_modules_pro'),
             icon: const Icon(Icons.search_rounded),
-            tooltip: 'Search',
+            tooltip: 'search.Search'.tr(),
             onPressed: _openSearchOverlay,
           ),
         );
@@ -2490,7 +2483,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_radarr_instance'),
             icon: const Icon(Icons.swap_horiz_rounded),
-            tooltip: 'Switch Radarr Instance',
+            tooltip: 'discover.TooltipSwitchRadarrInstance'.tr(),
             onPressed: () => _showRadarrInstanceSelector(),
           ),
         );
@@ -2500,18 +2493,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_movies'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z-Bot',
+            tooltip: 'discover.TooltipZBot'.tr(),
             onPressed: _openAgentOverlay,
           ),
         );
       }
       actions.add(
-        IconButton(
-          key: const ValueKey('discover_action_search_movies'),
-          icon: const Icon(Icons.search_rounded),
-          tooltip: 'Search',
-          onPressed: _openSearchOverlay,
-        ),
+          IconButton(
+            key: const ValueKey('discover_action_search_movies'),
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'search.Search'.tr(),
+            onPressed: _openSearchOverlay,
+          ),
       );
     } else if (_currentPageIndex == showsTabIndex) {
       // Shows tab - add Sonarr instance swap if instances exist
@@ -2523,7 +2516,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_sonarr_instance'),
             icon: const Icon(Icons.swap_horiz_rounded),
-            tooltip: 'Switch Sonarr Instance',
+            tooltip: 'discover.TooltipSwitchSonarrInstance'.tr(),
             onPressed: () => _showSonarrInstanceSelector(),
           ),
         );
@@ -2533,18 +2526,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_shows'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z-Bot',
+            tooltip: 'discover.TooltipZBot'.tr(),
             onPressed: _openAgentOverlay,
           ),
         );
       }
       actions.add(
-        IconButton(
-          key: const ValueKey('discover_action_search_shows'),
-          icon: const Icon(Icons.search_rounded),
-          tooltip: 'Search',
-          onPressed: _openSearchOverlay,
-        ),
+          IconButton(
+            key: const ValueKey('discover_action_search_shows'),
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'search.Search'.tr(),
+            onPressed: _openSearchOverlay,
+          ),
       );
     } else if (_currentPageIndex == serverIndex) {
       // Server tab
@@ -2553,18 +2546,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           IconButton(
             key: const ValueKey('discover_action_agent_server'),
             icon: const Icon(Icons.smart_toy),
-            tooltip: 'Z-Bot',
+            tooltip: 'discover.TooltipZBot'.tr(),
             onPressed: _openAgentOverlay,
           ),
         );
       }
       actions.add(
-        IconButton(
-          key: const ValueKey('discover_action_search_server'),
-          icon: const Icon(Icons.search_rounded),
-          tooltip: 'Search',
-          onPressed: _openSearchOverlay,
-        ),
+          IconButton(
+            key: const ValueKey('discover_action_search_server'),
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'search.Search'.tr(),
+            onPressed: _openSearchOverlay,
+          ),
       );
     }
 
@@ -2582,7 +2575,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Select Radarr Instance'),
+        title: Text('discover.SelectRadarrInstanceTitle'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: options.map((instanceKey) {
@@ -2662,7 +2655,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Select Sonarr Instance'),
+        title: Text('discover.SelectSonarrInstanceTitle'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: options.map((instanceKey) {
@@ -2904,7 +2897,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         ),
         child: ZagButton(
           type: ZagButtonType.TEXT,
-          text: 'Edit Sections',
+          text: 'discover.EditSections'.tr(),
           icon: Icons.tune_rounded,
           color: ZagColours.currentAccent,
           onTap: () =>
@@ -3045,9 +3038,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               SizedBox(
                 height: 200,
                 child: Center(
-                  child: Text(
-                    'Failed to load recommendations',
-                    style: TextStyle(
+                child: Text(
+                  'discover.CustomSectionFailedToLoad'.tr(),
+                  style: TextStyle(
                       color: (Theme.of(context).brightness == Brightness.dark
                               ? Colors.white
                               : Colors.black)
@@ -3064,8 +3057,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         if (!result.success) {
           final message = result.errorMessage ??
               (result.error == CustomSectionError.noMegaOrUltra
-                  ? 'Mega or Ultra subscription required'
-                  : 'Something went wrong');
+                  ? 'discover.MegaUltraSubscriptionRequired'.tr()
+                  : 'discover.SomethingWentWrongTitle'.tr());
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -3097,7 +3090,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                         const SizedBox(height: 12),
                         ZagButton.text(
-                          text: 'Try Again',
+                          text: 'zagreus.TryAgain'.tr(),
                           icon: Icons.refresh_rounded,
                           onTap: () => _regenerateCustomSection(config),
                         ),
@@ -3120,7 +3113,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 height: 180,
                 child: Center(
                   child: ZagButton.text(
-                    text: 'Generate Now',
+                    text: 'discover.GenerateNow'.tr(),
                     icon: Icons.auto_awesome_rounded,
                     onTap: () => _regenerateCustomSection(config),
                   ),
@@ -3165,7 +3158,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           if (item.tmdbId == null) {
             showZagSnackBar(
               title: config.title,
-              message: 'Missing TMDB identifier for this title.',
+              message: 'discover.MissingTmdbIdentifierMessage'.tr(),
               type: ZagSnackbarType.ERROR,
             );
             return;
@@ -3260,7 +3253,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
+            child: Text('zagreus.Close'.tr()),
           ),
         ],
       ),
@@ -3274,15 +3267,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Create Custom Section'),
+        title: Text('discover.CustomSectionCreateTitle'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Section Title',
+                decoration: InputDecoration(
+                  labelText: 'discover.CustomSectionSectionTitleLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -3290,8 +3283,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
+                decoration: InputDecoration(
+                  labelText: 'discover.CustomSectionDescriptionLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -3303,7 +3296,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -3311,15 +3304,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               final description = descriptionController.text.trim();
               if (title.isEmpty || description.isEmpty) {
                 showZagSnackBar(
-                  title: 'Missing Details',
-                  message: 'Please fill in all fields',
+                  title: 'discover.CustomSectionMissingDetailsTitle'.tr(),
+                  message: 'discover.CustomSectionMissingDetailsMessage'.tr(),
                   type: ZagSnackbarType.ERROR,
                 );
                 return;
               }
               Navigator.pop(ctx, true);
             },
-            child: const Text('Create'),
+            child: Text('discover.CustomSectionCreateAction'.tr()),
           ),
         ],
       ),
@@ -3344,15 +3337,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Edit Custom Section'),
+        title: Text('discover.CustomSectionEditTitle'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Section Title',
+                decoration: InputDecoration(
+                  labelText: 'discover.CustomSectionSectionTitleLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -3360,8 +3353,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
+                decoration: InputDecoration(
+                  labelText: 'discover.CustomSectionDescriptionLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -3373,11 +3366,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Save'),
+            child: Text('discover.CustomSectionSaveAction'.tr()),
           ),
         ],
       ),
@@ -3415,17 +3408,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Custom Section?'),
-        content: Text('Are you sure you want to delete "${config.title}"?'),
+        title: Text('discover.CustomSectionDeleteTitle'.tr()),
+        content: Text(
+          'discover.CustomSectionDeleteMessage'.tr(args: [config.title]),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('zagreus.Delete'.tr()),
           ),
         ],
       ),
@@ -3715,7 +3710,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               fontSize: 16,
             ),
             decoration: InputDecoration(
-              hintText: 'Search movies, TV shows, and people...',
+              hintText: 'discover.SearchHint'.tr(),
               hintStyle: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white.withOpacity(0.3)
@@ -3802,7 +3797,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Search for movies, TV shows, and people',
+                                  'discover.SearchPrompt'.tr(),
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Theme.of(context).brightness ==
@@ -3828,7 +3823,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No results found',
+                                  'discover.SearchNoResults'.tr(),
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Theme.of(context).brightness ==
@@ -4103,8 +4098,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _searchResults = [];
       });
       showZagSnackBar(
-        title: 'Search Error',
-        message: 'Failed to search. Please try again.',
+        title: 'discover.SearchErrorTitle'.tr(),
+        message: 'discover.SearchErrorMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -4118,17 +4113,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           children: [
             Icon(Icons.star_border_rounded, color: ZagColours.purple),
             const SizedBox(width: 12),
-            const Text('Zagreus Mega Required'),
+            Text('discover.MegaRequiredTitle'.tr()),
           ],
         ),
-        content: const Text(
-          'Mosaic is a Zagreus Mega exclusive feature.\n\n'
-          'Upgrade to Zagreus Mega to unlock AI-powered recommendations!',
-        ),
+        content: Text('discover.MegaRequiredMessage'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -4136,7 +4128,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               SettingsRoutes.SUBSCRIPTIONS.go();
             },
             child: Text(
-              'View Subscriptions',
+              'discover.ViewSubscriptionsAction'.tr(),
               style: TextStyle(color: ZagColours.purple),
             ),
           ),
@@ -4205,8 +4197,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _isAskingZAssistant = false;
       });
       showZagSnackBar(
-        title: 'Z-Bot Error',
-        message: 'Failed to get results from Z-Bot. Please try again.',
+        title: 'discover.ZBotErrorTitle'.tr(),
+        message: 'discover.ZBotErrorMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -4239,8 +4231,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (mounted) {
         if (result.success) {
           showZagSnackBar(
-            title: 'Library Synced',
-            message: 'Your library has been synced to Z-Bot',
+            title: 'discover.LibrarySyncedTitle'.tr(),
+            message: 'discover.LibrarySyncedMessage'.tr(),
             type: ZagSnackbarType.SUCCESS,
           );
 
@@ -4249,8 +4241,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               await WatchHistorySyncService().syncWatchHistory(force: true);
           if (watchHistoryResult.success) {
             showZagSnackBar(
-              title: 'Watch History Synced',
-              message: 'Your Tautulli watch history has been synced',
+              title: 'discover.WatchHistorySyncedTitle'.tr(),
+              message: 'discover.WatchHistorySyncedMessage'.tr(),
               type: ZagSnackbarType.SUCCESS,
             );
           } else if (watchHistoryResult.error !=
@@ -4259,9 +4251,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   WatchHistorySyncError.tautulliNotConfigured) {
             // Only show error if it's not just disabled/not configured
             showZagSnackBar(
-              title: 'Watch History Sync Failed',
+              title: 'discover.WatchHistorySyncFailedTitle'.tr(),
               message: watchHistoryResult.errorMessage ??
-                  'Could not sync watch history',
+                  'discover.WatchHistorySyncFailedMessage'.tr(),
               type: ZagSnackbarType.ERROR,
             );
           }
@@ -4273,30 +4265,30 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
           switch (result.error) {
             case LibrarySyncError.noMega:
-              title = 'Sync Not Available';
-              message =
-                  'Library sync is available for Pro, Mega, and Ultra subscribers';
+              title = 'discover.SyncNotAvailableTitle'.tr();
+              message = 'discover.SyncNotAvailableMessage'.tr();
               type = ZagSnackbarType.INFO;
               break;
             case LibrarySyncError.cacheDisabled:
-              title = 'Sync Disabled';
-              message = 'Library cache is disabled in settings';
+              title = 'discover.SyncDisabledTitle'.tr();
+              message = 'discover.SyncDisabledMessage'.tr();
               type = ZagSnackbarType.INFO;
               break;
             case LibrarySyncError.alreadySyncing:
-              title = 'Sync In Progress';
-              message = 'A sync is already running';
+              title = 'discover.SyncInProgressTitle'.tr();
+              message = 'discover.SyncInProgressMessage'.tr();
               type = ZagSnackbarType.INFO;
               break;
             case LibrarySyncError.uploadFailed:
-              title = 'Sync Failed';
-              message = result.errorMessage ?? 'Could not upload to server';
+              title = 'discover.SyncFailedTitle'.tr();
+              message = result.errorMessage ??
+                  'discover.SyncUploadFailedMessage'.tr();
               type = ZagSnackbarType.ERROR;
               break;
             case LibrarySyncError.unknown:
             default:
-              title = 'Sync Failed';
-              message = 'An unexpected error occurred';
+              title = 'discover.SyncFailedTitle'.tr();
+              message = 'discover.SyncUnexpectedErrorMessage'.tr();
               type = ZagSnackbarType.ERROR;
               break;
           }
@@ -4314,8 +4306,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagLogger().error('Failed to sync library', e, stack);
       if (mounted) {
         showZagSnackBar(
-          title: 'Sync Failed',
-          message: 'Could not sync library. Please try again.',
+          title: 'discover.SyncFailedTitle'.tr(),
+          message: 'discover.SyncFailedMessage'.tr(),
           type: ZagSnackbarType.ERROR,
         );
       }
@@ -4339,8 +4331,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.Z_ASSISTANT_LIBRARY_CACHE_ENABLED.update(true);
       if (mounted) {
         showZagInfoSnackBar(
-          title: 'Library Sync Enabled',
-          message: 'Syncing your library to power $sectionName.',
+          title: 'discover.LibrarySyncEnabledTitle'.tr(),
+          message: 'discover.LibrarySyncEnabledMessage'
+              .tr(args: [sectionName]),
         );
         setState(() {});
       }
@@ -4374,7 +4367,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           print('⏱️  Request timed out');
           return ZAssistantApiResponse(
             success: false,
-            error: 'Request timed out',
+            error: 'discover.RequestTimedOut'.tr(),
           );
         },
       );
@@ -4407,8 +4400,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         print('❌ Failed to load users: ${response.error}');
         if (mounted) {
           showZagErrorSnackBar(
-            title: 'Failed to Load Users',
-            message: response.error ?? 'Unknown error',
+            title: 'discover.FailedToLoadUsersTitle'.tr(),
+            message:
+                response.error ?? 'zagreus.UnknownError'.tr(),
           );
         }
       }
@@ -4417,8 +4411,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       print('Stack trace: $stack');
       if (mounted) {
         showZagErrorSnackBar(
-          title: 'Error',
-          message: 'Failed to load Tautulli users: $e',
+          title: 'zagreus.Error'.tr(),
+          message: 'discover.FailedToLoadTautulliUsersMessage'.tr(args: ['$e']),
         );
       }
     } finally {
@@ -4486,7 +4480,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   String _labelForAlias(String? alias) {
     if (alias == null || alias.isEmpty) {
-      return 'Unknown User';
+      return 'discover.UnknownUser'.tr();
     }
     return _findUserOption(alias)?.label ?? alias;
   }
@@ -4502,20 +4496,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         _refreshQuickSetupModal();
         ZagreusDatabase.Z_ASSISTANT_SELECTED_USER_ALIAS.update(userAlias);
         showZagSuccessSnackBar(
-          title: 'User Selected',
-          message:
-              'Z-Bot will now focus on ${_labelForAlias(userAlias)}\'s viewing history',
+          title: 'discover.UserSelectedTitle'.tr(),
+          message: 'discover.UserSelectedMessage'
+              .tr(args: [_labelForAlias(userAlias)]),
         );
       } else {
         showZagErrorSnackBar(
-          title: 'Error',
-          message: response.error ?? 'Failed to select user',
+          title: 'zagreus.Error'.tr(),
+          message: response.error ?? 'discover.FailedToSelectUser'.tr(),
         );
       }
     } catch (e) {
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'Failed to select user: $e',
+        title: 'zagreus.Error'.tr(),
+        message: 'discover.FailedToSelectUserWithError'.tr(args: ['$e']),
       );
     }
   }
@@ -4637,7 +4631,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               color: theme.colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Z-Bot setup',
+                            'discover.ZBotSetupTitle'.tr(),
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -4646,7 +4640,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Turn on these caches so the agent has library and watch history context. Your credentials are never used — all server commands are sent back to your device and processed locally. For privacy, usernames from Tautulli are filtered out.',
+                        'discover.ZBotSetupDescription'.tr(),
                         style: descriptionStyle,
                       ),
                       const SizedBox(height: 16),
@@ -4657,12 +4651,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               .Z_ASSISTANT_LIBRARY_CACHE_ENABLED
                               .read();
                           return ZagBlock(
-                            title: 'Library Cache',
+                            title: 'discover.LibraryCacheTitle'.tr(),
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Library is synced to Z-Bot'
-                                    : 'Let Z-Bot analyze your library',
+                                    ? 'discover.LibraryCacheEnabledMessage'.tr()
+                                    : 'discover.LibraryCacheDisabledMessage'
+                                        .tr(),
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -4673,15 +4668,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     .update(value);
                                 if (value) {
                                   showZagInfoSnackBar(
-                                    title: 'Library Cache Enabled',
+                                    title:
+                                        'discover.LibraryCacheEnabledTitle'.tr(),
                                     message:
-                                        'Z-Bot will now sync your library periodically',
+                                        'discover.LibraryCacheEnabledSnackMessage'
+                                            .tr(),
                                   );
                                 } else {
                                   showZagInfoSnackBar(
-                                    title: 'Library Cache Disabled',
+                                    title:
+                                        'discover.LibraryCacheDisabledTitle'.tr(),
                                     message:
-                                        'Z-Bot will no longer sync your library',
+                                        'discover.LibraryCacheDisabledSnackMessage'
+                                            .tr(),
                                   );
                                 }
                               },
@@ -4697,12 +4696,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               .Z_ASSISTANT_WATCH_HISTORY_CACHE_ENABLED
                               .read();
                           return ZagBlock(
-                            title: 'Watch History Cache',
+                            title: 'discover.WatchHistoryCacheTitle'.tr(),
                             body: [
                               TextSpan(
                                 text: enabled
-                                    ? 'Tautulli watch history synced to Z-Bot'
-                                    : 'Sync your Tautulli watch history',
+                                    ? 'discover.WatchHistoryCacheEnabledMessage'
+                                        .tr()
+                                    : 'discover.WatchHistoryCacheDisabledMessage'
+                                        .tr(),
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -4713,16 +4714,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     .update(value);
                                 if (value) {
                                   showZagInfoSnackBar(
-                                    title: 'Watch History Cache Enabled',
+                                    title: 'discover.WatchHistoryCacheEnabledTitle'
+                                        .tr(),
                                     message:
-                                        'Z-Bot will now sync your Tautulli watch history',
+                                        'discover.WatchHistoryCacheEnabledSnackMessage'
+                                            .tr(),
                                   );
                                   _loadAvailableUsers();
                                 } else {
                                   showZagInfoSnackBar(
-                                    title: 'Watch History Cache Disabled',
+                                    title: 'discover.WatchHistoryCacheDisabledTitle'
+                                        .tr(),
                                     message:
-                                        'Z-Bot will no longer sync watch history',
+                                        'discover.WatchHistoryCacheDisabledSnackMessage'
+                                            .tr(),
                                   );
                                   setState(() {
                                     _availableUsers = [];
@@ -4743,10 +4748,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               .Z_ASSISTANT_PERSIST_CHAT_HISTORY
                               .read();
                           return ZagBlock(
-                            title: 'Persist chat history',
-                            body: const [
+                            title: 'discover.PersistChatHistoryTitle'.tr(),
+                            body: [
                               TextSpan(
-                                text: 'Keep your current chat on this device',
+                                text: 'discover.PersistChatHistoryDescription'
+                                    .tr(),
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -4760,11 +4766,13 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     ?.onPersistenceChanged(value);
                                 showZagInfoSnackBar(
                                   title: value
-                                      ? 'Chat storage enabled'
-                                      : 'Chat storage disabled',
+                                      ? 'discover.ChatStorageEnabledTitle'.tr()
+                                      : 'discover.ChatStorageDisabledTitle'.tr(),
                                   message: value
-                                      ? 'Z-Bot will keep chat history locally'
-                                      : 'Z-Bot will act stateless',
+                                      ? 'discover.ChatStorageEnabledMessage'
+                                          .tr()
+                                      : 'discover.ChatStorageDisabledMessage'
+                                          .tr(),
                                 );
                               },
                             ),
@@ -4779,11 +4787,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               .Z_ASSISTANT_SUPABASE_CHAT_SYNC
                               .read();
                           return ZagBlock(
-                            title: 'Conversation history',
-                            body: const [
+                            title: 'discover.ConversationHistoryTitle'.tr(),
+                            body: [
                               TextSpan(
                                 text:
-                                    'Save multiple chats locally and switch between them',
+                                    'discover.ConversationHistoryDescription'
+                                        .tr(),
                               ),
                             ],
                             trailing: ZagSwitch(
@@ -4797,11 +4806,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     ?.onSupabaseSyncChanged(value);
                                 showZagInfoSnackBar(
                                   title: value
-                                      ? 'Conversation history enabled'
-                                      : 'Conversation history disabled',
+                                      ? 'discover.ConversationHistoryEnabledTitle'
+                                          .tr()
+                                      : 'discover.ConversationHistoryDisabledTitle'
+                                          .tr(),
                                   message: value
-                                      ? 'Chats will be stored locally as separate conversations'
-                                      : 'Chats will stay in the current session only',
+                                      ? 'discover.ConversationHistoryEnabledMessage'
+                                          .tr()
+                                      : 'discover.ConversationHistoryDisabledMessage'
+                                          .tr(),
                                 );
                               },
                             ),
@@ -4820,7 +4833,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
-                                'Enable the library cache to trigger a manual sync.',
+                                'discover.LibraryCacheEnableToSyncMessage'.tr(),
                                 style: descriptionStyle,
                                 textAlign: TextAlign.center,
                               ),
@@ -4851,7 +4864,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               style: TextButton.styleFrom(
                                 foregroundColor: ZagColours.currentAccent,
                               ),
-                              child: const Text('Sync library now'),
+                              child: Text('discover.SyncLibraryNow'.tr()),
                             ),
                           );
                         },
@@ -4863,7 +4876,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             style: TextButton.styleFrom(
                               foregroundColor: ZagColours.currentAccent,
                             ),
-                            child: const Text('View chat history'),
+                            child: Text('discover.ViewChatHistoryAction'.tr()),
                           ),
                         ),
                       if (ZagreusDatabase.Z_ASSISTANT_PERSIST_CHAT_HISTORY
@@ -4875,21 +4888,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               final confirm = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: const Text('Clear all chats'),
-                                  content: const Text(
-                                    'Are you sure you want to delete all chat history? This cannot be undone.',
+                                  title: Text('discover.ClearAllChatsTitle'.tr()),
+                                  content: Text(
+                                    'discover.ClearAllChatsMessage'.tr(),
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context, false),
-                                      child: const Text('Cancel'),
+                                      child: Text('zagreus.Cancel'.tr()),
                                     ),
                                     TextButton(
                                       onPressed: () => Navigator.pop(context, true),
                                       style: TextButton.styleFrom(
                                         foregroundColor: ZagColours.red,
                                       ),
-                                      child: const Text('Clear'),
+                                      child: Text('zagreus.Clear'.tr()),
                                     ),
                                   ],
                                 ),
@@ -4901,16 +4914,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ZConversationService().clearConversations();
                                 _agentChatKey.currentState?.clearHistory();
                                 showZagInfoSnackBar(
-                                  title: 'Chats cleared',
-                                  message:
-                                      'All chat history has been deleted from this device',
+                                  title: 'discover.ChatsClearedTitle'.tr(),
+                                  message: 'discover.ChatsClearedMessage'.tr(),
                                 );
                               }
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: ZagColours.red,
                             ),
-                            child: const Text('Clear all chats'),
+                            child: Text('discover.ClearAllChatsAction'.tr()),
                           ),
                         ),
                       const SizedBox(height: 8),
@@ -4922,7 +4934,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
                           child: Text(
-                            'Usernames shown exactly as they appear in Tautulli. Only this device sees them.',
+                            'discover.TautulliUsernamesNotice'.tr(),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
@@ -4938,12 +4950,15 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: ZagBlock(
-                            title: 'Select Your Tautulli User',
+                            title: 'discover.SelectTautulliUserTitle'.tr(),
                             body: [
                               TextSpan(
                                 text: _selectedUser != null
-                                    ? 'AI recommendations personalized for ${_labelForAlias(_selectedUser)}'
-                                    : 'Choose which Tautulli user you are',
+                                    ? 'discover.TautulliUserPersonalizedMessage'
+                                        .tr(args: [
+                                        _labelForAlias(_selectedUser)
+                                      ])
+                                    : 'discover.SelectTautulliUserPrompt'.tr(),
                               ),
                             ],
                             bottom: Column(
@@ -4979,7 +4994,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     padding: const EdgeInsets.only(top: 8),
                                     child: Center(
                                       child: ZagButton.text(
-                                        text: 'Load Users',
+                                        text: 'discover.LoadUsersAction'.tr(),
                                         icon: Icons.refresh,
                                         onTap: _loadAvailableUsers,
                                       ),
@@ -5039,7 +5054,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               child: Row(
                 children: [
                   Text(
-                    'Conversation History',
+                    'discover.ConversationHistorySheetTitle'.tr(),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const Spacer(),
@@ -5065,7 +5080,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'No conversations yet',
+                            'discover.NoConversationsYet'.tr(),
                             style:
                                 Theme.of(context).textTheme.bodyLarge?.copyWith(
                                       color: Theme.of(context).disabledColor,
@@ -5087,7 +5102,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Text(
-                            '${conversation.messageCount} messages • ${_formatDate(conversation.updatedAt)}',
+                            'discover.ConversationMessageCount'
+                                .tr(args: [
+                              conversation.messageCount.toString(),
+                              _formatDate(conversation.updatedAt),
+                            ]),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           trailing: IconButton(
@@ -5096,20 +5115,21 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               final confirmed = await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  title: const Text('Delete Conversation'),
-                                  content: const Text(
-                                    'Are you sure you want to delete this conversation?',
+                                  title: Text(
+                                      'discover.DeleteConversationTitle'.tr()),
+                                  content: Text(
+                                    'discover.DeleteConversationMessage'.tr(),
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(false),
-                                      child: const Text('Cancel'),
+                                      child: Text('zagreus.Cancel'.tr()),
                                     ),
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(true),
-                                      child: const Text('Delete'),
+                                      child: Text('zagreus.Delete'.tr()),
                                     ),
                                   ],
                                 ),
@@ -5155,11 +5175,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return 'zagreus.Today'.tr();
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return 'discover.Yesterday'.tr();
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return 'zagreus.DaysAgo'.tr(args: [difference.inDays.toString()]);
     } else {
       return '${date.month}/${date.day}/${date.year}';
     }
@@ -5188,9 +5208,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   labelColor: ZagColours.currentAccent,
                   unselectedLabelColor: Colors.grey,
                   indicatorColor: ZagColours.currentAccent,
-                  tabs: const [
-                    Tab(text: 'Movies'),
-                    Tab(text: 'Shows'),
+                  tabs: [
+                    Tab(text: 'discover.MoviesTab'.tr()),
+                    Tab(text: 'discover.ShowsTab'.tr()),
                   ],
                 ),
               ),
@@ -5216,8 +5236,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         children: [
           ListTile(
             leading: const Icon(Icons.high_quality),
-            title: const Text('Quality Profile'),
-            subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+            title: Text('radarr.QualityProfile'.tr()),
+            subtitle: Text(
+              _radarrQualityProfileName ?? 'discover.NotSelected'.tr(),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               final radarrState = context.read<RadarrState>();
@@ -5232,7 +5254,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   itemBuilder: (context, index) {
                     final profile = profiles[index];
                     return ListTile(
-                      title: Text(profile.name ?? 'Unknown'),
+                      title: Text(profile.name ?? 'zagreus.Unknown'.tr()),
                       onTap: () {
                         setState(() {
                           _radarrQualityProfileId = profile.id;
@@ -5253,8 +5275,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           ListTile(
             leading: const Icon(Icons.folder),
-            title: const Text('Root Folder'),
-            subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+            title: Text('radarr.RootFolder'.tr()),
+            subtitle: Text(_radarrRootFolder ?? 'discover.NotSelected'.tr()),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               final radarrState = context.read<RadarrState>();
@@ -5269,7 +5291,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   itemBuilder: (context, index) {
                     final folder = folders[index];
                     return ListTile(
-                      title: Text(folder.path ?? 'Unknown'),
+                      title: Text(folder.path ?? 'zagreus.Unknown'.tr()),
                       onTap: () {
                         setState(() {
                           _radarrRootFolder = folder.path;
@@ -5287,7 +5309,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.search),
-            title: const Text('Start search for missing'),
+            title: Text('discover.StartSearchForMissing'.tr()),
             value: _radarrSearchForMissing,
             onChanged: (value) {
               setState(() {
@@ -5315,7 +5337,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quick Add Settings',
+                'discover.QuickAddSettingsTitle'.tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -5324,8 +5346,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.high_quality),
-                title: const Text('Quality Profile'),
-                subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+                title: Text('radarr.QualityProfile'.tr()),
+                subtitle: Text(
+                  _radarrQualityProfileName ?? 'discover.NotSelected'.tr(),
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final radarrState = context.read<RadarrState>();
@@ -5341,7 +5365,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       itemBuilder: (context, index) {
                         final profile = profiles[index];
                         return ListTile(
-                          title: Text(profile.name ?? 'Unknown'),
+                          title: Text(profile.name ?? 'zagreus.Unknown'.tr()),
                           onTap: () {
                             setState(() {
                               _radarrQualityProfileId = profile.id;
@@ -5364,8 +5388,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               ListTile(
                 leading: const Icon(Icons.folder),
-                title: const Text('Root Folder'),
-                subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+                title: Text('radarr.RootFolder'.tr()),
+                subtitle: Text(_radarrRootFolder ?? 'discover.NotSelected'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final radarrState = context.read<RadarrState>();
@@ -5380,7 +5404,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       itemBuilder: (context, index) {
                         final folder = folders[index];
                         return ListTile(
-                          title: Text(folder.path ?? 'Unknown'),
+                          title: Text(folder.path ?? 'zagreus.Unknown'.tr()),
                           onTap: () {
                             setState(() {
                               _radarrRootFolder = folder.path;
@@ -5398,7 +5422,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               SwitchListTile(
                 secondary: const Icon(Icons.search),
-                title: const Text('Start search for missing'),
+                title: Text('discover.StartSearchForMissing'.tr()),
                 value: _radarrSearchForMissing,
                 onChanged: (value) {
                   setState(() {
@@ -5445,7 +5469,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quick Add Settings',
+                'discover.QuickAddSettingsTitle'.tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -5454,8 +5478,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               const SizedBox(height: 16),
               ListTile(
                 leading: const Icon(Icons.high_quality),
-                title: const Text('Quality Profile'),
-                subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+                title: Text('sonarr.QualityProfile'.tr()),
+                subtitle: Text(
+                  _sonarrQualityProfileName ?? 'discover.NotSelected'.tr(),
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final sonarrState = context.read<SonarrState>();
@@ -5471,7 +5497,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       itemBuilder: (context, index) {
                         final profile = profiles[index];
                         return ListTile(
-                          title: Text(profile.name ?? 'Unknown'),
+                          title: Text(profile.name ?? 'zagreus.Unknown'.tr()),
                           onTap: () {
                             setState(() {
                               _sonarrQualityProfileId = profile.id;
@@ -5494,8 +5520,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               ListTile(
                 leading: const Icon(Icons.folder),
-                title: const Text('Root Folder'),
-                subtitle: Text(_sonarrRootFolder ?? 'Not selected'),
+                title: Text('sonarr.RootFolder'.tr()),
+                subtitle: Text(_sonarrRootFolder ?? 'discover.NotSelected'.tr()),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final sonarrState = context.read<SonarrState>();
@@ -5510,7 +5536,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       itemBuilder: (context, index) {
                         final folder = folders[index];
                         return ListTile(
-                          title: Text(folder.path ?? 'Unknown'),
+                          title: Text(folder.path ?? 'zagreus.Unknown'.tr()),
                           onTap: () {
                             setState(() {
                               _sonarrRootFolder = folder.path;
@@ -5528,7 +5554,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               ListTile(
                 leading: const Icon(Icons.monitor),
-                title: const Text('Monitor Type'),
+                title: Text('discover.MonitorTypeTitle'.tr()),
                 subtitle: Text(currentMonitorType.zagName),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
@@ -5557,9 +5583,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               ListTile(
                 leading: const Icon(Icons.tv),
-                title: const Text('Series Type'),
-                subtitle:
-                    Text(currentSeriesType.value?.toUpperCase() ?? 'Standard'),
+                title: Text('sonarr.SeriesType'.tr()),
+                subtitle: Text(_sonarrSeriesTypeLabel(currentSeriesType)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   showModalBottomSheet(
@@ -5569,7 +5594,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       itemBuilder: (context, index) {
                         final type = SonarrSeriesType.values[index];
                         return ListTile(
-                          title: Text(type.value?.toUpperCase() ?? 'Unknown'),
+                          title: Text(_sonarrSeriesTypeLabel(type)),
                           onTap: () {
                             setState(() {
                               _sonarrSeriesType = type.value;
@@ -5587,7 +5612,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               SwitchListTile(
                 secondary: const Icon(Icons.search),
-                title: const Text('Start search for missing'),
+                title: Text('discover.StartSearchForMissing'.tr()),
                 value: _sonarrSearchForMissing,
                 onChanged: (value) {
                   setState(() {
@@ -5630,8 +5655,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         children: [
           ListTile(
             leading: const Icon(Icons.high_quality),
-            title: const Text('Quality Profile'),
-            subtitle: Text(_sonarrQualityProfileName ?? 'Not selected'),
+            title: Text('sonarr.QualityProfile'.tr()),
+            subtitle: Text(
+              _sonarrQualityProfileName ?? 'discover.NotSelected'.tr(),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               final sonarrState = context.read<SonarrState>();
@@ -5646,7 +5673,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   itemBuilder: (context, index) {
                     final profile = profiles[index];
                     return ListTile(
-                      title: Text(profile.name ?? 'Unknown'),
+                      title: Text(profile.name ?? 'zagreus.Unknown'.tr()),
                       onTap: () {
                         setState(() {
                           _sonarrQualityProfileId = profile.id;
@@ -5667,8 +5694,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           ListTile(
             leading: const Icon(Icons.folder),
-            title: const Text('Root Folder'),
-            subtitle: Text(_sonarrRootFolder ?? 'Not selected'),
+            title: Text('sonarr.RootFolder'.tr()),
+            subtitle: Text(_sonarrRootFolder ?? 'discover.NotSelected'.tr()),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               final sonarrState = context.read<SonarrState>();
@@ -5683,7 +5710,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   itemBuilder: (context, index) {
                     final folder = folders[index];
                     return ListTile(
-                      title: Text(folder.path ?? 'Unknown'),
+                      title: Text(folder.path ?? 'zagreus.Unknown'.tr()),
                       onTap: () {
                         setState(() {
                           _sonarrRootFolder = folder.path;
@@ -5701,7 +5728,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           ListTile(
             leading: const Icon(Icons.tv),
-            title: const Text('Monitor Type'),
+            title: Text('discover.MonitorTypeTitle'.tr()),
             subtitle: Text(currentMonitorType.zagName),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -5730,9 +5757,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           ListTile(
             leading: const Icon(Icons.category),
-            title: const Text('Series Type'),
-            subtitle:
-                Text(currentSeriesType.value?.toUpperCase() ?? 'STANDARD'),
+            title: Text('sonarr.SeriesType'.tr()),
+            subtitle: Text(_sonarrSeriesTypeLabel(currentSeriesType)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               showModalBottomSheet(
@@ -5742,7 +5768,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   itemBuilder: (context, index) {
                     final type = SonarrSeriesType.values[index];
                     return ListTile(
-                      title: Text(type.value?.toUpperCase() ?? 'Unknown'),
+                      title: Text(_sonarrSeriesTypeLabel(type)),
                       onTap: () {
                         setState(() {
                           _sonarrSeriesType = type.value;
@@ -5760,7 +5786,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.search),
-            title: const Text('Start search for missing'),
+            title: Text('discover.StartSearchForMissing'.tr()),
             value: _sonarrSearchForMissing,
             onChanged: (value) {
               setState(() {
@@ -5773,7 +5799,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.upgrade),
-            title: const Text('Search for cutoff unmet'),
+            title: Text('discover.SearchForCutoffUnmet'.tr()),
             value: _sonarrSearchForCutoffUnmet,
             onChanged: (value) {
               setState(() {
@@ -5805,8 +5831,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     print('🎉 Finished 10 calls!');
     showZagSnackBar(
-      title: 'Rate Limit Test',
-      message: 'Sent 10 requests. Check Xcode console for results.',
+      title: 'discover.RateLimitTestTitle'.tr(),
+      message: 'discover.RateLimitTestMessage'.tr(),
       type: ZagSnackbarType.INFO,
     );
   }
@@ -5990,8 +6016,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } catch (e) {
       print('❌ Test Z-Bot error: $e');
       showZagSnackBar(
-        title: 'Test Error',
-        message: 'Failed to create test results: $e',
+        title: 'discover.TestErrorTitle'.tr(),
+        message: 'discover.TestErrorMessage'.tr(args: ['$e']),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -6007,7 +6033,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       itemBuilder: (context, index) {
         final item = _searchResults[index];
         final mediaType = item['media_type'] as String?;
-        final title = item['title'] ?? item['name'] ?? 'Unknown';
+        final title =
+            item['title'] ?? item['name'] ?? 'zagreus.Unknown'.tr();
         final overview = item['overview'] ?? '';
         final posterPath = item['poster_path'] as String?;
         final profilePath = item['profile_path'] as String?;
@@ -6268,7 +6295,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             _searchLibraryCache.putIfAbsent(movie.tmdbId!, () => []);
             _searchLibraryCache[movie.tmdbId!]!.add(_LibraryBadgeInfo(
               instanceKey: null,
-              displayName: 'Radarr',
+              displayName: 'discover.RadarrLabel'.tr(),
               moduleType: 'radarr',
               itemId: movie.id,
             ));
@@ -6323,7 +6350,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             _searchLibraryCache.putIfAbsent(show.tvdbId!, () => []);
             _searchLibraryCache[show.tvdbId!]!.add(_LibraryBadgeInfo(
               instanceKey: null,
-              displayName: 'Sonarr',
+              displayName: 'discover.SonarrLabel'.tr(),
               moduleType: 'sonarr',
               itemId: show.id,
             ));
@@ -6397,7 +6424,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   void _showInstanceSelectionDialog(
       Map<String, dynamic> item, List<_LibraryBadgeInfo> badges) {
-    final title = item['title'] ?? item['name'] ?? 'Unknown';
+    final title = item['title'] ?? item['name'] ?? 'zagreus.Unknown'.tr();
 
     showModalBottomSheet(
       context: context,
@@ -6413,7 +6440,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Select Instance',
+                  'discover.SelectInstanceTitle'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -6489,20 +6516,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   String _getMediaTypeLabel(String? mediaType) {
     switch (mediaType) {
       case 'movie':
-        return 'MOVIE';
+        return 'discover.MediaTypeMovie'.tr();
       case 'tv':
-        return 'TV SHOW';
+        return 'discover.MediaTypeTvShow'.tr();
       case 'person':
-        return 'PERSON';
+        return 'discover.MediaTypePerson'.tr();
       default:
-        return 'UNKNOWN';
+        return 'discover.MediaTypeUnknown'.tr();
     }
   }
 
   Future<void> _handleSearchResultTap(Map<String, dynamic> item) async {
     final mediaType = item['media_type'] as String?;
     final tmdbId = item['id'] as int;
-    final title = item['title'] ?? item['name'] ?? 'Unknown';
+    final title = item['title'] ?? item['name'] ?? 'zagreus.Unknown'.tr();
 
     if (mediaType == 'movie') {
       // Try to find in Radarr first
@@ -6565,7 +6592,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           ),
           const SizedBox(height: 4),
           Text(
-            'No recently downloaded movies',
+            'discover.NoRecentlyDownloadedMovies'.tr(),
             style: const TextStyle(
               fontSize: 18,
               color: Colors.grey,
@@ -6709,7 +6736,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'In library',
+                                      'discover.InLibrary'.tr(),
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
@@ -6742,7 +6769,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                   (item['rating'] as num) > 0
                                       ? (item['rating'] as num)
                                           .toStringAsFixed(1)
-                                      : 'N/A',
+                                      : 'discover.NotAvailableShort'.tr(),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -6750,7 +6777,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                                 const SizedBox(width: 16),
                                 Text(
-                                  '• ${item['watchingNow']} watching now',
+                                  'discover.WatchingNow'
+                                      .tr(args: [item['watchingNow'].toString()]),
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 16,
@@ -6864,7 +6892,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: ZagIcons.RADARR,
         leadingIconColor: const Color(0xFFFEC333),
-        moduleLabel: 'Radarr',
+        moduleLabel: 'discover.RadarrLabel'.tr(),
         moduleLabelColor: const Color(0xFFFEC333),
         title: _discoverSectionTitle('recommended'),
         onTap: () {
@@ -6903,7 +6931,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Tap to view recommended movies',
+                  'discover.TapToViewRecommendedMovies'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -6924,7 +6952,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: ZagIcons.RADARR,
         leadingIconColor: const Color(0xFFFEC333),
-        moduleLabel: 'Radarr',
+        moduleLabel: 'discover.RadarrLabel'.tr(),
         moduleLabelColor: const Color(0xFFFEC333),
         title: _discoverSectionTitle('missing'),
         onTap: () {
@@ -6967,7 +6995,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.schedule_rounded,
         leadingIconColor: Colors.orange,
-        moduleLabel: 'Radarr',
+        moduleLabel: 'discover.RadarrLabel'.tr(),
         moduleLabelColor: const Color(0xFFFEC333),
         title: _discoverSectionTitle('downloading_soon'),
         onTap: () {
@@ -7002,7 +7030,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No movies downloading soon',
+                        'discover.NoMoviesDownloadingSoon'.tr(),
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -7010,7 +7038,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Monitored movies releasing within 28 days will appear here',
+                        'discover.DownloadingSoonDescription'.tr(),
                         style: TextStyle(
                           color: Colors.grey.withOpacity(0.7),
                           fontSize: 14,
@@ -7042,7 +7070,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.local_fire_department_rounded,
         leadingIconColor: const Color(0xFF6688FF),
-        moduleLabel: 'TMDB',
+        moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_movies'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -7084,7 +7112,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading popular movies...',
+                  'discover.LoadingPopularMovies'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -7254,8 +7282,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (tmdbId == null) {
       showZagSnackBar(
-        title: movie['title'] ?? 'Movie',
-        message: 'Missing TMDB identifier for this title.',
+        title: movie['title'] ?? 'discover.MediaTypeMovie'.tr(),
+        message: 'discover.MissingTmdbIdentifierMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
       return;
@@ -7273,7 +7301,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.new_releases_rounded,
         leadingIconColor: const Color(0xFF6688FF),
-        moduleLabel: 'TMDB',
+        moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('recently_released_movies'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -7316,7 +7344,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading recently released movies...',
+                  'discover.LoadingRecentlyReleasedMovies'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -7444,7 +7472,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        movie['title'] ?? 'Unknown',
+                        movie['title'] ?? 'zagreus.Unknown'.tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
@@ -7487,8 +7515,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (tmdbId == null) {
       showZagSnackBar(
-        title: movie['title'] ?? 'Movie',
-        message: 'Missing TMDB identifier for this title.',
+        title: movie['title'] ?? 'discover.MediaTypeMovie'.tr(),
+        message: 'discover.MissingTmdbIdentifierMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
       return;
@@ -7506,7 +7534,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.local_fire_department_rounded,
         leadingIconColor: const Color(0xFF6688FF),
-        moduleLabel: 'TMDB',
+        moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_tv_shows'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -7548,7 +7576,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading popular TV shows...',
+                  'discover.LoadingPopularTvShows'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -7674,7 +7702,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        show['title'] ?? 'Unknown',
+                        show['title'] ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -7744,7 +7772,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.trending_up_rounded,
         leadingIconColor: const Color(0xFF6688FF),
-        moduleLabel: 'TMDB',
+        moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('trending_new_tv_shows'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -7786,7 +7814,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading trending new TV shows...',
+                  'discover.LoadingTrendingNewTvShows'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -7912,7 +7940,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        show['title'] ?? 'Unknown',
+                        show['title'] ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -7968,8 +7996,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final radarrState = context.read<RadarrState>();
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
-        title: title ?? 'Radarr',
-        message: 'Connect Radarr to manage movies from Dashboard.',
+        title: title ?? 'discover.RadarrLabel'.tr(),
+        message: 'discover.ConnectRadarrMessage'.tr(),
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -8004,8 +8032,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (results.isEmpty) {
         showZagSnackBar(
-          title: title ?? 'Movie',
-          message: 'Could not find TMDB ID $tmdbId in Radarr.',
+          title: title ?? 'discover.MediaTypeMovie'.tr(),
+          message: 'discover.RadarrMissingTmdbMessage'.tr(args: ['$tmdbId']),
           type: ZagSnackbarType.ERROR,
         );
         return;
@@ -8031,8 +8059,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       if (!mounted) return;
       ZagLogger().error('Failed to open Radarr add movie flow', error, stack);
       showZagSnackBar(
-        title: title ?? 'Movie',
-        message: 'Something went wrong talking to Radarr.',
+        title: title ?? 'discover.MediaTypeMovie'.tr(),
+        message: 'discover.RadarrConnectionErrorMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -8053,7 +8081,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final radarrState = context.read<RadarrState>();
     final profiles = await radarrState.api!.qualityProfile.getAll();
     return profiles
-        .map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown'))
+        .map((p) => (id: p.id ?? 0, name: p.name ?? 'zagreus.Unknown'.tr()))
         .toList();
   }
 
@@ -8086,7 +8114,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final sonarrState = context.read<SonarrState>();
     final profiles = await sonarrState.api!.profile.getQualityProfiles();
     return profiles
-        .map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown'))
+        .map((p) => (id: p.id ?? 0, name: p.name ?? 'zagreus.Unknown'.tr()))
         .toList();
   }
 
@@ -8104,13 +8132,43 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(name);
   }
 
-  void _onSonarrSeriesTypeChanged(String type) {
-    setState(() => _sonarrSeriesType = type);
-    ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(type);
+  void _onSonarrSeriesTypeChanged(String label) {
+    final value = _sonarrSeriesTypeValueFromLabel(label);
+    setState(() => _sonarrSeriesType = value);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(value);
+  }
+
+  String _sonarrSeriesTypeLabel(SonarrSeriesType type) {
+    switch (type) {
+      case SonarrSeriesType.STANDARD:
+        return 'discover.SeriesTypeStandard'.tr();
+      case SonarrSeriesType.DAILY:
+        return 'discover.SeriesTypeDaily'.tr();
+      case SonarrSeriesType.ANIME:
+        return 'discover.SeriesTypeAnime'.tr();
+    }
+  }
+
+  String _sonarrSeriesTypeLabelFromValue(String? value) {
+    final SonarrSeriesType type;
+    if (value == 'daily') {
+      type = SonarrSeriesType.DAILY;
+    } else if (value == 'anime') {
+      type = SonarrSeriesType.ANIME;
+    } else {
+      type = SonarrSeriesType.STANDARD;
+    }
+    return _sonarrSeriesTypeLabel(type);
+  }
+
+  String _sonarrSeriesTypeValueFromLabel(String label) {
+    if (label == 'discover.SeriesTypeDaily'.tr()) return 'daily';
+    if (label == 'discover.SeriesTypeAnime'.tr()) return 'anime';
+    return 'standard';
   }
 
   List<String> _getSonarrSeriesTypes() {
-    return ['Standard', 'Daily', 'Anime'];
+    return SonarrSeriesType.values.map(_sonarrSeriesTypeLabel).toList();
   }
 
   /// Fetch seasons for a TV show via Sonarr lookup by TMDB ID
@@ -8169,8 +8227,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       return;
     }
 
-    final title = movie['title'] as String? ?? 'Movie';
-    final overview = movie['overview'] as String? ?? 'No overview available.';
+    final title = movie['title'] as String? ?? 'discover.MediaTypeMovie'.tr();
+    final overview =
+        movie['overview'] as String? ?? 'discover.NoOverviewAvailable'.tr();
 
     HapticFeedback.lightImpact();
     await ZagDialogs().textPreviewWithAdd(
@@ -8221,8 +8280,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     final title =
-        show['title'] as String? ?? show['name'] as String? ?? 'TV Show';
-    final overview = show['overview'] as String? ?? 'No overview available.';
+        show['title'] as String? ??
+            show['name'] as String? ??
+            'discover.MediaTypeTvShow'.tr();
+    final overview =
+        show['overview'] as String? ?? 'discover.NoOverviewAvailable'.tr();
 
     HapticFeedback.lightImpact();
 
@@ -8241,7 +8303,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
-      seriesTypeValue: _sonarrSeriesType,
+      seriesTypeValue: _sonarrSeriesTypeLabelFromValue(_sonarrSeriesType),
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
       seriesTypes: _getSonarrSeriesTypes(),
@@ -8337,7 +8399,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
-      seriesTypeValue: _sonarrSeriesType,
+      seriesTypeValue: _sonarrSeriesTypeLabelFromValue(_sonarrSeriesType),
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
       seriesTypes: _getSonarrSeriesTypes(),
@@ -8369,7 +8431,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
-      seriesTypeValue: _sonarrSeriesType,
+      seriesTypeValue: _sonarrSeriesTypeLabelFromValue(_sonarrSeriesType),
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
       seriesTypes: _getSonarrSeriesTypes(),
@@ -8424,7 +8486,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       alignLeft: true,
       rootFolderValue: _sonarrRootFolder,
       qualityProfileValue: _sonarrQualityProfileName,
-      seriesTypeValue: _sonarrSeriesType,
+      seriesTypeValue: _sonarrSeriesTypeLabelFromValue(_sonarrSeriesType),
       getRootFolders: _getSonarrRootFolders,
       getQualityProfiles: _getSonarrQualityProfiles,
       seriesTypes: _getSonarrSeriesTypes(),
@@ -8447,8 +8509,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagLogger().error(
           'Failed to open Radarr actions for ${movie.title}', error, stack);
       showZagSnackBar(
-        title: movie.title ?? 'Radarr',
-        message: 'Unable to open Radarr actions right now.',
+        title: movie.title ?? 'discover.RadarrLabel'.tr(),
+        message: 'discover.RadarrActionsUnavailableMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -8458,8 +8520,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final radarrState = context.read<RadarrState>();
     if (!radarrState.enabled || radarrState.api == null) {
       showZagSnackBar(
-        title: 'Radarr',
-        message: 'Connect Radarr to manage movies from Dashboard.',
+        title: 'discover.RadarrLabel'.tr(),
+        message: 'discover.ConnectRadarrMessage'.tr(),
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -8483,8 +8545,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagLogger()
           .error('Failed to fetch movie $movieId for actions', error, stack);
       showZagSnackBar(
-        title: 'Radarr',
-        message: 'Unable to open movie actions right now.',
+        title: 'discover.RadarrLabel'.tr(),
+        message: 'discover.RadarrMovieActionsUnavailableMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -8497,8 +8559,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final sonarrState = context.read<SonarrState>();
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
-        title: seriesTitle ?? 'Sonarr',
-        message: 'Connect Sonarr to manage shows from Dashboard.',
+        title: seriesTitle ?? 'discover.SonarrLabel'.tr(),
+        message: 'discover.ConnectSonarrMessage'.tr(),
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -8523,8 +8585,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (series == null) {
         showZagSnackBar(
-          title: seriesTitle ?? 'Sonarr',
-          message: 'Unable to load this series from Sonarr.',
+          title: seriesTitle ?? 'discover.SonarrLabel'.tr(),
+          message: 'discover.SonarrSeriesLoadFailedMessage'.tr(),
           type: ZagSnackbarType.ERROR,
         );
         return;
@@ -8544,8 +8606,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       );
       if (!mounted) return;
       showZagSnackBar(
-        title: seriesTitle ?? 'Sonarr',
-        message: 'Unable to open Sonarr actions right now.',
+        title: seriesTitle ?? 'discover.SonarrLabel'.tr(),
+        message: 'discover.SonarrActionsUnavailableMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -8556,8 +8618,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final sonarrState = context.read<SonarrState>();
     if (!sonarrState.enabled || sonarrState.api == null) {
       showZagSnackBar(
-        title: title ?? 'Sonarr',
-        message: 'Connect Sonarr to manage shows from Dashboard.',
+        title: title ?? 'discover.SonarrLabel'.tr(),
+        message: 'discover.ConnectSonarrMessage'.tr(),
         type: ZagSnackbarType.INFO,
       );
       return;
@@ -8604,8 +8666,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (query.isEmpty) {
         showZagSnackBar(
-          title: title ?? 'Sonarr',
-          message: 'Unable to open this show in Sonarr.',
+          title: title ?? 'discover.SonarrLabel'.tr(),
+          message: 'discover.SonarrShowOpenFailedMessage'.tr(),
           type: ZagSnackbarType.ERROR,
         );
         return;
@@ -8628,13 +8690,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       dismissLoader();
 
       if (results.isEmpty) {
+        final message = tvdbId != null
+            ? 'discover.SonarrMissingTvdbMessage'.tr(args: ['$tvdbId'])
+            : tmdbId != null
+                ? 'discover.SonarrMissingTmdbMessage'.tr(args: ['$tmdbId'])
+                : 'discover.SonarrShowNotFoundMessage'.tr();
         showZagSnackBar(
-          title: title ?? 'Sonarr',
-          message: tvdbId != null
-              ? 'Could not find TVDB ID $tvdbId in Sonarr.'
-              : tmdbId != null
-                  ? 'Could not find TMDB ID $tmdbId in Sonarr.'
-                  : 'Could not find this show in Sonarr.',
+          title: title ?? 'discover.SonarrLabel'.tr(),
+          message: message,
           type: ZagSnackbarType.ERROR,
         );
         return;
@@ -8658,8 +8721,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       dismissLoader();
       if (!mounted) return;
       showZagSnackBar(
-        title: title ?? 'Sonarr',
-        message: 'Something went wrong talking to Sonarr.',
+        title: title ?? 'discover.SonarrLabel'.tr(),
+        message: 'discover.SonarrConnectionErrorMessage'.tr(),
         type: ZagSnackbarType.ERROR,
       );
     }
@@ -8676,7 +8739,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.auto_awesome_rounded,
         leadingIconColor: const Color(0xFFED2224),
-        moduleLabel: 'Trakt',
+        moduleLabel: 'discover.TraktLabel'.tr(),
         moduleLabelColor: const Color(0xFFED2224),
         title: _discoverSectionTitle('most_anticipated'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -8719,7 +8782,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading most anticipated shows...',
+                  'discover.LoadingMostAnticipatedShows'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -8844,7 +8907,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        show['title'] ?? 'Unknown',
+                        show['title'] ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -8899,7 +8962,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.auto_awesome_rounded,
         leadingIconColor: const Color(0xFFED2224),
-        moduleLabel: 'Trakt',
+        moduleLabel: 'discover.TraktLabel'.tr(),
         moduleLabelColor: const Color(0xFFED2224),
         title: _discoverSectionTitle('most_anticipated_movies'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -8942,7 +9005,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading most anticipated movies...',
+                  'discover.LoadingMostAnticipatedMovies'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -9064,7 +9127,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        movie['title'] ?? 'Unknown',
+                        movie['title'] ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -9128,8 +9191,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     }
 
     showZagSnackBar(
-      title: title ?? 'Radarr',
-      message: 'Missing TMDB identifier for this title.',
+      title: title ?? 'discover.RadarrLabel'.tr(),
+      message: 'discover.MissingTmdbIdentifierMessage'.tr(),
       type: ZagSnackbarType.ERROR,
     );
   }
@@ -9140,7 +9203,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: Icons.people_rounded,
         leadingIconColor: const Color(0xFF6688FF),
-        moduleLabel: 'TMDB',
+        moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_people'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -9182,7 +9245,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: Text(
-                  'Loading popular people...',
+                  'discover.LoadingPopularPeople'.tr(),
                   style: TextStyle(
                     color: (Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
@@ -9219,7 +9282,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 12),
             Text(
-              'Library sync required',
+              'discover.LibrarySyncRequiredTitle'.tr(),
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -9230,7 +9293,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'Turn on library sync to unlock $sectionName recommendations.',
+                'discover.LibrarySyncRequiredMessage'
+                    .tr(args: [sectionName]),
                 style: TextStyle(
                   color: textColor.withOpacity(0.8),
                   fontSize: 14,
@@ -9242,7 +9306,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             _isSyncing
                 ? const CircularProgressIndicator(strokeWidth: 2)
                 : ZagButton.text(
-                    text: 'Enable library sync',
+                    text: 'discover.EnableLibrarySync'.tr(),
                     icon: Icons.sync,
                     onTap: onEnable,
                   ),
@@ -9272,7 +9336,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 12),
             Text(
-              'Account required',
+              'discover.AccountRequiredTitle'.tr(),
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -9283,7 +9347,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'Sign in to unlock $sectionName.',
+                'discover.AccountRequiredMessage'.tr(args: [sectionName]),
                 style: TextStyle(
                   color: textColor.withOpacity(0.8),
                   fontSize: 14,
@@ -9293,7 +9357,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 16),
             ZagButton.text(
-              text: 'Sign in',
+              text: 'discover.SignInAction'.tr(),
               icon: Icons.login_rounded,
               onTap: _promptSignInForAi,
             ),
@@ -9323,7 +9387,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 12),
             Text(
-              'Account required',
+              'discover.AccountRequiredTitle'.tr(),
               style: TextStyle(
                 color: textColor,
                 fontSize: 16,
@@ -9334,7 +9398,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'Sign in to unlock AI features in Discover.',
+                'discover.AccountRequiredAiMessage'.tr(),
                 style: TextStyle(
                   color: textColor.withOpacity(0.8),
                   fontSize: 14,
@@ -9344,7 +9408,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ),
             const SizedBox(height: 16),
             ZagButton.text(
-              text: 'Sign in',
+              text: 'discover.SignInAction'.tr(),
               icon: Icons.login_rounded,
               onTap: _promptSignInForAi,
             ),
@@ -9473,8 +9537,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     required String profileKey,
     required String instanceKey,
   }) {
+    final sectionTitle = _discoverSectionTitle('deep_cuts');
     // Determine message based on error type
-    String title = 'No deep cuts yet';
+    String title = 'discover.NoDeepCutsYet'.tr();
     String? message;
     IconData icon = Icons.movie_filter_rounded;
     final libraryCacheEnabled =
@@ -9487,28 +9552,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
         case DeepCutsError.notSynced:
-          title = 'Library not synced';
-          message = result.errorMessage ?? 'Please sync your library first';
+          title = 'discover.LibraryNotSyncedTitle'.tr();
+          message = result.errorMessage ??
+              'discover.LibraryNotSyncedMessage'.tr();
           icon = Icons.sync_problem_rounded;
           showRetryButton = false;
           break;
         case DeepCutsError.noMegaOrUltra:
-          title = 'Mega subscription required';
-          message = result.errorMessage ?? 'Deep Cuts requires Mega or Ultra';
+          title = 'discover.MegaSubscriptionRequiredTitle'.tr();
+          message = result.errorMessage ??
+              'discover.SectionRequiresMegaUltra'.tr(args: [sectionTitle]);
           icon = Icons.lock_rounded;
           showRetryButton = false;
           break;
         case DeepCutsError.alreadyGenerating:
-          title = 'Generation in progress';
+          title = 'discover.GenerationInProgressTitle'.tr();
           message = result.errorMessage ??
-              'Please wait while recommendations are being generated';
+              'discover.GenerationInProgressMessage'.tr();
           icon = Icons.hourglass_empty_rounded;
           showRetryButton = false;
           break;
         case DeepCutsError.fetchFailed:
         case DeepCutsError.unknown:
-          title = 'Something went wrong';
-          message = result.errorMessage ?? 'Please try again later';
+          title = 'discover.SomethingWentWrongTitle'.tr();
+          message =
+              result.errorMessage ?? 'discover.TryAgainLaterMessage'.tr();
           icon = Icons.error_outline_rounded;
           break;
       }
@@ -9564,11 +9632,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ? const CircularProgressIndicator(strokeWidth: 2)
                   : ZagButton.text(
                       text: libraryCacheEnabled
-                          ? 'Sync library now'
-                          : 'Enable library sync',
+                          ? 'discover.SyncLibraryNow'.tr()
+                          : 'discover.EnableLibrarySync'.tr(),
                       icon: Icons.sync,
                       onTap: () => _enableLibrarySyncForSection(
-                        sectionName: 'Deep Cuts',
+                        sectionName: sectionTitle,
                         onSynced: () {
                           final service = DeepCutsService();
                           setState(() {
@@ -9584,7 +9652,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ] else if (showRetryButton) ...[
               const SizedBox(height: 16),
               ZagButton.text(
-                text: 'Generate now',
+                text: 'discover.GenerateNow'.tr(),
                 icon: Icons.refresh_rounded,
                 onTap: () {
                   final service = DeepCutsService();
@@ -9856,7 +9924,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }) {
     final sectionTitle = _discoverSectionTitle('up_next');
     // Determine message based on error type
-    String title = 'No recommendations yet';
+    String title = 'discover.NoRecommendationsYet'.tr();
     String? message;
     IconData icon = Icons.live_tv_rounded;
     final libraryCacheEnabled =
@@ -9869,28 +9937,31 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (result != null && !result.success && result.error != null) {
       switch (result.error!) {
         case UpNextError.notSynced:
-          title = 'Library not synced';
-          message = result.errorMessage ?? 'Please sync your library first';
+          title = 'discover.LibraryNotSyncedTitle'.tr();
+          message = result.errorMessage ??
+              'discover.LibraryNotSyncedMessage'.tr();
           icon = Icons.sync_problem_rounded;
           showRetryButton = false;
           break;
         case UpNextError.noMegaOrUltra:
-          title = 'Mega subscription required';
-          message = result.errorMessage ?? 'Up Next requires Mega or Ultra';
+          title = 'discover.MegaSubscriptionRequiredTitle'.tr();
+          message = result.errorMessage ??
+              'discover.SectionRequiresMegaUltra'.tr(args: [sectionTitle]);
           icon = Icons.lock_rounded;
           showRetryButton = false;
           break;
         case UpNextError.alreadyGenerating:
-          title = 'Generation in progress';
+          title = 'discover.GenerationInProgressTitle'.tr();
           message = result.errorMessage ??
-              'Please wait while recommendations are being generated';
+              'discover.GenerationInProgressMessage'.tr();
           icon = Icons.hourglass_empty_rounded;
           showRetryButton = false;
           break;
         case UpNextError.fetchFailed:
         case UpNextError.unknown:
-          title = 'Something went wrong';
-          message = result.errorMessage ?? 'Please try again later';
+          title = 'discover.SomethingWentWrongTitle'.tr();
+          message =
+              result.errorMessage ?? 'discover.TryAgainLaterMessage'.tr();
           icon = Icons.error_outline_rounded;
           break;
       }
@@ -9946,8 +10017,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   ? const CircularProgressIndicator(strokeWidth: 2)
                   : ZagButton.text(
                       text: libraryCacheEnabled
-                          ? 'Sync library now'
-                          : 'Enable library sync',
+                          ? 'discover.SyncLibraryNow'.tr()
+                          : 'discover.EnableLibrarySync'.tr(),
                       icon: Icons.sync,
                       onTap: () => _enableLibrarySyncForSection(
                         sectionName: sectionTitle,
@@ -9966,7 +10037,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             ] else if (showRetryButton) ...[
               const SizedBox(height: 16),
               ZagButton.text(
-                text: 'Generate now',
+                text: 'discover.GenerateNow'.tr(),
                 icon: Icons.refresh_rounded,
                 onTap: () {
                   final service = UpNextService();
@@ -10181,8 +10252,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
-                String message = 'Auto-updates weekly';
+                String title = 'discover.NoRecommendationsYet'.tr();
+                String message = 'discover.AutoUpdatesWeekly'.tr();
                 IconData icon = Icons.auto_fix_high_rounded;
                 final showLibrarySyncCta =
                     (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
@@ -10193,28 +10264,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicMoviesError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       break;
                     case MagicMoviesError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic Movies requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       break;
                     case MagicMoviesError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       break;
                     case MagicMoviesError.fetchFailed:
                     case MagicMoviesError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -10269,8 +10341,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -10294,7 +10366,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 MagicMoviesError.alreadyGenerating) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.auto_fix_high_rounded,
                             onTap: () {
                               final refreshService = MagicMoviesService();
@@ -10472,8 +10544,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
-                String message = 'Auto-updates weekly';
+                String title = 'discover.NoRecommendationsYet'.tr();
+                String message = 'discover.AutoUpdatesWeekly'.tr();
                 IconData icon = Icons.groups_rounded;
                 final showLibrarySyncCta =
                     (ZagreusMega.isEnabled && !libraryCacheEnabled) ||
@@ -10485,28 +10557,29 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicMoviesCastCrewError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       break;
                     case MagicMoviesCastCrewError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic Movies requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       break;
                     case MagicMoviesCastCrewError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       break;
                     case MagicMoviesCastCrewError.fetchFailed:
                     case MagicMoviesCastCrewError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -10561,8 +10634,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -10587,7 +10660,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 MagicMoviesCastCrewError.alreadyGenerating) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.groups_rounded,
                             onTap: () {
                               final refreshService =
@@ -10754,7 +10827,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
+                String title = 'discover.NoRecommendationsYet'.tr();
                 String? message;
                 IconData icon = Icons.groups_rounded;
                 final showLibrarySyncCta =
@@ -10767,31 +10840,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicPeopleError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic People requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       showRetryButton = false;
                       break;
                     case MagicPeopleError.fetchFailed:
                     case MagicPeopleError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -10849,8 +10923,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -10872,7 +10946,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ] else if (showRetryButton) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
                             onTap: () {
                               final refreshService = MagicPeopleService();
@@ -11065,7 +11139,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ),
               const SizedBox(height: 16),
               Text(
-                'Why we recommend:',
+                'discover.WhyWeRecommend'.tr(),
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -11094,7 +11168,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       );
                     }
                   },
-                  child: const Text('View Filmography'),
+                  child: Text('discover.ViewFilmography'.tr()),
                 ),
               ),
             ],
@@ -11178,7 +11252,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
+                String title = 'discover.NoRecommendationsYet'.tr();
                 String? message;
                 IconData icon = Icons.auto_fix_high_rounded;
                 final showLibrarySyncCta =
@@ -11191,31 +11265,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicShowsError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic Shows requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsError.fetchFailed:
                     case MagicShowsError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -11273,8 +11348,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -11295,7 +11370,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ] else if (showRetryButton) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
                             onTap: () {
                               final refreshService = MagicShowsService();
@@ -11473,7 +11548,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   !snapshot.data!.success ||
                   snapshot.data!.recommendations == null ||
                   snapshot.data!.recommendations!.isEmpty) {
-                String title = 'No recommendations yet';
+                String title = 'discover.NoRecommendationsYet'.tr();
                 String? message;
                 IconData icon = Icons.person_search_rounded;
                 final showLibrarySyncCta = (ZagreusMega.isEnabled &&
@@ -11486,31 +11561,32 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     snapshot.data!.error != null) {
                   switch (snapshot.data!.error!) {
                     case MagicShowsCastCrewError.notSynced:
-                      title = 'Library not synced';
+                      title = 'discover.LibraryNotSyncedTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please sync your library first';
+                          'discover.LibraryNotSyncedMessage'.tr();
                       icon = Icons.sync_problem_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsCastCrewError.noMegaOrUltra:
-                      title = 'Mega subscription required';
+                      title = 'discover.MegaSubscriptionRequiredTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Magic Shows requires Mega or Ultra';
+                          'discover.SectionRequiresMegaUltra'
+                              .tr(args: [sectionTitle]);
                       icon = Icons.lock_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsCastCrewError.alreadyGenerating:
-                      title = 'Generation in progress';
+                      title = 'discover.GenerationInProgressTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please wait while recommendations are being generated';
+                          'discover.GenerationInProgressMessage'.tr();
                       icon = Icons.hourglass_empty_rounded;
                       showRetryButton = false;
                       break;
                     case MagicShowsCastCrewError.fetchFailed:
                     case MagicShowsCastCrewError.unknown:
-                      title = 'Something went wrong';
+                      title = 'discover.SomethingWentWrongTitle'.tr();
                       message = snapshot.data!.errorMessage ??
-                          'Please try again later';
+                          'discover.TryAgainLaterMessage'.tr();
                       icon = Icons.error_outline_rounded;
                       break;
                   }
@@ -11568,8 +11644,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ? const CircularProgressIndicator(strokeWidth: 2)
                               : ZagButton.text(
                                   text: libraryCacheEnabled
-                                      ? 'Sync library now'
-                                      : 'Enable library sync',
+                                      ? 'discover.SyncLibraryNow'.tr()
+                                      : 'discover.EnableLibrarySync'.tr(),
                                   icon: Icons.sync,
                                   onTap: () => _enableLibrarySyncForSection(
                                     sectionName: defaultSectionTitle,
@@ -11591,7 +11667,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ] else if (showRetryButton) ...[
                           const SizedBox(height: 16),
                           ZagButton.text(
-                            text: 'Generate now',
+                            text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
                             onTap: () {
                               final refreshService =
@@ -11735,7 +11811,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             Container(
               width: 90,
               child: Text(
-                person['name'] ?? 'Unknown',
+                person['name'] ?? 'zagreus.Unknown'.tr(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -11833,7 +11909,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        movie.title ?? 'Unknown',
+                        movie.title ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -11985,7 +12061,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        movie.title ?? 'Unknown',
+                        movie.title ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -12019,7 +12095,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: ZagIcons.RADARR,
         leadingIconColor: const Color(0xFFFEC333),
-        moduleLabel: 'Radarr',
+        moduleLabel: 'discover.RadarrLabel'.tr(),
         moduleLabelColor: const Color(0xFFFEC333),
         title: _discoverSectionTitle('recently_downloaded'),
         titleStyle: TextStyle(
@@ -12141,7 +12217,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       left: 8,
                       right: 8,
                       child: Text(
-                        movie.title ?? 'Unknown',
+                        movie.title ?? 'zagreus.Unknown'.tr(),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -12218,7 +12294,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                movie.title ?? 'Unknown',
+                movie.title ?? 'zagreus.Unknown'.tr(),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade400,
@@ -12243,7 +12319,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: ZagIcons.SONARR,
         leadingIconColor: ZagColours.blue,
-        moduleLabel: 'Sonarr',
+        moduleLabel: 'discover.SonarrLabel'.tr(),
         moduleLabelColor: ZagColours.blue,
         title: _discoverSectionTitle('recently_downloaded_shows'),
         titleStyle: TextStyle(
@@ -12277,7 +12353,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         context: context,
         leadingIcon: ZagIcons.SONARR,
         leadingIconColor: ZagColours.blue,
-        moduleLabel: 'Sonarr',
+        moduleLabel: 'discover.SonarrLabel'.tr(),
         moduleLabelColor: ZagColours.blue,
         title: _discoverSectionTitle('airing_next'),
         titleStyle: TextStyle(
@@ -12313,10 +12389,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                   width: 1,
                 ),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'No Shows Airing Soon',
-                  style: TextStyle(
+                  'discover.NoShowsAiringSoon'.tr(),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -12498,8 +12574,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 );
               } else {
                 showZagSnackBar(
-                  title: episode['seriesTitle'] ?? 'Sonarr',
-                  message: 'Unable to open this show in Sonarr right now.',
+                  title: episode['seriesTitle'] ?? 'discover.SonarrLabel'.tr(),
+                  message: 'discover.SonarrShowOpenFailedMessage'.tr(),
                   type: ZagSnackbarType.ERROR,
                 );
               }
@@ -12646,11 +12722,11 @@ class _DiscoverNavigationBar extends StatelessWidget {
     ];
 
     final titles = <String>[
-      if (showLegacyModules) 'Modules',
-      'Movies',
-      'Shows',
-      if (showCalendar) 'Calendar',
-      'Server',
+      if (showLegacyModules) 'discover.ModulesTab'.tr(),
+      'discover.MoviesTab'.tr(),
+      'discover.ShowsTab'.tr(),
+      if (showCalendar) 'discover.CalendarTab'.tr(),
+      'discover.ServerTab'.tr(),
     ];
 
     final controllers = <ScrollController>[
@@ -12789,7 +12865,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               return _buildErrorSection(
                 title: config.title,
                 subtitle: config.description,
-                errorMessage: 'Failed to load recommendations',
+                errorMessage: 'discover.FailedToLoadRecommendations'.tr(),
               );
             }
 
@@ -12810,7 +12886,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               return _buildErrorSection(
                 title: config.title,
                 subtitle: config.description,
-                errorMessage: result.errorMessage ?? 'Unknown error',
+                errorMessage: result.errorMessage ?? 'zagreus.UnknownError'.tr(),
               );
             }
 
@@ -12840,7 +12916,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
                           children: [
                             Icon(Icons.edit_rounded, size: 18),
                             const SizedBox(width: 12),
-                            Text('Edit Section'),
+                            Text('discover.CustomSectionEditMenuAction'.tr()),
                           ],
                         ),
                       ),
@@ -12850,7 +12926,9 @@ class _DiscoverNavigationBar extends StatelessWidget {
                           children: [
                             Icon(Icons.refresh_rounded, size: 18),
                             const SizedBox(width: 12),
-                            Text('Regenerate'),
+                            Text(
+                              'discover.CustomSectionRegenerateAction'.tr(),
+                            ),
                           ],
                         ),
                       ),
@@ -12861,8 +12939,10 @@ class _DiscoverNavigationBar extends StatelessWidget {
                             Icon(Icons.delete_rounded,
                                 size: 18, color: Colors.red),
                             const SizedBox(width: 12),
-                            Text('Delete Section',
-                                style: TextStyle(color: Colors.red)),
+                            Text(
+                              'discover.CustomSectionDeleteMenuAction'.tr(),
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ],
                         ),
                       ),
@@ -12925,7 +13005,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'No recommendations yet',
+                'discover.NoRecommendationsYet'.tr(),
                 style: TextStyle(
                   fontSize: 14,
                   color: ZagColours.TEXT_GREY,
@@ -12934,7 +13014,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               const SizedBox(height: 12),
               ZagButton(
                 type: ZagButtonType.OUTLINED,
-                text: 'Generate Recommendations',
+                text: 'discover.GenerateRecommendationsAction'.tr(),
                 icon: Icons.refresh_rounded,
                 color: ZagColours.currentAccent,
                 onTap: () => _regenerateCustomSection(config),
@@ -13021,22 +13101,24 @@ class _DiscoverNavigationBar extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Create Custom Section'),
+        title: Text('discover.CustomSectionCreateTitle'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Give your custom section a title and describe what kind of ${mediaType == 'movie' ? 'movies' : 'shows'} you want to discover.',
+                mediaType == 'movie'
+                    ? 'discover.CustomSectionCreateDescriptionMovies'.tr()
+                    : 'discover.CustomSectionCreateDescriptionShows'.tr(),
                 style: TextStyle(fontSize: 14, color: ZagColours.TEXT_GREY),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: 'Section Title',
-                  hintText: 'e.g., "Hidden Sci-Fi Gems"',
+                  labelText: 'discover.CustomSectionSectionTitleLabel'.tr(),
+                  hintText: 'discover.CustomSectionTitleHint'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -13045,8 +13127,8 @@ class _DiscoverNavigationBar extends StatelessWidget {
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Describe what you\'re looking for...',
+                  labelText: 'discover.CustomSectionDescriptionLabel'.tr(),
+                  hintText: 'discover.CustomSectionDescriptionHint'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -13058,7 +13140,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -13067,13 +13149,13 @@ class _DiscoverNavigationBar extends StatelessWidget {
                 ZagSnackBar().show(
                   context: context,
                   type: SnackBarType.ERROR,
-                  message: 'Please fill in all fields',
+                  message: 'discover.CustomSectionFillAllFieldsMessage'.tr(),
                 );
                 return;
               }
               Navigator.pop(context, true);
             },
-            child: Text('Create'),
+            child: Text('discover.CustomSectionCreateAction'.tr()),
           ),
         ],
       ),
@@ -13101,7 +13183,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Edit Custom Section'),
+        title: Text('discover.CustomSectionEditTitle'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -13109,7 +13191,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               TextField(
                 controller: titleController,
                 decoration: InputDecoration(
-                  labelText: 'Section Title',
+                  labelText: 'discover.CustomSectionSectionTitleLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -13118,7 +13200,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
               TextField(
                 controller: descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Description',
+                  labelText: 'discover.CustomSectionDescriptionLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -13130,11 +13212,11 @@ class _DiscoverNavigationBar extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Save'),
+            child: Text('discover.CustomSectionSaveAction'.tr()),
           ),
         ],
       ),
@@ -13174,17 +13256,19 @@ class _DiscoverNavigationBar extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Custom Section?'),
-        content: Text('Are you sure you want to delete "${config.title}"?'),
+        title: Text('discover.CustomSectionDeleteTitle'.tr()),
+        content: Text(
+          'discover.CustomSectionDeleteMessage'.tr(args: [config.title]),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('Delete'),
+            child: Text('zagreus.Delete'.tr()),
           ),
         ],
       ),
@@ -13241,7 +13325,7 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Calendar Instances'),
+      title: Text('discover.CalendarInstancesTitle'.tr()),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -13280,14 +13364,14 @@ class _CalendarFilterDialogState extends State<_CalendarFilterDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('zagreus.Cancel'.tr()),
         ),
         TextButton(
           onPressed: () {
             widget.onSave(_selected);
             Navigator.pop(context);
           },
-          child: const Text('Save'),
+          child: Text('discover.SaveAction'.tr()),
         ),
       ],
     );

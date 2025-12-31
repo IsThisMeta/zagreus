@@ -71,7 +71,7 @@ class SABnzbdAppBarStats extends StatelessWidget {
           {
             values = await SABnzbdDialogs.customSpeedLimit(context);
             if (values[0])
-              SABnzbdAPI.from(ZagProfile.current)
+              SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
                   .setSpeedLimit(values[1])
                   .then((_) => showZagSuccessSnackBar(
                         title: 'Speed Limit Set',
@@ -84,7 +84,7 @@ class SABnzbdAppBarStats extends StatelessWidget {
             break;
           }
         default:
-          SABnzbdAPI.from(ZagProfile.current)
+          SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'))
               .setSpeedLimit(values[1])
               .then((_) => showZagSuccessSnackBar(
                     title: 'Speed Limit Set',

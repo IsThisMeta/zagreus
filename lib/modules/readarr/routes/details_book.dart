@@ -37,7 +37,7 @@ class _State extends State<AuthorBookDetailsRoute> {
   @override
   void initState() {
     super.initState();
-    _api = ReadarrAPI.from(ZagProfile.current);
+    _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     _pageController = PageController(initialPage: 0);
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadData();

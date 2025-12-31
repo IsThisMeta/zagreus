@@ -14,7 +14,7 @@ class ReadarrBookDetailsOverviewDescriptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headers = ZagProfile.current.readarrHeaders;
+    final headers = ZagProfile.forModule('readarr').readarrHeaders;
 
     // For books, we'll use the cover as both poster and background
     // since Readarr doesn't provide separate fanart for books

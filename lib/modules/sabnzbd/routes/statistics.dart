@@ -32,7 +32,7 @@ class _State extends State<StatisticsRoute> with ZagScrollControllerMixin {
       );
 
   Future<SABnzbdStatisticsData> _fetch() async =>
-      SABnzbdAPI.from(ZagProfile.current).getStatistics();
+      SABnzbdAPI.from(ZagProfile.forModule('sabnzbd')).getStatistics();
 
   Future<void> _refresh() async {
     if (mounted)

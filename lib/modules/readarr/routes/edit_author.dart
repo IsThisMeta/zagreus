@@ -52,7 +52,7 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
   }
 
   Future<bool> _fetch() async {
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     return _fetchProfiles(_api).then((_) => _fetchMetadata(_api)).then((_) {
       _path = widget.data!.path;
       _monitored = widget.data!.monitored;
@@ -166,7 +166,7 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
   }
 
   Future<void> _save() async {
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     await _api
         .editAuthor(
       widget.data!.authorID,

@@ -26,7 +26,7 @@ class _State extends State<SABnzbdHistory>
   @override
   Future<void> loadCallback() async {
     if (mounted) setState(() => _results = []);
-    final _api = SABnzbdAPI.from(ZagProfile.current);
+    final _api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
     if (mounted)
       setState(() {
         _future = _api.getHistory();

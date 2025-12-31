@@ -307,8 +307,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
-      title: 'Settings Saved',
-      message: _isTablet ? 'iPad settings saved' : 'Settings saved',
+      title: 'settings.DashboardSettingsSavedTitle'.tr(),
+      message: _isTablet
+          ? 'settings.DashboardSettingsSavedMessageTablet'.tr()
+          : 'settings.DashboardSettingsSavedMessage'.tr(),
     );
   }
 
@@ -357,10 +359,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   Theme.of(context).brightness == Brightness.dark
                       ? Colors.white70
                       : Colors.black54,
-              tabs: const [
-                Tab(text: 'Movies'),
-                Tab(text: 'Shows'),
-                Tab(text: 'Options'),
+              tabs: [
+                Tab(text: 'settings.DashboardSettingsMoviesTab'.tr()),
+                Tab(text: 'settings.DashboardSettingsShowsTab'.tr()),
+                Tab(text: 'settings.DashboardSettingsOptionsTab'.tr()),
               ],
             ),
           ),
@@ -396,7 +398,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Poster Height',
+            'settings.DashboardSettingsPosterHeight'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -407,7 +409,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${_posterHeight.round()} pixels',
+            'settings.DashboardSettingsPosterHeightValue'
+                .tr(args: [_posterHeight.round().toString()]),
             style: TextStyle(
               fontSize: 14,
               color: theme.brightness == Brightness.dark
@@ -434,7 +437,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Adjust the height of poster images in the Dashboard view.',
+            'settings.DashboardSettingsPosterHeightDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -444,7 +447,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Hero Carousel Height',
+            'settings.DashboardSettingsHeroHeight'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -455,7 +458,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${_heroHeight.round()} pixels',
+            'settings.DashboardSettingsHeroHeightValue'
+                .tr(args: [_heroHeight.round().toString()]),
             style: TextStyle(
               fontSize: 14,
               color: theme.brightness == Brightness.dark
@@ -482,7 +486,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Control the size of the large hero banner at the top of Dashboard.',
+            'settings.DashboardSettingsHeroHeightDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -492,7 +496,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Items Per Row',
+            'settings.DashboardSettingsItemsPerRow'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -503,7 +507,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            '$_columnsPerRow columns',
+            'settings.DashboardSettingsItemsPerRowValue'
+                .tr(args: [_columnsPerRow.toString()]),
             style: TextStyle(
               fontSize: 14,
               color: theme.brightness == Brightness.dark
@@ -530,7 +535,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Controls how many posters fit horizontally in the full Dashboard grids for movies and shows.',
+            'settings.DashboardSettingsItemsPerRowDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -543,7 +548,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Show Titles on Posters',
+                'settings.DashboardSettingsShowTitles'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -566,7 +571,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Toggle titles on or off for movie and show posters.',
+            'settings.DashboardSettingsShowTitlesDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -579,7 +584,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Monochrome Ratings',
+                'settings.DashboardSettingsMonochromeRatings'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -602,7 +607,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Display rating badges in white instead of colored.',
+            'settings.DashboardSettingsMonochromeRatingsDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -615,7 +620,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Show Hero Carousel',
+                'settings.DashboardSettingsShowHeroCarousel'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -638,7 +643,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Toggle the auto-scrolling hero carousel at the top of Movies and TV Shows tabs.',
+            'settings.DashboardSettingsShowHeroCarouselDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -651,7 +656,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Hide In-Library Items from Hero',
+                'settings.DashboardSettingsHideInLibraryFromHero'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -674,7 +679,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'Hide movies and shows you already have from the hero carousel.',
+            'settings.DashboardSettingsHideInLibraryFromHeroDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -684,7 +689,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Quick Buttons',
+            'settings.DashboardSettingsQuickButtonsTitle'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -695,7 +700,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Show quick navigation buttons below the hero carousel.',
+            'settings.DashboardSettingsQuickButtonsDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -731,7 +736,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 32),
           Text(
-            'Trending Timeframe',
+            'settings.DashboardSettingsTrendingTimeframe'.tr(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -745,7 +750,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             spacing: 12,
             children: [
               ChoiceChip(
-                label: const Text('Today'),
+                label: Text('settings.DashboardSettingsTrendingToday'.tr()),
                 selected: _trendingTimeWindow == 'day',
                 onSelected: (selected) {
                   if (!selected) return;
@@ -757,7 +762,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 },
               ),
               ChoiceChip(
-                label: const Text('This Week'),
+                label: Text('settings.DashboardSettingsTrendingThisWeek'.tr()),
                 selected: _trendingTimeWindow == 'week',
                 onSelected: (selected) {
                   if (!selected) return;
@@ -772,7 +777,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Select the default timeframe for trending Dashboard recommendations.',
+            'settings.DashboardSettingsTrendingDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -783,14 +788,14 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           const SizedBox(height: 16),
           ZagButton(
             type: ZagButtonType.TEXT,
-            text: 'Reset to Defaults',
+            text: 'settings.DashboardSettingsResetDefaults'.tr(),
             icon: Icons.restart_alt_rounded,
             color: ZagColours.currentAccent,
             onTap: resetToDefaults,
           ),
           const SizedBox(height: 8),
           Text(
-            'Resets movie & show sections plus all layout sliders back to their defaults.',
+            'settings.DashboardSettingsResetDefaultsDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
@@ -871,7 +876,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                           : Colors.black12,
                       width: 1,
                     ),
-                  ),
+                    ),
                   child: ListTile(
                     leading: Icon(
                       _getSectionIcon(section),
@@ -888,7 +893,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.delete_outline_rounded),
-                          tooltip: 'Remove Section',
+                          tooltip:
+                              'settings.DashboardSettingsRemoveSectionTooltip'
+                                  .tr(),
                           onPressed: () => _removeSection(sections, section),
                         ),
                         ReorderableDragStartListener(
@@ -912,7 +919,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 8),
             child: ZagButton.text(
-              text: availableSections.isEmpty ? 'All Sections Added' : 'Add Section',
+              text: availableSections.isEmpty
+                  ? 'settings.DashboardSettingsAllSectionsAdded'.tr()
+                  : 'settings.DashboardSettingsAddSection'.tr(),
               icon: availableSections.isEmpty ? null : Icons.add_rounded,
               color: ZagColours.currentAccent,
               onTap: availableSections.isEmpty
@@ -948,14 +957,14 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Custom Sections',
+            'settings.DashboardSettingsCustomSectionsTitle'.tr(),
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Create your own AI-powered recommendation categories.',
+            'settings.DashboardSettingsCustomSectionsDescription'.tr(),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.brightness == Brightness.dark
                   ? Colors.white70
@@ -964,7 +973,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           const SizedBox(height: 12),
           ZagButton.text(
-            text: 'Create Custom Section',
+            text: 'settings.DashboardSettingsCreateCustomSection'.tr(),
             icon: Icons.add_rounded,
             color: ZagColours.currentAccent,
             onTap: () => _showCreateCustomSectionDialog(mediaType),
@@ -985,7 +994,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Text(
-                    'No custom sections yet.',
+                    'settings.DashboardSettingsNoCustomSections'.tr(),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.brightness == Brightness.dark
                           ? Colors.white54
@@ -1030,19 +1039,22 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              tooltip: 'Regenerate',
+                              tooltip: 'settings.DashboardSettingsRegenerate'
+                                  .tr(),
                               icon: const Icon(Icons.refresh_rounded),
                               onPressed: () =>
                                   _regenerateCustomSectionFromSettings(config),
                             ),
                             IconButton(
-                              tooltip: 'Edit',
+                              tooltip:
+                                  'settings.DashboardSettingsEdit'.tr(),
                               icon: const Icon(Icons.edit_rounded),
                               onPressed: () =>
                                   _showEditCustomSectionDialog(config),
                             ),
                             IconButton(
-                              tooltip: 'Delete',
+                              tooltip:
+                                  'settings.DashboardSettingsDelete'.tr(),
                               icon: const Icon(Icons.delete_outline_rounded),
                               color: Colors.red,
                               onPressed: () =>
@@ -1081,15 +1093,17 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Create Custom Section'),
+        title: Text(
+          'settings.DashboardSettingsCreateCustomSectionDialogTitle'.tr(),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Section Title',
+                decoration: InputDecoration(
+                  labelText: 'settings.DashboardSettingsSectionTitleLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -1097,8 +1111,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
+                decoration: InputDecoration(
+                  labelText: 'settings.DashboardSettingsDescriptionLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -1110,21 +1124,21 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               if (titleController.text.trim().isEmpty ||
                   descriptionController.text.trim().isEmpty) {
                 showZagErrorSnackBar(
-                  title: 'Missing Fields',
-                  error: 'Please fill in all fields',
+                  title: 'settings.DashboardSettingsMissingFieldsTitle'.tr(),
+                  error: 'settings.DashboardSettingsMissingFieldsMessage'.tr(),
                 );
                 return;
               }
               Navigator.pop(context, true);
             },
-            child: const Text('Create'),
+            child: Text('settings.DashboardSettingsCreateAction'.tr()),
           ),
         ],
       ),
@@ -1146,8 +1160,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           force: true,
         );
         showZagInfoSnackBar(
-          title: 'Custom Section Created',
-          message: 'Generating recommendations…',
+          title: 'settings.DashboardSettingsCustomSectionCreatedTitle'.tr(),
+          message:
+              'settings.DashboardSettingsGeneratingRecommendationsMessage'.tr(),
         );
       } catch (e) {
         // Best-effort; recommendations can still be fetched from the Dashboard.
@@ -1165,15 +1180,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Custom Section'),
+        title:
+            Text('settings.DashboardSettingsEditCustomSectionDialogTitle'.tr()),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Section Title',
+                decoration: InputDecoration(
+                  labelText: 'settings.DashboardSettingsSectionTitleLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLength: 50,
@@ -1181,8 +1197,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
+                decoration: InputDecoration(
+                  labelText: 'settings.DashboardSettingsDescriptionLabel'.tr(),
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 4,
@@ -1194,21 +1210,21 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
               if (titleController.text.trim().isEmpty ||
                   descriptionController.text.trim().isEmpty) {
                 showZagErrorSnackBar(
-                  title: 'Missing Fields',
-                  error: 'Please fill in all fields',
+                  title: 'settings.DashboardSettingsMissingFieldsTitle'.tr(),
+                  error: 'settings.DashboardSettingsMissingFieldsMessage'.tr(),
                 );
                 return;
               }
               Navigator.pop(context, true);
             },
-            child: const Text('Save'),
+            child: Text('settings.DashboardSettingsSaveAction'.tr()),
           ),
         ],
       ),
@@ -1233,17 +1249,21 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Custom Section?'),
-        content: Text('Are you sure you want to delete "${config.title}"?'),
+        title:
+            Text('settings.DashboardSettingsDeleteCustomSectionDialogTitle'.tr()),
+        content: Text(
+          'settings.DashboardSettingsDeleteCustomSectionDialogMessage'
+              .tr(args: [config.title]),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('zagreus.Cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('zagreus.Delete'.tr()),
           ),
         ],
       ),
@@ -1259,8 +1279,9 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     CustomSectionConfig config,
   ) async {
     showZagInfoSnackBar(
-      title: 'Regenerating',
-      message: 'Generating recommendations…',
+      title: 'settings.DashboardSettingsRegeneratingTitle'.tr(),
+      message: 'settings.DashboardSettingsGeneratingRecommendationsMessage'
+          .tr(),
     );
 
     final result = await CustomSectionsService().generateRecommendations(
@@ -1275,15 +1296,16 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
     if (!result.success) {
       showZagErrorSnackBar(
-        title: 'Failed to Regenerate',
-        error: result.errorMessage ?? 'Unknown error',
+        title: 'settings.DashboardSettingsFailedToRegenerateTitle'.tr(),
+        error: result.errorMessage ??
+            'settings.DashboardSettingsUnknownError'.tr(),
       );
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Updated',
-      message: 'Recommendations refreshed',
+      title: 'settings.DashboardSettingsUpdatedTitle'.tr(),
+      message: 'settings.DashboardSettingsRecommendationsRefreshed'.tr(),
     );
     _refreshCustomSectionsFutures(config.mediaType);
   }
@@ -1305,8 +1327,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             const SizedBox(height: 12),
             Text(
               isMovie
-                  ? 'No movie sections are currently shown.'
-                  : 'No TV sections are currently shown.',
+                  ? 'settings.DashboardSettingsEmptyMovieSections'.tr()
+                  : 'settings.DashboardSettingsEmptyTVSections'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
@@ -1317,7 +1339,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Use the button below to add sections back.',
+              'settings.DashboardSettingsEmptySectionsHelp'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
@@ -1362,7 +1384,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             children: [
               const SizedBox(height: 12),
               Text(
-                'Add Section',
+                'settings.DashboardSettingsAddSection'.tr(),
                 style: Theme.of(sheetContext)
                     .textTheme
                     .titleMedium
@@ -1508,7 +1530,7 @@ Future<bool?> showDashboardSectionsEditorSheet(
                       child: Row(
                         children: [
                           Text(
-                            'Dashboard Settings',
+                            'settings.DashboardSettingsTitle'.tr(),
                             style: Theme.of(sheetContext)
                                 .textTheme
                                 .titleMedium
@@ -1517,7 +1539,9 @@ Future<bool?> showDashboardSectionsEditorSheet(
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.save_rounded),
-                            tooltip: 'Save Order',
+                            tooltip:
+                                'settings.DashboardSettingsSaveOrderTooltip'
+                                    .tr(),
                             color: hasChanges
                                 ? ZagColours.currentAccent
                                 : Colors.grey,

@@ -114,9 +114,9 @@ class ReadarrCatalogueData {
   }
 
   String posterURI() {
-    final host = ZagProfile.current.effectiveReadarrHost();
-    final key = ZagProfile.current.readarrKey;
-    if (ZagProfile.current.readarrEnabled) {
+    final host = ZagProfile.forModule('readarr').effectiveReadarrHost();
+    final key = ZagProfile.forModule('readarr').readarrKey;
+    if (ZagProfile.forModule('readarr').readarrEnabled) {
       String _base = host.endsWith('/')
           ? '${host}api/v1/MediaCover/Author'
           : '$host/api/v1/MediaCover/Author';
@@ -126,9 +126,9 @@ class ReadarrCatalogueData {
   }
 
   String fanartURI({bool highRes = false}) {
-    final host = ZagProfile.current.effectiveReadarrHost();
-    final key = ZagProfile.current.readarrKey;
-    if (ZagProfile.current.readarrEnabled) {
+    final host = ZagProfile.forModule('readarr').effectiveReadarrHost();
+    final key = ZagProfile.forModule('readarr').readarrKey;
+    if (ZagProfile.forModule('readarr').readarrEnabled) {
       String _base = host.endsWith('/')
           ? '${host}api/v1/MediaCover/Author'
           : '$host/api/v1/MediaCover/Author';

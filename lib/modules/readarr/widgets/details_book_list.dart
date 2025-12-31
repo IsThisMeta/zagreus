@@ -32,7 +32,7 @@ class _State extends State<ReadarrDetailsBookList>
 
   Future<void> _refresh() async {
     _results = [];
-    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.current);
+    ReadarrAPI _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     setState(() {
       _future = _api.getBooksForAuthor(widget.authorId);
     });

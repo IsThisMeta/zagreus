@@ -4,7 +4,7 @@ Future<ReadarrCommand> _commandMissingBookSearch(
   Dio client, {
   int? authorId,
 }) async {
-  final data = {'name': 'MissingBookSearch'};
+  final Map<String, dynamic> data = {'name': 'MissingBookSearch'};
   if (authorId != null) {
     data['authorId'] = authorId;
   }

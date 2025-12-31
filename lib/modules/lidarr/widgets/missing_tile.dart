@@ -50,11 +50,11 @@ class _State extends State<LidarrMissingTile> {
       onTap: () async => _enterAlbum(),
       onLongPress: () async => _enterArtist(),
       posterUrl: widget.entry.albumCoverURI(),
-      posterHeaders: ZagProfile.current.lidarrHeaders,
+      posterHeaders: ZagProfile.forModule('lidarr').lidarrHeaders,
       posterIsSquare: true,
       posterPlaceholderIcon: ZagIcons.MUSIC,
       backgroundUrl: widget.entry.fanartURI(),
-      backgroundHeaders: ZagProfile.current.lidarrHeaders,
+      backgroundHeaders: ZagProfile.forModule('lidarr').lidarrHeaders,
     );
   }
 

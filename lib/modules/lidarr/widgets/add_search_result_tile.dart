@@ -24,7 +24,7 @@ class LidarrAddSearchResultTile extends StatelessWidget {
         customBodyMaxLines: 3,
         trailing: alreadyAdded ? null : const ZagIconButton.arrow(),
         posterIsSquare: true,
-        posterHeaders: ZagProfile.current.lidarrHeaders,
+        posterHeaders: ZagProfile.forModule('lidarr').lidarrHeaders,
         posterPlaceholderIcon: ZagIcons.USER,
         posterUrl: _posterUrl,
         onTap: () async => _enterDetails(context),

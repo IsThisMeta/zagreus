@@ -26,7 +26,7 @@ class _State extends State<AuthorBookReleasesRoute>
   @override
   Future<void> loadCallback() async {
     if (mounted) setState(() => _results = []);
-    final _api = ReadarrAPI.from(ZagProfile.current);
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     setState(() {
       _future = _api.getReleases(widget.bookId);
     });

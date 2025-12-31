@@ -46,7 +46,7 @@ class ReadarrDetailsBookTile extends StatelessWidget {
       url: data.bookCoverURI(),
       height: 90.0,
       width: 60.0,
-      headers: ZagProfile.current.readarrHeaders,
+      headers: ZagProfile.forModule('readarr').readarrHeaders,
     );
   }
 

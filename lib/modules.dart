@@ -152,13 +152,13 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.LIDARR:
         return ZagProfile.current.lidarrEnabled;
       case ZagModule.NZBGET:
-        return ZagProfile.current.nzbgetEnabled;
+        return ZagProfile.hasEnabledInstance('nzbget');
       case ZagModule.OVERSEERR:
         return ZagProfile.current.overseerrEnabled;
       case ZagModule.RADARR:
         return ZagProfile.current.radarrEnabled;
       case ZagModule.SABNZBD:
-        return ZagProfile.current.sabnzbdEnabled;
+        return ZagProfile.hasEnabledInstance('sabnzbd');
       case ZagModule.SEARCH:
         // Search module is enabled if user has any indexers configured
         // Filtering between Prowlarr and regular indexers happens in the UI

@@ -120,9 +120,9 @@ class LidarrCatalogueData {
   }
 
   String posterURI() {
-    final host = ZagProfile.current.effectiveLidarrHost();
-    final key = ZagProfile.current.lidarrKey;
-    if (ZagProfile.current.lidarrEnabled) {
+    final host = ZagProfile.forModule('lidarr').effectiveLidarrHost();
+    final key = ZagProfile.forModule('lidarr').lidarrKey;
+    if (ZagProfile.forModule('lidarr').lidarrEnabled) {
       String _base = host.endsWith('/')
           ? '${host}api/v1/MediaCover/Artist'
           : '$host/api/v1/MediaCover/Artist';
@@ -132,9 +132,9 @@ class LidarrCatalogueData {
   }
 
   String fanartURI({bool highRes = false}) {
-    final host = ZagProfile.current.effectiveLidarrHost();
-    final key = ZagProfile.current.lidarrKey;
-    if (ZagProfile.current.lidarrEnabled) {
+    final host = ZagProfile.forModule('lidarr').effectiveLidarrHost();
+    final key = ZagProfile.forModule('lidarr').lidarrKey;
+    if (ZagProfile.forModule('lidarr').lidarrEnabled) {
       String _base = host.endsWith('/')
           ? '${host}api/v1/MediaCover/Artist'
           : '$host/api/v1/MediaCover/Artist';
