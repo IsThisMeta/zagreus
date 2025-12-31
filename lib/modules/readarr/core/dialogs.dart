@@ -29,7 +29,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -58,7 +57,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return [_flag, _quality];
   }
@@ -87,7 +85,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return [_flag, _metadata];
   }
@@ -208,7 +205,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return [_flag, _value];
   }
@@ -245,7 +241,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return [_flag, _folder];
   }
@@ -280,7 +275,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return [_flag, _value];
   }
@@ -308,7 +302,6 @@ class ReadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
 
     return [_flag, _index];
