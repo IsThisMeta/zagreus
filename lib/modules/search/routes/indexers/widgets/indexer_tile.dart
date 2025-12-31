@@ -3,7 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/router/routes/search.dart';
-import 'package:zagreus/modules/prowlarr/routes/prowlarr_home.dart';
+import 'package:zagreus/modules/search/prowlarr/routes/prowlarr_home.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 
 class SearchIndexerTile extends StatelessWidget {

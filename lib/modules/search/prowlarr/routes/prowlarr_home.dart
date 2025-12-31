@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/database/models/indexer.dart';
-import 'package:zagreus/modules/prowlarr/core.dart';
-import 'package:zagreus/modules/prowlarr/routes/subcategories/route.dart';
-import 'package:zagreus/modules/prowlarr/routes/search/route.dart';
+import 'package:zagreus/modules/search/prowlarr/core.dart';
+import 'package:zagreus/modules/search/prowlarr/routes/subcategories/route.dart';
+import 'package:zagreus/modules/search/prowlarr/routes/search/route.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 

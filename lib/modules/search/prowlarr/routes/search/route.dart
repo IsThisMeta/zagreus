@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/prowlarr/core.dart';
-import 'package:zagreus/modules/prowlarr/widgets/widgets.dart';
+import 'package:zagreus/modules/search/prowlarr/core.dart';
+import 'package:zagreus/modules/search/prowlarr/widgets/widgets.dart';
 
 /// Prowlarr search page - search bar and results
 class ProwlarrSearchPage extends StatefulWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/core.dart';
-import 'package:zagreus/modules/prowlarr/core.dart';
-import 'package:zagreus/modules/prowlarr/routes/search/route.dart';
+import 'package:zagreus/modules/search/prowlarr/core.dart';
+import 'package:zagreus/modules/search/prowlarr/routes/search/route.dart';
 
 /// Prowlarr subcategories page - shows subcategories for a parent category
 class ProwlarrSubcategoriesPage extends StatefulWidget {

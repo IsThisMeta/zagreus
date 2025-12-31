@@ -3,7 +3,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/extensions/string/string.dart';
-import 'package:zagreus/modules/prowlarr/core.dart';
+import 'package:zagreus/modules/search/prowlarr/core.dart';
 
 class ProwlarrResultTile extends StatefulWidget {
   final ProwlarrItem item;
