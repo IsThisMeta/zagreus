@@ -378,7 +378,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           '• Prowlarr\n'
           '• Enhanced Cast & Crew\n'
           '• Ratings & Links\n'
-          '• Local/Remote Network Switching\n'
+          '• Automatic Network Switching\n'
           '• Multiple instances per profile\n'
           '• And more\n\n'
           'Choose a plan to get started.';
