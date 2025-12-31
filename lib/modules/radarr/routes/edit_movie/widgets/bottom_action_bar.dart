@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/router/router.dart';
+import 'package:zagreus/api/bazarr/bazarr.dart';
+import 'package:zagreus/utils/zagreus_pro.dart';
 
 class RadarrEditMovieActionBar extends StatelessWidget {
   const RadarrEditMovieActionBar({
@@ -23,6 +25,19 @@ class RadarrEditMovieActionBar extends StatelessWidget {
     );
   }
 
+  BazarrAPI? _getBazarrApi() {
+    if (!ZagreusPro.isEnabled) return null;
+    final profile = ZagProfile.current;
+    if (!profile.bazarrEnabled) return null;
+    final host = profile.effectiveBazarrHost();
+    if (host.isEmpty || profile.bazarrKey.isEmpty) return null;
+    return BazarrAPI(
+      host: host,
+      apiKey: profile.bazarrKey,
+      headers: Map<String, dynamic>.from(profile.bazarrHeaders),
+    );
+  }
+
   Future<void> _updateOnTap(BuildContext context) async {
     final state = context.read<RadarrMoviesEditState>();
     state.state = ZagLoadingState.ACTIVE;
@@ -39,6 +54,26 @@ class RadarrEditMovieActionBar extends StatelessWidget {
         movie: movie,
         moveFiles: moveFiles,
       );
+
+      // Update Bazarr language profile if changed
+      if (result && state.bazarrProfileChanged) {
+        final bazarrApi = _getBazarrApi();
+        if (bazarrApi != null) {
+          try {
+            await bazarrApi.movie.updateLanguageProfile(
+              radarrId: movie.id!,
+              profileId: state.bazarrLanguageProfile?.profileId,
+            );
+          } catch (e, stack) {
+            ZagLogger().error('Failed to update Bazarr language profile', e, stack);
+            showZagErrorSnackBar(
+              title: 'bazarr.FailedToUpdateProfile'.tr(),
+              message: e.toString(),
+            );
+          }
+        }
+      }
+
       if (result) ZagRouter().popSafely();
     }
   }

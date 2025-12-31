@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/api/bazarr/models.dart';
 
 class RadarrMoviesEditState extends ChangeNotifier {
   RadarrMovie? _movie;
@@ -77,5 +78,44 @@ class RadarrMoviesEditState extends ChangeNotifier {
     _tags = (tags ?? [])
         .where((tag) => (movie!.tags ?? []).contains(tag.id))
         .toList();
+  }
+
+  // Bazarr subtitle language profile
+  BazarrLanguageProfile? _bazarrLanguageProfile;
+  BazarrLanguageProfile? get bazarrLanguageProfile => _bazarrLanguageProfile;
+  set bazarrLanguageProfile(BazarrLanguageProfile? profile) {
+    _bazarrLanguageProfile = profile;
+    notifyListeners();
+  }
+
+  // Original Bazarr profile ID to detect changes
+  int? _originalBazarrProfileId;
+  int? get originalBazarrProfileId => _originalBazarrProfileId;
+
+  // Whether Bazarr data was successfully loaded
+  bool _bazarrDataLoaded = false;
+  bool get bazarrDataLoaded => _bazarrDataLoaded;
+
+  void initializeBazarrLanguageProfile({
+    required int? currentProfileId,
+    required List<BazarrLanguageProfile> profiles,
+  }) {
+    _originalBazarrProfileId = currentProfileId;
+    _bazarrDataLoaded = true;
+    if (currentProfileId == null) {
+      _bazarrLanguageProfile = null;
+    } else {
+      _bazarrLanguageProfile = profiles.firstWhere(
+        (p) => p.profileId == currentProfileId,
+        orElse: () => profiles.isNotEmpty ? profiles.first : BazarrLanguageProfile(),
+      );
+    }
+  }
+
+  /// Returns true if Bazarr language profile was changed
+  bool get bazarrProfileChanged {
+    if (!_bazarrDataLoaded) return false;
+    final newId = _bazarrLanguageProfile?.profileId;
+    return newId != _originalBazarrProfileId;
   }
 }

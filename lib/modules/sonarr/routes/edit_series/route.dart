@@ -126,6 +126,7 @@ class _State extends State<SeriesEditRoute>
         const SonarrSeriesEditSeriesTypeTile(),
         const SonarrSeriesEditSeriesPathTile(),
         const SonarrSeriesEditTagsTile(),
+        SonarrSeriesEditBazarrLanguageProfileTile(seriesId: series.id!),
       ],
     );
   }

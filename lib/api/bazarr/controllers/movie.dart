@@ -35,4 +35,21 @@ class BazarrControllerMovie {
           : null,
     );
   }
+
+  /// Handler for updating the language profile of a movie.
+  ///
+  /// Sets the subtitle language profile for the given Radarr movie ID.
+  /// Pass null for [profileId] to remove the language profile (set to "None").
+  Future<void> updateLanguageProfile({
+    required int radarrId,
+    int? profileId,
+  }) async {
+    await _client.post(
+      'movies',
+      data: {
+        'radarrid': radarrId,
+        'profileid': profileId,
+      },
+    );
+  }
 }

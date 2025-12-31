@@ -22,4 +22,21 @@ class BazarrControllerSeries {
       queryParameters: {'seriesid': seriesId},
     );
   }
+
+  /// Handler for updating the language profile of a series.
+  ///
+  /// Sets the subtitle language profile for the given Sonarr series ID.
+  /// Pass null for [profileId] to remove the language profile (set to "None").
+  Future<void> updateLanguageProfile({
+    required int seriesId,
+    int? profileId,
+  }) async {
+    await _client.post(
+      'series',
+      data: {
+        'seriesid': seriesId,
+        'profileid': profileId,
+      },
+    );
+  }
 }

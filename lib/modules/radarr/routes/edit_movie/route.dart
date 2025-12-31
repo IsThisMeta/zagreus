@@ -118,6 +118,7 @@ class _State extends State<MovieEditRoute>
         RadarrMoviesEditQualityProfileTile(profiles: profiles),
         const RadarrMoviesEditPathTile(),
         const RadarrMoviesEditTagsTile(),
+        RadarrMoviesEditBazarrLanguageProfileTile(radarrId: movie.id!),
       ],
     );
   }
