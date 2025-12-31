@@ -34,10 +34,11 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.initialQuery ?? '');
-    // Auto-search if initial query provided
-    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+    // Auto-load results if category is provided or initial query exists
+    if (widget.categoryId != null ||
+        (widget.initialQuery != null && widget.initialQuery!.isNotEmpty)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _performSearch(widget.initialQuery!);
+        _performSearch(widget.initialQuery ?? '');
       });
     }
   }
@@ -49,10 +50,13 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
   }
 
   Future<void> _performSearch(String query) async {
-    if (query.isEmpty) return;
+    // Allow empty query if category is provided (loads all results for category)
+    if (query.isEmpty && widget.categoryId == null) return;
 
     widget.state.setLoading(true);
-    widget.state.addSearchToHistory(query);
+    if (query.isNotEmpty) {
+      widget.state.addSearchToHistory(query);
+    }
 
     try {
       final results = await widget.apiWrapper.search(
@@ -179,58 +183,62 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        return Consumer<ProwlarrState>(
-          builder: (context, state, _) {
-            return SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Text(
-                      'Sort By',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ),
-                  ...ProwlarrSortOption.values.map((option) {
-                    final isSelected = state.sortOption == option;
-                    return ListTile(
-                      leading: Icon(
-                        option.icon,
-                        color: isSelected
-                            ? ZagColours.accentColor(context)
-                            : null,
+        // Provide state to the sheet since it's in a new overlay context
+        return ChangeNotifierProvider<ProwlarrState>.value(
+          value: widget.state,
+          child: Consumer<ProwlarrState>(
+            builder: (context, state, _) {
+              return SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        'Sort By',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                      title: Text(
-                        option.label,
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : null,
+                    ),
+                    ...ProwlarrSortOption.values.map((option) {
+                      final isSelected = state.sortOption == option;
+                      return ListTile(
+                        leading: Icon(
+                          option.icon,
                           color: isSelected
                               ? ZagColours.accentColor(context)
                               : null,
                         ),
-                      ),
-                      trailing: isSelected
-                          ? Icon(
-                              Icons.check_rounded,
-                              color: ZagColours.accentColor(context),
-                            )
-                          : null,
-                      onTap: () {
-                        state.setSortOption(option);
-                        Navigator.of(sheetContext).pop();
-                      },
-                    );
-                  }),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            );
-          },
+                        title: Text(
+                          option.label,
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : null,
+                            color: isSelected
+                                ? ZagColours.accentColor(context)
+                                : null,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? Icon(
+                                Icons.check_rounded,
+                                color: ZagColours.accentColor(context),
+                              )
+                            : null,
+                        onTap: () {
+                          state.setSortOption(option);
+                          Navigator.of(sheetContext).pop();
+                        },
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -250,22 +258,26 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        return Consumer<ProwlarrState>(
-          builder: (context, state, _) {
-            return DraggableScrollableSheet(
-              expand: false,
-              maxChildSize: 0.85,
-              initialChildSize: 0.6,
-              minChildSize: 0.4,
-              builder: (context, scrollController) {
-                return ProwlarrFilterSheetContent(
-                  scrollController: scrollController,
-                  state: state,
-                  onClose: () => Navigator.of(sheetContext).pop(),
-                );
-              },
-            );
-          },
+        // Provide state to the sheet since it's in a new overlay context
+        return ChangeNotifierProvider<ProwlarrState>.value(
+          value: widget.state,
+          child: Consumer<ProwlarrState>(
+            builder: (context, state, _) {
+              return DraggableScrollableSheet(
+                expand: false,
+                maxChildSize: 0.85,
+                initialChildSize: 0.6,
+                minChildSize: 0.4,
+                builder: (context, scrollController) {
+                  return ProwlarrFilterSheetContent(
+                    scrollController: scrollController,
+                    state: state,
+                    onClose: () => Navigator.of(sheetContext).pop(),
+                  );
+                },
+              );
+            },
+          ),
         );
       },
     );
