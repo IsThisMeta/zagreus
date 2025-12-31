@@ -30,7 +30,6 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -61,7 +60,6 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -95,7 +93,6 @@ class SonarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }

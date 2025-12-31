@@ -282,23 +282,47 @@ abstract class ZagDialog {
   }) async {
     if (customContent == null)
       assert(content != null, 'customContent and content both cannot be null');
+
+    // Track when dialog was shown to prevent accidental dismissals
+    final showTime = DateTime.now();
+    const dismissGuardDuration = Duration(milliseconds: 300);
+
     await showDialog(
       context: context,
-      barrierDismissible: barrierDismissible,
-      builder: (context) => AlertDialog(
-        actions: <Widget>[
-          if (showCancelButton)
-            ZagDialog.cancel(
-              context,
-              text: cancelButtonText,
-              textColor: buttons == null ? ZagColours.accentColor(context) : null,
+      barrierDismissible: false, // We'll handle this manually with time guard
+      builder: (dialogContext) => PopScope(
+        canPop: true, // Allow programmatic dismissals (like Cancel button)
+        child: GestureDetector(
+          onTap: () {
+            if (!barrierDismissible) return;
+
+            // Check if enough time has passed since dialog was shown
+            final timeSinceShow = DateTime.now().difference(showTime);
+            if (timeSinceShow < dismissGuardDuration) return;
+
+            // Dismiss the dialog
+            Navigator.of(dialogContext, rootNavigator: true).pop();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: GestureDetector(
+            onTap: () {}, // Prevent taps on dialog from dismissing
+            child: AlertDialog(
+              actions: <Widget>[
+                if (showCancelButton)
+                  ZagDialog.cancel(
+                    dialogContext,
+                    text: cancelButtonText,
+                    textColor: buttons == null ? ZagColours.accentColor(dialogContext) : null,
+                  ),
+                if (buttons != null) ...buttons,
+              ],
+              title: ZagDialog.title(text: title!),
+              content: customContent ?? ZagDialog.content(children: content!),
+              contentPadding: contentPadding,
+              shape: ZagUI.shapeBorder,
             ),
-          if (buttons != null) ...buttons,
-        ],
-        title: ZagDialog.title(text: title!),
-        content: customContent ?? ZagDialog.content(children: content!),
-        contentPadding: contentPadding,
-        shape: ZagUI.shapeBorder,
+          ),
+        ),
       ),
     );
   }

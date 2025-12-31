@@ -29,7 +29,6 @@ class RadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
@@ -60,7 +59,6 @@ class RadarrDialogs {
         ),
       ),
       contentPadding: ZagDialog.listDialogContentPadding(),
-      barrierDismissible: false,
     );
     return Tuple2(_flag, _value);
   }
