@@ -63,6 +63,7 @@ Future<void> main() async {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await EasyLocalization.ensureInitialized();
 
       try {
         await bootstrap();
@@ -189,10 +190,16 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
         child: DevicePreview(
           enabled: kDebugMode && ZagPlatform.isDesktop,
           builder: (context) => EasyLocalization(
-            supportedLocales: [Locale('en')],
+            supportedLocales: [
+              Locale('en'),
+              Locale('fr'),
+              Locale('de'),
+              Locale('el'),
+              Locale('tr'),
+              Locale('zh', 'Hans'),
+            ],
             path: 'assets/localization',
             fallbackLocale: Locale('en'),
-            startLocale: Locale('en'),
             useFallbackTranslations: true,
             child: ZagBox.zagreus.listenableBuilder(
               selectItems: [

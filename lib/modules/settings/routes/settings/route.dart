@@ -29,18 +29,10 @@ class _State extends State<SettingsRoute> with ZagScrollControllerMixin {
   }
 
   void _checkAndSetProBootModule() {
-    // When Pro is activated, automatically set boot module to Dashboard
+    // When Pro is activated, automatically set boot module to Discover
     final isPro = ZagreusPro.isEnabled;
     if (isPro) {
-      final currentModule = BIOSDatabase.BOOT_MODULE.read();
-      // Only set to Dashboard if it's the first Pro activation
-      if (currentModule != ZagModule.DISCOVER &&
-          ZagreusDatabase.USER_BOOT_MODULE.read().isEmpty) {
-        // Save current module as user preference
-        ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
-        // Set to Dashboard
-        BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
-      }
+      ZagreusPro.setProBootModule();
     }
   }
 

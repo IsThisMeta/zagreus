@@ -186,19 +186,22 @@ class ZagreusPro {
         return;
       }
 
-      // Only set to Discover if it's the first time (captured as an empty user preference)
-      if (ZagreusDatabase.USER_BOOT_MODULE.read().isNotEmpty) {
-        print('User preference already captured ($currentModule), skipping Discover forcing');
-        return;
-      }
+      final userPreference = ZagreusDatabase.USER_BOOT_MODULE.read();
+      final shouldForceDiscover =
+          userPreference.isEmpty || currentModule == ZagModule.DASHBOARD;
 
       // Save current module as user preference (for when premium expires)
-      ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
+      if (userPreference.isEmpty) {
+        ZagreusDatabase.USER_BOOT_MODULE.update(currentModule.key);
+      }
 
       // Set boot module to Discover (premium Dashboard)
-      BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
-
-      print('Premium tier active: Setting boot module to Discover');
+      if (shouldForceDiscover) {
+        BIOSDatabase.BOOT_MODULE.update(ZagModule.DISCOVER);
+        print('Premium tier active: Setting boot module to Discover');
+      } else {
+        print('User preference already captured ($currentModule), skipping Discover forcing');
+      }
     } catch (e) {
       print('Error setting premium boot module: $e');
     }

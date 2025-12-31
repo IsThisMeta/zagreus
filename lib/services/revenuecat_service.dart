@@ -117,6 +117,15 @@ class RevenueCatService {
       return currentExpiry.isAfter(bestExpiry) ? current : best;
     });
 
+    final supremeEntitlement = _customerInfo?.entitlements.all[_supremeEntitlementId];
+    final ultraEntitlement = _customerInfo?.entitlements.all[_ultraEntitlementId];
+    final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];
+
+    final isSupremeActive = supremeEntitlement?.isActive ?? false;
+    final isUltraActive = ultraEntitlement?.isActive ?? false;
+    final isMegaActive = megaEntitlement?.isActive ?? false;
+    final hasHigherTier = isSupremeActive || isUltraActive || isMegaActive;
+
     if (activeProEntitlement != null) {
       final expirationDate = activeProEntitlement.expirationDate;
       if (expirationDate != null) {
@@ -138,13 +147,15 @@ class RevenueCatService {
         ZagreusPro.disable();
       }
     } else {
-      print('📵 RevenueCat: Pro not active');
-      ZagreusPro.disable();
+      if (hasHigherTier) {
+        print('📵 RevenueCat: Pro not active (higher tier active)');
+      } else {
+        print('📵 RevenueCat: Pro not active');
+        ZagreusPro.disable();
+      }
     }
 
     // Check Supreme entitlement (highest tier)
-    final supremeEntitlement = _customerInfo?.entitlements.all[_supremeEntitlementId];
-    final isSupremeActive = supremeEntitlement?.isActive ?? false;
 
     if (isSupremeActive) {
       final expirationDate = supremeEntitlement?.expirationDate;
@@ -183,8 +194,6 @@ class RevenueCatService {
       ZagreusSupreme.disable();
 
       // Check Ultra entitlement
-      final ultraEntitlement = _customerInfo?.entitlements.all[_ultraEntitlementId];
-      final isUltraActive = ultraEntitlement?.isActive ?? false;
 
       if (isUltraActive) {
       final expirationDate = ultraEntitlement?.expirationDate;
@@ -224,8 +233,6 @@ class RevenueCatService {
       ZagreusUltra.disable();
 
       // Check Mega entitlement
-      final megaEntitlement = _customerInfo?.entitlements.all[_megaEntitlementId];
-      final isMegaActive = megaEntitlement?.isActive ?? false;
 
       if (isMegaActive) {
         final expirationDate = megaEntitlement?.expirationDate;

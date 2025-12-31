@@ -25,7 +25,7 @@
   "discover.AutoUpdatesWeekly": "Auto-updates weekly",
   "discover.EnableLibrarySync": "Enable library sync",
   "discover.GenerateNow": "Generate now",
-  "discover.GenerationInProgressMessage": "Please wait while recommendations are being generated",
+  "discover.GenerationInProgressMessage": "Recommendations are generating now. Please check back in a bit.",
   "discover.GenerationInProgressTitle": "Generation in progress",
   "discover.LibraryNotSyncedMessage": "Please sync your library first",
   "discover.LibraryNotSyncedTitle": "Library not synced",

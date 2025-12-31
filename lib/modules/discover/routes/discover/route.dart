@@ -255,10 +255,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 260,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 260);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -385,17 +382,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
-                            onTap: () {
-                              final refreshService = MagicPeopleService();
-                              setState(() {
-                                _magicPeopleShowsFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
@@ -2131,11 +2118,92 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read() && _hasAiTier;
 
   void _promptSignInForAi() {
-    showZagInfoSnackBar(
-      title: 'discover.SignInRequiredTitle'.tr(),
-      message: 'discover.SignInRequiredMessage'.tr(),
-    );
     SettingsRoutes.ACCOUNT.go();
+  }
+
+  void _triggerAllAiSectionGeneration() {
+    if (!_hasAiAccess) {
+      _promptSignInForAi();
+      return;
+    }
+
+    final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
+    final radarrInstance =
+        ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
+    final sonarrInstance =
+        ZagInstanceContext().getActiveInstance('sonarr') ?? profileKey;
+
+    setState(() {
+      _deepCutsFuture = DeepCutsService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: radarrInstance,
+        force: true,
+      );
+      _upNextFuture = UpNextService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: sonarrInstance,
+        force: true,
+      );
+      _magicMoviesFuture = MagicMoviesService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: radarrInstance,
+        force: true,
+      );
+      _magicMoviesCastCrewFuture =
+          MagicMoviesCastCrewService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: radarrInstance,
+        force: true,
+      );
+      _magicShowsFuture = MagicShowsService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: sonarrInstance,
+        force: true,
+      );
+      _magicShowsCastCrewFuture =
+          MagicShowsCastCrewService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: sonarrInstance,
+        force: true,
+      );
+      _magicPeopleMoviesFuture = MagicPeopleService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: radarrInstance,
+        force: true,
+      );
+      _magicPeopleShowsFuture = MagicPeopleService().generateRecommendations(
+        profileKey: profileKey,
+        instanceKey: sonarrInstance,
+        force: true,
+      );
+    });
+
+    showZagInfoSnackBar(
+      title: 'discover.GenerationInProgressTitle'.tr(),
+      message: 'discover.GenerationInProgressMessage'.tr(),
+    );
+  }
+
+  Widget _buildGenerationInProgressMessage({required double height}) {
+    return SizedBox(
+      height: height,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            'discover.GenerationInProgressMessage'.tr(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.6),
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   List<String> _discoverTabKeys({bool? showLegacyModules, bool? showCalendar}) {
@@ -3016,16 +3084,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               header(),
-              SizedBox(
-                height: 260,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      ZagColours.currentAccent,
-                    ),
-                  ),
-                ),
-              ),
+              _buildGenerationInProgressMessage(height: 260),
             ],
           );
         }
@@ -9492,11 +9551,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     futureSnapshot.data!.nextGenerationAt);
               }
               if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Center(child: CircularProgressIndicator()),
-                );
+                return _buildGenerationInProgressMessage(height: 390);
               }
 
               if (!futureSnapshot.hasData ||
@@ -9654,16 +9709,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ZagButton.text(
                 text: 'discover.GenerateNow'.tr(),
                 icon: Icons.refresh_rounded,
-                onTap: () {
-                  final service = DeepCutsService();
-                  setState(() {
-                    _deepCutsFuture = service.generateRecommendations(
-                      profileKey: profileKey,
-                      instanceKey: instanceKey,
-                      force: true,
-                    );
-                  });
-                },
+                onTap: _triggerAllAiSectionGeneration,
               ),
             ],
           ],
@@ -9877,11 +9923,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     futureSnapshot.data!.nextGenerationAt);
               }
               if (futureSnapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                  height: 390,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Center(child: CircularProgressIndicator()),
-                );
+                return _buildGenerationInProgressMessage(height: 390);
               }
 
               if (!futureSnapshot.hasData ||
@@ -10039,16 +10081,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ZagButton.text(
                 text: 'discover.GenerateNow'.tr(),
                 icon: Icons.refresh_rounded,
-                onTap: () {
-                  final service = UpNextService();
-                  setState(() {
-                    _upNextFuture = service.generateRecommendations(
-                      profileKey: profileKey,
-                      instanceKey: instanceKey,
-                      force: true,
-                    );
-                  });
-                },
+                onTap: _triggerAllAiSectionGeneration,
               ),
             ],
           ],
@@ -10243,10 +10276,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 390);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -10368,17 +10398,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.auto_fix_high_rounded,
-                            onTap: () {
-                              final refreshService = MagicMoviesService();
-                              setState(() {
-                                _magicMoviesFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
@@ -10535,10 +10555,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 390);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -10662,18 +10679,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.groups_rounded,
-                            onTap: () {
-                              final refreshService =
-                                  MagicMoviesCastCrewService();
-                              setState(() {
-                                _magicMoviesCastCrewFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
@@ -10818,10 +10824,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 260,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 260);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -10948,17 +10951,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
-                            onTap: () {
-                              final refreshService = MagicPeopleService();
-                              setState(() {
-                                _magicPeopleMoviesFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
@@ -11243,10 +11236,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 390);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -11372,17 +11362,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
-                            onTap: () {
-                              final refreshService = MagicShowsService();
-                              setState(() {
-                                _magicShowsFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
@@ -11539,10 +11519,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 _recordNextZRegeneration(snapshot.data!.nextGenerationAt);
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                    height: 390,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Center(child: CircularProgressIndicator()));
+                return _buildGenerationInProgressMessage(height: 390);
               }
               if (!snapshot.hasData ||
                   !snapshot.data!.success ||
@@ -11669,18 +11646,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                           ZagButton.text(
                             text: 'discover.GenerateNow'.tr(),
                             icon: Icons.refresh_rounded,
-                            onTap: () {
-                              final refreshService =
-                                  MagicShowsCastCrewService();
-                              setState(() {
-                                _magicShowsCastCrewFuture =
-                                    refreshService.generateRecommendations(
-                                  profileKey: profileKey,
-                                  instanceKey: instanceKey,
-                                  force: true,
-                                );
-                              });
-                            },
+                            onTap: _triggerAllAiSectionGeneration,
                           ),
                         ],
                       ],
