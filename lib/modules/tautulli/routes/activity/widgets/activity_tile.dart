@@ -260,6 +260,20 @@ class TautulliActivityTile extends StatelessWidget {
         return;
       }
 
+      // Debug: Print search parameters
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      print('🔍 TAUTULLI POSTER CLICK - Activity Tile');
+      print('  Session Title: ${session.title}');
+      print('  Parent Title: ${session.parentTitle}');
+      print('  Grandparent Title: ${session.grandparentTitle}');
+      print('  Year: ${session.year}');
+      print('  Media Type: ${session.mediaType}');
+      print('  Rating Key: ${session.ratingKey}');
+      print('  → Searching Sonarr for: "$title"');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      ZagLogger().debug('Searching Sonarr for: "$title" (year: ${session.year})');
+
       final results = await sonarrState.api!.seriesLookup.get(
         term: title,
       );
@@ -279,14 +293,34 @@ class TautulliActivityTile extends StatelessWidget {
         return;
       }
 
-      // Match by year if available
-      var sonarrSeries = results.first;
-      if (session.year != null && results.length > 1) {
-        sonarrSeries = results.firstWhere(
-          (s) => s.year == session.year,
-          orElse: () => results.first,
-        );
+      // Debug: Print all results
+      print('📊 Sonarr returned ${results.length} results:');
+      for (int i = 0; i < results.length && i < 5; i++) {
+        final result = results[i];
+        print('  [$i] "${result.title}" (${result.year}) - ID: ${result.id}');
       }
+      
+      ZagLogger().debug('Sonarr returned ${results.length} results for "$title"');
+
+      // For TV shows, don't use year matching because Tautulli provides the
+      // episode/season air year (e.g., 2025 for Season 5), not the show's
+      // original year (e.g., 2016). Sonarr's search ranking is more reliable.
+      // Simply use the first result as it's typically the best match.
+      var sonarrSeries = results.first;
+      
+      print('📌 Using first result from Sonarr (most relevant match)');
+      print('   Note: Year matching skipped for TV shows because Tautulli');
+      print('   provides episode air year (${session.year}), not show year.');
+
+
+      // Show which series was matched before navigating
+      final matchedTitle = sonarrSeries.title ?? 'Unknown';
+      final matchedYear = sonarrSeries.year?.toString() ?? 'Unknown Year';
+      
+      print('✅ Selected: "$matchedTitle" ($matchedYear)');
+      print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      ZagLogger().debug('Matched to Sonarr series: "$matchedTitle" ($matchedYear)');
 
       // If series already exists in Sonarr, go to details
       if (sonarrSeries.id != null) {

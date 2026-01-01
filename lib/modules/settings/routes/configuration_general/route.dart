@@ -73,6 +73,7 @@ class _State extends State<ConfigurationGeneralRoute>
   List<Widget> _localization() {
     return [
       ZagHeader(text: 'settings.Localization'.tr()),
+      _languageSelector(),
       _use24HourTime(),
     ];
   }
@@ -363,5 +364,97 @@ class _State extends State<ConfigurationGeneralRoute>
       title: 'Zagreus Pro required',
       message: 'Upgrade to Zagreus Pro to use $featureName.',
     );
+  }
+
+  Widget _languageSelector() {
+    const _db = ZagreusDatabase.SELECTED_LOCALE;
+    return _db.listenableBuilder(
+      builder: (context, _) {
+        final selectedLocale = _db.read() ?? '';
+        final displayName = _getLanguageName(selectedLocale);
+        
+        return ZagBlock(
+          title: 'settings.Language'.tr(),
+          body: [TextSpan(text: displayName)],
+          trailing: const ZagIconButton.arrow(),
+          onTap: () async {
+            final result = await _showLanguagePicker(context, selectedLocale);
+            if (result != null) {
+              _db.update(result);
+              if (result.isEmpty) {
+                // Follow system - let EasyLocalization auto-detect
+                await context.setLocale(context.deviceLocale);
+              } else {
+                // Manual selection
+                final parts = result.split('_');
+                final locale = parts.length == 2
+                    ? Locale(parts[0], parts[1])
+                    : Locale(parts[0]);
+                await context.setLocale(locale);
+              }
+              ZagState.reset(context);
+            }
+          },
+        );
+      },
+    );
+  }
+
+  String _getLanguageName(String localeCode) {
+    switch (localeCode) {
+      case '':
+        return 'Follow System';
+      case 'en':
+        return 'English';
+      case 'de':
+        return 'Deutsch';
+      case 'fr':
+        return 'Français';
+      case 'el':
+        return 'Ελληνικά';
+      case 'tr':
+        return 'Türkçe';
+      case 'zh_Hans':
+        return '简体中文';
+      default:
+        return 'Follow System';
+    }
+  }
+
+  Future<String?> _showLanguagePicker(BuildContext context, String current) async {
+    bool _flag = false;
+    String? _selectedLocale;
+
+    void _setLanguage(String locale) {
+      _flag = true;
+      _selectedLocale = locale;
+      Navigator.of(context).pop();
+    }
+
+    final languages = [
+      ('', 'Follow System'),
+      ('en', 'English'),
+      ('de', 'Deutsch'),
+      ('fr', 'Français'),
+      ('el', 'Ελληνικά'),
+      ('tr', 'Türkçe'),
+      ('zh_Hans', '简体中文'),
+    ];
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'Select Language',
+      content: languages.map((lang) {
+        final isSelected = lang.$1 == current;
+        return ZagDialog.tile(
+          text: lang.$2,
+          icon: isSelected ? Icons.check : null,
+          onTap: () => _setLanguage(lang.$1),
+        );
+      }).toList(),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+
+    return _flag ? _selectedLocale : null;
   }
 }

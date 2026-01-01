@@ -30,7 +30,7 @@
     "search.IndexerAPIKey": "Indexer API Schlüssel",
     "search.IndexerAdded": "Indexer hinzugefügt",
     "search.IndexerDeleted": "Indexer entfernt",
-    "search.IndexerAPIHost": "Indexer API Host",
+    "search.IndexerAPIHost": "Indexer-API-Host",
     "search.IndexerNotFound": "Indexer nicht gefunden",
     "search.NoIndexersFound": "Keinen Indexer gefunden",
     "search.ShowLinks": "Links anzeigen"
