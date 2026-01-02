@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 class ReadarrCatalogueSortButton extends StatelessWidget {
@@ -9,7 +10,7 @@ class ReadarrCatalogueSortButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.sort),
       onPressed: () {},
-      tooltip: 'Sort catalogue',
+      tooltip: 'readarr.SortCatalogue'.tr(),
     );
   }
 }

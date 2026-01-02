@@ -71,7 +71,7 @@ class ReadarrRecentlyDownloadedCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Recently Downloaded Books',
+                  'readarr.RecentlyDownloadedBooks'.tr(),
                   style: (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -88,7 +88,7 @@ class ReadarrRecentlyDownloadedCard extends StatelessWidget {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    'See All',
+                    'readarr.SeeAll'.tr(),
                     style: TextStyle(
                       color: readarrColor,
                       fontSize: 13,
@@ -105,7 +105,7 @@ class ReadarrRecentlyDownloadedCard extends StatelessWidget {
               height: 100,
               child: Center(
                 child: Text(
-                  'No recently downloaded books',
+                  'readarr.NoRecentlyDownloadedBooks'.tr(),
                   style: TextStyle(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     fontSize: 13,

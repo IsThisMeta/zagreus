@@ -29,7 +29,7 @@ class _State extends State<ReadarrDetailsOverview>
         ReadarrDescriptionBlock(
           title: widget.data.title,
           description: widget.data.overview == ''
-              ? 'No Summary Available'
+              ? 'readarr.NoSummaryAvailable'.tr()
               : widget.data.overview,
           uri: widget.data.posterURI(),
           squareImage: true,
@@ -38,31 +38,31 @@ class _State extends State<ReadarrDetailsOverview>
         ZagTableCard(
           content: [
             ZagTableContent(
-              title: 'Path',
+              title: 'readarr.Path'.tr(),
               body: widget.data.path,
             ),
             ZagTableContent(
-              title: 'Quality',
+              title: 'readarr.Quality'.tr(),
               body: widget.data.quality,
             ),
             ZagTableContent(
-              title: 'Metadata',
+              title: 'readarr.Metadata'.tr(),
               body: widget.data.metadata,
             ),
             ZagTableContent(
-              title: 'Books',
+              title: 'readarr.Books'.tr(),
               body: widget.data.books,
             ),
             ZagTableContent(
-              title: 'Size',
+              title: 'readarr.Size'.tr(),
               body: widget.data.sizeOnDisk.asBytes(),
             ),
             ZagTableContent(
-              title: 'Genres',
+              title: 'readarr.Genres'.tr(),
               body: widget.data.genre,
             ),
             ZagTableContent(
-              title: 'Type',
+              title: 'readarr.Type'.tr(),
               body: widget.data.authorType,
             ),
           ],

@@ -60,9 +60,9 @@ class _State extends State<ReadarrDetailsSettingsButton> {
     await _api
         .refreshAuthor(widget.data!.authorID)
         .then((_) => showZagSuccessSnackBar(
-            title: 'Refreshing...', message: widget.data!.title))
-        .catchError((error) =>
-            showZagErrorSnackBar(title: 'Failed to Refresh', error: error));
+            title: 'readarr.Refreshing'.tr(), message: widget.data!.title))
+        .catchError((error) => showZagErrorSnackBar(
+            title: 'readarr.FailedToRefresh'.tr(), error: error));
   }
 
   Future<void> _removeAuthor(BuildContext context) async {
@@ -77,14 +77,15 @@ class _State extends State<ReadarrDetailsSettingsButton> {
               .removeAuthor(widget.data!.authorID, deleteFiles: true)
               .then((_) => widget.remove(true))
               .catchError((error) => showZagErrorSnackBar(
-                  title: 'Failed to Remove (With Data)', error: error));
+                  title: 'readarr.FailedToRemoveWithData'.tr(), error: error));
         }
       } else {
         await _api
             .removeAuthor(widget.data!.authorID)
             .then((_) => widget.remove(false))
             .catchError((error) =>
-                showZagErrorSnackBar(title: 'Failed to Remove', error: error));
+                showZagErrorSnackBar(
+                    title: 'readarr.FailedToRemove'.tr(), error: error));
       }
     }
   }

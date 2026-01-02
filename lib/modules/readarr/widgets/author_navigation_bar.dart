@@ -6,10 +6,10 @@ class ReadarrAuthorNavigationBar extends StatelessWidget {
       List.generate(icons.length, (_) => ScrollController());
   final PageController pageController;
 
-  static const List<String> titles = [
-    'Overview',
-    'Books',
-  ];
+  static List<String> get titles => [
+        'readarr.Overview'.tr(),
+        'readarr.Books'.tr(),
+      ];
 
   static const List<IconData> icons = [
     Icons.subject_rounded,

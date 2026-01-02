@@ -83,8 +83,8 @@ class _State extends State<ReadarrCatalogue>
   Widget _list() {
     if ((_results?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Authors Found',
-        buttonText: 'Refresh',
+        text: 'readarr.NoAuthorsFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: widget.refreshIndicatorKey.currentState?.show,
       );
     return Consumer<ReadarrState>(

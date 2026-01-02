@@ -32,13 +32,13 @@ class _State extends State<ReadarrDescriptionBlock> {
         ZagTextSpan.extended(
           text: widget.description?.isNotEmpty ?? false
               ? widget.description
-              : 'No Summary Available',
+              : 'readarr.NoSummaryAvailable'.tr(),
         ),
       ],
       onTap: () async => ZagDialogs().textPreview(
         context,
         widget.title,
-        widget.description?.trim() ?? 'No Summary Available',
+        widget.description?.trim() ?? 'readarr.NoSummaryAvailable'.tr(),
       ),
       onLongPress: widget.onLongPress,
       customBodyMaxLines: 3,

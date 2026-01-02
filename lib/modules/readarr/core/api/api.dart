@@ -39,23 +39,23 @@ class ReadarrAPI {
       List<ReadarrCatalogueData> entries = [];
       for (var entry in response.data) {
         entries.add(ReadarrCatalogueData(
-          title: entry['authorName'] ?? 'Unknown Author',
-          sortTitle: entry['sortName'] ?? 'Unknown Author',
-          overview: entry['overview'] ?? 'No Summary Available',
-          path: entry['path'] ?? 'Unknown Path',
+          title: entry['authorName'] ?? 'readarr.UnknownAuthor'.tr(),
+          sortTitle: entry['sortName'] ?? 'readarr.UnknownAuthor'.tr(),
+          overview: entry['overview'] ?? 'readarr.NoSummaryAvailable'.tr(),
+          path: entry['path'] ?? 'readarr.UnknownPath'.tr(),
           authorID: entry['id'] ?? 0,
-          authorType: entry['authorType'] ?? 'Unknown Author Type',
+          authorType: entry['authorType'] ?? 'readarr.UnknownAuthorType'.tr(),
           monitored: entry['monitored'] ?? false,
           statistics: entry['statistics'] ?? {},
           qualityProfile: entry['qualityProfileId'] ?? 0,
           metadataProfile: entry['metadataProfileId'] ?? 0,
           quality: entry['qualityProfileId'] != null
               ? _qualities[entry['qualityProfileId']]?.name ??
-                  'Unknown Quality Profile'
+                  'readarr.UnknownQualityProfile'.tr()
               : '',
           metadata: entry['metadataProfileId'] != null
               ? _metadatas[entry['metadataProfileId']]?.name ??
-                  'Unknown Metadata Profile'
+                  'readarr.UnknownMetadataProfile'.tr()
               : '',
           genres: entry['genres'] ?? [],
           links: entry['links'] ?? [],
@@ -83,7 +83,7 @@ class ReadarrAPI {
       for (var entry in response.data) {
         _entries[entry['id']] = ReadarrQualityProfile(
           id: entry['id'] ?? -1,
-          name: entry['name'] ?? 'Unknown Quality Profile',
+          name: entry['name'] ?? 'readarr.UnknownQualityProfile'.tr(),
         );
       }
       return _entries;
@@ -103,7 +103,7 @@ class ReadarrAPI {
       for (var entry in response.data) {
         _entries[entry['id']] = ReadarrMetadataProfile(
           id: entry['id'] ?? -1,
-          name: entry['name'] ?? 'Unknown Metadata Profile',
+          name: entry['name'] ?? 'readarr.UnknownMetadataProfile'.tr(),
         );
       }
       return _entries;
@@ -160,11 +160,12 @@ class ReadarrAPI {
           await getMetadataProfiles();
       Response response = await _dio.get('author/$authorID');
       return ReadarrCatalogueData(
-        title: response.data['authorName'] ?? 'Unknown Author',
-        sortTitle: response.data['sortName'] ?? 'Unknown Author',
-        overview: response.data['overview'] ?? 'No Summary Available',
-        authorType: response.data['authorType'] ?? 'Unknown Author Type',
-        path: response.data['path'] ?? 'Unknown Path',
+        title: response.data['authorName'] ?? 'readarr.UnknownAuthor'.tr(),
+        sortTitle: response.data['sortName'] ?? 'readarr.UnknownAuthor'.tr(),
+        overview: response.data['overview'] ?? 'readarr.NoSummaryAvailable'.tr(),
+        authorType:
+            response.data['authorType'] ?? 'readarr.UnknownAuthorType'.tr(),
+        path: response.data['path'] ?? 'readarr.UnknownPath'.tr(),
         authorID: response.data['id'] ?? 0,
         added: response.data['added'] ?? '',
         monitored: response.data['monitored'] ?? false,
@@ -173,11 +174,11 @@ class ReadarrAPI {
         metadataProfile: response.data['metadataProfileId'] ?? 0,
         quality: response.data['qualityProfileId'] != null
             ? _qualities[response.data['qualityProfileId']]?.name ??
-                'Unknown Quality Profile'
+                'readarr.UnknownQualityProfile'.tr()
             : '',
         metadata: response.data['metadataProfileId'] != null
             ? _metadatas[response.data['metadataProfileId']]?.name ??
-                'Unknown Metadata Profile'
+                'readarr.UnknownMetadataProfile'.tr()
             : '',
         genres: response.data['genres'] ?? [],
         links: response.data['links'] ?? [],
@@ -252,7 +253,7 @@ class ReadarrAPI {
       for (var entry in response.data) {
         entries.add(ReadarrBookData(
           bookID: entry['id'] ?? -1,
-          title: entry['title'] ?? 'Unknown Book Title',
+          title: entry['title'] ?? 'readarr.UnknownBookTitle'.tr(),
           monitored: entry['monitored'] ?? false,
           releaseDate: entry['releaseDate'] ?? '',
           editionCount: entry['editions'] != null
@@ -303,7 +304,7 @@ class ReadarrAPI {
 
       return ReadarrBookData(
         bookID: data['id'] ?? -1,
-        title: data['title'] ?? 'Unknown Book Title',
+        title: data['title'] ?? 'readarr.UnknownBookTitle'.tr(),
         monitored: data['monitored'] ?? false,
         releaseDate: data['releaseDate'] ?? '',
         editionCount: editions?.length ?? 0,
@@ -362,7 +363,7 @@ class ReadarrAPI {
       for (var entry in response.data) {
         _entries.add(ReadarrRootFolder(
           id: entry['id'] ?? -1,
-          path: entry['path'] ?? 'Unknown Root Folder',
+          path: entry['path'] ?? 'readarr.UnknownRootFolder'.tr(),
           freeSpace: entry['freeSpace'] ?? 0,
         ));
       }
@@ -392,9 +393,9 @@ class ReadarrAPI {
           case 'grabbed':
             {
               _entries.add(ReadarrHistoryDataGrabbed(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
-                indexer: entry['data']['indexer'] ?? 'Unknown Indexer',
+                indexer: entry['data']['indexer'] ?? 'readarr.UnknownIndexer'.tr(),
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -403,10 +404,11 @@ class ReadarrAPI {
           case 'bookFileImported':
             {
               _entries.add(ReadarrHistoryDataBookFileImported(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
                 quality:
-                    entry['quality']?['quality']?['name'] ?? 'Unknown Quality',
+                    entry['quality']?['quality']?['name'] ??
+                        'readarr.UnknownQuality'.tr(),
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -415,7 +417,7 @@ class ReadarrAPI {
           case 'bookImportIncomplete':
             {
               _entries.add(ReadarrHistoryDataBookImportIncomplete(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
@@ -425,10 +427,11 @@ class ReadarrAPI {
           case 'downloadImported':
             {
               _entries.add(ReadarrHistoryDataDownloadImported(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
                 quality:
-                    entry['quality']?['quality']?['name'] ?? 'Unknown Quality',
+                    entry['quality']?['quality']?['name'] ??
+                        'readarr.UnknownQuality'.tr(),
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -437,9 +440,9 @@ class ReadarrAPI {
           case 'bookFileDeleted':
             {
               _entries.add(ReadarrHistoryDataBookFileDeleted(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
-                reason: 'File Deleted',
+                reason: entry['data']['reason'] ?? 'readarr.UnknownReason'.tr(),
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -448,7 +451,7 @@ class ReadarrAPI {
           case 'bookFileRenamed':
             {
               _entries.add(ReadarrHistoryDataBookFileRenamed(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
@@ -458,7 +461,7 @@ class ReadarrAPI {
           case 'bookFileRetagged':
             {
               _entries.add(ReadarrHistoryDataBookFileRetagged(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
@@ -468,9 +471,10 @@ class ReadarrAPI {
           default:
             {
               _entries.add(ReadarrHistoryDataGeneric(
-                title: entry['sourceTitle'] ?? 'Unknown Title',
+                title: entry['sourceTitle'] ?? 'readarr.UnknownTitle'.tr(),
                 timestamp: entry['date'] ?? '',
-                eventType: entry['eventType'] ?? 'Unknown Event Type',
+                eventType:
+                    entry['eventType'] ?? 'readarr.UnknownEventType'.tr(),
                 authorID: entry['authorId'] ?? -1,
                 bookID: entry['bookId'] ?? -1,
               ));
@@ -503,8 +507,9 @@ class ReadarrAPI {
       List<ReadarrMissingData> entries = [];
       for (var entry in response.data['records']) {
         entries.add(ReadarrMissingData(
-          title: entry['title'] ?? 'Unknown Title',
-          authorTitle: entry['author']?['authorName'] ?? 'Unknown Author',
+          title: entry['title'] ?? 'readarr.UnknownTitle'.tr(),
+          authorTitle:
+              entry['author']?['authorName'] ?? 'readarr.UnknownAuthor'.tr(),
           authorID: entry['authorId'] ?? -1,
           bookID: entry['id'] ?? -1,
           releaseDate: entry['releaseDate'] ?? '',
@@ -682,10 +687,10 @@ class ReadarrAPI {
       List<ReadarrSearchData> entries = [];
       for (var entry in response.data) {
         entries.add(ReadarrSearchData(
-          title: entry['authorName'] ?? 'Unknown Author Name',
+          title: entry['authorName'] ?? 'readarr.UnknownAuthorName'.tr(),
           foreignAuthorId: entry['foreignAuthorId'] ?? '',
           overview: entry['overview'] == null || entry['overview'] == ''
-              ? 'No Summary Available'
+              ? 'readarr.NoSummaryAvailable'.tr()
               : entry['overview'],
           tadbId: entry['tadbId'] ?? 0,
           links: entry['links'] ?? [],
@@ -746,11 +751,11 @@ class ReadarrAPI {
       List<ReadarrReleaseData> entries = [];
       for (var entry in response.data) {
         entries.add(ReadarrReleaseData(
-          title: entry['title'] ?? 'Unknown Title',
+          title: entry['title'] ?? 'readarr.UnknownTitle'.tr(),
           guid: entry['guid'] ?? '',
-          quality: entry['quality']['quality']['name'] ?? 'Unknown',
-          protocol: entry['protocol'] ?? 'Unknown Protocol',
-          indexer: entry['indexer'] ?? 'Unknown Indexer',
+          quality: entry['quality']['quality']['name'] ?? 'zagreus.Unknown'.tr(),
+          protocol: entry['protocol'] ?? 'readarr.UnknownProtocol'.tr(),
+          indexer: entry['indexer'] ?? 'readarr.UnknownIndexer'.tr(),
           infoUrl: entry['infoUrl'] ?? '',
           approved: entry['approved'] ?? false,
           releaseWeight: entry['releaseWeight'] ?? 0,

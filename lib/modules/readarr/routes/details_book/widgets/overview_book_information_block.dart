@@ -28,7 +28,7 @@ class ReadarrBookDetailsOverviewInformationBlock extends StatelessWidget {
       final firstEdition = book.editionsData!.first;
       final pageCount = firstEdition['pageCount'] as int?;
       if (pageCount != null) {
-        return '$pageCount Pages';
+        return 'readarr.PageCountValue'.tr(args: [pageCount.toString()]);
       }
     }
     return null;
@@ -55,28 +55,28 @@ class ReadarrBookDetailsOverviewInformationBlock extends StatelessWidget {
     return ZagTableCard(
       content: [
         ZagTableContent(
-          title: 'monitoring',
-          body: book.monitored ? 'Yes' : 'No',
+          title: 'readarr.Monitoring'.tr(),
+          body: book.monitored ? 'zagreus.Yes'.tr() : 'zagreus.No'.tr(),
         ),
         ZagTableContent(
-          title: 'author',
+          title: 'readarr.Author'.tr(),
           body: book.authorName,
         ),
         ZagTableContent(title: '', body: ''),
         ZagTableContent(
-          title: 'release date',
+          title: 'readarr.ReleaseDate'.tr(),
           body: _getReleaseDate(),
         ),
         ZagTableContent(
-          title: 'page count',
+          title: 'readarr.PageCount'.tr(),
           body: _getPageCount(),
         ),
         ZagTableContent(
-          title: 'rating',
+          title: 'readarr.Rating'.tr(),
           body: _getRating(),
         ),
         ZagTableContent(
-          title: 'editions',
+          title: 'readarr.Editions'.tr(),
           body: book.editionCount.toString(),
         ),
       ],

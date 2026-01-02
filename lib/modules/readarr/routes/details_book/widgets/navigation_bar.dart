@@ -7,10 +7,10 @@ class ReadarrBookDetailsNavigationBar extends StatefulWidget {
     Icons.subject_rounded,
     Icons.insert_drive_file_outlined,
   ];
-  static const List<String> titles = [
-    'Overview',
-    'Files',
-  ];
+  static List<String> get titles => [
+        'readarr.Overview'.tr(),
+        'readarr.Files'.tr(),
+      ];
   static List<ScrollController> scrollControllers =
       List.generate(icons.length, (_) => ScrollController());
 
@@ -41,7 +41,7 @@ class _State extends State<ReadarrBookDetailsNavigationBar> {
       titles: ReadarrBookDetailsNavigationBar.titles,
       topActions: [
         ZagButton.text(
-          text: 'Search',
+          text: 'readarr.Search'.tr(),
           icon: Icons.search_rounded,
           onTap: widget.onManualSearch,
         ),

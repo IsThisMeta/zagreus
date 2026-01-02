@@ -39,8 +39,8 @@ class _State extends State<AuthorBookReleasesRoute>
   Widget build(BuildContext context) {
     if (widget.bookId <= 0) {
       return InvalidRoutePage(
-        title: 'Releases',
-        message: 'Book Not Found',
+        title: 'readarr.Releases'.tr(),
+        message: 'readarr.BookNotFound'.tr(),
       );
     }
     return ZagScaffold(
@@ -52,7 +52,7 @@ class _State extends State<AuthorBookReleasesRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Releases',
+      title: 'readarr.Releases'.tr(),
       scrollControllers: [scrollController],
       bottom: ReadarrReleasesSearchBar(scrollController: scrollController),
     );
@@ -97,8 +97,8 @@ class _State extends State<AuthorBookReleasesRoute>
   Widget _list() {
     if ((_results?.length ?? 0) == 0) {
       return ZagMessage(
-        text: 'No Releases Found',
-        buttonText: 'Refresh',
+        text: 'readarr.NoReleasesFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState?.show,
       );
     }
@@ -110,7 +110,7 @@ class _State extends State<AuthorBookReleasesRoute>
           return ZagListView(
             controller: scrollController,
             children: [
-              ZagMessage.inList(text: 'No Releases Found'),
+              ZagMessage.inList(text: 'readarr.NoReleasesFound'.tr()),
             ],
           );
         }

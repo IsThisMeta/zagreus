@@ -41,11 +41,13 @@ class ReadarrBookData {
     if (releaseDateObject != null) {
       return DateFormat('MMMM dd, y').format(releaseDateObject!);
     }
-    return 'Unknown Release Date';
+    return 'readarr.UnknownReleaseDate'.tr();
   }
 
   String get editions {
-    return editionCount != 1 ? '$editionCount Editions' : '$editionCount Edition';
+    return editionCount == 1
+        ? 'readarr.EditionCount'.tr(args: [editionCount.toString()])
+        : 'readarr.EditionsCount'.tr(args: [editionCount.toString()]);
   }
 
   String bookCoverURI() {

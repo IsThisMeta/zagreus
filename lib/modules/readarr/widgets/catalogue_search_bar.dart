@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 class ReadarrCatalogueSearchBar extends StatelessWidget {
@@ -8,10 +9,10 @@ class ReadarrCatalogueSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8.0),
-      child: const TextField(
+      child: TextField(
         decoration: InputDecoration(
-          hintText: 'Search catalogue...',
-          border: OutlineInputBorder(),
+          hintText: 'readarr.SearchCatalogue'.tr(),
+          border: const OutlineInputBorder(),
         ),
       ),
     );

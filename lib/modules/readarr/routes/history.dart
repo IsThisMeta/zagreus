@@ -84,8 +84,8 @@ class _State extends State<ReadarrHistory> with AutomaticKeepAliveClientMixin {
   Widget _list() {
     if ((_results?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No History',
-        buttonText: 'Refresh',
+        text: 'readarr.NoHistoryFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: widget.refreshIndicatorKey.currentState?.show,
       );
     return Scrollbar(

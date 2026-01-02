@@ -24,7 +24,7 @@ class _State extends State<ReadarrReleasesSortButton> {
         child: Consumer<ReadarrState>(
           builder: (context, model, _) =>
               ZagPopupMenuButton<ReadarrReleasesSorting>(
-            tooltip: 'Sort Releases',
+            tooltip: 'readarr.SortReleases'.tr(),
             icon: Icons.sort_rounded,
             onSelected: (result) {
               if (model.sortReleasesType == result) {

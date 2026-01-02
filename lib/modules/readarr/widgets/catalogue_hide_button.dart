@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 class ReadarrCatalogueHideButton extends StatelessWidget {
@@ -9,7 +10,7 @@ class ReadarrCatalogueHideButton extends StatelessWidget {
     return IconButton(
       icon: const Icon(Icons.visibility_off),
       onPressed: () {},
-      tooltip: 'Hide unmonitored',
+      tooltip: 'readarr.HideUnmonitored'.tr(),
     );
   }
 }

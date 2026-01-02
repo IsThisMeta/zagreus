@@ -59,8 +59,8 @@ class _State extends State<ReadarrBookDetailsFilesPage>
   Widget _list() {
     if (widget.bookFiles.isEmpty) {
       return ZagMessage(
-        text: 'No Files Found',
-        buttonText: 'Refresh',
+        text: 'readarr.NoFilesFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: () => _refreshKey.currentState?.show(),
       );
     }
@@ -72,18 +72,20 @@ class _State extends State<ReadarrBookDetailsFilesPage>
   }
 
   Widget _fileBlock(ReadarrBookFileData file) {
-    final fileName = file.path?.split('/').last ?? 'Unknown File';
-    final quality = file.quality ?? 'Unknown Quality';
+    final fileName =
+        file.path?.split('/').last ?? 'readarr.UnknownFile'.tr();
+    final quality = file.quality ?? 'readarr.UnknownQuality'.tr();
     final size = _formatFileSize(file.size ?? 0);
     final dateAdded = file.dateAdded != null
         ? DateFormat('MMM dd, yyyy').format(file.dateAdded!)
-        : 'Unknown Date';
+        : 'zagreus.UnknownDate'.tr();
 
     return ZagBlock(
       title: fileName,
       body: [
         ZagTextSpan.extended(
-          text: '$size • $quality\nAdded: $dateAdded',
+          text:
+              '$size • $quality\n${'readarr.DateAdded'.tr()}: $dateAdded',
         ),
       ],
       posterPlaceholderIcon: Icons.insert_drive_file_outlined,

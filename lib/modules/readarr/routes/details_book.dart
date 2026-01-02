@@ -86,7 +86,7 @@ class _State extends State<AuthorBookDetailsRoute> {
 
   PreferredSizeWidget get _appBar {
     return ZagAppBar(
-      title: 'Book Details',
+      title: 'readarr.BookDetails'.tr(),
       pageController: _pageController,
       scrollControllers: ReadarrBookDetailsNavigationBar.scrollControllers,
       actions: _book != null
@@ -170,14 +170,14 @@ class _State extends State<AuthorBookDetailsRoute> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         showZagErrorSnackBar(
-          title: 'Failed to Open',
-          message: 'Could not open Goodreads link',
+          title: 'readarr.FailedToOpen'.tr(),
+          message: 'readarr.CouldNotOpenGoodreadsLink'.tr(),
         );
       }
     } else {
       showZagErrorSnackBar(
-        title: 'No Link Found',
-        message: 'No Goodreads link available for this book',
+        title: 'readarr.NoLinkFound'.tr(),
+        message: 'readarr.NoGoodreadsLinkAvailable'.tr(),
       );
     }
   }
@@ -186,8 +186,8 @@ class _State extends State<AuthorBookDetailsRoute> {
     // TODO: Implement file deletion with confirmation dialog
     // For now, just show a message that it's not implemented
     showZagInfoSnackBar(
-      title: 'Delete Not Implemented',
-      message: 'File deletion API not yet implemented',
+      title: 'readarr.DeleteNotImplemented'.tr(),
+      message: 'readarr.DeleteNotImplementedDescription'.tr(),
     );
 
     // Future implementation:

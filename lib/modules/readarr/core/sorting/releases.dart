@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 enum ReadarrReleasesSorting {
@@ -30,17 +31,17 @@ extension ReadarrReleasesSortingExtension on ReadarrReleasesSorting {
   String get readable {
     switch (this) {
       case ReadarrReleasesSorting.age:
-        return 'Age';
+        return 'readarr.SortAge'.tr();
       case ReadarrReleasesSorting.alphabetical:
-        return 'Alphabetical';
+        return 'readarr.SortAlphabetical'.tr();
       case ReadarrReleasesSorting.seeders:
-        return 'Seeders';
+        return 'readarr.SortSeeders'.tr();
       case ReadarrReleasesSorting.weight:
-        return 'Weight';
+        return 'readarr.SortWeight'.tr();
       case ReadarrReleasesSorting.type:
-        return 'Type';
+        return 'readarr.SortType'.tr();
       case ReadarrReleasesSorting.size:
-        return 'Size';
+        return 'readarr.SortSize'.tr();
     }
   }
 

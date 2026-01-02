@@ -82,8 +82,10 @@ class ReadarrCatalogueData {
 
   String get books {
     return statistics['bookCount'] == 1
-        ? '${statistics['bookCount']} Book'
-        : '${statistics['bookCount']} Books';
+        ? 'readarr.BookCount'
+            .tr(args: [statistics['bookCount'].toString()])
+        : 'readarr.BooksCount'
+            .tr(args: [statistics['bookCount'].toString()]);
   }
 
   String? get goodreadsURI {

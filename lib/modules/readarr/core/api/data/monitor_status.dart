@@ -1,3 +1,5 @@
+import 'package:zagreus/core.dart';
+
 enum ReadarrMonitorStatus {
   ALL,
   FUTURE,
@@ -52,19 +54,19 @@ extension ReadarrMonitorStatusExtension on ReadarrMonitorStatus {
   String get readable {
     switch (this) {
       case ReadarrMonitorStatus.ALL:
-        return 'All Books';
+        return 'readarr.MonitorAllBooks'.tr();
       case ReadarrMonitorStatus.FUTURE:
-        return 'Future Books';
+        return 'readarr.MonitorFutureBooks'.tr();
       case ReadarrMonitorStatus.MISSING:
-        return 'Missing Books';
+        return 'readarr.MonitorMissingBooks'.tr();
       case ReadarrMonitorStatus.EXISTING:
-        return 'Existing Books';
+        return 'readarr.MonitorExistingBooks'.tr();
       case ReadarrMonitorStatus.ONLY_FIRST_BOOK:
-        return 'Only First Book';
+        return 'readarr.MonitorFirstBookOnly'.tr();
       case ReadarrMonitorStatus.ONLY_LAST_BOOK:
-        return 'Only Latest Book';
+        return 'readarr.MonitorLatestBookOnly'.tr();
       case ReadarrMonitorStatus.NONE:
-        return 'None';
+        return 'readarr.MonitorNone'.tr();
     }
   }
 }

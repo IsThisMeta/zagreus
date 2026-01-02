@@ -78,7 +78,7 @@ class _State extends State<ReadarrDetailsBookList>
             controller: ReadarrAuthorNavigationBar.scrollControllers[1],
             itemCount: _results!.isEmpty ? 1 : _results!.length,
             itemBuilder: _results!.isEmpty
-                ? (context, _) => const ZagMessage(text: 'No Books Found')
+                ? (context, _) => ZagMessage(text: 'readarr.NoBooksFound'.tr())
                 : (context, index) => ReadarrDetailsBookTile(
                       data: _results![index],
                       authorId: widget.authorId,

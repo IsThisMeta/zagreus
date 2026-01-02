@@ -1,14 +1,28 @@
+import 'package:zagreus/core.dart';
+
 class ReadarrConstants {
   ReadarrConstants._();
 
-  static const Map EVENT_TYPE_MESSAGES = {
-    'bookFileRenamed': 'Book File Renamed',
-    'bookFileDeleted': 'Book File Deleted',
-    'bookFileImported': 'Book File Imported',
-    'bookFileRetagged': 'Book File Retagged',
-    'bookImportIncomplete': 'Book Import Incomplete',
-    'downloadImported': 'Download Imported',
-    'downloadFailed': 'Download Failed',
-    'grabbed': 'Grabbed From',
-  };
+  static String eventTypeMessage(String eventType) {
+    switch (eventType) {
+      case 'bookFileRenamed':
+        return 'readarr.BookFileRenamed'.tr();
+      case 'bookFileDeleted':
+        return 'readarr.BookFileDeleted'.tr();
+      case 'bookFileImported':
+        return 'readarr.BookFileImported'.tr();
+      case 'bookFileRetagged':
+        return 'readarr.BookFileRetagged'.tr();
+      case 'bookImportIncomplete':
+        return 'readarr.BookImportIncomplete'.tr();
+      case 'downloadImported':
+        return 'readarr.DownloadImported'.tr();
+      case 'downloadFailed':
+        return 'readarr.DownloadFailed'.tr();
+      case 'grabbed':
+        return 'readarr.GrabbedFrom'.tr();
+      default:
+        return eventType;
+    }
+  }
 }

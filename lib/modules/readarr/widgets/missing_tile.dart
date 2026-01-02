@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 class ReadarrMissingTile extends StatelessWidget {
@@ -13,7 +14,7 @@ class ReadarrMissingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(data.title),
-      subtitle: const Text('Missing book placeholder'),
+      subtitle: Text('readarr.MissingBookPlaceholder'.tr()),
       leading: const Icon(Icons.error_outline),
     );
   }

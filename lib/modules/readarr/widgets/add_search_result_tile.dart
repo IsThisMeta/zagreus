@@ -19,7 +19,9 @@ class ReadarrAddSearchResultTile extends StatelessWidget {
         title: data.title,
         disabled: alreadyAdded,
         body: [
-          ZagTextSpan.extended(text: data.overview?.trim() ?? 'No overview available'),
+          ZagTextSpan.extended(
+            text: data.overview?.trim() ?? 'readarr.NoSummaryAvailable'.tr(),
+          ),
         ],
         customBodyMaxLines: 3,
         trailing: alreadyAdded ? null : const ZagIconButton.arrow(),
@@ -31,8 +33,8 @@ class ReadarrAddSearchResultTile extends StatelessWidget {
         onLongPress: () async {
           if (data.goodreadsLink == null || data.goodreadsLink == '')
             showZagInfoSnackBar(
-              title: 'No Goodreads Page Available',
-              message: 'No Goodreads URL is available',
+              title: 'readarr.NoGoodreadsPageAvailable'.tr(),
+              message: 'readarr.NoGoodreadsUrlAvailable'.tr(),
             );
           else
             data.goodreadsLink!.openLink();
@@ -42,7 +44,7 @@ class ReadarrAddSearchResultTile extends StatelessWidget {
   Future<void> _enterDetails(BuildContext context) async {
     if (alreadyAdded) {
       showZagInfoSnackBar(
-        title: 'Author Already in Readarr',
+        title: 'readarr.AuthorAlreadyInReadarr'.tr(),
         message: data.title,
       );
     } else {

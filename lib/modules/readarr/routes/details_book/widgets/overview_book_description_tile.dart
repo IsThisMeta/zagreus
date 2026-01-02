@@ -29,7 +29,7 @@ class ReadarrBookDetailsOverviewDescriptionTile extends StatelessWidget {
       body: [
         ZagTextSpan.extended(
           text: book.overview == null || book.overview!.isEmpty
-              ? 'No description was found for this book.'
+              ? 'readarr.NoDescriptionAvailable'.tr()
               : book.overview,
         ),
       ],

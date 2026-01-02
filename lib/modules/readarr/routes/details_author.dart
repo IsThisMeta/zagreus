@@ -58,7 +58,7 @@ class _State extends State<AuthorDetailsRoute> {
     if (_error) {
       return ZagScaffold(
         scaffoldKey: _scaffoldKey,
-        appBar: ZagAppBar(title: 'Author Details'),
+        appBar: ZagAppBar(title: 'readarr.AuthorDetails'.tr()),
         body: ZagMessage.error(onTap: _fetch),
       );
     }
@@ -85,7 +85,7 @@ class _State extends State<AuthorDetailsRoute> {
     }
 
     return ZagAppBar(
-      title: 'Author Details',
+      title: 'readarr.AuthorDetails'.tr(),
       pageController: _pageController,
       scrollControllers: ReadarrAuthorNavigationBar.scrollControllers,
       actions: _actions,
@@ -107,7 +107,7 @@ class _State extends State<AuthorDetailsRoute> {
 
   Future<void> _removeCallback(bool withData) async {
     showZagSuccessSnackBar(
-      title: 'Author Removed',
+      title: 'readarr.AuthorRemoved'.tr(),
       message: data!.title,
     );
     ZagRouter.router.pop();

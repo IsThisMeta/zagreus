@@ -18,7 +18,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Monitoring Options',
+      title: 'readarr.MonitoringOptions'.tr(),
       content: List.generate(
         ReadarrMonitorStatus.values.length,
         (index) => ZagDialog.tile(
@@ -46,7 +46,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Quality Profile',
+      title: 'readarr.QualityProfile'.tr(),
       content: List.generate(
         qualities.length,
         (index) => ZagDialog.tile(
@@ -74,7 +74,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Metadata Profile',
+      title: 'readarr.MetadataProfile'.tr(),
       content: List.generate(
         metadatas.length,
         (index) => ZagDialog.tile(
@@ -101,22 +101,22 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Remove Author',
+      title: 'readarr.RemoveAuthor'.tr(),
       buttons: [
         ZagDialog.button(
-          text: 'Remove + Files',
+          text: 'readarr.RemoveWithFiles'.tr(),
           textColor: ZagColours.red,
           onPressed: () => _setValues(true, true),
         ),
         ZagDialog.button(
-          text: 'Remove',
+          text: 'zagreus.Remove'.tr(),
           textColor: ZagColours.red,
           onPressed: () => _setValues(true, false),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text: 'Are you sure you want to remove the author from Readarr?'),
+            text: 'readarr.RemoveAuthorConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -133,17 +133,17 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Download Release',
+      title: 'readarr.DownloadRelease'.tr(),
       buttons: <Widget>[
         ZagDialog.button(
-          text: 'Download',
+          text: 'readarr.Download'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
       content: [
         ZagDialog.textContent(
             text:
-                'Are you sure you want to download this release? It has been marked as a rejected release by Readarr.'),
+                'readarr.DownloadReleaseConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -160,16 +160,16 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Search All Missing',
+      title: 'readarr.SearchAllMissing'.tr(),
       buttons: <Widget>[
         ZagDialog.button(
-          text: 'Search',
+          text: 'readarr.Search'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text: 'Are you sure you want to search for all missing books?'),
+            text: 'readarr.SearchAllMissingConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -179,9 +179,9 @@ class ReadarrDialogs {
   static Future<List<dynamic>> editAuthor(
       BuildContext context, ReadarrCatalogueData entry) async {
     List<List<dynamic>> _options = [
-      ['Edit Author', Icons.edit_rounded, 'edit_author'],
-      ['Refresh Author', Icons.refresh_rounded, 'refresh_author'],
-      ['Remove Author', Icons.delete_rounded, 'remove_author'],
+      ['readarr.EditAuthor'.tr(), Icons.edit_rounded, 'edit_author'],
+      ['readarr.RefreshAuthor'.tr(), Icons.refresh_rounded, 'refresh_author'],
+      ['readarr.RemoveAuthor'.tr(), Icons.delete_rounded, 'remove_author'],
     ];
     bool _flag = false;
     String _value = '';
@@ -222,7 +222,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Root Folder',
+      title: 'readarr.RootFolder'.tr(),
       content: List.generate(
         folders.length,
         (index) => ZagDialog.tile(
@@ -247,11 +247,11 @@ class ReadarrDialogs {
 
   static Future<List<dynamic>> globalSettings(BuildContext context) async {
     List<List<dynamic>> _options = [
-      ['View Web GUI', Icons.language_rounded, 'web_gui'],
-      ['Update Library', Icons.autorenew_rounded, 'update_library'],
-      ['Run RSS Sync', Icons.rss_feed_rounded, 'rss_sync'],
-      ['Search All Missing', Icons.search_rounded, 'missing_search'],
-      ['Backup Database', Icons.save_rounded, 'backup'],
+      ['readarr.ViewWebGui'.tr(), Icons.language_rounded, 'web_gui'],
+      ['readarr.UpdateLibrary'.tr(), Icons.autorenew_rounded, 'update_library'],
+      ['readarr.RunRssSync'.tr(), Icons.rss_feed_rounded, 'rss_sync'],
+      ['readarr.SearchAllMissing'.tr(), Icons.search_rounded, 'missing_search'],
+      ['readarr.BackupDatabase'.tr(), Icons.save_rounded, 'backup'],
     ];
     bool _flag = false;
     String _value = '';
@@ -264,7 +264,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Settings',
+      title: 'readarr.Settings'.tr(),
       content: List.generate(
         _options.length,
         (index) => ZagDialog.tile(
@@ -291,7 +291,7 @@ class ReadarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Page',
+      title: 'readarr.Page'.tr(),
       content: List.generate(
         ReadarrNavigationBar.titles.length,
         (index) => ZagDialog.tile(

@@ -80,7 +80,7 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
 
   PreferredSizeWidget get _appBar {
     return ZagAppBar(
-      title: widget.data?.title ?? 'Edit Author',
+      title: widget.data?.title ?? 'readarr.EditAuthor'.tr(),
       scrollControllers: [scrollController],
     );
   }
@@ -120,27 +120,35 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
         controller: scrollController,
         children: <Widget>[
           ZagBlock(
-            title: 'Monitored',
+            title: 'readarr.Monitored'.tr(),
             trailing: ZagSwitch(
               value: _monitored!,
               onChanged: (value) => setState(() => _monitored = value),
             ),
           ),
           ZagBlock(
-            title: 'Quality Profile',
-            body: [TextSpan(text: _qualityProfile?.name ?? 'Unknown')],
+            title: 'readarr.QualityProfile'.tr(),
+            body: [
+              TextSpan(
+                text: _qualityProfile?.name ?? 'readarr.UnknownProfile'.tr(),
+              )
+            ],
             trailing: const ZagIconButton.arrow(),
             onTap: _changeProfile,
           ),
           ZagBlock(
-            title: 'Metadata Profile',
-            body: [TextSpan(text: _metadataProfile?.name ?? 'Unknown')],
+            title: 'readarr.MetadataProfile'.tr(),
+            body: [
+              TextSpan(
+                text: _metadataProfile?.name ?? 'readarr.UnknownProfile'.tr(),
+              )
+            ],
             trailing: const ZagIconButton.arrow(),
             onTap: _changeMetadata,
           ),
           ZagBlock(
-            title: 'Author Path',
-            body: [TextSpan(text: _path ?? 'Unknown')],
+            title: 'readarr.AuthorPath'.tr(),
+            body: [TextSpan(text: _path ?? 'zagreus.Unknown'.tr())],
             trailing: const ZagIconButton.arrow(),
             onTap: _changePath,
           ),
@@ -149,7 +157,11 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
 
   Future<void> _changePath() async {
     Tuple2<bool, String> _values =
-        await ZagDialogs().editText(context, 'Author Path', prefill: _path!);
+        await ZagDialogs().editText(
+      context,
+      'readarr.AuthorPath'.tr(),
+      prefill: _path!,
+    );
     if (_values.item1 && mounted) setState(() => _path = _values.item2);
   }
 
@@ -183,14 +195,14 @@ class _State extends State<AuthorEditRoute> with ZagScrollControllerMixin {
       widget.data!.path = _path;
       widget.data!.monitored = _monitored;
       showZagSuccessSnackBar(
-        title: 'Author Updated',
+        title: 'readarr.AuthorUpdated'.tr(),
         message: widget.data!.title,
       );
       ZagRouter.router.pop();
     }).catchError((error, stack) {
       ZagLogger().error('Failed to update author', error, stack);
       showZagErrorSnackBar(
-        title: 'Failed to Update',
+        title: 'readarr.FailedToUpdate'.tr(),
         error: error,
       );
     });

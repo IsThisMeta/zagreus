@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 class ReadarrSearchResultTile extends StatelessWidget {
@@ -13,7 +14,7 @@ class ReadarrSearchResultTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(data.title),
-      subtitle: const Text('Search result placeholder'),
+      subtitle: Text('readarr.SearchResultPlaceholder'.tr()),
       leading: const Icon(Icons.search),
     );
   }

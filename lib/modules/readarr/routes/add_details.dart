@@ -99,8 +99,8 @@ class _State extends State<AddAuthorDetailsRoute>
   Widget build(BuildContext context) {
     if (widget.data == null) {
       return InvalidRoutePage(
-        title: 'Add Author',
-        message: 'Author Not Found',
+        title: 'readarr.AddAuthor'.tr(),
+        message: 'readarr.AuthorNotFound'.tr(),
       );
     }
 
@@ -117,11 +117,11 @@ class _State extends State<AddAuthorDetailsRoute>
       actions: [
         ZagActionBarCard(
           title: 'zagreus.Options'.tr(),
-          subtitle: 'Start Search For Missing',
+          subtitle: 'readarr.StartSearchFor'.tr(),
           onTap: () async => ReadarrDialogs().addAuthorOptions(context),
         ),
         ZagButton.text(
-          text: 'Add',
+          text: 'zagreus.Add'.tr(),
           icon: Icons.add_rounded,
           onTap: () async => _addAuthor(),
         ),
@@ -163,7 +163,7 @@ class _State extends State<AddAuthorDetailsRoute>
         ReadarrDescriptionBlock(
           title: widget.data?.title ?? 'zagreus.Unknown'.tr(),
           description: (widget.data?.overview ?? '').isEmpty
-              ? 'No Summary Available'
+              ? 'readarr.NoSummaryAvailable'.tr()
               : widget.data!.overview!,
           uri: widget.data?.posterURI ?? '',
           squareImage: true,
@@ -171,8 +171,8 @@ class _State extends State<AddAuthorDetailsRoute>
           onLongPress: () async {
             if (widget.data?.goodreadsLink?.isEmpty ?? true) {
               showZagInfoSnackBar(
-                title: 'No Goodreads Page Available',
-                message: 'No Goodreads URL is available',
+                title: 'readarr.NoGoodreadsPageAvailable'.tr(),
+                message: 'readarr.NoGoodreadsUrlAvailable'.tr(),
               );
             }
             widget.data?.goodreadsLink?.openLink();
@@ -187,9 +187,12 @@ class _State extends State<AddAuthorDetailsRoute>
               orElse: () => null,
             );
             return ZagBlock(
-              title: 'Root Folder',
+              title: 'readarr.RootFolder'.tr(),
               body: [
-                TextSpan(text: folder?.path ?? 'Unknown Root Folder'),
+                TextSpan(
+                  text:
+                      folder?.path ?? 'readarr.UnknownRootFolder'.tr(),
+                ),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -209,7 +212,7 @@ class _State extends State<AddAuthorDetailsRoute>
               ReadarrMonitorStatus.ALL;
 
           return ZagBlock(
-            title: 'Monitor',
+            title: 'readarr.Monitor'.tr(),
             trailing: const ZagIconButton.arrow(),
             body: [TextSpan(text: _status.readable)],
             onTap: () async {
@@ -225,9 +228,11 @@ class _State extends State<AddAuthorDetailsRoute>
                 ReadarrDatabase.ADD_AUTHOR_DEFAULT_QUALITY_PROFILE_ID.read();
             final profile = _qualityProfiles[profileId];
             return ZagBlock(
-              title: 'Quality Profile',
+              title: 'readarr.QualityProfile'.tr(),
               body: [
-                TextSpan(text: profile?.name ?? 'Unknown Profile'),
+                TextSpan(
+                  text: profile?.name ?? 'readarr.UnknownProfile'.tr(),
+                ),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -247,9 +252,11 @@ class _State extends State<AddAuthorDetailsRoute>
                 ReadarrDatabase.ADD_AUTHOR_DEFAULT_METADATA_PROFILE_ID.read();
             final profile = _metadataProfiles[profileId];
             return ZagBlock(
-              title: 'Metadata Profile',
+              title: 'readarr.MetadataProfile'.tr(),
               body: [
-                TextSpan(text: profile?.name ?? 'Unknown Profile'),
+                TextSpan(
+                  text: profile?.name ?? 'readarr.UnknownProfile'.tr(),
+                ),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -287,8 +294,8 @@ class _State extends State<AddAuthorDetailsRoute>
 
     if (rootFolder == null || qualityProfile == null || metadataProfile == null) {
       showZagErrorSnackBar(
-        title: 'Failed to Add Author',
-        message: 'Missing required configuration',
+        title: 'readarr.FailedToAddAuthor'.tr(),
+        message: 'readarr.MissingRequiredConfiguration'.tr(),
       );
       return;
     }
@@ -306,7 +313,7 @@ class _State extends State<AddAuthorDetailsRoute>
     )
         .then((id) {
       showZagSuccessSnackBar(
-        title: 'Author Added',
+        title: 'readarr.AuthorAdded'.tr(),
         message: widget.data!.title,
       );
       ZagRouter.router.pop();
@@ -314,8 +321,8 @@ class _State extends State<AddAuthorDetailsRoute>
       ZagLogger().error('Failed to add author', error, stack);
       showZagErrorSnackBar(
         title: search
-            ? 'Failed to Add Author (With Search)'
-            : 'Failed to Add Author',
+            ? 'readarr.FailedToAddAuthorWithSearch'.tr()
+            : 'readarr.FailedToAddAuthor'.tr(),
         error: error,
       );
     });

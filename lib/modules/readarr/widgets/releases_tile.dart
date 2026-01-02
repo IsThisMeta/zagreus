@@ -97,17 +97,27 @@ class _State extends State<ReadarrReleasesTile> {
   List<ZagTableContent> _tableContent() {
     return [
       ZagTableContent(
-          title: 'source', body: widget.release.protocol.toTitleCase()),
-      ZagTableContent(title: 'age', body: widget.release.ageHours.asTimeAgo()),
-      ZagTableContent(title: 'indexer', body: widget.release.indexer),
-      ZagTableContent(title: 'size', body: widget.release.size.asBytes()),
-      ZagTableContent(title: 'quality', body: widget.release.quality),
+          title: 'readarr.Source'.tr(),
+          body: widget.release.protocol.toTitleCase()),
+      ZagTableContent(
+          title: 'readarr.Age'.tr(),
+          body: widget.release.ageHours.asTimeAgo()),
+      ZagTableContent(
+          title: 'readarr.Indexer'.tr(), body: widget.release.indexer),
+      ZagTableContent(
+          title: 'readarr.Size'.tr(), body: widget.release.size.asBytes()),
+      ZagTableContent(
+          title: 'readarr.Quality'.tr(), body: widget.release.quality),
       if (widget.release.protocol == 'torrent' &&
           widget.release.seeders != null)
-        ZagTableContent(title: 'seeders', body: '${widget.release.seeders}'),
+        ZagTableContent(
+            title: 'readarr.Seeders'.tr(),
+            body: '${widget.release.seeders}'),
       if (widget.release.protocol == 'torrent' &&
           widget.release.leechers != null)
-        ZagTableContent(title: 'leechers', body: '${widget.release.leechers}'),
+        ZagTableContent(
+            title: 'readarr.Leechers'.tr(),
+            body: '${widget.release.leechers}'),
     ];
   }
 
@@ -124,20 +134,20 @@ class _State extends State<ReadarrReleasesTile> {
       ZagButton(
         type: ZagButtonType.TEXT,
         icon: Icons.download_rounded,
-        text: 'Download',
+        text: 'readarr.Download'.tr(),
         onTap: _startDownload,
         loadingState: _downloadState,
       ),
       if (widget.release.infoUrl.isNotEmpty)
         ZagButton.text(
-          text: 'Indexer',
+          text: 'readarr.Indexer'.tr(),
           icon: Icons.info_outline_rounded,
           color: ZagColours.blue,
           onTap: widget.release.infoUrl.openLink,
         ),
       if (!widget.release.approved)
         ZagButton.text(
-          text: 'Rejected',
+          text: 'readarr.Rejected'.tr(),
           icon: Icons.report_outlined,
           color: ZagColours.red,
           onTap: _showWarnings,
@@ -152,15 +162,15 @@ class _State extends State<ReadarrReleasesTile> {
         .downloadRelease(widget.release.guid, widget.release.indexerId)
         .then((_) {
       showZagSuccessSnackBar(
-        title: 'Downloading...',
+        title: 'readarr.Downloading'.tr(),
         message: widget.release.title,
         showButton: true,
-        buttonText: 'Back',
+        buttonText: 'readarr.Back'.tr(),
         buttonOnPressed: ZagRouter().popToRootRoute,
       );
     }).catchError((error, stack) {
       showZagErrorSnackBar(
-        title: 'Failed to Start Downloading',
+        title: 'readarr.FailedToStartDownloading'.tr(),
         error: error,
       );
     });

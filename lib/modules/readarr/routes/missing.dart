@@ -84,8 +84,8 @@ class _State extends State<ReadarrMissing> with AutomaticKeepAliveClientMixin {
   Widget _list() {
     if ((_results?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Missing Books',
-        buttonText: 'Refresh',
+        text: 'readarr.NoMissingBooks'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: widget.refreshIndicatorKey.currentState?.show,
       );
     return Scrollbar(

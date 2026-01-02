@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/readarr.dart';
 
 enum ReadarrCatalogueSorting {
@@ -33,19 +34,19 @@ extension ReadarrCatalogueSortingExtension on ReadarrCatalogueSorting {
   String get readable {
     switch (this) {
       case ReadarrCatalogueSorting.alphabetical:
-        return 'Alphabetical';
+        return 'readarr.SortAlphabetical'.tr();
       case ReadarrCatalogueSorting.dateAdded:
-        return 'Date Added';
+        return 'readarr.SortDateAdded'.tr();
       case ReadarrCatalogueSorting.size:
-        return 'Size';
+        return 'readarr.SortSize'.tr();
       case ReadarrCatalogueSorting.metadata:
-        return 'Metadata Profile';
+        return 'readarr.SortMetadataProfile'.tr();
       case ReadarrCatalogueSorting.quality:
-        return 'Quality Profile';
+        return 'readarr.SortQualityProfile'.tr();
       case ReadarrCatalogueSorting.books:
-        return 'Books';
+        return 'readarr.SortBooks'.tr();
       case ReadarrCatalogueSorting.type:
-        return 'Type';
+        return 'readarr.SortType'.tr();
     }
   }
 
