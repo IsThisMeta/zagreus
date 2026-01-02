@@ -346,6 +346,14 @@ class _State extends State<StudioDiscoverRoute> with ZagScrollControllerMixin {
       gridSpacing = 10.0;
     }
 
+    // Check if titles should be beneath posters
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
+    // Adjust aspect ratio when titles are beneath (need more vertical space for title)
+    final aspectRatio = titlesBeneath ? 0.48 : 0.58;
+
     return RefreshIndicator(
       onRefresh: _loadMovies,
       child: GridView.builder(
@@ -357,7 +365,7 @@ class _State extends State<StudioDiscoverRoute> with ZagScrollControllerMixin {
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: savedColumns,
-          childAspectRatio: 0.58,
+          childAspectRatio: aspectRatio,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -380,108 +388,199 @@ class _State extends State<StudioDiscoverRoute> with ZagScrollControllerMixin {
 
   Widget _movieTile(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
+    final showOverlayTitle = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() && 
+        !(ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+    final showTitleBeneath = (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true) &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade800,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildPosterImage(movie),
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                  ),
-                ),
-              if (inLibrary)
-                Positioned(
-                  top: 14,
-                  right: 14,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: ZagColours.orange,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.6),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+      child: showTitleBeneath
+          ? _buildTileWithTitleBeneath(movie, inLibrary)
+          : _buildTileWithOverlayTitle(movie, inLibrary),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(
+    Map<String, dynamic> movie,
+    bool inLibrary,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade800,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPosterImage(movie),
+                  if (inLibrary)
+                    Positioned(
+                      top: 14,
+                      right: 14,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEC333),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (movie['rating'] != null && movie['rating'] > 0)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      (movie['rating'] ?? 0.0).toStringAsFixed(1),
-                      style: TextStyle(
-                        color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ),
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                  child: AutoSizeText(
-                    movie['title'] ?? 'Unknown',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _getTitleFontSize(context),
-                      fontWeight: FontWeight.bold,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 4,
+                  if (movie['rating'] != null && movie['rating'] > 0)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ],
+                        child: Text(
+                          (movie['rating'] ?? 0.0).toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                    maxLines: _titleMaxLines,
-                    minFontSize: 11,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          movie['title'] ?? 'Unknown',
+          style: TextStyle(
+            fontSize: _getTitleFontSize(context),
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(
+    Map<String, dynamic> movie,
+    bool inLibrary,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade800,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPosterImage(movie),
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.8),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
-            ],
-          ),
+              ),
+            if (inLibrary)
+              Positioned(
+                top: 14,
+                right: 14,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEC333),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (movie['rating'] != null && movie['rating'] > 0)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    (movie['rating'] ?? 0.0).toStringAsFixed(1),
+                    style: TextStyle(
+                      color: _ratingColor((movie['rating'] ?? 0.0).toDouble()),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: AutoSizeText(
+                  movie['title'] ?? 'Unknown',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: _getTitleFontSize(context),
+                    fontWeight: FontWeight.bold,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  maxLines: _titleMaxLines,
+                  minFontSize: 11,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _handleMovieTap(Map<String, dynamic> movie) async {
+    Future<void> _handleMovieTap(Map<String, dynamic> movie) async {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final int? serviceItemId = movie['serviceItemId'] as int?;
     final int? tmdbId = movie['tmdbId'] as int?;

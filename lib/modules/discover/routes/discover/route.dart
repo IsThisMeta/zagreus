@@ -8943,6 +8943,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -9024,8 +9026,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -9044,8 +9046,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -9070,6 +9072,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  show['title'] ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -9166,6 +9182,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedMovieCard(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final double rating = (movie['rating'] ?? 0.0).toDouble();
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -9244,8 +9262,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -9264,8 +9282,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -9290,6 +9308,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie['title'] ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -11905,6 +11937,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _missingMovieCard(RadarrMovie movie) {
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
+
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -11933,8 +11968,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: _buildPosterImage(context, movie),
                     ),
                   ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -11953,8 +11988,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -11979,6 +12014,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie.title ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -12015,6 +12064,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } else {
       releaseText = 'TBA';
     }
+
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -12086,8 +12138,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title gradient overlay (on top of orange gradient)
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title gradient overlay (on top of orange gradient, only when showing overlay title)
+                  if (showOverlayTitle)
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
@@ -12105,8 +12157,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -12131,6 +12183,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie.title ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -12191,6 +12257,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _movieCard(RadarrMovie movie) {
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
+
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -12241,8 +12310,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       child: _buildPosterImage(context, movie),
                     ),
                   ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -12261,8 +12330,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -12287,6 +12356,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie.title ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
