@@ -102,16 +102,4 @@ class DownloadHistoryFetcher {
     }
   }
 
-  static String getPeriodLabel(int weeksLookBack) {
-    switch (weeksLookBack) {
-      case 1:
-        return 'week';
-      case 2:
-        return '2 weeks';
-      case 4:
-        return 'month';
-      default:
-        return '$weeksLookBack weeks';
-    }
-  }
 }

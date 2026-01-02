@@ -80,8 +80,8 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     if (_error != null) {
       return Center(
         child: ZagMessage(
-          text: 'Error loading virtual machines',
-          buttonText: 'Retry',
+          text: 'unraid.ErrorLoadingVirtualMachines'.tr(),
+          buttonText: 'zagreus.Retry'.tr(),
           onTap: _loadData,
         ),
       );
@@ -110,10 +110,11 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     final total = info.totalCount;
 
     return ZagBlock(
-      title: 'VIRTUAL MACHINES',
+      title: 'unraid.VirtualMachinesTitle'.tr(),
       body: [
         TextSpan(
-          text: '$running of $total VMs running',
+          text: 'unraid.VirtualMachinesRunning'
+              .tr(args: [running.toString(), total.toString()]),
           style: const TextStyle(fontSize: 14),
         ),
       ],
@@ -127,8 +128,8 @@ class _UnraidVmPageState extends State<UnraidVmPage>
         vertical: 48,
       ),
       child: ZagMessage(
-        text: 'Add a VM in Unraid to manage it from here.',
-        buttonText: 'Refresh',
+        text: 'unraid.NoVirtualMachines'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _loadData,
       ),
     );
@@ -240,7 +241,7 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
     if (vm.canStart) {
       buttons.add(_buildVmButton(
-        label: 'Start',
+        label: 'unraid.ActionStart'.tr(),
         icon: Icons.play_arrow_rounded,
         color: Colors.green,
         loading: pending == _VmAction.start,
@@ -250,7 +251,7 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
     if (vm.canStop) {
       buttons.add(_buildVmButton(
-        label: 'Stop',
+        label: 'unraid.ActionStop'.tr(),
         icon: Icons.stop_rounded,
         color: ZagColours.red,
         loading: pending == _VmAction.stop,
@@ -260,7 +261,7 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
     if (vm.canReboot) {
       buttons.add(_buildVmButton(
-        label: 'Reboot',
+        label: 'unraid.ActionReboot'.tr(),
         icon: Icons.restart_alt_rounded,
         color: ZagColours.orange,
         loading: pending == _VmAction.reboot,
@@ -327,9 +328,9 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     bool confirmed = false;
 
     final actionLabel = switch (action) {
-      _VmAction.start => 'start',
-      _VmAction.stop => 'stop',
-      _VmAction.reboot => 'reboot',
+      _VmAction.start => 'unraid.ActionStartLower'.tr(),
+      _VmAction.stop => 'unraid.ActionStopLower'.tr(),
+      _VmAction.reboot => 'unraid.ActionRebootLower'.tr(),
     };
 
     final actionColor = switch (action) {
@@ -340,7 +341,7 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Confirm Action',
+      title: 'unraid.ConfirmActionTitle'.tr(),
       buttons: [
         ZagDialog.button(
           text: actionLabel.substring(0, 1).toUpperCase() + actionLabel.substring(1),
@@ -353,7 +354,8 @@ class _UnraidVmPageState extends State<UnraidVmPage>
       ],
       content: [
         ZagDialog.textContent(
-          text: 'Are you sure you want to $actionLabel ${vm.name}?',
+          text:
+              'unraid.ConfirmActionMessage'.tr(args: [actionLabel, vm.name]),
         ),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
@@ -369,8 +371,8 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     final serverState = context.read<UnraidState>();
     if (!serverState.isConfigured) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configure your server connection first.'),
+        SnackBar(
+          content: Text('unraid.ConfigureConnectionFirst'.tr()),
         ),
       );
       return;
@@ -391,9 +393,9 @@ class _UnraidVmPageState extends State<UnraidVmPage>
     );
 
     final actionLabel = switch (action) {
-      _VmAction.start => 'start',
-      _VmAction.stop => 'stop',
-      _VmAction.reboot => 'reboot',
+      _VmAction.start => 'unraid.ActionStartLower'.tr(),
+      _VmAction.stop => 'unraid.ActionStopLower'.tr(),
+      _VmAction.reboot => 'unraid.ActionRebootLower'.tr(),
     };
 
     try {
@@ -413,7 +415,9 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sent $actionLabel command to ${vm.name}.'),
+          content: Text(
+            'unraid.SentCommand'.tr(args: [actionLabel, vm.name]),
+          ),
         ),
       );
 
@@ -429,7 +433,8 @@ class _UnraidVmPageState extends State<UnraidVmPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Unable to $actionLabel VM. Please try again.'),
+          content:
+              Text('unraid.UnableToActionVm'.tr(args: [actionLabel])),
         ),
       );
     } finally {

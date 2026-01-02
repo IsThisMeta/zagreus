@@ -1154,12 +1154,27 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
                 Icons.arrow_drop_down_rounded,
                 color: ZagColours.accentColor(context),
               ),
-              items: const [
-                DropdownMenuItem(value: 1, child: Text('1 week')),
-                DropdownMenuItem(value: 2, child: Text('2 weeks')),
-                DropdownMenuItem(value: 4, child: Text('4 weeks')),
-                DropdownMenuItem(value: 8, child: Text('8 weeks')),
-                DropdownMenuItem(value: 12, child: Text('12 weeks')),
+              items: [
+                DropdownMenuItem(
+                  value: 1,
+                  child: Text('unraid.DownloadHistoryOptionOneWeek'.tr()),
+                ),
+                DropdownMenuItem(
+                  value: 2,
+                  child: Text('unraid.DownloadHistoryOptionTwoWeeks'.tr()),
+                ),
+                DropdownMenuItem(
+                  value: 4,
+                  child: Text('unraid.DownloadHistoryOptionFourWeeks'.tr()),
+                ),
+                DropdownMenuItem(
+                  value: 8,
+                  child: Text('unraid.DownloadHistoryOptionEightWeeks'.tr()),
+                ),
+                DropdownMenuItem(
+                  value: 12,
+                  child: Text('unraid.DownloadHistoryOptionTwelveWeeks'.tr()),
+                ),
               ],
               onChanged: (weeks) {
                 if (weeks == null) return;
@@ -1175,11 +1190,24 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       DownloadHistoryCard(
         chartData: _downloadHistoryChartData,
         totalGB: _downloadHistoryTotalGB,
-        periodLabel:
-            DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
+        periodLabel: _downloadHistoryPeriodLabel(_downloadHistoryWeeks),
       ),
       const SizedBox(height: 24),
     ];
+  }
+
+  String _downloadHistoryPeriodLabel(int weeksLookBack) {
+    switch (weeksLookBack) {
+      case 1:
+        return 'unraid.DownloadHistoryPeriodWeek'.tr();
+      case 2:
+        return 'unraid.DownloadHistoryPeriodTwoWeeks'.tr();
+      case 4:
+        return 'unraid.DownloadHistoryPeriodMonth'.tr();
+      default:
+        return 'unraid.DownloadHistoryPeriodWeeks'
+            .tr(args: [weeksLookBack.toString()]);
+    }
   }
 
   List<Widget> _buildLidarrRecentSection() {

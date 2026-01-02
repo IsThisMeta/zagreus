@@ -349,7 +349,7 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
     // Check if titles should be beneath posters
     final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
     final titlesBeneath = showTitles &&
-        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
 
     // Adjust aspect ratio when titles are beneath (need more vertical space for title)
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -389,9 +389,9 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
   Widget _movieTile(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final showOverlayTitle = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() && 
-        !(ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+        (ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
     final showTitleBeneath = (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true) &&
-        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),

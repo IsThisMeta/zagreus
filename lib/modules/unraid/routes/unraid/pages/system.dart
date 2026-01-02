@@ -127,8 +127,8 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
     if (_error != null) {
       return Center(
         child: ZagMessage(
-          text: 'Error loading server data',
-          buttonText: 'Retry',
+          text: 'unraid.ErrorLoadingServerData'.tr(),
+          buttonText: 'zagreus.Retry'.tr(),
           onTap: _loadData,
         ),
       );
@@ -144,7 +144,10 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
             DownloadHistoryCard(
               chartData: _downloadHistory!.chartData,
               totalGB: _downloadHistory!.totalGB,
-              periodLabel: DownloadHistoryFetcher.getPeriodLabel(_downloadHistoryWeeks),
+              periodLabel: _downloadHistoryPeriodLabel(
+                context,
+                _downloadHistoryWeeks,
+              ),
             ),
           if (_arrayInfo?.capacity != null) _buildArrayCapacityCard(),
           if (_systemInfo?.memory != null || _metricsInfo != null)
@@ -200,7 +203,7 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
           const SizedBox(height: 10),
           // Version
           Text(
-            'Version: ${info.version}',
+            'unraid.ServerVersion'.tr(args: [info.version]),
             style: bodyStyle,
           ),
           const SizedBox(height: 8),
@@ -211,7 +214,7 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
                 Icon(Icons.badge, size: 16, color: iconColor),
                 const SizedBox(width: 8),
                 Text(
-                  'Registration: ${info.formattedRegistrationType}',
+                  'unraid.Registration'.tr(args: [info.formattedRegistrationType]),
                   style: bodyStyle,
                 ),
               ],
@@ -224,7 +227,7 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
               Icon(Icons.schedule, size: 16, color: iconColor),
               const SizedBox(width: 8),
               Text(
-                'Uptime: ${info.os.formattedUptime}',
+                'unraid.Uptime'.tr(args: [info.os.formattedUptime]),
                 style: bodyStyle,
               ),
             ],
@@ -235,9 +238,9 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
             children: [
               Icon(Icons.dns, size: 16, color: iconColor),
               const SizedBox(width: 8),
-              Text('Array: ', style: bodyStyle),
+              Text('unraid.ArrayLabel'.tr(), style: bodyStyle),
               Text(
-                _arrayInfo?.state ?? "Unknown",
+                _arrayInfo?.state ?? 'zagreus.Unknown'.tr(),
                 style: TextStyle(
                   fontSize: 14,
                   color: _arrayInfo?.isStarted == true
@@ -267,13 +270,15 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
       return '${tb.toStringAsFixed(1)} TB';
     }
 
-    final usageLabel =
-        '${percentUsed.toStringAsFixed(0)}% used (${formatStorage(capacity.freeTB)} free)';
+    final usageLabel = 'unraid.UsedFree'.tr(args: [
+      percentUsed.toStringAsFixed(0),
+      formatStorage(capacity.freeTB),
+    ]);
 
     final iconColor = _sectionIconColor(context);
 
     return ZagBlock(
-      title: 'Array capacity',
+      title: 'unraid.ArrayCapacity'.tr(),
       leading: Icon(
         Icons.storage,
         size: 32,
@@ -281,7 +286,7 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
       ),
       body: [
         TextSpan(
-          text: '${formatStorage(capacity.totalTB)} Total',
+          text: 'unraid.TotalStorage'.tr(args: [formatStorage(capacity.totalTB)]),
         ),
         TextSpan(
           text: usageLabel,
@@ -320,11 +325,12 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
     final memoryTypeSpeed = memory?.formattedTypeAndSpeed ?? '';
 
     // Build the memory info string
-    String memoryInfo = 'Total Memory: ';
+    String memoryInfo;
     if (totalGB != null) {
-      memoryInfo += '${totalGB.toStringAsFixed(1)} GB';
+      memoryInfo = 'unraid.TotalMemory'
+          .tr(args: ['${totalGB.toStringAsFixed(1)} GB']);
     } else {
-      memoryInfo += 'Unknown';
+      memoryInfo = 'unraid.TotalMemory'.tr(args: ['zagreus.Unknown'.tr()]);
     }
     if (memoryTypeSpeed.isNotEmpty) {
       memoryInfo += ' $memoryTypeSpeed';
@@ -333,18 +339,18 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
     final progressPercent =
         ((percentUsed ?? 0) / 100).clamp(0.0, 1.0).toDouble();
     final percentLabel = percentUsed != null
-        ? '${percentUsed.toStringAsFixed(0)}% used'
-        : 'Usage unavailable';
+        ? 'unraid.UsagePercent'.tr(args: [percentUsed.toStringAsFixed(0)])
+        : 'unraid.UsageUnavailable'.tr();
     final freeLabel = freeGB != null
-        ? '${freeGB.toStringAsFixed(1)} GB free'
-        : 'Free memory unknown';
+        ? 'unraid.FreeMemory'.tr(args: [freeGB.toStringAsFixed(1)])
+        : 'unraid.FreeMemoryUnknown'.tr();
 
     final usageText = '$percentLabel ($freeLabel)';
 
     final iconColor = _sectionIconColor(context);
 
     return ZagBlock(
-      title: 'Memory',
+      title: 'unraid.Memory'.tr(),
       leading: Icon(
         Icons.memory,
         size: 32,
@@ -377,38 +383,59 @@ class _UnraidSystemPageState extends State<UnraidSystemPage>
     final iconColor = _sectionIconColor(context);
 
     return ZagBlock(
-      title: 'POWER',
+      title: 'unraid.Power'.tr(),
       leading: Icon(
         Icons.power,
         size: 32,
         color: iconColor,
       ),
       body: [
-        TextSpan(text: 'UPS Model: ${ups.displayName}'),
+        TextSpan(text: 'unraid.UpsModel'.tr(args: [ups.displayName])),
         const TextSpan(text: '\n\n'),
-        const TextSpan(text: 'Status: '),
+        TextSpan(text: 'unraid.StatusLabel'.tr()),
         TextSpan(
-          text: ups.status ?? 'Unknown',
+          text: ups.status ?? 'zagreus.Unknown'.tr(),
           style: TextStyle(
             color: ups.isOnline ? Colors.green : Colors.orange,
           ),
         ),
         if (ups.power?.loadPercentage != null) ...[
           const TextSpan(text: '\n'),
-          TextSpan(text: 'UPS load: ${ups.power!.loadPercentage}%'),
+          TextSpan(
+            text: 'unraid.UpsLoad'
+                .tr(args: [ups.power!.loadPercentage.toString()]),
+          ),
         ],
         if (ups.battery?.chargeLevel != null) ...[
           const TextSpan(text: '\n'),
-          TextSpan(text: 'Battery charge: ${ups.battery!.chargeLevel}%'),
+          TextSpan(
+            text: 'unraid.BatteryCharge'
+                .tr(args: [ups.battery!.chargeLevel.toString()]),
+          ),
         ],
         if (ups.battery?.estimatedRuntime != null) ...[
           const TextSpan(text: '\n'),
           TextSpan(
-            text: 'Runtime left: ${ups.battery!.estimatedRuntime} Minutes',
+            text: 'unraid.RuntimeLeftMinutes'
+                .tr(args: [ups.battery!.estimatedRuntime.toString()]),
           ),
         ],
       ],
       customBodyMaxLines: 7,
     );
+  }
+
+  String _downloadHistoryPeriodLabel(BuildContext context, int weeksLookBack) {
+    switch (weeksLookBack) {
+      case 1:
+        return 'unraid.DownloadHistoryPeriodWeek'.tr();
+      case 2:
+        return 'unraid.DownloadHistoryPeriodTwoWeeks'.tr();
+      case 4:
+        return 'unraid.DownloadHistoryPeriodMonth'.tr();
+      default:
+        return 'unraid.DownloadHistoryPeriodWeeks'
+            .tr(args: [weeksLookBack.toString()]);
+    }
   }
 }

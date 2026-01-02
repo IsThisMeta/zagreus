@@ -20,16 +20,16 @@ class DiscoverSectionsEditor extends StatefulWidget {
 class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const List<String> _defaultMovieSections = [
     'recently_downloaded',
-    'recommended',
-    'missing',
     'downloading_soon',
-    'studios',
-    'movie_genres',
-    'popular_movies',
     'recently_released_movies',
+    'popular_movies',
+    'recommended',
     'most_anticipated_movies',
     'popular_people',
     'deep_cuts',
+    'missing',
+    'studios',
+    'movie_genres',
     'magic_movies',
     'magic_movies_cast_crew',
     'magic_people',
@@ -38,12 +38,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const List<String> _defaultTVSections = [
     'recently_downloaded_shows',
     'airing_next',
-    'networks',
-    'tv_genres',
     'popular_tv_shows',
     'trending_new_tv_shows',
     'most_anticipated',
     'up_next',
+    'networks',
+    'tv_genres',
     'magic_shows',
     'magic_shows_cast_crew',
     'magic_people',
@@ -126,7 +126,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
-  bool _titlesBeneathPoster = false;
+  bool _titlesOnPoster = false;
   bool _monochromeRatings = false;
   bool _showHeroCarousel = true;
   bool _hideInLibraryFromHero = false;
@@ -189,11 +189,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showTitles = savedShowTitles;
     }
 
-    // Load titles beneath poster setting
-    final savedTitlesBeneathPoster =
-        ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read();
-    if (savedTitlesBeneathPoster != null) {
-      _titlesBeneathPoster = savedTitlesBeneathPoster;
+    // Load titles on poster setting
+    final savedTitlesOnPoster =
+        ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read();
+    if (savedTitlesOnPoster != null) {
+      _titlesOnPoster = savedTitlesOnPoster;
     }
 
     // Load monochrome ratings setting
@@ -293,7 +293,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
 
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
-    ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.update(_titlesBeneathPoster);
+    ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.update(_titlesOnPoster);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
     ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO
@@ -320,7 +320,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _heroHeight = isTablet ? 550.0 : 370.0;
       _columnsPerRow = isTablet ? 4 : 3;
       _showTitles = true;
-      _titlesBeneathPoster = false;
+      _titlesOnPoster = false;
       _monochromeRatings = false;
       _showHeroCarousel = true;
       _hideInLibraryFromHero = false;
@@ -582,7 +582,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             children: [
               Expanded(
                 child: Text(
-                  'settings.DashboardSettingsTitlesBeneathPoster'.tr(),
+                  'settings.DashboardSettingsTitlesOnPoster'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -593,12 +593,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 ),
               ),
               Switch(
-                value: _titlesBeneathPoster,
+                value: _titlesOnPoster,
                 activeColor: ZagColours.accentColor(context),
                 onChanged: _showTitles
                     ? (value) {
                         setState(() {
-                          _titlesBeneathPoster = value;
+                          _titlesOnPoster = value;
                           _hasChanges = true;
                         });
                         widget.onHasChangesChanged?.call(_hasChanges);
@@ -608,7 +608,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           Text(
-            'settings.DashboardSettingsTitlesBeneathPosterDescription'.tr(),
+            'settings.DashboardSettingsTitlesOnPosterDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark

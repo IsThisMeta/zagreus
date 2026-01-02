@@ -186,7 +186,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Add extra height for titles beneath (approx 58px for 3-line title + spacing)
   double get _posterListHeight {
     final baseHeight = _posterHeight + 8.0;
-    if (_titlesBeneathPoster) {
+    if (_showTitles && !_titlesOnPoster) {
       return baseHeight + 58.0; // Extra space for 3-line title beneath
     }
     return baseHeight;
@@ -511,9 +511,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
 
-  bool get _titlesBeneathPoster =>
-      _showTitles &&
-      (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+  bool get _titlesOnPoster =>
+      ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false;
 
   bool get _showHeroCarousel =>
       ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
@@ -7205,8 +7204,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _popularMovieCard(Map<String, dynamic> movie) {
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = (!_titlesOnPoster);
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -7454,8 +7453,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyReleasedMovieCard(Map<String, dynamic> movie) {
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -7705,8 +7704,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _popularTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -7959,8 +7958,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _trendingNewTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -8943,8 +8942,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -9182,8 +9181,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedMovieCard(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final double rating = (movie['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -11937,8 +11936,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _missingMovieCard(RadarrMovie movie) {
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -12065,8 +12064,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       releaseText = 'TBA';
     }
 
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -12257,8 +12256,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _movieCard(RadarrMovie movie) {
-    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
-    final showTitleBeneath = _titlesBeneathPoster;
+    final showOverlayTitle = _showTitles && _titlesOnPoster;
+    final showTitleBeneath = _showTitles && !_titlesOnPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),

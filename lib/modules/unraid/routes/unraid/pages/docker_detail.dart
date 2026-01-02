@@ -30,7 +30,7 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Docker'),
+        title: Text('unraid.Docker'.tr()),
       ),
       body: ZagListView(
         controller: scrollController,
@@ -51,7 +51,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
       body: [
         TextSpan(
           children: [
-            TextSpan(text: widget.container.image ?? 'Unknown image'),
+            TextSpan(
+              text: widget.container.image ?? 'unraid.UnknownImage'.tr(),
+            ),
             const TextSpan(text: '\n'),
             TextSpan(
               text: widget.container.displayStatus,
@@ -149,7 +151,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              widget.container.isRunning ? 'Stop' : 'Start',
+                              widget.container.isRunning
+                                  ? 'unraid.ActionStop'.tr()
+                                  : 'unraid.ActionStart'.tr(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -177,12 +181,12 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.language, color: Colors.white, size: 20),
-                        SizedBox(width: 8),
+                      children: [
+                        const Icon(Icons.language, color: Colors.white, size: 20),
+                        const SizedBox(width: 8),
                         Text(
-                          'Web UI',
-                          style: TextStyle(
+                          'unraid.ViewWebUi'.tr(),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -210,7 +214,7 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
             vertical: 8,
           ),
           child: Text(
-            'CONTAINER INFORMATION',
+            'unraid.ContainerInformation'.tr(),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -222,21 +226,35 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
         ZagBlock(
           body: [
             TextSpan(
-              children: [
+              children: () {
+                final version = widget.container.version;
+                return [
                 TextSpan(
-                    text: 'State: ${widget.container.state.toUpperCase()}'),
-                const TextSpan(text: '\n'),
-                TextSpan(text: 'Uptime: ${widget.container.uptime ?? "Unknown"}'),
+                    text: 'unraid.ContainerState'.tr(
+                      args: [widget.container.state.toUpperCase()],
+                    )),
                 const TextSpan(text: '\n'),
                 TextSpan(
-                  text:
-                      'Auto Start: ${widget.container.hasAutoStart ? "Enabled" : "Disabled"}',
+                  text: 'unraid.Uptime'.tr(args: [
+                    widget.container.uptime ?? 'zagreus.Unknown'.tr(),
+                  ]),
                 ),
-                if (widget.container.version != null) ...[
+                const TextSpan(text: '\n'),
+                TextSpan(
+                  text: 'unraid.ContainerAutoStart'.tr(args: [
+                    widget.container.hasAutoStart
+                        ? 'unraid.AutoStartEnabled'.tr()
+                        : 'unraid.AutoStartDisabled'.tr(),
+                  ]),
+                ),
+                if (version != null) ...[
                   const TextSpan(text: '\n'),
-                  TextSpan(text: 'Version: ${widget.container.version}'),
+                  TextSpan(
+                    text: 'unraid.VersionLabel'.tr(args: [version]),
+                  ),
                 ],
-              ],
+              ];
+              }(),
             ),
           ],
           customBodyMaxLines: 5,
@@ -245,9 +263,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
             onPressed: () {
               Clipboard.setData(ClipboardData(text: widget.container.id));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Container ID copied to clipboard'),
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: Text('unraid.ContainerIdCopied'.tr()),
+                  duration: const Duration(seconds: 2),
                 ),
               );
             },
@@ -269,7 +287,7 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
             vertical: 8,
           ),
           child: Text(
-            'WEB INTERFACES',
+            'unraid.WebInterfaces'.tr(),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -291,14 +309,19 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
       body: [
         TextSpan(
           children: [
-            TextSpan(text: 'Port $hostPort'),
+            TextSpan(text: 'unraid.Port'.tr(args: [hostPort.toString()])),
             const TextSpan(text: '\n'),
-            TextSpan(text: 'Container: ${port.containerPort} • $protocol'),
+            TextSpan(
+              text: 'unraid.ContainerPort'.tr(args: [
+                port.containerPort.toString(),
+                protocol,
+              ]),
+            ),
           ],
         ),
       ],
       trailing: Text(
-        'Available',
+        'unraid.PortAvailable'.tr(),
         style: TextStyle(
           fontSize: 13,
           color: Colors.green,
@@ -336,8 +359,8 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
           _isStopping = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Configure your server connection first.'),
+          SnackBar(
+            content: Text('unraid.ConfigureConnectionFirst'.tr()),
           ),
         );
       }
@@ -350,7 +373,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
       headers: serverState.headers,
     );
 
-    final actionLabel = isRunning ? 'stop' : 'start';
+    final actionLabel = isRunning
+        ? 'unraid.ActionStopLower'.tr()
+        : 'unraid.ActionStartLower'.tr();
 
     try {
       if (isRunning) {
@@ -363,8 +388,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('Sent $actionLabel command to ${widget.container.name}.'),
+          content: Text(
+            'unraid.SentCommand'.tr(args: [actionLabel, widget.container.name]),
+          ),
         ),
       );
 
@@ -381,7 +407,9 @@ class _DockerContainerDetailPageState extends State<DockerContainerDetailPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Unable to $actionLabel container. Please try again.'),
+          content: Text(
+            'unraid.UnableToActionContainer'.tr(args: [actionLabel]),
+          ),
         ),
       );
 

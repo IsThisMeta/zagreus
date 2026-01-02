@@ -47,7 +47,8 @@ class DownloadHistoryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${_formatSize(totalGB)} in last $periodLabel',
+            'unraid.DownloadHistorySummary'
+                .tr(args: [_formatSize(totalGB), periodLabel]),
             style: (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(
               fontSize: 16, // Slightly smaller
               fontWeight: FontWeight.w600,
@@ -62,7 +63,7 @@ class DownloadHistoryCard extends StatelessWidget {
               height: 100, // Smaller empty state
               child: Center(
                 child: Text(
-                  'No download history available',
+                  'unraid.NoDownloadHistoryAvailable'.tr(),
                   style: TextStyle(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     fontSize: 13,
@@ -81,7 +82,10 @@ class DownloadHistoryCard extends StatelessWidget {
     final entries = chartData.entries.toList();
     
     if (entries.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: Text('No data')));
+      return SizedBox(
+        height: 100,
+        child: Center(child: Text('unraid.NoData'.tr())),
+      );
     }
 
     final maxValue = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);

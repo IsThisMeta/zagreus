@@ -50,10 +50,10 @@ class _State extends State<ConfigurationUnraidRoute>
     const db = ZagreusDatabase.UNRAID_CONFIRM_ACTIONS;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Confirm Unraid Actions',
-        body: const [
+        title: 'unraid.ConfirmActionsTitle'.tr(),
+        body: [
           TextSpan(
-            text: 'Show confirmation dialogue before actions',
+            text: 'unraid.ConfirmActionsDescription'.tr(),
           ),
         ],
         trailing: ZagSwitch(

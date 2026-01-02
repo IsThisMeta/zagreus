@@ -82,8 +82,8 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
     if (_error != null) {
       return Center(
         child: ZagMessage(
-          text: 'Error loading array data',
-          buttonText: 'Retry',
+          text: 'unraid.ErrorLoadingArrayData'.tr(),
+          buttonText: 'zagreus.Retry'.tr(),
           onTap: _loadData,
         ),
       );
@@ -108,17 +108,17 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
     final status = parity.status?.isNotEmpty == true
         ? parity.status!
         : parity.isValid
-            ? 'Parity is valid'
-            : 'Parity has errors';
+            ? 'unraid.ParityStatusValid'.tr()
+            : 'unraid.ParityStatusErrors'.tr();
     final statusColor = parity.isValid ? Colors.green : ZagColours.red;
     final relativeAge = _formatRelativeAge(parity);
     final relativeAgeColor = _relativeAgeColor(parity.daysAgo);
     final duration = parity.formattedDuration.isNotEmpty
         ? parity.formattedDuration
-        : 'Unknown duration';
+        : 'unraid.UnknownDuration'.tr();
     final averageSpeed = parity.formattedSpeed.isNotEmpty
         ? parity.formattedSpeed
-        : 'Unknown';
+        : 'zagreus.Unknown'.tr();
     final errorsCount = parity.errors ?? 0;
     final errorsColor = errorsCount == 0 ? Colors.green : ZagColours.red;
 
@@ -126,7 +126,7 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
     final progress = parity.progress?.clamp(0.0, 100.0);
 
     return ZagBlock(
-      title: 'Parity',
+      title: 'unraid.Parity'.tr(),
       bodyLeadingIcons: [
         Icons.check_circle_rounded,
         Icons.event_rounded,
@@ -168,7 +168,7 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         TextSpan(
-          text: '$errorsCount errors',
+          text: 'unraid.ErrorsCount'.tr(args: [errorsCount.toString()]),
           style: TextStyle(
             fontWeight: FontWeight.w700,
             color: errorsColor,
@@ -185,19 +185,19 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
   String? _formatRelativeAge(UnraidParityInfo parity) {
     final days = parity.daysAgo;
     if (days < 0) return null;
-    if (days == 0) return '(today)';
-    if (days == 1) return '(yesterday)';
-    if (days < 7) return '(${days}d ago)';
+    if (days == 0) return 'unraid.DateToday'.tr();
+    if (days == 1) return 'unraid.DateYesterday'.tr();
+    if (days < 7) return 'unraid.RelativeAgeDays'.tr(args: [days.toString()]);
     if (days < 30) {
       final weeks = (days / 7).floor();
-      return '(${weeks}w ago)';
+      return 'unraid.RelativeAgeWeeks'.tr(args: [weeks.toString()]);
     }
     if (days < 365) {
       final months = (days / 30).floor();
-      return '(${months}mo ago)';
+      return 'unraid.RelativeAgeMonths'.tr(args: [months.toString()]);
     }
     final years = (days / 365).floor();
-    return '(${years}y ago)';
+    return 'unraid.RelativeAgeYears'.tr(args: [years.toString()]);
   }
 
   Color _relativeAgeColor(int days) {
@@ -214,7 +214,8 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Parity check running • ${progress.toStringAsFixed(0)}%',
+          'unraid.ParityCheckRunning'
+              .tr(args: [progress.toStringAsFixed(0)]),
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -249,11 +250,13 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ZagBlock(
-          title: 'Array',
+          title: 'unraid.Array'.tr(),
           body: [
             TextSpan(
-              text:
-                  '${_formatStorage(array.capacity?.usedTB)} used of ${_formatStorage(array.capacity?.totalTB)}',
+              text: 'unraid.UsedOfTotal'.tr(args: [
+                _formatStorage(array.capacity?.usedTB),
+                _formatStorage(array.capacity?.totalTB),
+              ]),
             ),
           ],
         ),
@@ -292,11 +295,13 @@ class _UnraidArrayPageState extends State<UnraidArrayPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ZagBlock(
-          title: 'Cache',
+          title: 'unraid.Cache'.tr(),
           body: [
             TextSpan(
-              text:
-                  '${_formatStorage(totalUsedTB)} used of ${_formatStorage(totalSizeTB)}',
+              text: 'unraid.UsedOfTotal'.tr(args: [
+                _formatStorage(totalUsedTB),
+                _formatStorage(totalSizeTB),
+              ]),
             ),
           ],
         ),

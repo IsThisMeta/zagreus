@@ -244,7 +244,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     // Check if titles should be beneath posters
     final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
     final titlesBeneath = showTitles &&
-        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
 
     // Adjust aspect ratio when titles are beneath
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -275,7 +275,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     final isSelected = _selectedMovieIndices.contains(index);
     final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
     final titlesBeneath = showTitles &&
-        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),

@@ -74,8 +74,8 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
     if (_error != null) {
       return Center(
         child: ZagMessage(
-          text: 'Error loading Docker containers',
-          buttonText: 'Retry',
+          text: 'unraid.ErrorLoadingDockerContainers'.tr(),
+          buttonText: 'zagreus.Retry'.tr(),
           onTap: _loadData,
         ),
       );
@@ -99,10 +99,11 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
     final total = info.totalCount;
 
     return ZagBlock(
-      title: 'DOCKER CONTAINERS',
+      title: 'unraid.DockerContainersTitle'.tr(),
       body: [
         TextSpan(
-          text: '$running of $total containers running',
+          text: 'unraid.DockerContainersRunning'
+              .tr(args: [running.toString(), total.toString()]),
           style: const TextStyle(fontSize: 14),
         ),
       ],
@@ -114,10 +115,10 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
 
     if (containers.isEmpty) {
       return [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Center(
-            child: Text('No containers found'),
+            child: Text('unraid.NoContainersFound'.tr()),
           ),
         ),
       ];
@@ -154,7 +155,8 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
     // Status line
     String statusText = container.displayStatus;
     if (container.isUnhealthy) {
-      statusText = '${container.uptime ?? container.state} (unhealthy)';
+      statusText = '${container.uptime ?? container.state}'
+          '${'unraid.ContainerStatusUnhealthySuffix'.tr()}';
     }
 
     spans.add(TextSpan(
@@ -262,8 +264,8 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
           if (container.autostart != null)
             Text(
               container.hasAutoStart
-                  ? 'Auto Start Enabled'
-                  : 'Auto Start Disabled',
+                  ? 'unraid.AutoStartEnabled'.tr()
+                  : 'unraid.AutoStartDisabled'.tr(),
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade400,
@@ -311,7 +313,9 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
                         ),
                       )
                     : Text(
-                        container.isRunning ? 'Stop Container' : 'Start Container',
+                        container.isRunning
+                            ? 'unraid.StopContainer'.tr()
+                            : 'unraid.StartContainer'.tr(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -333,12 +337,14 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
 
     bool confirmed = false;
 
-    final actionLabel = container.isRunning ? 'stop' : 'start';
+    final actionLabel = container.isRunning
+        ? 'unraid.ActionStopLower'.tr()
+        : 'unraid.ActionStartLower'.tr();
     final actionColor = container.isRunning ? ZagColours.red : Colors.green;
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Confirm Action',
+      title: 'unraid.ConfirmActionTitle'.tr(),
       buttons: [
         ZagDialog.button(
           text: actionLabel.substring(0, 1).toUpperCase() + actionLabel.substring(1),
@@ -351,7 +357,8 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
       ],
       content: [
         ZagDialog.textContent(
-          text: 'Are you sure you want to $actionLabel ${container.name}?',
+          text: 'unraid.ConfirmActionMessage'
+              .tr(args: [actionLabel, container.name]),
         ),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
@@ -364,8 +371,8 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
     final serverState = context.read<UnraidState>();
     if (!serverState.isConfigured) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configure your server connection first.'),
+        SnackBar(
+          content: Text('unraid.ConfigureConnectionFirst'.tr()),
         ),
       );
       return;
@@ -385,7 +392,9 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
       headers: serverState.headers,
     );
 
-    final actionLabel = container.isRunning ? 'stop' : 'start';
+    final actionLabel = container.isRunning
+        ? 'unraid.ActionStopLower'.tr()
+        : 'unraid.ActionStartLower'.tr();
 
     try {
       if (container.isRunning) {
@@ -398,7 +407,9 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sent $actionLabel command to ${container.name}.'),
+          content: Text(
+            'unraid.SentCommand'.tr(args: [actionLabel, container.name]),
+          ),
         ),
       );
 
@@ -419,7 +430,9 @@ class _UnraidDockerPageState extends State<UnraidDockerPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Unable to $actionLabel container. Please try again.'),
+          content: Text(
+            'unraid.UnableToActionContainer'.tr(args: [actionLabel]),
+          ),
         ),
       );
 

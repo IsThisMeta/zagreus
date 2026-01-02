@@ -16,12 +16,12 @@ class UnraidNavigationBar extends StatelessWidget {
     Icons.computer_rounded,
   ];
 
-  static const List<String> titles = [
-    'System',
-    'Array',
-    'Docker',
-    'VMs',
-  ];
+  static List<String> get titles => [
+        'unraid.System'.tr(),
+        'unraid.Array'.tr(),
+        'unraid.Docker'.tr(),
+        'unraid.Vms'.tr(),
+      ];
 
   const UnraidNavigationBar({
     Key? key,
