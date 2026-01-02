@@ -1294,29 +1294,31 @@ class TMDBApi {
       final data = json.decode(response.body);
       final genres = data['genres'] as List? ?? [];
 
-      // Fetch backdrop for each genre
+      // Fetch backdrops for each genre
       final genresWithBackdrops = <Map<String, dynamic>>[];
       for (final genre in genres) {
         final genreId = genre['id'] as int;
         final genreName = genre['name'] as String;
 
-        // Get a few movies from this genre to grab backdrops
+        // Get movies from this genre to collect backdrops
         final moviesResponse = await http.get(
           Uri.parse('$_baseUrl/discover/movie?api_key=$_apiKey&with_genres=$genreId&sort_by=popularity.desc&page=1'),
         );
 
-        String? backdropPath;
+        final List<String> backdrops = [];
         if (moviesResponse.statusCode == 200) {
           final moviesData = json.decode(moviesResponse.body);
           final results = moviesData['results'] as List? ?? [];
-          // Find a movie with a backdrop
-          for (final movie in results.take(10)) {
+          // Collect all backdrop paths (matching Seerr's approach)
+          for (final movie in results) {
             if (movie['backdrop_path'] != null) {
-              backdropPath = movie['backdrop_path'];
-              break;
+              backdrops.add(movie['backdrop_path'] as String);
             }
           }
         }
+
+        // Use the 5th backdrop if available, otherwise use the first
+        final backdropPath = backdrops.length > 4 ? backdrops[4] : (backdrops.isNotEmpty ? backdrops[0] : null);
 
         // Build backdrop URL with duotone filter
         String? backdropUrl;
@@ -1357,29 +1359,31 @@ class TMDBApi {
       final data = json.decode(response.body);
       final genres = data['genres'] as List? ?? [];
 
-      // Fetch backdrop for each genre
+      // Fetch backdrops for each genre
       final genresWithBackdrops = <Map<String, dynamic>>[];
       for (final genre in genres) {
         final genreId = genre['id'] as int;
         final genreName = genre['name'] as String;
 
-        // Get a few shows from this genre to grab backdrops
+        // Get shows from this genre to collect backdrops
         final showsResponse = await http.get(
           Uri.parse('$_baseUrl/discover/tv?api_key=$_apiKey&with_genres=$genreId&sort_by=popularity.desc&page=1'),
         );
 
-        String? backdropPath;
+        final List<String> backdrops = [];
         if (showsResponse.statusCode == 200) {
           final showsData = json.decode(showsResponse.body);
           final results = showsData['results'] as List? ?? [];
-          // Find a show with a backdrop
-          for (final show in results.take(10)) {
+          // Collect all backdrop paths (matching Seerr's approach)
+          for (final show in results) {
             if (show['backdrop_path'] != null) {
-              backdropPath = show['backdrop_path'];
-              break;
+              backdrops.add(show['backdrop_path'] as String);
             }
           }
         }
+
+        // Use the 5th backdrop if available, otherwise use the first
+        final backdropPath = backdrops.length > 4 ? backdrops[4] : (backdrops.isNotEmpty ? backdrops[0] : null);
 
         // Build backdrop URL with duotone filter
         String? backdropUrl;
