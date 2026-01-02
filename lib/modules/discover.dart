@@ -8,3 +8,5 @@ export 'discover/routes/sonarr_airing_next/route.dart';
 export 'discover/routes/tmdb_popular_movies/route.dart';
 export 'discover/routes/network_discover/route.dart';
 export 'discover/routes/studio_discover/route.dart';
+export 'discover/routes/movie_genre_discover/route.dart';
+export 'discover/routes/tv_genre_discover/route.dart';

@@ -24,6 +24,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'missing',
     'downloading_soon',
     'studios',
+    'movie_genres',
     'popular_movies',
     'recently_released_movies',
     'most_anticipated_movies',
@@ -38,6 +39,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'recently_downloaded_shows',
     'airing_next',
     'networks',
+    'tv_genres',
     'popular_tv_shows',
     'trending_new_tv_shows',
     'most_anticipated',
@@ -1053,6 +1055,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.schedule_rounded;
       case 'studios':
         return Icons.movie_filter_rounded;
+      case 'movie_genres':
+        return Icons.category_rounded;
       case 'popular_movies':
       case 'popular_tv_shows':
         return Icons.star_rounded;
@@ -1072,6 +1076,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.live_tv_rounded;
       case 'networks':
         return Icons.tv_rounded;
+      case 'tv_genres':
+        return Icons.category_rounded;
       case 'trending_new_tv_shows':
         return Icons.trending_up_rounded;
       case 'most_anticipated':

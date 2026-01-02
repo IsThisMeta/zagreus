@@ -43,6 +43,7 @@ class DiscoverMoviesSectionData {
   final Widget Function() missingMoviesSection;
   final Widget Function() downloadingSoonSection;
   final Widget Function() studiosSection;
+  final Widget Function() movieGenresSection;
   final Widget Function() popularMoviesSection;
   final Widget Function() recentlyReleasedMoviesSection;
   final Widget Function() mostAnticipatedMoviesSection;
@@ -62,6 +63,7 @@ class DiscoverMoviesSectionData {
     required this.missingMoviesSection,
     required this.downloadingSoonSection,
     required this.studiosSection,
+    required this.movieGenresSection,
     required this.popularMoviesSection,
     required this.recentlyReleasedMoviesSection,
     required this.mostAnticipatedMoviesSection,
@@ -81,6 +83,7 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
     'missing',
     'downloading_soon',
     'studios',
+    'movie_genres',
     'popular_movies',
     'recently_released_movies',
     'most_anticipated_movies',
@@ -156,6 +159,10 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
         ]),
     'studios': () => Column(children: [
           data.studiosSection(),
+          if (data.showTitles) const SizedBox(height: 12)
+        ]),
+    'movie_genres': () => Column(children: [
+          data.movieGenresSection(),
           if (data.showTitles) const SizedBox(height: 12)
         ]),
     'popular_movies': () => Column(children: [

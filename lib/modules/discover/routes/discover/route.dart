@@ -60,6 +60,8 @@ import 'package:zagreus/modules/discover/widgets/sections/up_next_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/airing_next_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/networks_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/studios_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/movie_genres_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/tv_genres_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/quick_buttons_section.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -2889,6 +2891,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             missingMoviesSection: _missingMoviesSection,
             downloadingSoonSection: _downloadingSoonSection,
             studiosSection: _studiosSection,
+            movieGenresSection: _movieGenresSection,
             popularMoviesSection: _popularMoviesSection,
             recentlyReleasedMoviesSection: _recentlyReleasedMoviesSection,
             mostAnticipatedMoviesSection: _mostAnticipatedMoviesSection,
@@ -2940,6 +2943,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             recentlyDownloadedShowsSection: _recentlyDownloadedShowsSection,
             airingNextSection: _airingNextSection,
             networksSection: _networksSection,
+            tvGenresSection: _tvGenresSection,
             popularTvShowsSection: _popularTVShowsSection,
             trendingNewTvShowsSection: _trendingNewTVShowsSection,
             mostAnticipatedShowsSection: _mostAnticipatedShowsSection,
@@ -12288,6 +12292,18 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _studiosSection() {
     return StudiosSection(
+      showTitle: _showTitles,
+    );
+  }
+
+  Widget _movieGenresSection() {
+    return MovieGenresSection(
+      showTitle: _showTitles,
+    );
+  }
+
+  Widget _tvGenresSection() {
+    return TvGenresSection(
       showTitle: _showTitles,
     );
   }

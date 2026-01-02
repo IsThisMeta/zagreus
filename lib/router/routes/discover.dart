@@ -14,7 +14,9 @@ enum DiscoverRoutes with ZagRoutesMixin {
   DOWNLOADING_SOON('downloading_soon'),
   TMDB_POPULAR_MOVIES('tmdb_popular_movies'),
   NETWORK_DISCOVER('network/:networkId'),
-  STUDIO_DISCOVER('studio/:studioId');
+  STUDIO_DISCOVER('studio/:studioId'),
+  MOVIE_GENRE_DISCOVER('movie_genre/:genreId'),
+  TV_GENRE_DISCOVER('tv_genre/:genreId');
 
   @override
   final String path;
@@ -70,6 +72,34 @@ enum DiscoverRoutes with ZagRoutesMixin {
             );
           },
         );
+      case DiscoverRoutes.MOVIE_GENRE_DISCOVER:
+        return route(
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final genreId = int.tryParse(state.pathParameters['genreId'] ?? '') ?? 0;
+            final genreName = extra?['genreName'] as String? ?? 'Genre';
+            final backdropUrl = extra?['backdropUrl'] as String?;
+            return MovieGenreDiscoverRoute(
+              genreId: genreId,
+              genreName: genreName,
+              backdropUrl: backdropUrl,
+            );
+          },
+        );
+      case DiscoverRoutes.TV_GENRE_DISCOVER:
+        return route(
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final genreId = int.tryParse(state.pathParameters['genreId'] ?? '') ?? 0;
+            final genreName = extra?['genreName'] as String? ?? 'Genre';
+            final backdropUrl = extra?['backdropUrl'] as String?;
+            return TvGenreDiscoverRoute(
+              genreId: genreId,
+              genreName: genreName,
+              backdropUrl: backdropUrl,
+            );
+          },
+        );
     }
   }
   
@@ -85,6 +115,8 @@ enum DiscoverRoutes with ZagRoutesMixin {
           DiscoverRoutes.TMDB_POPULAR_MOVIES.routes,
           DiscoverRoutes.NETWORK_DISCOVER.routes,
           DiscoverRoutes.STUDIO_DISCOVER.routes,
+          DiscoverRoutes.MOVIE_GENRE_DISCOVER.routes,
+          DiscoverRoutes.TV_GENRE_DISCOVER.routes,
         ];
       case DiscoverRoutes.RECENTLY_DOWNLOADED:
         return [];
@@ -99,6 +131,10 @@ enum DiscoverRoutes with ZagRoutesMixin {
       case DiscoverRoutes.NETWORK_DISCOVER:
         return [];
       case DiscoverRoutes.STUDIO_DISCOVER:
+        return [];
+      case DiscoverRoutes.MOVIE_GENRE_DISCOVER:
+        return [];
+      case DiscoverRoutes.TV_GENRE_DISCOVER:
         return [];
     }
   }

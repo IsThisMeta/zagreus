@@ -1245,6 +1245,258 @@ class TMDBApi {
     }
   }
 
+  // ===== Genre Discovery Methods =====
+
+  /// Color map for genre backdrop duotone filter (based on Seerr's genreColorMap)
+  static const Map<int, List<String>> genreColorMap = {
+    0: ['1F2937', 'D1D5DB'], // Default black
+    28: ['991B1B', 'FCA5A5'], // Action - red
+    12: ['480c8b', 'a96bef'], // Adventure - darkpurple
+    16: ['032541', '01b4e4'], // Animation - blue
+    35: ['92400E', 'FCD34D'], // Comedy - orange
+    80: ['1F2937', '2864d2'], // Crime - darkblue
+    99: ['065F46', '6EE7B7'], // Documentary - lightgreen
+    18: ['9D174D', 'F9A8D4'], // Drama - pink
+    10751: ['777e0d', 'e4ed55'], // Family - yellow
+    14: ['1F2937', '60A5FA'], // Fantasy - lightblue
+    36: ['92400E', 'FCD34D'], // History - orange
+    27: ['1F2937', 'D1D5DB'], // Horror - black
+    10402: ['032541', '01b4e4'], // Music - blue
+    9648: ['5B21B6', 'C4B5FD'], // Mystery - purple
+    10749: ['9D174D', 'F9A8D4'], // Romance - pink
+    878: ['1F2937', '60A5FA'], // Science Fiction - lightblue
+    10770: ['991B1B', 'FCA5A5'], // TV Movie - red
+    53: ['1F2937', 'D1D5DB'], // Thriller - black
+    10752: ['1F2937', 'F87171'], // War - darkred
+    37: ['92400E', 'FCD34D'], // Western - orange
+    10759: ['480c8b', 'a96bef'], // Action & Adventure - darkpurple
+    10762: ['032541', '01b4e4'], // Kids - blue
+    10763: ['1F2937', 'D1D5DB'], // News - black
+    10764: ['552c01', 'd47c1d'], // Reality - darkorange
+    10765: ['1F2937', '60A5FA'], // Sci-Fi & Fantasy - lightblue
+    10766: ['9D174D', 'F9A8D4'], // Soap - pink
+    10767: ['065F46', '6EE7B7'], // Talk - lightgreen
+    10768: ['1F2937', 'F87171'], // War & Politics - darkred
+  };
+
+  /// Get movie genres list from TMDB
+  static Future<List<Map<String, dynamic>>> getMovieGenres() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/genre/movie/list?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (Movie Genres): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final genres = data['genres'] as List? ?? [];
+
+      // Fetch backdrop for each genre
+      final genresWithBackdrops = <Map<String, dynamic>>[];
+      for (final genre in genres) {
+        final genreId = genre['id'] as int;
+        final genreName = genre['name'] as String;
+
+        // Get a few movies from this genre to grab backdrops
+        final moviesResponse = await http.get(
+          Uri.parse('$_baseUrl/discover/movie?api_key=$_apiKey&with_genres=$genreId&sort_by=popularity.desc&page=1'),
+        );
+
+        String? backdropPath;
+        if (moviesResponse.statusCode == 200) {
+          final moviesData = json.decode(moviesResponse.body);
+          final results = moviesData['results'] as List? ?? [];
+          // Find a movie with a backdrop
+          for (final movie in results.take(10)) {
+            if (movie['backdrop_path'] != null) {
+              backdropPath = movie['backdrop_path'];
+              break;
+            }
+          }
+        }
+
+        // Build backdrop URL with duotone filter
+        String? backdropUrl;
+        if (backdropPath != null) {
+          final colors = genreColorMap[genreId] ?? genreColorMap[0]!;
+          backdropUrl = 'https://image.tmdb.org/t/p/w1280_filter(duotone,${colors[0]},${colors[1]})$backdropPath';
+        }
+
+        genresWithBackdrops.add({
+          'id': genreId,
+          'name': genreName,
+          'backdrop': backdropUrl,
+        });
+      }
+
+      // Sort alphabetically by name
+      genresWithBackdrops.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+
+      return genresWithBackdrops;
+    } catch (e) {
+      print('TMDB API Error (Movie Genres): $e');
+      return [];
+    }
+  }
+
+  /// Get TV genres list from TMDB
+  static Future<List<Map<String, dynamic>>> getTvGenres() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/genre/tv/list?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (TV Genres): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final genres = data['genres'] as List? ?? [];
+
+      // Fetch backdrop for each genre
+      final genresWithBackdrops = <Map<String, dynamic>>[];
+      for (final genre in genres) {
+        final genreId = genre['id'] as int;
+        final genreName = genre['name'] as String;
+
+        // Get a few shows from this genre to grab backdrops
+        final showsResponse = await http.get(
+          Uri.parse('$_baseUrl/discover/tv?api_key=$_apiKey&with_genres=$genreId&sort_by=popularity.desc&page=1'),
+        );
+
+        String? backdropPath;
+        if (showsResponse.statusCode == 200) {
+          final showsData = json.decode(showsResponse.body);
+          final results = showsData['results'] as List? ?? [];
+          // Find a show with a backdrop
+          for (final show in results.take(10)) {
+            if (show['backdrop_path'] != null) {
+              backdropPath = show['backdrop_path'];
+              break;
+            }
+          }
+        }
+
+        // Build backdrop URL with duotone filter
+        String? backdropUrl;
+        if (backdropPath != null) {
+          final colors = genreColorMap[genreId] ?? genreColorMap[0]!;
+          backdropUrl = 'https://image.tmdb.org/t/p/w1280_filter(duotone,${colors[0]},${colors[1]})$backdropPath';
+        }
+
+        genresWithBackdrops.add({
+          'id': genreId,
+          'name': genreName,
+          'backdrop': backdropUrl,
+        });
+      }
+
+      // Sort alphabetically by name
+      genresWithBackdrops.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+
+      return genresWithBackdrops;
+    } catch (e) {
+      print('TMDB API Error (TV Genres): $e');
+      return [];
+    }
+  }
+
+  /// Get movies by genre using TMDB discover endpoint
+  static Future<List<Map<String, dynamic>>> getMoviesByGenre(
+    int genreId, {
+    int page = 1,
+    String? region,
+  }) async {
+    try {
+      String url = '$_baseUrl/discover/movie?api_key=$_apiKey&page=$page';
+      url += '&with_genres=$genreId';
+      url += '&sort_by=popularity.desc';
+
+      if (region != null) {
+        url += '&region=$region';
+      }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (Movies by Genre): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final results = data['results'] as List? ?? [];
+
+      return results.map<Map<String, dynamic>>((item) {
+        return {
+          'id': item['id'],
+          'title': item['title'] ?? 'Unknown',
+          'backdrop': getImageUrl(item['backdrop_path']),
+          'poster': getImageUrl(item['poster_path'], size: 'w342'),
+          'rating': (item['vote_average'] ?? 0).toDouble(),
+          'overview': item['overview'] ?? '',
+          'releaseDate': item['release_date'],
+          'mediaType': 'movie',
+          'tmdbId': item['id'],
+          'popularity': item['popularity'] ?? 0,
+          'inLibrary': false,
+        };
+      }).toList();
+    } catch (e) {
+      print('TMDB API Error (Movies by Genre): $e');
+      return [];
+    }
+  }
+
+  /// Get TV shows by genre using TMDB discover endpoint
+  static Future<List<Map<String, dynamic>>> getTvByGenre(
+    int genreId, {
+    int page = 1,
+    String? region,
+  }) async {
+    try {
+      String url = '$_baseUrl/discover/tv?api_key=$_apiKey&page=$page';
+      url += '&with_genres=$genreId';
+      url += '&sort_by=popularity.desc';
+
+      if (region != null) {
+        url += '&region=$region';
+      }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (TV by Genre): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final results = data['results'] as List? ?? [];
+
+      return results.map<Map<String, dynamic>>((item) {
+        return {
+          'id': item['id'],
+          'title': item['name'] ?? 'Unknown',
+          'backdrop': getImageUrl(item['backdrop_path']),
+          'poster': getImageUrl(item['poster_path'], size: 'w342'),
+          'rating': (item['vote_average'] ?? 0).toDouble(),
+          'overview': item['overview'] ?? '',
+          'firstAirDate': item['first_air_date'],
+          'mediaType': 'tv',
+          'tmdbId': item['id'],
+          'popularity': item['popularity'] ?? 0,
+          'inLibrary': false,
+        };
+      }).toList();
+    } catch (e) {
+      print('TMDB API Error (TV by Genre): $e');
+      return [];
+    }
+  }
+
   static List<Map<String, dynamic>> _getMockPopularPeople() {
     return [
       {
