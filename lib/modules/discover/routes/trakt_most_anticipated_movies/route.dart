@@ -312,106 +312,203 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     final String year = releaseDate != null && releaseDate.length >= 4
         ? releaseDate.substring(0, 4)
         : '';
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade900,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildPoster(movie),
-              // Gradient overlay
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                  ),
-                ),
-              // Library indicator dot - top right
-              if (inLibrary)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 11,
-                    height: 11,
-                    decoration: BoxDecoration(
-                      color: ZagColours.orange,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.6),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+      child: titlesBeneath
+          ? _buildTileWithTitleBeneath(movie, inLibrary, rating, title)
+          : _buildTileWithOverlayTitle(movie, inLibrary, rating, title),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(
+    Map<String, dynamic> movie,
+    bool inLibrary,
+    double rating,
+    String title,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade900,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPoster(movie),
+                  // Library indicator dot - top right
+                  if (inLibrary)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: ZagColours.orange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              // Rating badge - top left
-              if (rating > 0)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      rating.toStringAsFixed(1),
-                      style: TextStyle(
-                        color: _ratingColor(rating),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                ),
-              // Title at bottom
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                  child: AutoSizeText(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _getTitleFontSize(context),
-                      fontWeight: FontWeight.w600,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 4,
-                          offset: Offset(0, 1),
+                  // Rating badge - top left
+                  if (rating > 0)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ],
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor(rating),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                    maxLines: 3,
-                    minFontSize: 11,
-                    overflow: TextOverflow.ellipsis,
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: _getTitleFontSize(context),
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(
+    Map<String, dynamic> movie,
+    bool inLibrary,
+    double rating,
+    String title,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade900,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPoster(movie),
+            // Gradient overlay
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.8),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
-            ],
-          ),
+              ),
+            // Library indicator dot - top right
+            if (inLibrary)
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 11,
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: ZagColours.orange,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Rating badge - top left
+            if (rating > 0)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    rating.toStringAsFixed(1),
+                    style: TextStyle(
+                      color: _ratingColor(rating),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            // Title at bottom
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: AutoSizeText(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: _getTitleFontSize(context),
+                    fontWeight: FontWeight.w600,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  maxLines: 3,
+                  minFontSize: 11,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
         ),
       ),
     );

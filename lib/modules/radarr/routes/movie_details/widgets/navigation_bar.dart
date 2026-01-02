@@ -10,14 +10,16 @@ class RadarrMovieDetailsNavigationBar extends StatefulWidget {
     Icons.history_rounded,
     Icons.person_rounded
   ];
-  static const List<String> titles = [
-    'Overview',
-    'Files',
-    'History',
-    'Cast & Crew'
-  ];
   static List<ScrollController> scrollControllers =
       List.generate(icons.length, (_) => ScrollController());
+
+  static List<String> get titles => [
+        'radarr.Overview'.tr(),
+        'radarr.Files'.tr(),
+        'radarr.History'.tr(),
+        'radarr.CastAndCrew'.tr(),
+      ];
+
   final PageController? pageController;
   final RadarrMovie? movie;
 
@@ -44,13 +46,13 @@ class _State extends State<RadarrMovieDetailsNavigationBar> {
       topActions: [
         ZagButton(
           type: ZagButtonType.TEXT,
-          text: 'Automatic',
+          text: 'radarr.Automatic'.tr(),
           icon: Icons.search_rounded,
           onTap: _automatic,
           loadingState: _automaticLoadingState,
         ),
         ZagButton.text(
-          text: 'Interactive',
+          text: 'radarr.Interactive'.tr(),
           icon: Icons.person_rounded,
           onTap: _manual,
         ),

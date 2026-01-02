@@ -65,8 +65,8 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
   Widget build(BuildContext context) {
     if (widget.movieId <= 0)
       return InvalidRoutePage(
-        title: 'Movie Details',
-        message: 'Movie Not Found',
+        title: 'radarr.MovieDetails'.tr(),
+        message: 'radarr.MovieNotFound'.tr(),
       );
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
@@ -102,7 +102,7 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
     return ZagAppBar(
       pageController: _pageController,
       scrollControllers: RadarrMovieDetailsNavigationBar.scrollControllers,
-      title: 'Movie Details',
+      title: 'radarr.MovieDetails'.tr(),
       actions: _actions,
     );
   }
@@ -137,7 +137,7 @@ class _State extends State<MovieDetailsRoute> with ZagLoadCallbackMixin {
             movie = _findMovie(snapshot.data![2] as List<RadarrMovie>);
             if (movie == null)
               return ZagMessage.goBack(
-                text: 'Movie Not Found',
+                text: 'radarr.MovieNotFound'.tr(),
                 context: context,
               );
             RadarrQualityProfile? qualityProfile = _findQualityProfile(

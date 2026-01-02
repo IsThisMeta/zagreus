@@ -19,36 +19,42 @@ class RadarrMovieDetailsOverviewInformationBlock extends StatelessWidget {
     return ZagTableCard(
       content: [
         ZagTableContent(
-          title: 'monitoring',
-          body: (movie?.monitored ?? false) ? 'Yes' : 'No',
+          title: 'radarr.Monitoring'.tr(),
+          body: (movie?.monitored ?? false)
+              ? 'zagreus.Yes'.tr()
+              : 'zagreus.No'.tr(),
         ),
-        ZagTableContent(title: 'path', body: movie?.path),
-        ZagTableContent(title: 'quality', body: qualityProfile?.name),
+        ZagTableContent(title: 'radarr.Path'.tr(), body: movie?.path),
+        ZagTableContent(title: 'radarr.Quality'.tr(), body: qualityProfile?.name),
         ZagTableContent(
-          title: 'availability',
+          title: 'radarr.Availability'.tr(),
           body: movie?.zagMinimumAvailability,
         ),
-        ZagTableContent(title: 'tags', body: movie?.zagTags(tags)),
+        ZagTableContent(title: 'radarr.Tags'.tr(), body: movie?.zagTags(tags)),
         ZagTableContent(title: '', body: ''),
-        ZagTableContent(title: 'status', body: movie?.status?.readable),
-        ZagTableContent(title: 'in cinemas', body: movie?.zagInCinemasOn()),
+        ZagTableContent(title: 'radarr.Status'.tr(), body: movie?.status?.readable),
         ZagTableContent(
-          title: 'digital',
+          title: 'radarr.InCinemas'.tr(),
+          body: movie?.zagInCinemasOn(),
+        ),
+        ZagTableContent(
+          title: 'radarr.Digital'.tr(),
           body: movie?.zagDigitalReleaseDate(),
         ),
         ZagTableContent(
-          title: 'physical',
+          title: 'radarr.Physical'.tr(),
           body: movie?.zagPhysicalReleaseDate(),
         ),
-        ZagTableContent(title: 'added on', body: movie?.zagDateAdded()),
+        ZagTableContent(title: 'radarr.DateAdded'.tr(), body: movie?.zagDateAdded()),
         ZagTableContent(title: '', body: ''),
-        ZagTableContent(title: 'year', body: movie?.zagYear),
-        ZagTableContent(title: 'studio', body: movie?.zagStudio),
-        ZagTableContent(title: 'runtime', body: movie?.zagRuntime),
-        ZagTableContent(title: 'rating', body: movie?.certification),
-        ZagTableContent(title: 'genres', body: movie?.zagGenres),
+        ZagTableContent(title: 'radarr.Year'.tr(), body: movie?.zagYear),
+        ZagTableContent(title: 'radarr.Studio'.tr(), body: movie?.zagStudio),
+        ZagTableContent(title: 'radarr.Runtime'.tr(), body: movie?.zagRuntime),
+        ZagTableContent(title: 'radarr.Rating'.tr(), body: movie?.certification),
+        ZagTableContent(title: 'radarr.Genres'.tr(), body: movie?.zagGenres),
         ZagTableContent(
-            title: 'alternate titles', body: movie?.zagAlternateTitles),
+            title: 'radarr.AlternateTitles'.tr(),
+            body: movie?.zagAlternateTitles),
       ],
     );
   }

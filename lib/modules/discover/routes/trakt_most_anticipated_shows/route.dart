@@ -458,133 +458,249 @@ class _State extends State<TraktMostAnticipatedShowsRoute>
     final bool inLibrary = show['inLibrary'] ?? false;
     final int index = _shows.indexOf(show);
     final bool isSelected = _selectedShowIndices.contains(index);
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () =>
           _isMultiSelectMode ? _toggleSelection(index) : _handleShowTap(show),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade800,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildPosterImage(show),
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                  ),
-                ),
-              // Library indicator - top right (Sonarr blue dot)
-              if (inLibrary && !_isMultiSelectMode)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 11,
-                    height: 11,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF35C5F4),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.6),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+      child: titlesBeneath
+          ? _buildTileWithTitleBeneath(show, inLibrary, isSelected)
+          : _buildTileWithOverlayTitle(show, inLibrary, isSelected),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(
+    Map<String, dynamic> show,
+    bool inLibrary,
+    bool isSelected,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade800,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPosterImage(show),
+                  // Library indicator - top right (Sonarr blue dot)
+                  if (inLibrary && !_isMultiSelectMode)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF35C5F4),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              // Selection indicator
-              if (_isMultiSelectMode)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected
-                          ? Colors.blue
-                          : Colors.white.withOpacity(0.5),
-                      border: Border.all(
-                        color: isSelected ? Colors.blue : Colors.white,
-                        width: 2,
                       ),
                     ),
-                    child: isSelected
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 16,
-                          )
-                        : null,
-                  ),
-                ),
-              // Rating badge - top left
-              if (show['rating'] != null && show['rating'] > 0)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      (show['rating'] ?? 0.0).toStringAsFixed(1),
-                      style: TextStyle(
-                        color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                  // Selection indicator
+                  if (_isMultiSelectMode)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                          border: Border.all(
+                            color: isSelected ? Colors.blue : Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, color: Colors.white, size: 16)
+                            : null,
                       ),
                     ),
-                  ),
-                ),
-              // Title at bottom
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                  child: AutoSizeText(
-                    show['title'] ?? 'Unknown',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: _getTitleFontSize(context),
-                      fontWeight: FontWeight.w600,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 4,
-                          offset: Offset(0, 1),
+                  // Rating badge - top left
+                  if (show['rating'] != null && show['rating'] > 0)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ],
+                        child: Text(
+                          (show['rating'] ?? 0.0).toStringAsFixed(1),
+                          style: TextStyle(
+                            color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                    maxLines: 3,
-                    minFontSize: 11,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          show['title'] ?? 'Unknown',
+          style: TextStyle(
+            fontSize: _getTitleFontSize(context),
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(
+    Map<String, dynamic> show,
+    bool inLibrary,
+    bool isSelected,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade800,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPosterImage(show),
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.8),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
+            // Library indicator - top right (Sonarr blue dot)
+            if (inLibrary && !_isMultiSelectMode)
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 11,
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF35C5F4),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Selection indicator
+            if (_isMultiSelectMode)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.white.withOpacity(0.5),
+                    border: Border.all(
+                      color: isSelected ? Colors.blue : Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 16,
+                        )
+                      : null,
+                ),
+              ),
+            // Rating badge - top left
+            if (show['rating'] != null && show['rating'] > 0)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    (show['rating'] ?? 0.0).toStringAsFixed(1),
+                    style: TextStyle(
+                      color: _ratingColor((show['rating'] ?? 0.0).toDouble()),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            // Title at bottom
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: AutoSizeText(
+                  show['title'] ?? 'Unknown',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: _getTitleFontSize(context),
+                    fontWeight: FontWeight.w600,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  maxLines: 3,
+                  minFontSize: 11,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
         ),
       ),
     );
