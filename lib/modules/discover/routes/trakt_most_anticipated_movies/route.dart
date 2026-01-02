@@ -263,6 +263,15 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     } else {
       gridSpacing = 10.0;
     }
+    // Check if titles should be beneath posters
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
+    // Adjust aspect ratio when titles are beneath
+    final aspectRatio = titlesBeneath ? 0.48 : 0.58;
+
+
 
     return RefreshIndicator(
       onRefresh: _loadAnticipatedMovies,
@@ -275,7 +284,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: savedColumns,
-          childAspectRatio: 0.58,
+          childAspectRatio: aspectRatio,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),

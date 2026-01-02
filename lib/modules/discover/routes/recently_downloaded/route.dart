@@ -229,6 +229,15 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
         ),
       );
     }
+    // Check if titles should be beneath posters
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
+    // Adjust aspect ratio when titles are beneath (need more vertical space for title)
+    final aspectRatio = titlesBeneath ? 0.48 : 0.58;
+
+
 
     return RefreshIndicator(
       onRefresh: _loadRecentlyDownloaded,
@@ -241,7 +250,7 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: savedColumns,
-          childAspectRatio: 0.58,
+          childAspectRatio: aspectRatio,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -282,6 +291,10 @@ class _MovieGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
     return GestureDetector(
       onTap: () {
         RadarrRoutes.MOVIE.go(
@@ -292,65 +305,102 @@ class _MovieGridItem extends StatelessWidget {
       },
       onLongPress:
           movie.id != null ? () => _showMovieActions(context, movie) : null,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade800,
+      child: titlesBeneath
+          ? _buildTileWithTitleBeneath(context)
+          : _buildTileWithOverlayTitle(context),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade800,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: _buildPosterImage(context, movie),
+            ),
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Poster
-              _buildPosterImage(context, movie),
-              // Gradient for text readability
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.8),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              // Title
-              if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                  child: AutoSizeText(
-                    movie.title ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: titleFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black,
-                          blurRadius: 4,
-                        ),
+        const SizedBox(height: 6),
+        Text(
+          movie.title ?? 'Unknown',
+          style: TextStyle(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade800,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Poster
+            _buildPosterImage(context, movie),
+            // Gradient for text readability
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
                       ],
                     ),
-                    maxLines: 3,
-                    minFontSize: 11,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
                   ),
                 ),
-            ],
-          ),
+              ),
+            // Title
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: AutoSizeText(
+                  movie.title ?? 'Unknown',
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black,
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  maxLines: 3,
+                  minFontSize: 11,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
         ),
       ),
     );

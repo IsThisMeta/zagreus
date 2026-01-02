@@ -19,5 +19,19 @@
     "search.SentNZBData": "Verstuur NZB Gegevens",
     "search.SentTo": "Verzonden naar {}",
     "search.Size": "Grootte",
-    "search.Subcategories": "Subcategorieën"
+    "search.Subcategories": "Subcategorieën",
+    "search.AddIndexer": "Indexer toevoegen",
+    "search.DeleteIndexer": "Indexer verwijderen",
+    "search.EditIndexer": "Indexer bewerken",
+    "search.FailedToAddIndexer": "Indexer toevoegen mislukt",
+    "search.HideAdultCategories": "Volwassen categorieen verbergen",
+    "search.HideAdultCategoriesDescription": "Inhoud voor volwassenen verbergen",
+    "search.IndexerAPIHost": "Indexer API-host",
+    "search.IndexerAPIKey": "Indexer API-sleutel",
+    "search.IndexerAdded": "Indexer toegevoegd",
+    "search.IndexerDeleted": "Indexer verwijderd",
+    "search.IndexerNotFound": "Indexer niet gevonden",
+    "search.NoIndexersFound": "Geen indexers gevonden",
+    "search.ShowLinks": "Links tonen",
+    "search.ShowLinksDescription": "Toon download- en commentaarlinks"
 }

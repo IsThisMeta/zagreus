@@ -1,1 +1,26 @@
-{}
+{
+  "sabnzbd.Age": "Leeftijd",
+  "sabnzbd.All": "Alles",
+  "sabnzbd.Ascending": "Oplopend",
+  "sabnzbd.CategoryDefault": "Standaardcategorie",
+  "sabnzbd.Completed": "Voltooid",
+  "sabnzbd.Descending": "Aflopend",
+  "sabnzbd.Duplicate": "Duplicaat",
+  "sabnzbd.Failed": "Mislukt",
+  "sabnzbd.Force": "Forceer",
+  "sabnzbd.HibernatePC": "PC in sluimerstand",
+  "sabnzbd.High": "Hoog",
+  "sabnzbd.Low": "Laag",
+  "sabnzbd.Name": "Naam",
+  "sabnzbd.None": "Geen",
+  "sabnzbd.Normal": "Normaal",
+  "sabnzbd.Paused": "Gepauzeerd",
+  "sabnzbd.Repair": "Repareren",
+  "sabnzbd.RepairUnpack": "Repareren/Uitpakken",
+  "sabnzbd.RepairUnpackDelete": "Repareren/Uitpakken/Verwijderen",
+  "sabnzbd.Size": "Grootte",
+  "sabnzbd.ShutdownPC": "PC afsluiten",
+  "sabnzbd.ShutdownSABnzbd": "SABnzbd afsluiten",
+  "sabnzbd.StandbyPC": "PC in slaapstand",
+  "sabnzbd.Stop": "Stop"
+}

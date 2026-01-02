@@ -1,1 +1,5 @@
-{}
+{
+  "wake_on_lan.MagicPacketSent": "Magic-pakket verzonden",
+  "wake_on_lan.MagicPacketSentMessage": "Je apparaat zou nu moeten opstarten!",
+  "wake_on_lan.MagicPacketFailedToSend": "Magic-pakket verzenden mislukt"
+}

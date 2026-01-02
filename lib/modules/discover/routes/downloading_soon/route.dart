@@ -284,6 +284,15 @@ class _State extends State<DiscoverDownloadingSoonRoute>
     } else {
       gridSpacing = 10.0;
     }
+    // Check if titles should be beneath posters
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
+    // Adjust aspect ratio when titles are beneath (need more vertical space for title)
+    final aspectRatio = titlesBeneath ? 0.48 : 0.58;
+
+
 
     return RefreshIndicator(
       onRefresh: _loadDownloadingSoon,
@@ -296,7 +305,7 @@ class _State extends State<DiscoverDownloadingSoonRoute>
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: savedColumns,
-          childAspectRatio: 0.58,
+          childAspectRatio: aspectRatio,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -342,6 +351,10 @@ class _MovieGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
     return GestureDetector(
       onTap: () {
         RadarrRoutes.MOVIE.go(
@@ -350,78 +363,154 @@ class _MovieGridItem extends StatelessWidget {
           },
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade800,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Poster
-              _buildPosterImage(context, movie),
-              // Orange gradient overlay for upcoming status
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.orange.withOpacity(0.2),
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                  ),
-                ),
-              ),
-              // Release date badge
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    subtitle.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+      child: titlesBeneath
+          ? _buildTileWithTitleBeneath(context)
+          : _buildTileWithOverlayTitle(context),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade800,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPosterImage(context, movie),
+                  // Orange gradient overlay for upcoming status
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.orange.withOpacity(0.2),
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.5],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              // Title
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: Text(
-                  movie.title ?? 'Unknown',
-                  style: TextStyle(
-                    fontSize: titleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black,
-                        blurRadius: 4,
+                  // Release date badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                    ],
+                      child: Text(
+                        subtitle.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          movie.title ?? 'Unknown',
+          style: TextStyle(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade800,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Poster
+            _buildPosterImage(context, movie),
+            // Orange gradient overlay for upcoming status
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.orange.withOpacity(0.2),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.8),
+                  ],
+                  stops: [0.0, 0.5, 1.0],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Release date badge
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  subtitle.toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            // Title
+            Positioned(
+              bottom: 8,
+              left: 8,
+              right: 8,
+              child: Text(
+                movie.title ?? 'Unknown',
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black,
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );

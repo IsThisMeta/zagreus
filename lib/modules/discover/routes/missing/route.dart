@@ -241,6 +241,15 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
     } else {
       gridSpacing = 10.0;
     }
+    // Check if titles should be beneath posters
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
+
+    // Adjust aspect ratio when titles are beneath
+    final aspectRatio = titlesBeneath ? 0.48 : 0.58;
+
+
 
     return RefreshIndicator(
       onRefresh: _loadMissingMovies,
@@ -252,7 +261,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: savedColumns,
-          childAspectRatio: 0.58,
+          childAspectRatio: aspectRatio,
           crossAxisSpacing: gridSpacing,
           mainAxisSpacing: gridSpacing,
         ),
@@ -264,87 +273,154 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   
   Widget _movieTile(RadarrMovie movie, int index) {
     final isSelected = _selectedMovieIndices.contains(index);
+    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final titlesBeneath = showTitles &&
+        (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade800,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildPosterImage(context, movie),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.85),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: AutoSizeText(
-                  movie.title ?? 'Unknown',
-                  style: TextStyle(
-                    fontSize: _getTitleFontSize(context),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black,
-                        blurRadius: 4,
+      child: titlesBeneath
+          ? _buildTileWithTitleBeneath(movie, isSelected)
+          : _buildTileWithOverlayTitle(movie, isSelected),
+    );
+  }
+
+  Widget _buildTileWithTitleBeneath(
+    RadarrMovie movie,
+    bool isSelected,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.shade800,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildPosterImage(context, movie),
+                  if (_isMultiSelectMode)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                          border: Border.all(
+                            color: isSelected ? Colors.blue : Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, color: Colors.white, size: 20)
+                            : null,
                       ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          movie.title ?? 'Unknown',
+          style: TextStyle(
+            fontSize: _getTitleFontSize(context),
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTileWithOverlayTitle(
+    RadarrMovie movie,
+    bool isSelected,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade800,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildPosterImage(context, movie),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.85),
                     ],
                   ),
-                  maxLines: 3,
-                  minFontSize: 11,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
                 ),
               ),
-              if (_isMultiSelectMode)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
-                      border: Border.all(
-                        color: isSelected ? Colors.blue : Colors.white,
-                        width: 2,
-                      ),
+            ),
+            Positioned(
+              bottom: 8,
+              left: 8,
+              right: 8,
+              child: AutoSizeText(
+                movie.title ?? 'Unknown',
+                style: TextStyle(
+                  fontSize: _getTitleFontSize(context),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black,
+                      blurRadius: 4,
                     ),
-                    child: isSelected
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
-                          )
-                        : null,
-                  ),
+                  ],
                 ),
-            ],
-          ),
+                maxLines: 3,
+                minFontSize: 11,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            if (_isMultiSelectMode)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? Colors.blue : Colors.white.withOpacity(0.5),
+                    border: Border.all(
+                      color: isSelected ? Colors.blue : Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check, color: Colors.white, size: 20)
+                      : null,
+                ),
+              ),
+          ],
         ),
       ),
     );
