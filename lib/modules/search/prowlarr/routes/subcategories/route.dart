@@ -39,7 +39,7 @@ class _State extends State<ProwlarrSubcategoriesPage>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: widget.parentCategory.name ?? 'Subcategories',
+      title: widget.parentCategory.name ?? 'search.Subcategories'.tr(),
       scrollControllers: [scrollController],
       actions: [
         ZagIconButton(
@@ -54,7 +54,7 @@ class _State extends State<ProwlarrSubcategoriesPage>
     final subcategories = widget.parentCategory.subCategories ?? [];
 
     if (subcategories.isEmpty) {
-      return ZagMessage(text: 'No subcategories found');
+      return ZagMessage(text: 'search.NoSubcategoriesFound'.tr());
     }
 
     return ZagListView(
@@ -65,7 +65,9 @@ class _State extends State<ProwlarrSubcategoriesPage>
           title: 'search.AllSubcategories'.tr(),
           body: [
             TextSpan(
-              text: 'Search all ${widget.parentCategory.name}',
+              text: 'search.SearchAllCategory'.tr(
+                args: [widget.parentCategory.name ?? 'zagreus.Unknown'.tr()],
+              ),
             ),
           ],
           trailing: const ZagIconButton.arrow(),
@@ -73,7 +75,7 @@ class _State extends State<ProwlarrSubcategoriesPage>
         ),
         ZagDivider(),
         ...subcategories.map((subcategory) => ZagBlock(
-              title: subcategory.name ?? 'Unknown',
+              title: subcategory.name ?? 'zagreus.Unknown'.tr(),
               body: subcategory.description != null
                   ? [TextSpan(text: subcategory.description!)]
                   : null,

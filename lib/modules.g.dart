@@ -45,6 +45,8 @@ class ZagModuleAdapter extends TypeAdapter<ZagModule> {
         return ZagModule.READARR;
       case 16:
         return ZagModule.BAZARR;
+      case 17:
+        return ZagModule.SSH;
       default:
         return ZagModule.DASHBOARD;
     }
@@ -100,6 +102,9 @@ class ZagModuleAdapter extends TypeAdapter<ZagModule> {
         break;
       case ZagModule.BAZARR:
         writer.writeByte(16);
+        break;
+      case ZagModule.SSH:
+        writer.writeByte(17);
         break;
     }
   }

@@ -2,6 +2,7 @@ import 'package:zagreus/database/models/external_module.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/database/models/log.dart';
 import 'package:zagreus/database/models/profile.dart';
+import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/types/indexer_icon.dart';
 import 'package:zagreus/types/list_view_option.dart';
 import 'package:zagreus/modules.dart';
@@ -190,6 +191,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
     Hive.registerAdapter(ZagLogTypeAdapter());
     Hive.registerAdapter(ZagModuleAdapter());
     Hive.registerAdapter(ZagListViewOptionAdapter());
+    Hive.registerAdapter(SSHConnectionAdapter());
+    Hive.registerAdapter(SSHAuthTypeAdapter());
   }
 
   @override

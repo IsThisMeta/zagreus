@@ -52,8 +52,7 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
 
       if (hasProwlarrOnly && !ZagreusPro.isEnabled) {
         return ZagMessage(
-          text:
-              'Prowlarr search requires Zagreus Pro.\n\nAdd a regular indexer to use search, or upgrade to Pro for Prowlarr access.',
+          text: 'search.ProwlarrProRequiredMessage'.tr(),
         );
       }
 

@@ -90,7 +90,7 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
   }
 
   PreferredSizeWidget _appBar() {
-    String title = widget.categoryName ?? 'Search';
+    String title = widget.categoryName ?? 'search.Search'.tr();
     return ZagAppBar(
       title: title,
       scrollControllers: [scrollController],
@@ -147,9 +147,11 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
           return ZagMessage(
             text: state.searchResults.isEmpty
                 ? 'search.NoResultsFound'.tr()
-                : 'No results match your filters',
+                : 'search.NoResultsMatchFilters'.tr(),
             buttonText:
-                state.filterConfig.hasActiveFilters ? 'Clear Filters' : null,
+                state.filterConfig.hasActiveFilters
+                    ? 'search.ClearFilters'.tr()
+                    : null,
             onTap:
                 state.filterConfig.hasActiveFilters ? state.clearFilters : null,
           );
@@ -197,7 +199,7 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Text(
-                        'Sort By',
+                        'search.SortBy'.tr(),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -391,13 +393,25 @@ class _ProwlarrFilterSheetContentState
   }
 
   String _formatSizeLabel(double value, {bool isMax = false}) {
-    if (isMax && value >= _maxSizeGB) return '${value.toInt()}GB';
-    return '${value.toInt()}GB';
+    final label = value.toInt().toString();
+    return 'search.SizeGB'.tr(args: [label]);
   }
 
   String _formatGrabsLabel(int value, {bool isMax = false}) {
-    if (isMax && value >= _maxGrabs) return '$value Grabs';
-    return '$value Grabs';
+    final label = value.toString();
+    return 'search.GrabsCount'.tr(args: [label]);
+  }
+
+  String _protocolLabel(ProwlarrProtocolFilter protocol) {
+    switch (protocol) {
+      case ProwlarrProtocolFilter.usenet:
+        return 'search.Usenet'.tr();
+      case ProwlarrProtocolFilter.torrent:
+        return 'search.Torrent'.tr();
+      case ProwlarrProtocolFilter.all:
+      default:
+        return 'search.All'.tr();
+    }
   }
 
   @override
@@ -415,7 +429,9 @@ class _ProwlarrFilterSheetContentState
             child: Row(
               children: [
                 Text(
-                  '$filteredCount items filtered',
+                  'search.ItemsFiltered'.tr(
+                    args: [filteredCount.toString()],
+                  ),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -432,7 +448,7 @@ class _ProwlarrFilterSheetContentState
               children: [
                 // Size Range Slider
                 Text(
-                  'Size',
+                  'search.Size'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -463,7 +479,7 @@ class _ProwlarrFilterSheetContentState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Min: ',
+                      'search.MinLabel'.tr(),
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                     Text(
@@ -475,7 +491,7 @@ class _ProwlarrFilterSheetContentState
                     ),
                     const Spacer(),
                     Text(
-                      'Max: ',
+                      'search.MaxLabel'.tr(),
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                     Text(
@@ -491,7 +507,7 @@ class _ProwlarrFilterSheetContentState
 
                 // Grabs Range Slider
                 Text(
-                  'Grabs',
+                  'search.Grabs'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -522,7 +538,7 @@ class _ProwlarrFilterSheetContentState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Min: ',
+                      'search.MinLabel'.tr(),
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                     Text(
@@ -534,7 +550,7 @@ class _ProwlarrFilterSheetContentState
                     ),
                     const Spacer(),
                     Text(
-                      'Max: ',
+                      'search.MaxLabel'.tr(),
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                     Text(
@@ -550,7 +566,7 @@ class _ProwlarrFilterSheetContentState
 
                 // Protocol Segmented Button
                 Text(
-                  'Protocol',
+                  'search.Protocol'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -564,8 +580,7 @@ class _ProwlarrFilterSheetContentState
                   child: Row(
                     children: ProwlarrProtocolFilter.values.map((protocol) {
                       final isSelected = _protocol == protocol;
-                      final label = protocol.name[0].toUpperCase() +
-                          protocol.name.substring(1);
+                      final label = _protocolLabel(protocol);
                       return Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -603,7 +618,7 @@ class _ProwlarrFilterSheetContentState
 
                 // Indexer Dropdown
                 Text(
-                  'Indexer',
+                  'search.Indexer'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -611,7 +626,7 @@ class _ProwlarrFilterSheetContentState
                 const SizedBox(height: 12),
                 if (availableIndexers.isEmpty)
                   Text(
-                    'No indexers available',
+                    'search.NoIndexersAvailable'.tr(),
                     style: TextStyle(color: Colors.grey[600]),
                   )
                 else
@@ -629,16 +644,18 @@ class _ProwlarrFilterSheetContentState
                               : null),
                       hint: Text(
                         _selectedIndexers.isEmpty
-                            ? 'All'
-                            : '${_selectedIndexers.length} selected',
+                            ? 'search.All'.tr()
+                            : 'search.SelectedCount'.tr(
+                                args: [_selectedIndexers.length.toString()],
+                              ),
                       ),
                       isExpanded: true,
                       underline: const SizedBox(),
                       icon: const Icon(Icons.arrow_drop_down),
                       items: [
-                        const DropdownMenuItem<String>(
+                        DropdownMenuItem<String>(
                           value: '__all__',
-                          child: Text('All'),
+                          child: Text('search.All'.tr()),
                         ),
                         ...availableIndexers.map((indexer) {
                           return DropdownMenuItem<String>(
@@ -690,9 +707,9 @@ class _ProwlarrFilterSheetContentState
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'CLEAR FILTERS',
-                  style: TextStyle(
+                child: Text(
+                  'search.ClearFiltersCaps'.tr(),
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),

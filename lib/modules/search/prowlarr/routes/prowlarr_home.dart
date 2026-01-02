@@ -90,10 +90,10 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Prowlarr search is a Pro feature. Upgrade to Pro to search with Prowlarr.',
+                Text(
+                  'search.ProwlarrProFeatureMessage'.tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),
@@ -154,7 +154,7 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
 
   Widget _buildCategoriesView(List<ProwlarrCategory> categories) {
     if (categories.isEmpty) {
-      return ZagMessage(text: 'No categories available');
+      return ZagMessage(text: 'search.NoCategoriesAvailable'.tr());
     }
 
     return ZagListView(
@@ -164,11 +164,17 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
                                  category.subCategories!.isNotEmpty;
 
         return ZagBlock(
-          title: category.name ?? 'Unknown',
+          title: category.name ?? 'zagreus.Unknown'.tr(),
           body: category.description != null
               ? [TextSpan(text: category.description!)]
               : hasSubcategories
-                  ? [TextSpan(text: '${category.subCategories!.length} subcategories')]
+                  ? [
+                      TextSpan(
+                        text: 'search.SubcategoryCount'.tr(
+                          args: [category.subCategories!.length.toString()],
+                        ),
+                      )
+                    ]
                   : null,
           trailing: const ZagIconButton.arrow(),
           onTap: () {

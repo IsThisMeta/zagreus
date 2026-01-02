@@ -26,7 +26,7 @@ class SearchIndexerTile extends StatelessWidget {
           if (!ZagreusPro.isEnabled) {
             showZagInfoSnackBar(
               title: 'zagreus.Pro'.tr(),
-              message: 'Prowlarr search is a Pro feature. Upgrade to Pro to search with Prowlarr.',
+              message: 'search.ProwlarrProFeatureMessage'.tr(),
             );
             return;
           }

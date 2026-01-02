@@ -4,6 +4,7 @@ import 'package:zagreus/database/models/external_module.dart';
 import 'package:zagreus/database/models/indexer.dart';
 import 'package:zagreus/database/models/log.dart';
 import 'package:zagreus/database/models/profile.dart';
+import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/database/table.dart';
 import 'package:zagreus/system/logger.dart';
 import 'package:zagreus/vendor.dart';
@@ -14,7 +15,8 @@ enum ZagBox<T> {
   indexers<ZagIndexer>('indexers'),
   logs<ZagLog>('logs'),
   zagreus<dynamic>('zagreus'),
-  profiles<ZagProfile>('profiles');
+  profiles<ZagProfile>('profiles'),
+  sshConnections<SSHConnection>('ssh_connections');
 
   final String key;
   const ZagBox(this.key);

@@ -62,6 +62,8 @@ import 'package:zagreus/modules/settings/routes/configuration_unraid/pages/conne
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/route.dart';
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/headers.dart';
+import 'package:zagreus/modules/settings/routes/configuration_ssh/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_ssh/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/core/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:zagreus/modules/settings/routes/z_agent/route.dart';
@@ -142,6 +144,8 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_BAZARR('bazarr'),
   CONFIGURATION_BAZARR_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS('headers'),
+  CONFIGURATION_SSH('ssh'),
+  CONFIGURATION_SSH_CONNECTION_DETAILS('connection_details'),
   Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
@@ -333,6 +337,10 @@ enum SettingsRoutes with ZagRoutesMixin {
         return route(
           widget: const ConfigurationBazarrConnectionDetailsHeadersRoute(),
         );
+      case SettingsRoutes.CONFIGURATION_SSH:
+        return route(widget: const ConfigurationSSHRoute());
+      case SettingsRoutes.CONFIGURATION_SSH_CONNECTION_DETAILS:
+        return route(widget: const ConfigurationSSHConnectionDetailsRoute());
       case SettingsRoutes.Z_AGENT:
         return route(widget: const ZAgentSettingsRoute());
       case SettingsRoutes.NOTIFICATIONS:
@@ -395,6 +403,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_UNRAID.routes,
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
           SettingsRoutes.CONFIGURATION_BAZARR.routes,
+          SettingsRoutes.CONFIGURATION_SSH.routes,
           SettingsRoutes.Z_AGENT.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
@@ -511,6 +520,10 @@ enum SettingsRoutes with ZagRoutesMixin {
       case SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS:
         return [
           SettingsRoutes.CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_SSH:
+        return [
+          SettingsRoutes.CONFIGURATION_SSH_CONNECTION_DETAILS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return [

@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
+import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/search.dart';
 
 /// Sort options for Prowlarr search results
 enum ProwlarrSortOption {
-  ageAsc('Age (Newest)', Icons.schedule),
-  ageDesc('Age (Oldest)', Icons.history),
-  seedersDesc('Seeders (Most)', Icons.arrow_upward),
-  seedersAsc('Seeders (Least)', Icons.arrow_downward),
-  leechersDesc('Leechers (Most)', Icons.download),
-  leechersAsc('Leechers (Least)', Icons.upload),
-  sizeDesc('Size (Largest)', Icons.storage),
-  sizeAsc('Size (Smallest)', Icons.sd_storage);
+  ageAsc('search.SortAgeNewest', Icons.schedule),
+  ageDesc('search.SortAgeOldest', Icons.history),
+  seedersDesc('search.SortSeedersMost', Icons.arrow_upward),
+  seedersAsc('search.SortSeedersLeast', Icons.arrow_downward),
+  leechersDesc('search.SortLeechersMost', Icons.download),
+  leechersAsc('search.SortLeechersLeast', Icons.upload),
+  sizeDesc('search.SortSizeLargest', Icons.storage),
+  sizeAsc('search.SortSizeSmallest', Icons.sd_storage);
 
-  final String label;
+  final String labelKey;
   final IconData icon;
 
-  const ProwlarrSortOption(this.label, this.icon);
+  const ProwlarrSortOption(this.labelKey, this.icon);
+
+  String get label => labelKey.tr();
 }
 
 /// Protocol filter options

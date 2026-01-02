@@ -61,6 +61,9 @@ dependencies:
   purchases_flutter: ^9.6.2
   # Home screen widgets
   home_widget: ^0.6.0
+  # SSH terminal
+  dartssh2: ^2.10.0
+  xterm: ^4.0.0
 dev_dependencies:
   # Generators
   build_runner: ^2.4.13

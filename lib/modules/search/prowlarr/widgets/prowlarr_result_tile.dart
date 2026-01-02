@@ -25,7 +25,7 @@ class _State extends State<ProwlarrResultTile> {
   @override
   Widget build(BuildContext context) {
     return ZagExpandableListTile(
-      title: widget.item.title ?? 'Unknown',
+      title: widget.item.title ?? 'zagreus.Unknown'.tr(),
       collapsedSubtitles: [
         _subtitle1(),
         _subtitle2(),
@@ -57,7 +57,7 @@ class _State extends State<ProwlarrResultTile> {
           ),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-        TextSpan(text: widget.item.indexer ?? 'Unknown'),
+        TextSpan(text: widget.item.indexer ?? 'zagreus.Unknown'.tr()),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(text: _formatAge()),
       ],
@@ -88,7 +88,11 @@ class _State extends State<ProwlarrResultTile> {
         ],
         if (!isTorrent && widget.item.grabs != null) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-          TextSpan(text: '${widget.item.grabs} grabs'),
+          TextSpan(
+            text: 'search.GrabsCount'.tr(
+              args: [widget.item.grabs.toString()],
+            ),
+          ),
         ],
       ],
     );
@@ -106,46 +110,46 @@ class _State extends State<ProwlarrResultTile> {
   List<ZagTableContent> _tableContent() {
     return [
       ZagTableContent(
-        title: 'Age',
+        title: 'search.Age'.tr(),
         body: _formatAge(),
       ),
       ZagTableContent(
-        title: 'Indexer',
+        title: 'search.Indexer'.tr(),
         body: widget.item.indexer ?? ZagUI.TEXT_EMDASH,
       ),
       ZagTableContent(
-        title: 'Size',
+        title: 'search.Size'.tr(),
         body: _formatSize(),
       ),
       ZagTableContent(
-        title: 'Protocol',
+        title: 'search.Protocol'.tr(),
         body: _protocolText,
       ),
       if (_isTorrent) ...[
         ZagTableContent(
-          title: 'Seeders',
+          title: 'search.Seeders'.tr(),
           body: '${widget.item.seeders ?? 0}',
         ),
         ZagTableContent(
-          title: 'Leechers',
+          title: 'search.Leechers'.tr(),
           body: '${widget.item.leechers ?? 0}',
         ),
       ],
       if (widget.item.grabs != null)
         ZagTableContent(
-          title: 'Grabs',
+          title: 'search.Grabs'.tr(),
           body: '${widget.item.grabs}',
         ),
       if (widget.item.files != null)
         ZagTableContent(
-          title: 'Files',
+          title: 'search.Files'.tr(),
           body: '${widget.item.files}',
         ),
       if (widget.item.categories?.isNotEmpty ?? false)
         ZagTableContent(
-          title: 'Category',
+          title: 'search.Category'.tr(),
           body: widget.item.categories!
-              .map((c) => c.name ?? 'Unknown')
+              .map((c) => c.name ?? 'zagreus.Unknown'.tr())
               .join(', '),
         ),
     ];
@@ -155,21 +159,21 @@ class _State extends State<ProwlarrResultTile> {
     return [
       ZagButton(
         type: ZagButtonType.TEXT,
-        text: 'Download',
+        text: 'search.Download'.tr(),
         icon: Icons.download_rounded,
         onTap: _startDownload,
         loadingState: _downloadState,
       ),
       if (widget.item.infoUrl?.isNotEmpty ?? false)
         ZagButton.text(
-          text: 'Info',
+          text: 'search.Info'.tr(),
           icon: Icons.info_outline_rounded,
           color: ZagColours.blue,
           onTap: widget.item.infoUrl!.openLink,
         ),
       if (widget.item.commentUrl?.isNotEmpty ?? false)
         ZagButton.text(
-          text: 'Comments',
+          text: 'search.Comments'.tr(),
           icon: Icons.comment_outlined,
           color: ZagColours.blueGrey,
           onTap: widget.item.commentUrl!.openLink,
@@ -180,8 +184,8 @@ class _State extends State<ProwlarrResultTile> {
   Future<void> _startDownload() async {
     if (widget.item.guid == null || widget.item.indexerId == null) {
       showZagInfoSnackBar(
-        title: 'Error',
-        message: 'Missing download information',
+        title: 'zagreus.Error'.tr(),
+        message: 'search.MissingDownloadInformation'.tr(),
       );
       return;
     }
@@ -199,18 +203,20 @@ class _State extends State<ProwlarrResultTile> {
             success ? ZagLoadingState.INACTIVE : ZagLoadingState.ERROR);
 
         showZagInfoSnackBar(
-          title: success ? 'Success' : 'Error',
+          title: success
+              ? 'search.Success'.tr()
+              : 'zagreus.Error'.tr(),
           message: success
-              ? 'Download sent to client'
-              : 'Failed to send download',
+              ? 'search.DownloadSentToClient'.tr()
+              : 'search.FailedToSendDownload'.tr(),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _downloadState = ZagLoadingState.ERROR);
         showZagInfoSnackBar(
-          title: 'Error',
-          message: 'Failed to send download: $e',
+          title: 'zagreus.Error'.tr(),
+          message: 'search.FailedToSendDownloadError'.tr(args: ['$e']),
         );
       }
     }
@@ -224,12 +230,12 @@ class _State extends State<ProwlarrResultTile> {
   String get _protocolText {
     final protocol = widget.item.protocol?.toLowerCase() ?? '';
     if (protocol == 'torrent' || widget.item.seeders != null) {
-      return 'Torrent';
+      return 'search.Torrent'.tr();
     }
     if (protocol == 'usenet' || protocol == 'nzb') {
-      return 'Usenet';
+      return 'search.Usenet'.tr();
     }
-    return widget.item.protocol ?? 'Unknown';
+    return widget.item.protocol ?? 'zagreus.Unknown'.tr();
   }
 
   Color get _protocolColor {
@@ -251,14 +257,16 @@ class _State extends State<ProwlarrResultTile> {
     final days = widget.item.age;
     final hours = widget.item.ageHours;
 
-    if (days == null) return '?';
+    if (days == null) return 'zagreus.Unknown'.tr();
     if (days == 0) {
-      if (hours != null && hours < 1) return '<1h';
-      if (hours != null) return '${hours.round()}h';
-      return 'Today';
+      if (hours != null && hours < 1) return 'search.LessThanHour'.tr();
+      if (hours != null) {
+        return 'search.HoursShort'.tr(args: [hours.round().toString()]);
+      }
+      return 'search.Today'.tr();
     }
-    if (days == 1) return '1 day';
-    return '$days days';
+    if (days == 1) return 'search.OneDay'.tr();
+    return 'search.DaysCount'.tr(args: [days.toString()]);
   }
 
   String _formatSize() {

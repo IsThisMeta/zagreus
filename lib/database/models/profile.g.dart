@@ -102,13 +102,16 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
           : (fields[73] as Map?)?.cast<String, String>(),
       bazarrLocalHost: fields[74] == null ? '' : fields[74] as String?,
       bazarrLocalSsids: fields[75] == null ? '' : fields[75] as String?,
+      sshEnabled: fields[76] == null ? false : fields[76] as bool?,
+      sshLocalHost: fields[77] == null ? '' : fields[77] as String?,
+      sshLocalSsids: fields[78] == null ? '' : fields[78] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ZagProfile obj) {
     writer
-      ..writeByte(64)
+      ..writeByte(67)
       ..writeByte(0)
       ..write(obj.lidarrEnabled)
       ..writeByte(1)
@@ -236,7 +239,13 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
       ..writeByte(74)
       ..write(obj.bazarrLocalHost)
       ..writeByte(75)
-      ..write(obj.bazarrLocalSsids);
+      ..write(obj.bazarrLocalSsids)
+      ..writeByte(76)
+      ..write(obj.sshEnabled)
+      ..writeByte(77)
+      ..write(obj.sshLocalHost)
+      ..writeByte(78)
+      ..write(obj.sshLocalSsids);
   }
 
   @override
@@ -340,6 +349,9 @@ ZagProfile _$ZagProfileFromJson(Map<String, dynamic> json) => ZagProfile(
       ),
       bazarrLocalHost: json['bazarrLocalHost'] as String?,
       bazarrLocalSsids: json['bazarrLocalSsids'] as String?,
+      sshEnabled: json['sshEnabled'] as bool?,
+      sshLocalHost: json['sshLocalHost'] as String?,
+      sshLocalSsids: json['sshLocalSsids'] as String?,
     );
 
 Map<String, dynamic> _$ZagProfileToJson(ZagProfile instance) =>
@@ -408,4 +420,7 @@ Map<String, dynamic> _$ZagProfileToJson(ZagProfile instance) =>
       'bazarrHeaders': instance.bazarrHeaders,
       'bazarrLocalHost': instance.bazarrLocalHost,
       'bazarrLocalSsids': instance.bazarrLocalSsids,
+      'sshEnabled': instance.sshEnabled,
+      'sshLocalHost': instance.sshLocalHost,
+      'sshLocalSsids': instance.sshLocalSsids,
     };

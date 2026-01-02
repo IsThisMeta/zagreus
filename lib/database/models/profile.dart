@@ -331,6 +331,18 @@ class ZagProfile extends HiveObject {
   @HiveField(75, defaultValue: '')
   String bazarrLocalSsids;
 
+  @JsonKey()
+  @HiveField(76, defaultValue: false)
+  bool sshEnabled;
+
+  @JsonKey()
+  @HiveField(77, defaultValue: '')
+  String sshLocalHost;
+
+  @JsonKey()
+  @HiveField(78, defaultValue: '')
+  String sshLocalSsids;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -407,6 +419,10 @@ class ZagProfile extends HiveObject {
     required this.bazarrHeaders,
     required this.bazarrLocalHost,
     required this.bazarrLocalSsids,
+    //SSH
+    required this.sshEnabled,
+    required this.sshLocalHost,
+    required this.sshLocalSsids,
   });
 
   factory ZagProfile({
@@ -485,6 +501,10 @@ class ZagProfile extends HiveObject {
     Map<String, String>? bazarrHeaders,
     String? bazarrLocalHost,
     String? bazarrLocalSsids,
+    //SSH
+    bool? sshEnabled,
+    String? sshLocalHost,
+    String? sshLocalSsids,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -562,6 +582,10 @@ class ZagProfile extends HiveObject {
       bazarrHeaders: bazarrHeaders ?? {},
       bazarrLocalHost: bazarrLocalHost ?? '',
       bazarrLocalSsids: bazarrLocalSsids ?? '',
+      // SSH
+      sshEnabled: sshEnabled ?? false,
+      sshLocalHost: sshLocalHost ?? '',
+      sshLocalSsids: sshLocalSsids ?? '',
     );
   }
 

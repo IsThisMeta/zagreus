@@ -18,6 +18,7 @@ import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/readarr.dart';
+import 'package:zagreus/modules/ssh.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
@@ -40,6 +41,7 @@ const MODULE_DISCOVER_KEY = 'discover';
 const MODULE_UNRAID_KEY = 'unraid';
 const MODULE_READARR_KEY = 'readarr';
 const MODULE_BAZARR_KEY = 'bazarr';
+const MODULE_SSH_KEY = 'ssh';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -74,7 +76,9 @@ enum ZagModule {
   @HiveField(15)
   READARR(MODULE_READARR_KEY),
   @HiveField(16)
-  BAZARR(MODULE_BAZARR_KEY);
+  BAZARR(MODULE_BAZARR_KEY),
+  @HiveField(17)
+  SSH(MODULE_SSH_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -113,6 +117,8 @@ enum ZagModule {
         return ZagModule.READARR;
       case MODULE_BAZARR_KEY:
         return ZagModule.BAZARR;
+      case MODULE_SSH_KEY:
+        return ZagModule.SSH;
     }
     return null;
   }
@@ -137,6 +143,8 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.DISCOVER:
         return true;
       case ZagModule.UNRAID:
+        return true;
+      case ZagModule.SSH:
         return true;
       default:
         return true;
@@ -179,6 +187,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagProfile.current.readarrEnabled;
       case ZagModule.BAZARR:
         return ZagProfile.current.bazarrEnabled;
+      case ZagModule.SSH:
+        return ZagProfile.current.sshEnabled;
     }
   }
 }
@@ -218,6 +228,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Readarr';
       case ZagModule.BAZARR:
         return 'Bazarr';
+      case ZagModule.SSH:
+        return 'SSH';
     }
   }
 
@@ -255,6 +267,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagIcons.READARR;
       case ZagModule.BAZARR:
         return Icons.subtitles_rounded;
+      case ZagModule.SSH:
+        return Icons.terminal_rounded;
     }
   }
 
@@ -292,6 +306,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFF8E2222); // Readarr red (142, 34, 34)
       case ZagModule.BAZARR:
         return const Color(0xFFFFB949); // Bazarr yellow/orange
+      case ZagModule.SSH:
+        return const Color(0xFF4CAF50); // Terminal green
     }
   }
 
@@ -329,6 +345,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://readarr.com';
       case ZagModule.BAZARR:
         return 'https://bazarr.media';
+      case ZagModule.SSH:
+        return null;
     }
   }
 
@@ -366,6 +384,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://github.com/Readarr/Readarr';
       case ZagModule.BAZARR:
         return 'https://github.com/morpheus65535/bazarr';
+      case ZagModule.SSH:
+        return null;
     }
   }
 
@@ -403,6 +423,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Manage Books and Audiobooks';
       case ZagModule.BAZARR:
         return 'Manage Subtitles';
+      case ZagModule.SSH:
+        return 'Access Server Terminals';
     }
   }
 
@@ -440,6 +462,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Readarr is an ebook and audiobook collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new books from your favorite authors and will grab, sort, and organize them. It can also be configured to automatically upgrade the quality of existing files in your library when a better quality format becomes available.';
       case ZagModule.BAZARR:
         return 'Bazarr is a companion application to Sonarr and Radarr that manages and downloads subtitles based on your requirements. You can define your preferred languages in profiles and Bazarr takes care of everything for you.';
+      case ZagModule.SSH:
+        return 'Connect to your servers via SSH directly from Zagreus. Access terminal sessions, run commands, and manage your infrastructure without leaving the app. Supports password and private key authentication.';
     }
   }
 }
@@ -479,6 +503,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.readarr.root.path;
       case ZagModule.BAZARR:
         return null; // Bazarr is integrated into Radarr/Sonarr
+      case ZagModule.SSH:
+        return ZagRoutes.ssh.root.path;
     }
   }
 
@@ -516,6 +542,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_READARR;
       case ZagModule.BAZARR:
         return SettingsRoutes.CONFIGURATION_BAZARR;
+      case ZagModule.SSH:
+        return SettingsRoutes.CONFIGURATION_SSH;
     }
   }
 
@@ -666,6 +694,8 @@ extension ZagModuleExtension on ZagModule {
         return context.read<ReadarrState>();
       case ZagModule.BAZARR:
         return null; // Bazarr doesn't have its own state - integrated into Radarr/Sonarr
+      case ZagModule.SSH:
+        return context.read<SSHState>();
     }
   }
 

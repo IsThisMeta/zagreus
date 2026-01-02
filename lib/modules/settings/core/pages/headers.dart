@@ -131,6 +131,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return profile.readarrHeaders;
       case ZagModule.BAZARR:
         return profile.bazarrHeaders;
+      case ZagModule.SSH:
+        throw Exception('SSH does not have a headers page');
     }
   }
 
@@ -168,6 +170,8 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return context.read<ReadarrState>().reset();
       case ZagModule.BAZARR:
         return; // Bazarr doesn't have its own state
+      case ZagModule.SSH:
+        throw Exception('SSH does not have a headers page');
     }
   }
 }

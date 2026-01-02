@@ -17,6 +17,7 @@ import 'package:zagreus/router/routes/tautulli.dart';
 import 'package:zagreus/router/routes/discover.dart';
 import 'package:zagreus/router/routes/unraid.dart';
 import 'package:zagreus/router/routes/readarr.dart';
+import 'package:zagreus/router/routes/ssh.dart';
 import 'package:zagreus/vendor.dart';
 import 'package:zagreus/widgets/pages/not_enabled.dart';
 
@@ -35,7 +36,8 @@ enum ZagRoutes {
   tautulli('tautulli', root: TautulliRoutes.HOME),
   discover('discover', root: DiscoverRoutes.HOME),
   unraid('unraid', root: UnraidRoutes.HOME),
-  readarr('readarr', root: ReadarrRoutes.HOME);
+  readarr('readarr', root: ReadarrRoutes.HOME),
+  ssh('ssh', root: SSHRoutes.HOME);
 
   final String key;
   final ZagRoutesMixin root;

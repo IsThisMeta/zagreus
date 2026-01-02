@@ -103,7 +103,8 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
         );
         if (result)
           showZagSuccessSnackBar(
-              title: 'Saved NZB', message: 'NZB has been successfully saved');
+              title: 'search.NZBSaved'.tr(),
+              message: 'search.NZBSavedMessage'.tr());
       });
     } catch (error, stack) {
       ZagLogger().error('Error downloading NZB', error, stack);
