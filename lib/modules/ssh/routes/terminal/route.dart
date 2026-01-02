@@ -85,7 +85,10 @@ class _State extends State<SSHTerminalRoute> {
       SSHService.instance.resize(width, height);
     };
 
-    final success = await SSHService.instance.connect(_connection!);
+    final success = await SSHService.instance.connect(
+      _connection!,
+      onUnknownHostKey: _promptTrustHostKey,
+    );
 
     if (mounted) {
       setState(() => _isConnecting = false);
@@ -97,6 +100,56 @@ class _State extends State<SSHTerminalRoute> {
         );
       }
     }
+  }
+
+  Future<bool> _promptTrustHostKey(
+    SSHConnection connection,
+    String type,
+    String fingerprint,
+  ) async {
+    if (!mounted) return false;
+
+    bool accepted = false;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'ssh.HostKeyVerifyTitle'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'ssh.Trust'.tr(),
+          onPressed: () {
+            accepted = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          },
+        ),
+        ZagDialog.cancel(context),
+      ],
+      content: [
+        ZagDialog.textContent(
+          text: 'ssh.HostKeyVerifyMessage'.tr(
+            args: [
+              connection.host,
+              type,
+              fingerprint,
+            ],
+          ),
+        ),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+
+    if (!accepted) return false;
+
+    final normalized = SSHService.normalizeFingerprint(fingerprint);
+    final updated = connection.copyWith(
+      hostKeyFingerprint: normalized,
+      hostKeyType: type,
+    );
+
+    _connection = updated;
+    SSHService.instance.updateCurrentConnection(updated);
+    await context.read<SSHState>().updateConnection(updated);
+    return true;
   }
 
   @override

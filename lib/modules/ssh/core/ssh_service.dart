@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dartssh2/dartssh2.dart';
 import 'package:zagreus/database/models/ssh_connection.dart';
+import 'package:zagreus/system/network/local_switching_service.dart';
 import 'package:zagreus/system/logger.dart';
 
 enum SSHConnectionStatus {
@@ -36,13 +37,30 @@ class SSHService {
       StreamController<Uint8List>.broadcast();
   Stream<Uint8List> get outputStream => _outputController.stream;
 
+  static String formatFingerprint(Uint8List data, {bool withColons = true}) {
+    final buffer = StringBuffer();
+    for (var i = 0; i < data.length; i++) {
+      buffer.write(data[i].toRadixString(16).padLeft(2, '0'));
+      if (withColons && i != data.length - 1) buffer.write(':');
+    }
+    return buffer.toString();
+  }
+
+  static String normalizeFingerprint(String value) {
+    return value.replaceAll(':', '').toLowerCase();
+  }
+
   void _setStatus(SSHConnectionStatus status, [String? error]) {
     _status = status;
     _errorMessage = error;
     _statusController.add(status);
   }
 
-  Future<bool> connect(SSHConnection connection) async {
+  Future<bool> connect(
+    SSHConnection connection, {
+    Future<bool> Function(SSHConnection connection, String type, String fingerprint)?
+        onUnknownHostKey,
+  }) async {
     if (_status == SSHConnectionStatus.connecting) {
       return false;
     }
@@ -53,10 +71,16 @@ class SSHService {
     _currentConnection = connection;
 
     try {
-      ZagLogger().debug('SSH: Connecting to ${connection.host}:${connection.port}');
+      final effectiveHost = ZagLocalConnectionService().resolveHost(
+        remoteHost: connection.host,
+        localHost: connection.localHost,
+        ssidList: connection.localSsids,
+      );
+
+      ZagLogger().debug('SSH: Connecting to $effectiveHost:${connection.port}');
 
       final socket = await SSHSocket.connect(
-        connection.host,
+        effectiveHost,
         connection.port,
         timeout: const Duration(seconds: 30),
       );
@@ -66,6 +90,14 @@ class SSHService {
           socket,
           username: connection.username,
           onPasswordRequest: () => connection.password,
+          onVerifyHostKey: (type, fingerprint) async {
+            return _verifyHostKey(
+              connection,
+              type,
+              fingerprint,
+              onUnknownHostKey,
+            );
+          },
         );
       } else {
         _client = SSHClient(
@@ -75,6 +107,14 @@ class SSHService {
             connection.privateKey,
             connection.passphrase.isNotEmpty ? connection.passphrase : null,
           ),
+          onVerifyHostKey: (type, fingerprint) async {
+            return _verifyHostKey(
+              connection,
+              type,
+              fingerprint,
+              onUnknownHostKey,
+            );
+          },
         );
       }
 
@@ -115,7 +155,7 @@ class SSHService {
     } catch (e, stack) {
       ZagLogger().error('SSH: Connection failed', e, stack);
       _setStatus(SSHConnectionStatus.error, e.toString());
-      await disconnect();
+      _cleanup();
       return false;
     }
   }
@@ -145,6 +185,29 @@ class SSHService {
     _client = null;
   }
 
+  Future<bool> _verifyHostKey(
+    SSHConnection connection,
+    String type,
+    Uint8List fingerprint,
+    Future<bool> Function(SSHConnection connection, String type, String fingerprint)?
+        onUnknownHostKey,
+  ) async {
+    final computed = formatFingerprint(fingerprint, withColons: true);
+    final computedNormalized = normalizeFingerprint(computed);
+
+    if (connection.hostKeyFingerprint.isNotEmpty) {
+      final storedNormalized = normalizeFingerprint(connection.hostKeyFingerprint);
+      return storedNormalized == computedNormalized;
+    }
+
+    if (onUnknownHostKey == null) return false;
+    return onUnknownHostKey(connection, type, computed);
+  }
+
+  void updateCurrentConnection(SSHConnection connection) {
+    _currentConnection = connection;
+  }
+
   void write(String data) {
     if (_shell != null && isConnected) {
       _shell!.write(utf8.encode(data));
@@ -165,10 +228,16 @@ class SSHService {
 
   Future<bool> testConnection(SSHConnection connection) async {
     try {
-      ZagLogger().debug('SSH: Testing connection to ${connection.host}:${connection.port}');
+      final effectiveHost = ZagLocalConnectionService().resolveHost(
+        remoteHost: connection.host,
+        localHost: connection.localHost,
+        ssidList: connection.localSsids,
+      );
+
+      ZagLogger().debug('SSH: Testing connection to $effectiveHost:${connection.port}');
 
       final socket = await SSHSocket.connect(
-        connection.host,
+        effectiveHost,
         connection.port,
         timeout: const Duration(seconds: 10),
       );
@@ -179,6 +248,9 @@ class SSHService {
           socket,
           username: connection.username,
           onPasswordRequest: () => connection.password,
+          onVerifyHostKey: (type, fingerprint) async {
+            return _verifyHostKey(connection, type, fingerprint, null);
+          },
         );
       } else {
         client = SSHClient(
@@ -188,9 +260,13 @@ class SSHService {
             connection.privateKey,
             connection.passphrase.isNotEmpty ? connection.passphrase : null,
           ),
+          onVerifyHostKey: (type, fingerprint) async {
+            return _verifyHostKey(connection, type, fingerprint, null);
+          },
         );
       }
 
+      await client.authenticated;
       client.close();
       ZagLogger().debug('SSH: Test connection successful');
       return true;

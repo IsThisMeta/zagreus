@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/modules/ssh/core/state.dart';
+import 'package:zagreus/modules/ssh/core/ssh_service.dart';
 import 'package:zagreus/router/router.dart';
 
 class SSHEditConnectionRoute extends StatefulWidget {
@@ -28,6 +29,8 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
   late String _password;
   late String _privateKey;
   late String _passphrase;
+  late String _localHost;
+  late String _localSsids;
 
   @override
   void initState() {
@@ -47,6 +50,8 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
       _password = connection.password;
       _privateKey = connection.privateKey;
       _passphrase = connection.passphrase;
+      _localHost = connection.localHost;
+      _localSsids = connection.localSsids;
     }
   }
 
@@ -79,9 +84,14 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
           if (_authType == SSHAuthType.password) _passwordField() else _privateKeyField(),
           if (_authType == SSHAuthType.privateKey) _passphraseField(),
           ZagDivider(),
-          _saveButton(),
+          ZagHeader(text: 'ssh.LocalNetwork'.tr()),
+          _localHostField(),
+          _localSsidsField(),
+          ZagDivider(),
+          _hostKeyFingerprintField(),
         ],
       ),
+      bottomNavigationBar: _bottomActionBar(),
     );
   }
 
@@ -229,14 +239,107 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
     );
   }
 
-  Widget _saveButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ZagButton.text(
-        text: 'ssh.Save'.tr(),
-        icon: Icons.save_rounded,
-        onTap: _save,
-      ),
+  Widget _localHostField() {
+    return ZagBlock(
+      title: 'ssh.LocalHost'.tr(),
+      body: [TextSpan(text: _localHost.isEmpty ? 'zagreus.NotSet'.tr() : _localHost)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'ssh.LocalHost'.tr(),
+          prefill: _localHost,
+        );
+        if (result.item1) {
+          setState(() => _localHost = result.item2);
+        }
+      },
+    );
+  }
+
+  Widget _localSsidsField() {
+    return ZagBlock(
+      title: 'ssh.LocalSsids'.tr(),
+      body: [TextSpan(text: _localSsids.isEmpty ? 'zagreus.NotSet'.tr() : _localSsids)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'ssh.LocalSsids'.tr(),
+          prefill: _localSsids,
+        );
+        if (result.item1) {
+          setState(() => _localSsids = result.item2);
+        }
+      },
+    );
+  }
+
+  Widget _hostKeyFingerprintField() {
+    final value = _connection?.hostKeyFingerprint ?? '';
+    final display = value.isEmpty ? 'zagreus.NotSet'.tr() : _formatFingerprint(value);
+
+    return ZagBlock(
+      title: 'ssh.HostKeyFingerprint'.tr(),
+      body: [TextSpan(text: display)],
+      trailing: value.isEmpty ? null : const ZagIconButton.arrow(),
+      onTap: value.isEmpty ? null : _resetHostKeyFingerprint,
+    );
+  }
+
+  String _formatFingerprint(String value) {
+    final normalized = SSHService.normalizeFingerprint(value);
+    final buffer = StringBuffer();
+    for (var i = 0; i < normalized.length; i += 2) {
+      if (i > 0) buffer.write(':');
+      buffer.write(normalized.substring(i, i + 2));
+    }
+    return buffer.toString();
+  }
+
+  Future<void> _resetHostKeyFingerprint() async {
+    bool confirmed = false;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'ssh.HostKeyResetTitle'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'ssh.Clear'.tr(),
+          textColor: ZagColours.red,
+          onPressed: () {
+            confirmed = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          },
+        ),
+      ],
+      content: [
+        ZagDialog.textContent(text: 'ssh.HostKeyResetConfirm'.tr()),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+
+    if (!confirmed) return;
+
+    setState(() {
+      _connection = _connection?.copyWith(hostKeyFingerprint: '', hostKeyType: '');
+    });
+  }
+
+  Widget _bottomActionBar() {
+    return ZagBottomActionBar(
+      actions: [
+        ZagButton.text(
+          text: 'ssh.Delete'.tr(),
+          icon: Icons.delete_rounded,
+          onTap: _delete,
+        ),
+        ZagButton.text(
+          text: 'ssh.Save'.tr(),
+          icon: Icons.save_rounded,
+          onTap: _save,
+        ),
+      ],
     );
   }
 
@@ -274,6 +377,10 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
       password: _password,
       privateKey: _privateKey,
       passphrase: _passphrase,
+      localHost: _localHost,
+      localSsids: _localSsids,
+      hostKeyFingerprint: _connection!.hostKeyFingerprint,
+      hostKeyType: _connection!.hostKeyType,
     );
 
     await context.read<SSHState>().updateConnection(updated);
@@ -284,6 +391,42 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
         message: null,
       );
       ZagRouter.router.pop();
+    }
+  }
+
+  Future<void> _delete() async {
+    bool confirmed = false;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'ssh.DeleteConnection'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'ssh.Delete'.tr(),
+          textColor: ZagColours.red,
+          onPressed: () {
+            confirmed = true;
+            Navigator.of(context, rootNavigator: true).pop();
+          },
+        ),
+      ],
+      content: [
+        ZagDialog.textContent(
+          text: 'ssh.DeleteConnectionConfirm'.tr(args: [_connection!.name]),
+        ),
+      ],
+      contentPadding: ZagDialog.textDialogContentPadding(),
+    );
+
+    if (confirmed) {
+      await context.read<SSHState>().deleteConnection(_connection!.id);
+      if (mounted) {
+        showZagSuccessSnackBar(
+          title: 'ssh.ConnectionDeleted'.tr(),
+          message: null,
+        );
+        ZagRouter.router.pop();
+      }
     }
   }
 }

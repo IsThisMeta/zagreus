@@ -15,6 +15,10 @@ enum SSHAuthType {
 @HiveType(typeId: 31, adapterName: 'SSHConnectionAdapter')
 class SSHConnection extends HiveObject {
   @JsonKey()
+  @HiveField(9, defaultValue: '')
+  String profileId;
+
+  @JsonKey()
   @HiveField(0, defaultValue: '')
   String id;
 
@@ -50,7 +54,24 @@ class SSHConnection extends HiveObject {
   @HiveField(8, defaultValue: '')
   String passphrase;
 
+  @JsonKey()
+  @HiveField(10, defaultValue: '')
+  String localHost;
+
+  @JsonKey()
+  @HiveField(11, defaultValue: '')
+  String localSsids;
+
+  @JsonKey()
+  @HiveField(12, defaultValue: '')
+  String hostKeyFingerprint;
+
+  @JsonKey()
+  @HiveField(13, defaultValue: '')
+  String hostKeyType;
+
   SSHConnection({
+    required this.profileId,
     required this.id,
     required this.name,
     required this.host,
@@ -60,9 +81,14 @@ class SSHConnection extends HiveObject {
     this.password = '',
     this.privateKey = '',
     this.passphrase = '',
+    this.localHost = '',
+    this.localSsids = '',
+    this.hostKeyFingerprint = '',
+    this.hostKeyType = '',
   });
 
   factory SSHConnection.create({
+    required String profileId,
     required String name,
     required String host,
     int port = 22,
@@ -71,8 +97,13 @@ class SSHConnection extends HiveObject {
     String password = '',
     String privateKey = '',
     String passphrase = '',
+    String localHost = '',
+    String localSsids = '',
+    String hostKeyFingerprint = '',
+    String hostKeyType = '',
   }) {
     return SSHConnection(
+      profileId: profileId,
       id: Uuid().v4(),
       name: name,
       host: host,
@@ -82,6 +113,10 @@ class SSHConnection extends HiveObject {
       password: password,
       privateKey: privateKey,
       passphrase: passphrase,
+      localHost: localHost,
+      localSsids: localSsids,
+      hostKeyFingerprint: hostKeyFingerprint,
+      hostKeyType: hostKeyType,
     );
   }
 
@@ -91,6 +126,7 @@ class SSHConnection extends HiveObject {
       _$SSHConnectionFromJson(json);
 
   SSHConnection copyWith({
+    String? profileId,
     String? name,
     String? host,
     int? port,
@@ -99,8 +135,13 @@ class SSHConnection extends HiveObject {
     String? password,
     String? privateKey,
     String? passphrase,
+    String? localHost,
+    String? localSsids,
+    String? hostKeyFingerprint,
+    String? hostKeyType,
   }) {
     return SSHConnection(
+      profileId: profileId ?? this.profileId,
       id: id,
       name: name ?? this.name,
       host: host ?? this.host,
@@ -110,6 +151,10 @@ class SSHConnection extends HiveObject {
       password: password ?? this.password,
       privateKey: privateKey ?? this.privateKey,
       passphrase: passphrase ?? this.passphrase,
+      localHost: localHost ?? this.localHost,
+      localSsids: localSsids ?? this.localSsids,
+      hostKeyFingerprint: hostKeyFingerprint ?? this.hostKeyFingerprint,
+      hostKeyType: hostKeyType ?? this.hostKeyType,
     );
   }
 

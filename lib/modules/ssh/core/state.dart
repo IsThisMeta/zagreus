@@ -30,7 +30,7 @@ class SSHState extends ZagModuleState {
 
   void resetProfile() {
     ZagLogger().debug('SSHState.resetProfile called');
-    ZagProfile profile = ZagProfile.current;
+    ZagProfile profile = ZagProfile.forModule(ZagModule.SSH.key);
     _enabled = profile.sshEnabled;
     _localHost = profile.sshLocalHost;
     _localSsids = profile.sshLocalSsids;
@@ -41,7 +41,10 @@ class SSHState extends ZagModuleState {
   //////////////////
 
   List<SSHConnection> get connections {
-    return ZagBox.sshConnections.data.toList();
+    final profileId = ZagProfile.forModule(ZagModule.SSH.key).key.toString();
+    return ZagBox.sshConnections.data
+        .where((connection) => connection.profileId == profileId)
+        .toList();
   }
 
   SSHConnection? getConnection(String id) {
@@ -53,6 +56,9 @@ class SSHState extends ZagModuleState {
   }
 
   Future<void> addConnection(SSHConnection connection) async {
+    if (connection.profileId.isEmpty) {
+      connection.profileId = ZagProfile.forModule(ZagModule.SSH.key).key.toString();
+    }
     await ZagBox.sshConnections.update(connection.id, connection);
     notifyListeners();
   }

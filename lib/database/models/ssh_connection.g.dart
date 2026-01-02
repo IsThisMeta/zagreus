@@ -17,6 +17,7 @@ class SSHConnectionAdapter extends TypeAdapter<SSHConnection> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SSHConnection(
+      profileId: fields[9] == null ? '' : fields[9] as String,
       id: fields[0] == null ? '' : fields[0] as String,
       name: fields[1] == null ? '' : fields[1] as String,
       host: fields[2] == null ? '' : fields[2] as String,
@@ -27,13 +28,19 @@ class SSHConnectionAdapter extends TypeAdapter<SSHConnection> {
       password: fields[6] == null ? '' : fields[6] as String,
       privateKey: fields[7] == null ? '' : fields[7] as String,
       passphrase: fields[8] == null ? '' : fields[8] as String,
+      localHost: fields[10] == null ? '' : fields[10] as String,
+      localSsids: fields[11] == null ? '' : fields[11] as String,
+      hostKeyFingerprint: fields[12] == null ? '' : fields[12] as String,
+      hostKeyType: fields[13] == null ? '' : fields[13] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, SSHConnection obj) {
     writer
+      ..writeByte(14)
       ..writeByte(9)
+      ..write(obj.profileId)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -51,7 +58,15 @@ class SSHConnectionAdapter extends TypeAdapter<SSHConnection> {
       ..writeByte(7)
       ..write(obj.privateKey)
       ..writeByte(8)
-      ..write(obj.passphrase);
+      ..write(obj.passphrase)
+      ..writeByte(10)
+      ..write(obj.localHost)
+      ..writeByte(11)
+      ..write(obj.localSsids)
+      ..writeByte(12)
+      ..write(obj.hostKeyFingerprint)
+      ..writeByte(13)
+      ..write(obj.hostKeyType);
   }
 
   @override
@@ -110,6 +125,7 @@ class SSHAuthTypeAdapter extends TypeAdapter<SSHAuthType> {
 
 SSHConnection _$SSHConnectionFromJson(Map<String, dynamic> json) =>
     SSHConnection(
+      profileId: json['profileId'] as String,
       id: json['id'] as String,
       name: json['name'] as String,
       host: json['host'] as String,
@@ -120,10 +136,15 @@ SSHConnection _$SSHConnectionFromJson(Map<String, dynamic> json) =>
       password: json['password'] as String? ?? '',
       privateKey: json['privateKey'] as String? ?? '',
       passphrase: json['passphrase'] as String? ?? '',
+      localHost: json['localHost'] as String? ?? '',
+      localSsids: json['localSsids'] as String? ?? '',
+      hostKeyFingerprint: json['hostKeyFingerprint'] as String? ?? '',
+      hostKeyType: json['hostKeyType'] as String? ?? '',
     );
 
 Map<String, dynamic> _$SSHConnectionToJson(SSHConnection instance) =>
     <String, dynamic>{
+      'profileId': instance.profileId,
       'id': instance.id,
       'name': instance.name,
       'host': instance.host,
@@ -133,6 +154,10 @@ Map<String, dynamic> _$SSHConnectionToJson(SSHConnection instance) =>
       'password': instance.password,
       'privateKey': instance.privateKey,
       'passphrase': instance.passphrase,
+      'localHost': instance.localHost,
+      'localSsids': instance.localSsids,
+      'hostKeyFingerprint': instance.hostKeyFingerprint,
+      'hostKeyType': instance.hostKeyType,
     };
 
 const _$SSHAuthTypeEnumMap = {

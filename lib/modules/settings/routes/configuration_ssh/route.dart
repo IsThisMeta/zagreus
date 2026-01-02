@@ -76,19 +76,8 @@ class _State extends State<ConfigurationSSHRoute> with ZagScrollControllerMixin 
           text: '${connection.username}@${connection.host}:${connection.port}',
         ),
       ],
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ZagIconButton(
-            icon: Icons.edit_rounded,
-            onPressed: () => _editConnection(connection),
-          ),
-          ZagIconButton(
-            icon: Icons.delete_rounded,
-            onPressed: () => _deleteConnection(connection),
-          ),
-        ],
-      ),
+      trailing: const ZagIconButton.arrow(),
+      onTap: () => _editConnection(connection),
     );
   }
 
@@ -107,40 +96,5 @@ class _State extends State<ConfigurationSSHRoute> with ZagScrollControllerMixin 
     SettingsRoutes.CONFIGURATION_SSH_EDIT_CONNECTION.go(
       params: {'connectionId': connection.id},
     );
-  }
-
-  Future<void> _deleteConnection(SSHConnection connection) async {
-    bool confirmed = false;
-
-    await ZagDialog.dialog(
-      context: context,
-      title: 'ssh.DeleteConnection'.tr(),
-      buttons: [
-        ZagDialog.button(
-          text: 'ssh.Delete'.tr(),
-          textColor: ZagColours.red,
-          onPressed: () {
-            confirmed = true;
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-        ),
-      ],
-      content: [
-        ZagDialog.textContent(
-          text: 'ssh.DeleteConnectionConfirm'.tr(args: [connection.name]),
-        ),
-      ],
-      contentPadding: ZagDialog.textDialogContentPadding(),
-    );
-
-    if (confirmed) {
-      await context.read<SSHState>().deleteConnection(connection.id);
-      if (mounted) {
-        showZagSuccessSnackBar(
-          title: 'ssh.ConnectionDeleted'.tr(),
-          message: null,
-        );
-      }
-    }
   }
 }

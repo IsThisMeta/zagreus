@@ -23,7 +23,7 @@ class ReadarrUnifiedSearchResultTile extends StatelessWidget {
       disabled: alreadyAdded,
       body: _buildBody(isBook),
       customBodyMaxLines: 3,
-      trailing: alreadyAdded ? null : const ZagIconButton.arrow(),
+      trailing: const ZagIconButton.arrow(),
       posterIsSquare: !isBook, // Books use rectangular covers
       posterHeaders: ZagProfile.forModule('readarr').readarrHeaders,
       posterPlaceholderIcon: isBook ? ZagIcons.DOCUMENTATION : ZagIcons.USER,
@@ -63,25 +63,15 @@ class ReadarrUnifiedSearchResultTile extends StatelessWidget {
   }
 
   Future<void> _enterDetails(BuildContext context) async {
-    if (alreadyAdded) {
-      final message = data.type == ReadarrSearchResultType.author
-          ? 'readarr.AuthorAlreadyInReadarr'.tr()
-          : 'readarr.BookAlreadyInReadarr'.tr();
-      showZagInfoSnackBar(
-        title: message,
-        message: data.displayTitle,
-      );
-    } else {
-      if (data.type == ReadarrSearchResultType.author) {
-        // Use existing author add flow
-        final searchData = data.toSearchData();
-        if (searchData != null) {
-          ReadarrRoutes.ADD_AUTHOR_DETAILS.go(extra: searchData);
-        }
-      } else {
-        // Use book add flow
-        ReadarrRoutes.ADD_BOOK_DETAILS.go(extra: data);
+    if (data.type == ReadarrSearchResultType.author) {
+      // Use existing author add flow
+      final searchData = data.toSearchData();
+      if (searchData != null) {
+        ReadarrRoutes.ADD_AUTHOR_DETAILS.go(extra: searchData);
       }
+    } else {
+      // Use book add flow
+      ReadarrRoutes.ADD_BOOK_DETAILS.go(extra: data);
     }
   }
 }

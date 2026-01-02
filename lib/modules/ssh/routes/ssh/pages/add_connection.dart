@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/modules/ssh/core/state.dart';
-import 'package:zagreus/modules/ssh/core/ssh_service.dart';
 import 'package:zagreus/router/router.dart';
 
 class SSHAddConnectionRoute extends StatefulWidget {
@@ -23,6 +22,8 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
   String _password = '';
   String _privateKey = '';
   String _passphrase = '';
+  String _localHost = '';
+  String _localSsids = '';
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +45,10 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
           _authTypeToggle(),
           if (_authType == SSHAuthType.password) _passwordField() else _privateKeyField(),
           if (_authType == SSHAuthType.privateKey) _passphraseField(),
+          ZagDivider(),
+          ZagHeader(text: 'ssh.LocalNetwork'.tr()),
+          _localHostField(),
+          _localSsidsField(),
           ZagDivider(),
           _saveButton(),
         ],
@@ -195,6 +200,42 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
     );
   }
 
+  Widget _localHostField() {
+    return ZagBlock(
+      title: 'ssh.LocalHost'.tr(),
+      body: [TextSpan(text: _localHost.isEmpty ? 'zagreus.NotSet'.tr() : _localHost)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'ssh.LocalHost'.tr(),
+          prefill: _localHost,
+        );
+        if (result.item1) {
+          setState(() => _localHost = result.item2);
+        }
+      },
+    );
+  }
+
+  Widget _localSsidsField() {
+    return ZagBlock(
+      title: 'ssh.LocalSsids'.tr(),
+      body: [TextSpan(text: _localSsids.isEmpty ? 'zagreus.NotSet'.tr() : _localSsids)],
+      trailing: const ZagIconButton.arrow(),
+      onTap: () async {
+        final result = await ZagDialogs().editText(
+          context,
+          'ssh.LocalSsids'.tr(),
+          prefill: _localSsids,
+        );
+        if (result.item1) {
+          setState(() => _localSsids = result.item2);
+        }
+      },
+    );
+  }
+
   Widget _saveButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -232,6 +273,7 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
     }
 
     final connection = SSHConnection.create(
+      profileId: ZagProfile.forModule(ZagModule.SSH.key).key.toString(),
       name: _name,
       host: _host,
       port: _port,
@@ -240,6 +282,8 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
       password: _password,
       privateKey: _privateKey,
       passphrase: _passphrase,
+      localHost: _localHost,
+      localSsids: _localSsids,
     );
 
     await context.read<SSHState>().addConnection(connection);

@@ -57,7 +57,6 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
             ...connections.map((connection) => SSHConnectionCard(
               connection: connection,
               onConnect: () => _connectToServer(connection),
-              onDelete: () => _deleteConnection(connection),
             )),
           ],
         );
@@ -98,40 +97,5 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
     SSHRoutes.TERMINAL.go(
       params: {'connectionId': connection.id},
     );
-  }
-
-  Future<void> _deleteConnection(SSHConnection connection) async {
-    bool confirmed = false;
-
-    await ZagDialog.dialog(
-      context: context,
-      title: 'ssh.DeleteConnection'.tr(),
-      buttons: [
-        ZagDialog.button(
-          text: 'ssh.Delete'.tr(),
-          textColor: ZagColours.red,
-          onPressed: () {
-            confirmed = true;
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-        ),
-      ],
-      content: [
-        ZagDialog.textContent(
-          text: 'ssh.DeleteConnectionConfirm'.tr(args: [connection.name]),
-        ),
-      ],
-      contentPadding: ZagDialog.textDialogContentPadding(),
-    );
-
-    if (confirmed) {
-      await context.read<SSHState>().deleteConnection(connection.id);
-      if (mounted) {
-        showZagSuccessSnackBar(
-          title: 'ssh.ConnectionDeleted'.tr(),
-          message: null,
-        );
-      }
-    }
   }
 }
