@@ -183,11 +183,11 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Adjustable poster height
   double _posterHeight = 200.0;
   double get _posterWidth => _posterHeight * _posterAspectRatio;
-  // Add extra height for titles beneath (approx 40px for 2-line title + spacing)
+  // Add extra height for titles beneath (approx 58px for 3-line title + spacing)
   double get _posterListHeight {
     final baseHeight = _posterHeight + 8.0;
     if (_titlesBeneathPoster) {
-      return baseHeight + 44.0; // Extra space for title beneath
+      return baseHeight + 58.0; // Extra space for 3-line title beneath
     }
     return baseHeight;
   }
@@ -7333,7 +7333,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                             ),
                           ],
                         ),
-                        maxLines: 2,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
@@ -7349,7 +7349,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -7598,7 +7598,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: _moduleSectionTitleFontSize - 4,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -7844,7 +7844,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -8098,7 +8098,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -9081,7 +9081,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -9317,7 +9317,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -12023,7 +12023,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -12192,7 +12192,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -12365,7 +12365,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
@@ -13243,7 +13243,7 @@ class _DiscoverNavigationBar extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
           ],

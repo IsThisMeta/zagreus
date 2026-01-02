@@ -472,7 +472,7 @@ class _State extends State<StudioDiscoverRoute> with ZagScrollControllerMixin {
             fontSize: _getTitleFontSize(context),
             fontWeight: FontWeight.w600,
           ),
-          maxLines: 2,
+          maxLines: 3,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
         ),
