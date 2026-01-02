@@ -195,6 +195,7 @@ class _ZagBIOSState extends State<ZagBIOS> with WidgetsBindingObserver {
               Locale('fr'),
               Locale('de'),
               Locale('el'),
+              Locale('es'),
               Locale('tr'),
               Locale('nl'),
               Locale('zh', 'Hans'),
