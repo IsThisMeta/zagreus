@@ -23,6 +23,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'recommended',
     'missing',
     'downloading_soon',
+    'studios',
     'popular_movies',
     'recently_released_movies',
     'most_anticipated_movies',
@@ -1050,6 +1051,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.error_outline_rounded;
       case 'downloading_soon':
         return Icons.schedule_rounded;
+      case 'studios':
+        return Icons.movie_filter_rounded;
       case 'popular_movies':
       case 'popular_tv_shows':
         return Icons.star_rounded;

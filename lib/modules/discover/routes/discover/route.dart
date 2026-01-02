@@ -59,6 +59,7 @@ import 'package:zagreus/modules/discover/widgets/sections/trending_new_tv_shows_
 import 'package:zagreus/modules/discover/widgets/sections/up_next_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/airing_next_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/networks_section.dart';
+import 'package:zagreus/modules/discover/widgets/sections/studios_section.dart';
 import 'package:zagreus/modules/discover/widgets/sections/quick_buttons_section.dart';
 import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
@@ -2887,6 +2888,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             recommendedMoviesSection: _recommendedMoviesSection,
             missingMoviesSection: _missingMoviesSection,
             downloadingSoonSection: _downloadingSoonSection,
+            studiosSection: _studiosSection,
             popularMoviesSection: _popularMoviesSection,
             recentlyReleasedMoviesSection: _recentlyReleasedMoviesSection,
             mostAnticipatedMoviesSection: _mostAnticipatedMoviesSection,
@@ -12280,6 +12282,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _networksSection() {
     return NetworksSection(
+      showTitle: _showTitles,
+    );
+  }
+
+  Widget _studiosSection() {
+    return StudiosSection(
       showTitle: _showTitles,
     );
   }

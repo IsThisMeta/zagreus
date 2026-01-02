@@ -1096,6 +1096,129 @@ class TMDBApi {
     }
   }
 
+  /// Hardcoded list of popular movie studios with TMDB company IDs
+  /// Based on Seerr's StudioSlider implementation
+  static List<Map<String, dynamic>> getStudiosList() {
+    return [
+      {
+        'id': 2,
+        'name': 'Disney',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/wdrCwmRnLFJhEoH8GSfymY85KHT.png',
+      },
+      {
+        'id': 127928,
+        'name': '20th Century',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/h0rjX5vjW5r8yEnUBStFarjcLT4.png',
+      },
+      {
+        'id': 34,
+        'name': 'Sony Pictures',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/GagSvqWlyPdkFHMfQ3pNq6ix9P.png',
+      },
+      {
+        'id': 174,
+        'name': 'Warner Bros.',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/ky0xOc5OrhzkZ1N6KyUxacfQsCk.png',
+      },
+      {
+        'id': 33,
+        'name': 'Universal',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/8lvHyhjr8oUKOOy2dKXoALWKdp0.png',
+      },
+      {
+        'id': 4,
+        'name': 'Paramount',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/fycMZt242LVjagMByZOLUGbCvv3.png',
+      },
+      {
+        'id': 3,
+        'name': 'Pixar',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/1TjvGVDMYsj6JBxOAkUHpPEwLf7.png',
+      },
+      {
+        'id': 521,
+        'name': 'DreamWorks',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/kP7t6RwGz2AvvTkvnI1uteEwHet.png',
+      },
+      {
+        'id': 420,
+        'name': 'Marvel Studios',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/hUzeosd33nzE5MCNsZxCGEKTXaQ.png',
+      },
+      {
+        'id': 9993,
+        'name': 'DC',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/2Tc1P3Ac8M479naPp1kYT3izLS5.png',
+      },
+      {
+        'id': 41077,
+        'name': 'A24',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/1ZXsGaFPgrgS6ZZGS37AqD5uU12.png',
+      },
+      {
+        'id': 7505,
+        'name': 'Lionsgate',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/cisLn1YAUuptXVBa0xjq7ST9cH0.png',
+      },
+      {
+        'id': 12,
+        'name': 'New Line',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/liW0mjvTyLs7UCumaHhx3PpU4VT.png',
+      },
+      {
+        'id': 25,
+        'name': 'MGM',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/gHKzSkRjLRbHaIqNVHSIjfKUzM5.png',
+      },
+    ];
+  }
+
+  /// Get movies from a specific studio using TMDB discover endpoint
+  static Future<List<Map<String, dynamic>>> getMoviesByStudio(
+    int studioId, {
+    int page = 1,
+    String? region,
+  }) async {
+    try {
+      String url = '$_baseUrl/discover/movie?api_key=$_apiKey&page=$page';
+      url += '&with_companies=$studioId';
+      url += '&sort_by=popularity.desc';
+
+      if (region != null) {
+        url += '&region=$region';
+      }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (Movies by Studio): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final results = data['results'] as List? ?? [];
+
+      return results.map<Map<String, dynamic>>((item) {
+        return {
+          'id': item['id'],
+          'title': item['title'] ?? 'Unknown',
+          'backdrop': getImageUrl(item['backdrop_path']),
+          'poster': getImageUrl(item['poster_path'], size: 'w342'),
+          'rating': (item['vote_average'] ?? 0).toDouble(),
+          'overview': item['overview'] ?? '',
+          'releaseDate': item['release_date'],
+          'mediaType': 'movie',
+          'tmdbId': item['id'],
+          'popularity': item['popularity'] ?? 0,
+          'inLibrary': false,
+        };
+      }).toList();
+    } catch (e) {
+      print('TMDB API Error (Movies by Studio): $e');
+      return [];
+    }
+  }
+
   /// Get network details from TMDB
   static Future<Map<String, dynamic>?> getNetworkDetails(int networkId) async {
     try {

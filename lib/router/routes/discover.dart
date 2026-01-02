@@ -13,7 +13,8 @@ enum DiscoverRoutes with ZagRoutesMixin {
   MISSING('missing'),
   DOWNLOADING_SOON('downloading_soon'),
   TMDB_POPULAR_MOVIES('tmdb_popular_movies'),
-  NETWORK_DISCOVER('network/:networkId');
+  NETWORK_DISCOVER('network/:networkId'),
+  STUDIO_DISCOVER('studio/:studioId');
 
   @override
   final String path;
@@ -55,6 +56,20 @@ enum DiscoverRoutes with ZagRoutesMixin {
             );
           },
         );
+      case DiscoverRoutes.STUDIO_DISCOVER:
+        return route(
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final studioId = int.tryParse(state.pathParameters['studioId'] ?? '') ?? 0;
+            final studioName = extra?['studioName'] as String? ?? 'Studio';
+            final studioLogo = extra?['studioLogo'] as String?;
+            return StudioDiscoverRoute(
+              studioId: studioId,
+              studioName: studioName,
+              studioLogo: studioLogo,
+            );
+          },
+        );
     }
   }
   
@@ -69,6 +84,7 @@ enum DiscoverRoutes with ZagRoutesMixin {
           DiscoverRoutes.DOWNLOADING_SOON.routes,
           DiscoverRoutes.TMDB_POPULAR_MOVIES.routes,
           DiscoverRoutes.NETWORK_DISCOVER.routes,
+          DiscoverRoutes.STUDIO_DISCOVER.routes,
         ];
       case DiscoverRoutes.RECENTLY_DOWNLOADED:
         return [];
@@ -81,6 +97,8 @@ enum DiscoverRoutes with ZagRoutesMixin {
       case DiscoverRoutes.TMDB_POPULAR_MOVIES:
         return [];
       case DiscoverRoutes.NETWORK_DISCOVER:
+        return [];
+      case DiscoverRoutes.STUDIO_DISCOVER:
         return [];
     }
   }
