@@ -183,7 +183,14 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Adjustable poster height
   double _posterHeight = 200.0;
   double get _posterWidth => _posterHeight * _posterAspectRatio;
-  double get _posterListHeight => _posterHeight + 8.0;
+  // Add extra height for titles beneath (approx 40px for 2-line title + spacing)
+  double get _posterListHeight {
+    final baseHeight = _posterHeight + 8.0;
+    if (_titlesBeneathPoster) {
+      return baseHeight + 44.0; // Extra space for title beneath
+    }
+    return baseHeight;
+  }
   double get _moduleSectionTitleFontSize {
     if (_posterHeight >= 225) {
       return 20;
@@ -503,6 +510,10 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   StateSetter? _quickSetupModalSetState;
 
   bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
+  bool get _titlesBeneathPoster =>
+      _showTitles &&
+      (ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read() ?? false);
 
   bool get _showHeroCarousel =>
       ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
@@ -7194,6 +7205,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _popularMovieCard(Map<String, dynamic> movie) {
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
+
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -7280,8 +7294,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7300,8 +7314,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7326,6 +7340,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie['title'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -7426,6 +7454,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyReleasedMovieCard(Map<String, dynamic> movie) {
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
+
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -7512,8 +7543,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7532,8 +7563,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7558,6 +7589,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  movie['title'] ?? 'zagreus.Unknown'.tr(),
+                  style: TextStyle(
+                    fontSize: _moduleSectionTitleFontSize - 4,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -7660,6 +7705,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _popularTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -7742,8 +7789,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7762,8 +7809,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7788,6 +7835,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  show['title'] ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
@@ -7898,6 +7959,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _trendingNewTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
+    final showOverlayTitle = _showTitles && !_titlesBeneathPoster;
+    final showTitleBeneath = _titlesBeneathPoster;
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -7980,8 +8043,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Gradient overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Gradient overlay (only when showing overlay title)
+                  if (showOverlayTitle)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -8000,8 +8063,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                     ),
-                  // Title overlay
-                  if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+                  // Title overlay (only when not showing beneath)
+                  if (showOverlayTitle)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -8026,6 +8089,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                 ],
               ),
+              // Title beneath poster
+              if (showTitleBeneath) ...[
+                const SizedBox(height: 6),
+                Text(
+                  show['title'] ?? 'zagreus.Unknown'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),

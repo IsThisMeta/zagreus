@@ -126,6 +126,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
+  bool _titlesBeneathPoster = false;
   bool _monochromeRatings = false;
   bool _showHeroCarousel = true;
   bool _hideInLibraryFromHero = false;
@@ -186,6 +187,13 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     final savedShowTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read();
     if (savedShowTitles != null) {
       _showTitles = savedShowTitles;
+    }
+
+    // Load titles beneath poster setting
+    final savedTitlesBeneathPoster =
+        ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.read();
+    if (savedTitlesBeneathPoster != null) {
+      _titlesBeneathPoster = savedTitlesBeneathPoster;
     }
 
     // Load monochrome ratings setting
@@ -285,6 +293,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
 
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
+    ZagreusDatabase.DISCOVER_TITLES_BENEATH_POSTER.update(_titlesBeneathPoster);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
     ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO
@@ -311,6 +320,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _heroHeight = isTablet ? 550.0 : 370.0;
       _columnsPerRow = isTablet ? 4 : 3;
       _showTitles = true;
+      _titlesBeneathPoster = false;
       _monochromeRatings = false;
       _showHeroCarousel = true;
       _hideInLibraryFromHero = false;
@@ -559,6 +569,46 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           ),
           Text(
             'settings.DashboardSettingsShowTitlesDescription'.tr(),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'settings.DashboardSettingsTitlesBeneathPoster'.tr(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _titlesBeneathPoster,
+                activeColor: ZagColours.accentColor(context),
+                onChanged: _showTitles
+                    ? (value) {
+                        setState(() {
+                          _titlesBeneathPoster = value;
+                          _hasChanges = true;
+                        });
+                        widget.onHasChangesChanged?.call(_hasChanges);
+                      }
+                    : null,
+              ),
+            ],
+          ),
+          Text(
+            'settings.DashboardSettingsTitlesBeneathPosterDescription'.tr(),
             style: TextStyle(
               fontSize: 12,
               color: theme.brightness == Brightness.dark
