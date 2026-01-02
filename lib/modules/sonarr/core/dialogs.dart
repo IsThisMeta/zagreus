@@ -593,11 +593,11 @@ class SonarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Series Type',
+      title: 'sonarr.SeriesType'.tr(),
       content: List.generate(
         SonarrSeriesType.values.length,
         (index) => ZagDialog.tile(
-          text: SonarrSeriesType.values[index].value!.toTitleCase(),
+          text: _seriesTypeLabel(SonarrSeriesType.values[index]),
           icon: Icons.folder_open_rounded,
           iconColor: ZagColours().byListIndex(index),
           onTap: () => _setValues(true, SonarrSeriesType.values[index]),
@@ -607,6 +607,17 @@ class SonarrDialogs {
       barrierDismissible: false,
     );
     return Tuple2(_flag, _type);
+  }
+
+  String _seriesTypeLabel(SonarrSeriesType type) {
+    switch (type) {
+      case SonarrSeriesType.STANDARD:
+        return 'sonarr.SeriesTypeStandard'.tr();
+      case SonarrSeriesType.DAILY:
+        return 'sonarr.SeriesTypeDaily'.tr();
+      case SonarrSeriesType.ANIME:
+        return 'sonarr.SeriesTypeAnime'.tr();
+    }
   }
 
   Future<bool> removeSeries(BuildContext context) async {

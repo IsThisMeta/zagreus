@@ -34,8 +34,10 @@ class _State extends State<TautulliMoreRoute>
       controller: TautulliNavigationBar.scrollControllers[3],
       children: [
         ZagBlock(
-          title: 'Check for Updates',
-          body: const [TextSpan(text: 'Tautulli & Plex Updates')],
+          title: 'tautulli.CheckForUpdates'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.CheckForUpdatesDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.system_update_rounded,
             color: ZagColours().byListIndex(0),
@@ -43,8 +45,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.CHECK_FOR_UPDATES.go,
         ),
         ZagBlock(
-          title: 'Graphs',
-          body: const [TextSpan(text: 'Play Count & Duration Graphs')],
+          title: 'tautulli.Graphs'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.GraphsDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.insert_chart_rounded,
             color: ZagColours().byListIndex(1),
@@ -52,8 +56,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.GRAPHS.go,
         ),
         ZagBlock(
-          title: 'Libraries',
-          body: const [TextSpan(text: 'Plex Library Information')],
+          title: 'tautulli.Libraries'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.LibrariesDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.video_library_rounded,
             color: ZagColours().byListIndex(2),
@@ -61,8 +67,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.LIBRARIES.go,
         ),
         ZagBlock(
-          title: 'Logs',
-          body: const [TextSpan(text: 'Tautulli & Plex Logs')],
+          title: 'tautulli.Logs'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.LogsDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.developer_mode_rounded,
             color: ZagColours().byListIndex(3),
@@ -70,8 +78,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.LOGS.go,
         ),
         ZagBlock(
-          title: 'Recently Added',
-          body: const [TextSpan(text: 'Recently Added Content to Plex')],
+          title: 'tautulli.RecentlyAdded'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.RecentlyAddedDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.recent_actors_rounded,
             color: ZagColours().byListIndex(4),
@@ -79,8 +89,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.RECENTLY_ADDED.go,
         ),
         ZagBlock(
-          title: 'Search',
-          body: const [TextSpan(text: 'Search Your Libraries')],
+          title: 'tautulli.Search'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.SearchDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.search_rounded,
             color: ZagColours().byListIndex(5),
@@ -88,8 +100,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.SEARCH.go,
         ),
         ZagBlock(
-          title: 'Statistics',
-          body: const [TextSpan(text: 'User & Library Statistics')],
+          title: 'tautulli.Statistics'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.StatisticsDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.format_list_numbered_rounded,
             color: ZagColours().byListIndex(6),
@@ -97,8 +111,10 @@ class _State extends State<TautulliMoreRoute>
           onTap: TautulliRoutes.STATISTICS.go,
         ),
         ZagBlock(
-          title: 'Synced Items',
-          body: const [TextSpan(text: 'Synced Content on Devices')],
+          title: 'tautulli.SyncedItems'.tr(),
+          body: [
+            TextSpan(text: 'tautulli.SyncedItemsDescription'.tr()),
+          ],
           trailing: ZagIconButton(
             icon: Icons.sync_rounded,
             color: ZagColours.currentAccent,

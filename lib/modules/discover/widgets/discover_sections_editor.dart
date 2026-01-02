@@ -57,6 +57,49 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const double _posterHeightMinIPad = 225.0;
   static const double _posterHeightMaxIPad = 325.0;
 
+  // Named poster sizes for phone (175-275, 25px intervals)
+  static const Map<String, double> _posterSizesPhone = {
+    'Very Small': 175.0,
+    'Small': 200.0,
+    'Regular': 225.0,
+    'Large': 250.0,
+    'Very Large': 275.0,
+  };
+
+  // Named poster sizes for iPad (225-325, 25px intervals)
+  static const Map<String, double> _posterSizesIPad = {
+    'Very Small': 225.0,
+    'Small': 250.0,
+    'Regular': 275.0,
+    'Large': 300.0,
+    'Very Large': 325.0,
+  };
+
+  // Get poster sizes based on device type
+  Map<String, double> get _posterSizes =>
+      _isTablet ? _posterSizesIPad : _posterSizesPhone;
+
+  // Convert pixel value to size name
+  String _posterHeightToSizeName(double height) {
+    final sizes = _posterSizes;
+    for (final entry in sizes.entries) {
+      if ((entry.value - height).abs() < 1.0) {
+        return entry.key;
+      }
+    }
+    // Find closest match
+    String closest = 'Regular';
+    double minDiff = double.infinity;
+    for (final entry in sizes.entries) {
+      final diff = (entry.value - height).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = entry.key;
+      }
+    }
+    return closest;
+  }
+
   // Phone defaults
   static const double _heroHeightMinPhone = 300.0;
   static const double _heroHeightMaxPhone = 500.0;
@@ -387,53 +430,60 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'settings.DashboardSettingsPosterHeight'.tr(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsPosterHeightValue'
-                .tr(args: [_posterHeight.round().toString()]),
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black54,
-            ),
-          ),
-          Slider(
-            value: _posterHeight,
-            min: _posterHeightMin,
-            max: _posterHeightMax,
-            divisions: 20,
-            activeColor: ZagColours.accentColor(context),
-            inactiveColor: theme.brightness == Brightness.dark
-                ? Colors.white24
-                : Colors.black26,
-            onChanged: (value) {
-              setState(() {
-                _posterHeight = value;
-                _hasChanges = true;
-              });
-              widget.onHasChangesChanged?.call(_hasChanges);
-            },
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsPosterHeightDescription'.tr(),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'settings.DashboardSettingsPosterHeight'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white24
+                        : Colors.black26,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _posterHeightToSizeName(_posterHeight),
+                    dropdownColor: theme.brightness == Brightness.dark
+                        ? Colors.grey[850]
+                        : Colors.white,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                    items: _posterSizes.keys.map((sizeName) {
+                      return DropdownMenuItem<String>(
+                        value: sizeName,
+                        child: Text(sizeName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _posterHeight = _posterSizes[value]!;
+                          _hasChanges = true;
+                        });
+                        widget.onHasChangesChanged?.call(_hasChanges);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 32),
           Text(

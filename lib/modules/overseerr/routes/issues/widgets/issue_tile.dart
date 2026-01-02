@@ -100,12 +100,9 @@ class _State extends State<OverseerrIssueTile> {
 
     return TextSpan(
       children: [
-        TextSpan(text: 'Created by '),
-        TextSpan(
-          text: createdBy.displayName,
-          style: TextStyle(
-            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-          ),
+        ..._buildNameSpans(
+          key: 'overseerr.CreatedBy',
+          name: createdBy.displayName,
         ),
         if (relativeTime.isNotEmpty) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
@@ -155,7 +152,7 @@ class _State extends State<OverseerrIssueTile> {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
-          isOpen ? 'Open' : 'Resolved',
+          isOpen ? 'overseerr.Open'.tr() : 'overseerr.Resolved'.tr(),
           style: TextStyle(
             fontSize: ZagUI.FONT_SIZE_H5,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -204,9 +201,18 @@ class _State extends State<OverseerrIssueTile> {
   String _getProblemInfo() {
     if (widget.issue.problemSeason > 0) {
       if (widget.issue.problemEpisode > 0) {
-        return 'S${widget.issue.problemSeason} E${widget.issue.problemEpisode}';
+        return 'overseerr.SeasonEpisode'.tr(
+          args: [
+            widget.issue.problemSeason.toString(),
+            widget.issue.problemEpisode.toString(),
+          ],
+        );
       }
-      return 'Season ${widget.issue.problemSeason}';
+      return 'overseerr.SeasonNumber'.tr(
+        args: [
+          widget.issue.problemSeason.toString(),
+        ],
+      );
     }
     return '';
   }
@@ -272,8 +278,8 @@ class _State extends State<OverseerrIssueTile> {
     final radarrState = context.read<RadarrState>();
     if (radarrState.api == null) {
       showZagInfoSnackBar(
-        title: 'Radarr Not Configured',
-        message: 'Please configure Radarr in settings',
+        title: 'overseerr.RadarrNotConfigured'.tr(),
+        message: 'overseerr.RadarrNotConfiguredMessage'.tr(),
       );
       return;
     }
@@ -307,8 +313,10 @@ class _State extends State<OverseerrIssueTile> {
 
       if (results.isEmpty) {
         showZagErrorSnackBar(
-          title: 'Movie Not Found',
-          message: 'Could not find TMDB ID $tmdbId in Radarr',
+          title: 'overseerr.MovieNotFound'.tr(),
+          message: 'overseerr.MovieNotFoundMessage'.tr(
+            args: [tmdbId.toString()],
+          ),
         );
         return;
       }
@@ -331,8 +339,8 @@ class _State extends State<OverseerrIssueTile> {
       if (!mounted) return;
       ZagLogger().error('Failed to open Radarr add flow', error, stack);
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'Something went wrong talking to Radarr',
+        title: 'overseerr.Error'.tr(),
+        message: 'overseerr.RadarrErrorMessage'.tr(),
       );
     }
   }
@@ -341,8 +349,8 @@ class _State extends State<OverseerrIssueTile> {
     final sonarrState = context.read<SonarrState>();
     if (sonarrState.api == null) {
       showZagInfoSnackBar(
-        title: 'Sonarr Not Configured',
-        message: 'Please configure Sonarr in settings',
+        title: 'overseerr.SonarrNotConfigured'.tr(),
+        message: 'overseerr.SonarrNotConfiguredMessage'.tr(),
       );
       return;
     }
@@ -376,8 +384,10 @@ class _State extends State<OverseerrIssueTile> {
 
       if (results.isEmpty) {
         showZagErrorSnackBar(
-          title: 'Series Not Found',
-          message: 'Could not find TMDB ID $tmdbId in Sonarr',
+          title: 'overseerr.SeriesNotFound'.tr(),
+          message: 'overseerr.SeriesNotFoundMessage'.tr(
+            args: [tmdbId.toString()],
+          ),
         );
         return;
       }
@@ -397,8 +407,8 @@ class _State extends State<OverseerrIssueTile> {
       if (!mounted) return;
       ZagLogger().error('Failed to open Sonarr add flow', error, stack);
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'Something went wrong talking to Sonarr',
+        title: 'overseerr.Error'.tr(),
+        message: 'overseerr.SonarrErrorMessage'.tr(),
       );
     }
   }
@@ -415,8 +425,10 @@ class _State extends State<OverseerrIssueTile> {
           final success = await state.resolveIssue(widget.issue.id);
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Issue Closed',
-              message: 'Issue for ${widget.issue.media.getTitle()} has been closed',
+              title: 'overseerr.IssueClosed'.tr(),
+              message: 'overseerr.IssueClosedMessage'.tr(
+                args: [widget.issue.media.getTitle()],
+              ),
             );
           }
           break;
@@ -425,8 +437,10 @@ class _State extends State<OverseerrIssueTile> {
           final success = await state.reopenIssue(widget.issue.id);
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Issue Reopened',
-              message: 'Issue for ${widget.issue.media.getTitle()} has been reopened',
+              title: 'overseerr.IssueReopened'.tr(),
+              message: 'overseerr.IssueReopenedMessage'.tr(
+                args: [widget.issue.media.getTitle()],
+              ),
             );
           }
           break;
@@ -440,13 +454,40 @@ class _State extends State<OverseerrIssueTile> {
             );
             if (success) {
               showZagSuccessSnackBar(
-                title: 'Comment Added',
-                message: 'Your comment has been added to the issue',
+                title: 'overseerr.CommentAdded'.tr(),
+                message: 'overseerr.CommentAddedMessage'.tr(),
               );
             }
           }
           break;
       }
     }
+  }
+
+  List<TextSpan> _buildNameSpans({
+    required String key,
+    required String name,
+  }) {
+    final template = key.tr(args: ['{name}']);
+    final parts = template.split('{name}');
+    final spans = <TextSpan>[];
+    if (parts.isNotEmpty && parts.first.isNotEmpty) {
+      spans.add(TextSpan(text: parts.first));
+    }
+    spans.add(
+      TextSpan(
+        text: name,
+        style: TextStyle(
+          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+        ),
+      ),
+    );
+    if (parts.length > 1) {
+      final trailing = parts.sublist(1).join('{name}');
+      if (trailing.isNotEmpty) {
+        spans.add(TextSpan(text: trailing));
+      }
+    }
+    return spans;
   }
 }

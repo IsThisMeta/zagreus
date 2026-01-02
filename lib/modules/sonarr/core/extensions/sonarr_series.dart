@@ -90,7 +90,14 @@ extension SonarrSeriesExtension on SonarrSeries {
 
   String get zagSeriesType {
     if (this.seriesType == null) return 'zagreus.Unknown'.tr();
-    return this.seriesType!.value!.toTitleCase();
+    switch (this.seriesType!) {
+      case SonarrSeriesType.STANDARD:
+        return 'sonarr.SeriesTypeStandard'.tr();
+      case SonarrSeriesType.DAILY:
+        return 'sonarr.SeriesTypeDaily'.tr();
+      case SonarrSeriesType.ANIME:
+        return 'sonarr.SeriesTypeAnime'.tr();
+    }
   }
 
   String get zagSeasonCount {

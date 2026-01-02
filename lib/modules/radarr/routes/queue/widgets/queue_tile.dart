@@ -87,11 +87,17 @@ class RadarrQueueTile extends StatelessWidget {
             title: 'radarr.Movie'.tr(), body: record.zagMovieTitle(movie)),
       ZagTableContent(
           title: 'radarr.Languages'.tr(), body: record.zagLanguage),
-      ZagTableContent(title: 'Client', body: record.zagDownloadClient),
-      ZagTableContent(title: 'Indexer', body: record.zagIndexer),
+      ZagTableContent(
+        title: 'radarr.Client'.tr(),
+        body: record.zagDownloadClient,
+      ),
+      ZagTableContent(
+        title: 'radarr.Indexer'.tr(),
+        body: record.zagIndexer,
+      ),
       ZagTableContent(title: 'radarr.Size'.tr(), body: sizeText),
-      ZagTableContent(title: 'Remaining', body: remainingText),
-      ZagTableContent(title: 'Time Left', body: timeLeft),
+      ZagTableContent(title: 'radarr.Remaining'.tr(), body: remainingText),
+      ZagTableContent(title: 'radarr.TimeLeft'.tr(), body: timeLeft),
     ];
   }
 
@@ -128,7 +134,7 @@ class RadarrQueueTile extends StatelessWidget {
         ZagButton.text(
           icon: Icons.messenger_outline_rounded,
           color: ZagColours.orange,
-          text: 'Messages',
+          text: 'radarr.Messages'.tr(),
           onTap: () async {
             ZagDialogs().showMessages(
               context,
@@ -151,7 +157,7 @@ class RadarrQueueTile extends StatelessWidget {
       ZagButton.text(
         icon: Icons.delete_rounded,
         color: ZagColours.red,
-        text: 'Remove',
+        text: 'zagreus.Remove'.tr(),
         onTap: () async {
           if (context.read<RadarrState>().enabled) {
             bool result = await RadarrDialogs().confirmDeleteQueue(context);
@@ -168,7 +174,7 @@ class RadarrQueueTile extends StatelessWidget {
                   )
                   .then((_) {
                 showZagSuccessSnackBar(
-                  title: 'Removed From Queue',
+                  title: 'radarr.RemovedFromQueue'.tr(),
                   message: record.title,
                 );
                 context
@@ -183,7 +189,7 @@ class RadarrQueueTile extends StatelessWidget {
                     error,
                     stack);
                 showZagErrorSnackBar(
-                  title: 'Failed to Remove',
+                  title: 'radarr.FailedToRemove'.tr(),
                   error: error,
                 );
               });

@@ -66,6 +66,11 @@ class _State extends State<OverseerrRequestTile> {
     final year = media.getYear();
     final status = widget.request.getDisplayStatus();
     final seasonCount = widget.request.type == 'tv' ? widget.request.seasonCount : null;
+    final seasonCountText = seasonCount != null && seasonCount > 0
+        ? seasonCount == 1
+            ? 'overseerr.SeasonCount'.tr(args: [seasonCount.toString()])
+            : 'overseerr.SeasonsCount'.tr(args: [seasonCount.toString()])
+        : '';
 
     return TextSpan(
       children: [
@@ -80,9 +85,9 @@ class _State extends State<OverseerrRequestTile> {
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
-        if (seasonCount != null && seasonCount > 0) ...[
+        if (seasonCountText.isNotEmpty) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-          TextSpan(text: '$seasonCount Season${seasonCount > 1 ? 's' : ''}'),
+          TextSpan(text: seasonCountText),
         ],
       ],
     );
@@ -97,12 +102,9 @@ class _State extends State<OverseerrRequestTile> {
 
     return TextSpan(
       children: [
-        TextSpan(text: 'Requested by '),
-        TextSpan(
-          text: requestedBy.displayName,
-          style: TextStyle(
-            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-          ),
+        ..._buildNameSpans(
+          key: 'overseerr.RequestedBy',
+          name: requestedBy.displayName,
         ),
         if (relativeTime.isNotEmpty) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
@@ -142,13 +144,16 @@ class _State extends State<OverseerrRequestTile> {
           // Show download size if content is downloading
           if (media.hasActiveDownloads())
             _buildBadge(
-              '${media.getDownloadCount()} files • ${media.getFormattedDownloadSize()}',
+              'overseerr.DownloadFilesSize'.tr(args: [
+                media.getDownloadCount().toString(),
+                media.getFormattedDownloadSize(),
+              ]),
               ZagColours.blue,
             ),
           // Show "New" badge for recently available content
           if (mediaStatus == OverseerrMediaStatus.AVAILABLE && media.isRecentlyAvailable())
             _buildBadge(
-              'NEW',
+              'overseerr.New'.tr(),
               ZagColours.currentAccent,
             ),
           if (widget.request.type == 'tv')
@@ -207,15 +212,15 @@ class _State extends State<OverseerrRequestTile> {
 
     switch (status) {
       case OverseerrMediaStatus.AVAILABLE:
-        text = 'Available';
+        text = 'overseerr.Available'.tr();
         color = ZagColours.currentAccent;
         break;
       case OverseerrMediaStatus.PARTIALLY_AVAILABLE:
-        text = 'Partial';
+        text = 'overseerr.Partial'.tr();
         color = ZagColours.orange;
         break;
       case OverseerrMediaStatus.PROCESSING:
-        text = 'Processing';
+        text = 'overseerr.Processing'.tr();
         color = ZagColours.blue;
         break;
       default:
@@ -281,8 +286,8 @@ class _State extends State<OverseerrRequestTile> {
     final radarrState = context.read<RadarrState>();
     if (radarrState.api == null) {
       showZagInfoSnackBar(
-        title: 'Radarr Not Configured',
-        message: 'Please configure Radarr in settings',
+        title: 'overseerr.RadarrNotConfigured'.tr(),
+        message: 'overseerr.RadarrNotConfiguredMessage'.tr(),
       );
       return;
     }
@@ -316,8 +321,10 @@ class _State extends State<OverseerrRequestTile> {
 
       if (results.isEmpty) {
         showZagErrorSnackBar(
-          title: 'Movie Not Found',
-          message: 'Could not find TMDB ID $tmdbId in Radarr',
+          title: 'overseerr.MovieNotFound'.tr(),
+          message: 'overseerr.MovieNotFoundMessage'.tr(
+            args: [tmdbId.toString()],
+          ),
         );
         return;
       }
@@ -340,8 +347,8 @@ class _State extends State<OverseerrRequestTile> {
       if (!mounted) return;
       ZagLogger().error('Failed to open Radarr add flow', error, stack);
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'Something went wrong talking to Radarr',
+        title: 'overseerr.Error'.tr(),
+        message: 'overseerr.RadarrErrorMessage'.tr(),
       );
     }
   }
@@ -350,8 +357,8 @@ class _State extends State<OverseerrRequestTile> {
     final sonarrState = context.read<SonarrState>();
     if (sonarrState.api == null) {
       showZagInfoSnackBar(
-        title: 'Sonarr Not Configured',
-        message: 'Please configure Sonarr in settings',
+        title: 'overseerr.SonarrNotConfigured'.tr(),
+        message: 'overseerr.SonarrNotConfiguredMessage'.tr(),
       );
       return;
     }
@@ -385,8 +392,10 @@ class _State extends State<OverseerrRequestTile> {
 
       if (results.isEmpty) {
         showZagErrorSnackBar(
-          title: 'Series Not Found',
-          message: 'Could not find TMDB ID $tmdbId in Sonarr',
+          title: 'overseerr.SeriesNotFound'.tr(),
+          message: 'overseerr.SeriesNotFoundMessage'.tr(
+            args: [tmdbId.toString()],
+          ),
         );
         return;
       }
@@ -406,8 +415,8 @@ class _State extends State<OverseerrRequestTile> {
       if (!mounted) return;
       ZagLogger().error('Failed to open Sonarr add flow', error, stack);
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'Something went wrong talking to Sonarr',
+        title: 'overseerr.Error'.tr(),
+        message: 'overseerr.SonarrErrorMessage'.tr(),
       );
     }
   }
@@ -424,8 +433,10 @@ class _State extends State<OverseerrRequestTile> {
           final success = await state.approveRequest(widget.request.id);
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Approved',
-              message: 'Request for ${widget.request.media.getTitle()} has been approved',
+              title: 'overseerr.RequestApproved'.tr(),
+              message: 'overseerr.RequestApprovedMessage'.tr(
+                args: [widget.request.media.getTitle()],
+              ),
             );
           }
           break;
@@ -434,8 +445,10 @@ class _State extends State<OverseerrRequestTile> {
           final success = await state.declineRequest(widget.request.id);
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Declined',
-              message: 'Request for ${widget.request.media.getTitle()} has been declined',
+              title: 'overseerr.RequestDeclined'.tr(),
+              message: 'overseerr.RequestDeclinedMessage'.tr(
+                args: [widget.request.media.getTitle()],
+              ),
             );
           }
           break;
@@ -444,12 +457,41 @@ class _State extends State<OverseerrRequestTile> {
           final success = await state.deleteRequest(widget.request.id);
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Deleted',
-              message: 'Request for ${widget.request.media.getTitle()} has been deleted',
+              title: 'overseerr.RequestDeleted'.tr(),
+              message: 'overseerr.RequestDeletedMessage'.tr(
+                args: [widget.request.media.getTitle()],
+              ),
             );
           }
           break;
       }
     }
+  }
+
+  List<TextSpan> _buildNameSpans({
+    required String key,
+    required String name,
+  }) {
+    final template = key.tr(args: ['{name}']);
+    final parts = template.split('{name}');
+    final spans = <TextSpan>[];
+    if (parts.isNotEmpty && parts.first.isNotEmpty) {
+      spans.add(TextSpan(text: parts.first));
+    }
+    spans.add(
+      TextSpan(
+        text: name,
+        style: TextStyle(
+          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+        ),
+      ),
+    );
+    if (parts.length > 1) {
+      final trailing = parts.sublist(1).join('{name}');
+      if (trailing.isNotEmpty) {
+        spans.add(TextSpan(text: trailing));
+      }
+    }
+    return spans;
   }
 }

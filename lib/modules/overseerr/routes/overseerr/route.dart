@@ -112,8 +112,8 @@ class _State extends State<OverseerrRoute> {
       builder: (context, data, _) {
         if (!data.item1) {
           return ZagMessage(
-            text: 'Overseerr is not enabled',
-            buttonText: 'Enable in Settings',
+            text: 'overseerr.NotEnabled'.tr(),
+            buttonText: 'overseerr.EnableInSettings'.tr(),
             onTap: () {
               SettingsRoutes.CONFIGURATION_OVERSEERR.go();
             },
@@ -121,8 +121,8 @@ class _State extends State<OverseerrRoute> {
         }
         if (!data.item2) {
           return ZagMessage(
-            text: 'Overseerr is not configured',
-            buttonText: 'Configure',
+            text: 'overseerr.NotConfigured'.tr(),
+            buttonText: 'overseerr.Configure'.tr(),
             onTap: () {
               SettingsRoutes.CONFIGURATION_OVERSEERR.go();
             },
@@ -138,7 +138,7 @@ class _State extends State<OverseerrRoute> {
     return [
       IconButton(
         icon: const Icon(Icons.language_rounded),
-        tooltip: 'Open Web UI',
+        tooltip: 'overseerr.OpenWebUi'.tr(),
         onPressed: _openWebUI,
       ),
     ];

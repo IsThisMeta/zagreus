@@ -18,11 +18,11 @@ extension OverseerrRequestActionTypeExtension on OverseerrRequestActionType {
   String get name {
     switch (this) {
       case OverseerrRequestActionType.APPROVE:
-        return 'Approve Request';
+        return 'overseerr.ApproveRequest'.tr();
       case OverseerrRequestActionType.DECLINE:
-        return 'Decline Request';
+        return 'overseerr.DeclineRequest'.tr();
       case OverseerrRequestActionType.DELETE:
-        return 'Delete Request';
+        return 'overseerr.DeleteRequest'.tr();
     }
   }
 
@@ -54,11 +54,11 @@ extension OverseerrIssueActionTypeExtension on OverseerrIssueActionType {
   String get name {
     switch (this) {
       case OverseerrIssueActionType.CLOSE:
-        return 'Close Issue';
+        return 'overseerr.CloseIssue'.tr();
       case OverseerrIssueActionType.REOPEN:
-        return 'Reopen Issue';
+        return 'overseerr.ReopenIssue'.tr();
       case OverseerrIssueActionType.ADD_COMMENT:
-        return 'Add Comment';
+        return 'overseerr.AddComment'.tr();
     }
   }
 
@@ -169,10 +169,10 @@ class OverseerrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Add Comment',
+      title: 'overseerr.AddComment'.tr(),
       buttons: [
         ZagDialog.button(
-          text: 'Add',
+          text: 'overseerr.Add'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
@@ -181,11 +181,11 @@ class OverseerrDialogs {
           key: _formKey,
           child: ZagDialog.textFormInput(
             controller: _textController,
-            title: 'Comment',
+            title: 'overseerr.Comment'.tr(),
             onSubmitted: (_) => _setValues(true),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Comment cannot be empty';
+                return 'overseerr.CommentCannotBeEmpty'.tr();
               }
               return null;
             },

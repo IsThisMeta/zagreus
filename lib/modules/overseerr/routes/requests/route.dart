@@ -71,8 +71,8 @@ class _State extends State<OverseerrRequestsRoute>
           builder: (context, tuple, _) {
             if (!tuple.item2) {
               return ZagMessage(
-                text: 'Overseerr is not enabled',
-                buttonText: 'Enable in Settings',
+                text: 'overseerr.NotEnabled'.tr(),
+                buttonText: 'overseerr.EnableInSettings'.tr(),
                 onTap: () {
                   // TODO: Navigate to settings
                 },
@@ -94,8 +94,8 @@ class _State extends State<OverseerrRequestsRoute>
   Widget _requestList(List<OverseerrRequest> requests) {
     if (requests.isEmpty) {
       return ZagMessage(
-        text: 'No requests found',
-        buttonText: 'Refresh',
+        text: 'overseerr.NoRequestsFound'.tr(),
+        buttonText: 'overseerr.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     }
@@ -145,13 +145,13 @@ class _State extends State<OverseerrRequestsRoute>
   }
 
   Widget _buildFilterSelector() {
-    const filterOptions = {
-      'pending': 'Pending',
-      'approved': 'Approved',
-      'declined': 'Declined',
-      'available': 'Available',
-      'processing': 'Processing',
-      'unavailable': 'Unavailable',
+    final filterOptions = {
+      'pending': 'overseerr.Pending'.tr(),
+      'approved': 'overseerr.Approved'.tr(),
+      'declined': 'overseerr.Declined'.tr(),
+      'available': 'overseerr.Available'.tr(),
+      'processing': 'overseerr.Processing'.tr(),
+      'unavailable': 'overseerr.Unavailable'.tr(),
     };
 
     return Container(
@@ -205,9 +205,9 @@ class _State extends State<OverseerrRequestsRoute>
   }
 
   Widget _buildSortSelector() {
-    const sortOptions = {
-      'added': 'Most Recent',
-      'modified': 'Last Modified',
+    final sortOptions = {
+      'added': 'overseerr.MostRecent'.tr(),
+      'modified': 'overseerr.LastModified'.tr(),
     };
 
     return Container(

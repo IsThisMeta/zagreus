@@ -58,8 +58,8 @@ class _State extends State<OverseerrIssuesRoute>
           builder: (context, tuple, _) {
             if (!tuple.item2) {
               return ZagMessage(
-                text: 'Overseerr is not enabled',
-                buttonText: 'Enable in Settings',
+                text: 'overseerr.NotEnabled'.tr(),
+                buttonText: 'overseerr.EnableInSettings'.tr(),
                 onTap: () {
                   // TODO: Navigate to settings
                 },
@@ -81,8 +81,8 @@ class _State extends State<OverseerrIssuesRoute>
   Widget _issueList(List<OverseerrIssue> issues) {
     if (issues.isEmpty) {
       return ZagMessage(
-        text: 'No issues found',
-        buttonText: 'Refresh',
+        text: 'overseerr.NoIssuesFound'.tr(),
+        buttonText: 'overseerr.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     }

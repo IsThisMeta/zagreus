@@ -14,8 +14,8 @@ class OverseerrNavigationBar extends StatelessWidget {
   ];
 
   static List<String> get titles => [
-        'Requests',
-        'Issues',
+        'overseerr.Requests'.tr(),
+        'overseerr.Issues'.tr(),
       ];
 
   const OverseerrNavigationBar({

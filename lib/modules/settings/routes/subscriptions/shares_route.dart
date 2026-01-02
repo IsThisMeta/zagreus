@@ -94,7 +94,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Subscription Sharing',
+      title: 'settings.SubscriptionsSharingTitle'.tr(),
       scrollControllers: [scrollController],
     );
   }
@@ -105,9 +105,12 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
         controller: scrollController,
         children: [
           ZagBlock(
-            title: 'Sign In Required',
+            title: 'settings.SubscriptionsSharingSignInRequiredTitle'.tr(),
             body: [
-              TextSpan(text: 'Sign in to manage subscription shares'),
+              TextSpan(
+                text:
+                    'settings.SubscriptionsSharingSignInRequiredMessage'.tr(),
+              ),
             ],
           ),
         ],
@@ -134,10 +137,11 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
         // Received shares (for shared Pro users)
         if (_receivedShares.isNotEmpty) ...[
           ZagBlock(
-            title: 'Shared With You',
+            title: 'settings.SubscriptionsSharingSharedWithYouTitle'.tr(),
             body: [
               TextSpan(
-                text: 'You have Pro access shared by another user • Expires ${_formatDate(_receivedShares.first.ownerExpiresAt)}',
+                text: 'settings.SubscriptionsSharingSharedWithYouMessage'
+                    .tr(args: [_formatDate(_receivedShares.first.ownerExpiresAt)]),
               ),
             ],
             trailing: ZagIconButton(
@@ -152,10 +156,10 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
             (ZagreusMega.isEnabled || ZagreusUltra.isEnabled || ZagreusSupreme.isEnabled) &&
             _receivedShares.isEmpty) ...[
           ZagBlock(
-            title: 'Link Required',
+            title: 'settings.SubscriptionsSharingLinkRequiredTitle'.tr(),
             body: [
               TextSpan(
-                text: 'To share your subscription, link your account first in the Subscriptions screen.',
+                text: 'settings.SubscriptionsSharingLinkRequiredMessage'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -168,10 +172,11 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
         // Share management (for Mega/Ultra users)
         if (canShare) ...[
           ZagBlock(
-            title: 'Your Shares',
+            title: 'settings.SubscriptionsSharingYourSharesTitle'.tr(),
             body: [
               TextSpan(
-                text: '$usedShares of $totalShares shares used',
+                text: 'settings.SubscriptionsSharingSharesUsed'
+                    .tr(args: [usedShares.toString(), totalShares.toString()]),
               ),
             ],
             trailing: ZagIconButton(
@@ -192,8 +197,10 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
               body: [
                 TextSpan(
                   text: share.isActive
-                      ? 'Active • Expires ${_formatDate(share.ownerExpiresAt)}'
-                      : 'Pending sign-in • Expires ${_formatDate(share.ownerExpiresAt)}',
+                      ? 'settings.SubscriptionsSharingStatusActive'
+                          .tr(args: [_formatDate(share.ownerExpiresAt)])
+                      : 'settings.SubscriptionsSharingStatusPending'
+                          .tr(args: [_formatDate(share.ownerExpiresAt)]),
                 ),
               ],
               trailing: ZagIconButton(
@@ -207,12 +214,12 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
         // Empty state for Mega/Ultra with no shares
         if (canShare && _grantedShares.isEmpty) ...[
           ZagBlock(
-            title: 'Share Pro Access',
+            title: 'settings.SubscriptionsSharingShareProTitle'.tr(),
             body: [
               TextSpan(
                 text: ZagreusUltra.isEnabled
-                    ? 'Share Pro access with up to 5 friends or family members'
-                    : 'Share Pro access with 1 friend or family member',
+                    ? 'settings.SubscriptionsSharingShareProUltra'.tr()
+                    : 'settings.SubscriptionsSharingShareProMega'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -226,10 +233,10 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
         // Info for non-sharing tiers
         if (!canShare && _receivedShares.isEmpty) ...[
           ZagBlock(
-            title: 'Upgrade to Share',
+            title: 'settings.SubscriptionsSharingUpgradeToShareTitle'.tr(),
             body: [
               TextSpan(
-                text: 'Mega subscribers can share Pro with 1 person.\nUltra subscribers can share Pro with 5 people.',
+                text: 'settings.SubscriptionsSharingUpgradeToShareMessage'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -247,7 +254,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
 
     ZagDialog.dialog(
       context: context,
-      title: 'Share Pro Access',
+      title: 'settings.SubscriptionsSharingGrantDialogTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
@@ -257,7 +264,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Enter the email address of the person you want to share Pro access with:',
+                  'settings.SubscriptionsSharingGrantPrompt'.tr(),
                   style: TextStyle(
                     fontSize: ZagUI.FONT_SIZE_H2,
                     color: ZagColours.textColor(context),
@@ -269,7 +276,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
                   decoration: InputDecoration(
-                    hintText: 'email@example.com',
+                    hintText: 'settings.SubscriptionsSharingEmailHint'.tr(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -281,7 +288,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
           ZagDialog.tile(
             icon: Icons.person_add_rounded,
             iconColor: ZagColours.currentAccent,
-            text: 'Grant Access',
+            text: 'settings.SubscriptionsSharingGrantAction'.tr(),
             onTap: () {
               Navigator.of(context).pop();
               final email = emailController.text.trim();
@@ -299,15 +306,15 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   Future<void> _grantShareByEmail(String email) async {
     if (_currentProductId == null) {
       showZagErrorSnackBar(
-        title: 'Error',
-        message: 'No linked subscription found',
+        title: 'zagreus.Error'.tr(),
+        message: 'settings.SubscriptionsSharingNoLinkedSubscription'.tr(),
       );
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Granting Access',
-      message: 'Creating share...',
+      title: 'settings.SubscriptionsSharingGrantingTitle'.tr(),
+      message: 'settings.SubscriptionsSharingCreatingShare'.tr(),
     );
 
     final expiresAt = _currentExpiresAt ?? DateTime.now();
@@ -320,14 +327,16 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
 
     if (result.success) {
       showZagSuccessSnackBar(
-        title: 'Success',
-        message: 'Pro access shared with $email',
+        title: 'settings.SubscriptionsSharingSuccessTitle'.tr(),
+        message: 'settings.SubscriptionsSharingSharedWithEmail'
+            .tr(args: [email]),
       );
       _loadShares(); // Reload shares
     } else {
       showZagErrorSnackBar(
-        title: 'Failed',
-        message: result.error ?? 'Could not grant share',
+        title: 'settings.SubscriptionsSharingFailedTitle'.tr(),
+        message: result.error ??
+            'settings.SubscriptionsSharingCouldNotGrant'.tr(),
       );
     }
   }
@@ -335,13 +344,14 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
   void _confirmRevokeShare(SubscriptionShare share) {
     ZagDialog.dialog(
       context: context,
-      title: 'Revoke Share?',
+      title: 'settings.SubscriptionsSharingRevokeTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Remove Pro access for ${share.sharedWithEmail}?',
+              'settings.SubscriptionsSharingRevokePrompt'
+                  .tr(args: [share.sharedWithEmail]),
               style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
                 color: ZagColours.textColor(context),
@@ -351,7 +361,7 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
           ZagDialog.tile(
             icon: Icons.close_rounded,
             iconColor: ZagColours.red,
-            text: 'Revoke Access',
+            text: 'settings.SubscriptionsSharingRevokeAction'.tr(),
             onTap: () {
               Navigator.of(context).pop();
               _revokeShare(share);
@@ -368,14 +378,14 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
 
     if (success) {
       showZagSuccessSnackBar(
-        title: 'Share Revoked',
-        message: 'Pro access removed',
+        title: 'settings.SubscriptionsSharingRevokedTitle'.tr(),
+        message: 'settings.SubscriptionsSharingRevokedMessage'.tr(),
       );
       _loadShares(); // Reload shares
     } else {
       showZagErrorSnackBar(
-        title: 'Failed',
-        message: 'Could not revoke share',
+        title: 'settings.SubscriptionsSharingFailedTitle'.tr(),
+        message: 'settings.SubscriptionsSharingCouldNotRevoke'.tr(),
       );
     }
   }
@@ -385,13 +395,16 @@ class _State extends State<SharesManagementRoute> with ZagScrollControllerMixin 
     final diff = date.difference(now);
 
     if (diff.inDays > 30) {
-      return '${diff.inDays ~/ 30} months';
+      return 'settings.SubscriptionsSharingTimeMonths'
+          .tr(args: [(diff.inDays ~/ 30).toString()]);
     } else if (diff.inDays > 0) {
-      return '${diff.inDays} days';
+      return 'settings.SubscriptionsSharingTimeDays'
+          .tr(args: [diff.inDays.toString()]);
     } else if (diff.inHours > 0) {
-      return '${diff.inHours} hours';
+      return 'settings.SubscriptionsSharingTimeHours'
+          .tr(args: [diff.inHours.toString()]);
     } else {
-      return 'soon';
+      return 'settings.SubscriptionsSharingTimeSoon'.tr();
     }
   }
 }

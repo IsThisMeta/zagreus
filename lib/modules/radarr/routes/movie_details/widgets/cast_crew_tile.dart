@@ -15,6 +15,8 @@ class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final position = _position(context);
+    final typeLabel = _typeLabel(context);
     return ZagBlock(
       title: credits.personName,
       posterPlaceholderIcon: ZagIcons.USER,
@@ -22,9 +24,9 @@ class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
           ? null
           : (credits.images![0].remoteUrl ?? credits.images![0].url),
       body: [
-        TextSpan(text: _position),
+        TextSpan(text: position),
         TextSpan(
-          text: credits.type!.readable,
+          text: typeLabel,
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
             color: credits.type == RadarrCreditType.CAST
@@ -54,16 +56,42 @@ class RadarrMovieDetailsCastCrewTile extends StatelessWidget {
     );
   }
 
-  String? get _position {
+  String _typeLabel(BuildContext context) {
+    switch (credits.type) {
+      case RadarrCreditType.CAST:
+        return 'radarr.Cast'.tr();
+      case RadarrCreditType.CREW:
+        return 'radarr.Crew'.tr();
+      default:
+        return ZagUI.TEXT_EMDASH;
+    }
+  }
+
+  String? _position(BuildContext context) {
     switch (credits.type) {
       case RadarrCreditType.CREW:
-        return credits.job!.isEmpty ? ZagUI.TEXT_EMDASH : credits.job;
+        return _crewJobLabel(context);
       case RadarrCreditType.CAST:
         return credits.character!.isEmpty
             ? ZagUI.TEXT_EMDASH
             : credits.character;
       default:
         return ZagUI.TEXT_EMDASH;
+    }
+  }
+
+  String _crewJobLabel(BuildContext context) {
+    final job = credits.job;
+    if (job == null || job.isEmpty) return ZagUI.TEXT_EMDASH;
+    switch (job.toLowerCase()) {
+      case 'director':
+        return 'radarr.CreditJobDirector'.tr();
+      case 'producer':
+        return 'radarr.CreditJobProducer'.tr();
+      case 'screenplay':
+        return 'radarr.CreditJobScreenplay'.tr();
+      default:
+        return job;
     }
   }
 }

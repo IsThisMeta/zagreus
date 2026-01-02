@@ -793,8 +793,6 @@
     "settings.DashboardSettingsItemsPerRowDescription": "Détermine combien d'affiches tiennent horizontalement dans les grilles complètes du tableau de bord pour les films et les séries.",
     "settings.DashboardSettingsShowTitles": "Afficher les titres",
     "settings.DashboardSettingsShowTitlesDescription": "Active ou désactive les titres sur les affiches de films et de séries.",
-    "settings.DashboardSettingsTitlesOnPoster": "Titres sur les affiches",
-    "settings.DashboardSettingsTitlesOnPosterDescription": "Affiche les titres sur les affiches au lieu de les afficher en dessous. Nécessite l'activation de l'affichage des titres.",
     "settings.DashboardSettingsMonochromeRatings": "Notes monochromes",
     "settings.DashboardSettingsMonochromeRatingsDescription": "Affiche les badges de note en blanc plutôt qu'en couleur.",
     "settings.DashboardSettingsShowHeroCarousel": "Afficher le carrousel vedette",

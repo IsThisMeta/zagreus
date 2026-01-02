@@ -29,7 +29,6 @@ class SubscriptionsRoute extends StatefulWidget {
 
 class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Timer? _revokeTimer;
   StreamSubscription<User?>? _authSubscription;
   bool _accountLinkLoaded = false;
   Map<String, dynamic>? _accountSubscription;
@@ -78,25 +77,28 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   void _promptSignInForSharing() {
     showZagInfoSnackBar(
-      title: 'Sign in required',
-      message: 'Sign in to your Zagreus account to share subscriptions.',
+      title: 'settings.SubscriptionsSignInRequiredTitle'.tr(),
+      message: 'settings.SubscriptionsSignInRequiredMessage'.tr(),
     );
     SettingsRoutes.ACCOUNT.go();
   }
 
   Future<void> _linkThisAccount() async {
     if (!_isSignedIn) return;
-    showZagInfoSnackBar(title: 'Linking', message: 'Linking this account...');
+    showZagInfoSnackBar(
+      title: 'settings.SubscriptionsLinkingTitle'.tr(),
+      message: 'settings.SubscriptionsLinkingMessage'.tr(),
+    );
     try {
       await ZAssistantService().linkAccountToSubscription();
       await _loadAccountSubscription();
       showZagSuccessSnackBar(
-        title: 'Linked',
-        message: 'This account is now linked to your subscription.',
+        title: 'settings.SubscriptionsLinkedTitle'.tr(),
+        message: 'settings.SubscriptionsLinkedMessage'.tr(),
       );
     } catch (e) {
       showZagErrorSnackBar(
-        title: 'Could not link',
+        title: 'settings.SubscriptionsLinkFailedTitle'.tr(),
         message: e.toString(),
       );
     }
@@ -104,17 +106,20 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   Future<void> _unlinkThisAccount() async {
     if (!_isSignedIn) return;
-    showZagInfoSnackBar(title: 'Unlinking', message: 'Unlinking this account...');
+    showZagInfoSnackBar(
+      title: 'settings.SubscriptionsUnlinkingTitle'.tr(),
+      message: 'settings.SubscriptionsUnlinkingMessage'.tr(),
+    );
     try {
       await ZAssistantService().unlinkAccountFromSubscription();
       await _loadAccountSubscription();
       showZagSuccessSnackBar(
-        title: 'Unlinked',
-        message: 'This account is no longer linked.',
+        title: 'settings.SubscriptionsUnlinkedTitle'.tr(),
+        message: 'settings.SubscriptionsUnlinkedMessage'.tr(),
       );
     } catch (e) {
       showZagErrorSnackBar(
-        title: 'Could not unlink',
+        title: 'settings.SubscriptionsUnlinkFailedTitle'.tr(),
         message: e.toString(),
       );
     }
@@ -131,7 +136,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Subscriptions',
+      title: 'settings.SubscriptionsTitle'.tr(),
       scrollControllers: [scrollController],
     );
   }
@@ -143,58 +148,59 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isSupreme = ZagreusSupreme.isEnabled;
     final String proPlanType = ZagreusPro.subscriptionType;
     final String? proPlanLabel =
-        isPro ? 'Active • ${_formatPlanName(proPlanType)} plan' : null;
+        isPro
+            ? 'settings.SubscriptionsActivePlan'
+                .tr(args: [_formatPlanName(proPlanType)])
+            : null;
     final String ultraPlanType = ZagreusUltra.subscriptionType;
     final String? ultraPlanLabel =
-        isUltra ? 'Active • ${_formatPlanName(ultraPlanType)} plan' : null;
+        isUltra
+            ? 'settings.SubscriptionsActivePlan'
+                .tr(args: [_formatPlanName(ultraPlanType)])
+            : null;
     final String supremePlanType = ZagreusSupreme.subscriptionType;
     final String? supremePlanLabel =
-        isSupreme ? 'Active • ${_formatPlanName(supremePlanType)} plan' : null;
+        isSupreme
+            ? 'settings.SubscriptionsActivePlan'
+                .tr(args: [_formatPlanName(supremePlanType)])
+            : null;
 
     return ZagListView(
       controller: scrollController,
       children: [
         // Zagreus Pro Section
         ZagBlock(
-          title: 'Zagreus Pro',
+          title: 'settings.SubscriptionsZagreusProTitle'.tr(),
           body: [
             TextSpan(
               text: isUltra
-                  ? 'Included with Ultra'
+                  ? 'settings.SubscriptionsIncludedWithUltra'.tr()
                   : isMega
-                      ? 'Included with Mega'
+                      ? 'settings.SubscriptionsIncludedWithMega'.tr()
                       : isPro
                           ? proPlanLabel!
-                          : 'Unlock all modules & power features',
+                          : 'settings.SubscriptionsProUnlock'.tr(),
             )
           ],
-          trailing: GestureDetector(
-            onLongPressStart: (_) {
-              if (isPro && !isMega) {
-                _startRevokeTimer();
-              }
-            },
-            onLongPressEnd: (_) => _cancelRevokeTimer(),
-            child: ZagIconButton(
-              icon: (isUltra || isMega || isPro)
-                  ? Icons.star_rounded
-                  : Icons.star_border_rounded,
-              color: ZagColours.currentAccent,
-            ),
+          trailing: ZagIconButton(
+            icon: (isUltra || isMega || isPro)
+                ? Icons.star_rounded
+                : Icons.star_border_rounded,
+            color: ZagColours.currentAccent,
           ),
           onTap: () => _showProDialog(context),
         ),
 
         // Zagreus Mega Section
         ZagBlock(
-          title: 'Zagreus Mega',
+          title: 'settings.SubscriptionsZagreusMegaTitle'.tr(),
           body: [
             TextSpan(
                 text: isUltra
-                    ? 'Included with Ultra'
+                    ? 'settings.SubscriptionsIncludedWithUltra'.tr()
                     : isMega
-                        ? 'Active • Mega plan'
-                        : 'Add AI agent and recommendations')
+                        ? 'settings.SubscriptionsMegaActive'.tr()
+                        : 'settings.SubscriptionsMegaAddAi'.tr())
           ],
           trailing: ZagIconButton(
             icon: (isUltra || isMega)
@@ -207,14 +213,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
         // Zagreus Ultra Section (preview)
         ZagBlock(
-          title: 'Zagreus Ultra',
+          title: 'settings.SubscriptionsZagreusUltraTitle'.tr(),
           body: [
             TextSpan(
               text: isSupreme
-                  ? 'Included with Supreme'
+                  ? 'settings.SubscriptionsIncludedWithSupreme'.tr()
                   : isUltra
                       ? ultraPlanLabel!
-                      : 'Use powerful models for AI features',
+                      : 'settings.SubscriptionsUltraUseModels'.tr(),
             ),
           ],
           trailing: ZagIconButton(
@@ -227,12 +233,12 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
         // Zagreus Supreme Section (only for Ultra+ users)
         if (isUltra || isSupreme)
           ZagBlock(
-            title: 'Zagreus Supreme',
+            title: 'settings.SubscriptionsZagreusSupremeTitle'.tr(),
             body: [
               TextSpan(
                 text: isSupreme
                     ? supremePlanLabel!
-                    : 'Use world leading models for AI features',
+                    : 'settings.SubscriptionsSupremeUseModels'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -244,16 +250,17 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
         if (isMega || isUltra || isSupreme)
           ZagBlock(
-            title: 'Account Link',
+            title: 'settings.SubscriptionsAccountLinkTitle'.tr(),
             body: [
               TextSpan(
                 text: !_isSignedIn
-                    ? 'Link to share subscriptions'
+                    ? 'settings.SubscriptionsLinkToShare'.tr()
                     : _accountLinkLoaded
                         ? (_hasLinkedSubscription
-                            ? 'Linked • ${(_accountSubscription?['tier'] as String?)?.toUpperCase() ?? ''}'
-                            : 'Link to share subscriptions')
-                        : 'Checking link…',
+                            ? 'settings.SubscriptionsLinked'
+                                .tr(args: [(_accountSubscription?['tier'] as String?)?.toUpperCase() ?? ''])
+                            : 'settings.SubscriptionsLinkToShare'.tr())
+                        : 'settings.SubscriptionsCheckingLink'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -276,9 +283,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Unlink account?'),
-                    content: const Text(
-                      'Unlinking will disable subscription sharing for your account until re-linked.',
+                    title: Text('settings.SubscriptionsUnlinkTitle'.tr()),
+                    content: Text(
+                      'settings.SubscriptionsUnlinkBody'.tr(),
                     ),
                     actions: [
                       TextButton(
@@ -286,14 +293,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         style: TextButton.styleFrom(
                           foregroundColor: ZagColours.white,
                         ),
-                        child: const Text('Cancel'),
+                        child: Text('zagreus.Cancel'.tr()),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(true),
                         style: TextButton.styleFrom(
                           foregroundColor: ZagColours.currentAccent,
                         ),
-                        child: const Text('Unlink'),
+                        child: Text('settings.SubscriptionsUnlinkAction'.tr()),
                       ),
                     ],
                   ),
@@ -311,16 +318,16 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
         if (ZagSupabaseAuth().isSignedIn &&
             ((isMega || isUltra || isSupreme) ? _hasLinkedSubscription : _hasSharedPro()))
           ZagBlock(
-            title: 'Subscription Sharing',
+            title: 'settings.SubscriptionsSharingTitle'.tr(),
             body: [
               TextSpan(
                 text: isSupreme
-                    ? 'Manage your 10 Pro shares'
+                    ? 'settings.SubscriptionsSharingManage'.tr(args: ['10'])
                     : isUltra
-                        ? 'Manage your 5 Pro shares'
+                        ? 'settings.SubscriptionsSharingManage'.tr(args: ['5'])
                         : isMega
-                            ? 'Manage your 1 Pro share'
-                            : 'View shared access',
+                            ? 'settings.SubscriptionsSharingManage'.tr(args: ['1'])
+                            : 'settings.SubscriptionsSharingView'.tr(),
               ),
             ],
             trailing: ZagIconButton(
@@ -360,33 +367,24 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     String introText;
     if (isSupreme) {
       introText =
-          'Supreme already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+          'settings.SubscriptionsProIncludedSupreme'.tr();
     } else if (isUltra) {
       introText =
-          'Ultra already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+          'settings.SubscriptionsProIncludedUltra'.tr();
     } else if (isMega) {
       introText =
-          'Mega already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.';
+          'settings.SubscriptionsProIncludedMega'.tr();
     } else if (isPro) {
       introText =
-          "You're on the ${_formatPlanName(ZagreusPro.subscriptionType)} plan.\n\nEnjoy Dashboard upgrades and premium features!";
+          'settings.SubscriptionsProActiveMessage'
+              .tr(args: [_formatPlanName(ZagreusPro.subscriptionType)]);
     } else {
-      introText = 'Zagreus Pro unlocks:\n'
-          '• Dashboard Pro\n'
-          '• Unraid\n'
-          '• Overseerr\n'
-          '• Prowlarr\n'
-          '• Enhanced Cast & Crew\n'
-          '• Ratings & Links\n'
-          '• Automatic Network Switching\n'
-          '• Multiple instances per profile\n'
-          '• And more\n\n'
-          'Choose a plan to get started.';
+      introText = 'settings.SubscriptionsProUnlocks'.tr();
     }
 
     ZagDialog.dialog(
       context: context,
-      title: 'Zagreus Pro',
+      title: 'settings.SubscriptionsZagreusProTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
@@ -405,10 +403,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.autorenew_rounded,
               iconColor: ZagColours.currentAccent,
-              text: 'Switch to Yearly • \$4.99/year',
+              text: 'settings.SubscriptionsSwitchToYearly'
+                  .tr(args: ['\$4.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Lock in savings vs monthly billing',
+                  text: 'settings.SubscriptionsLockInSavings'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -429,10 +428,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.currentAccent,
-              text: 'Monthly • \$0.99/month',
+              text: 'settings.SubscriptionsPlanMonthly'
+                  .tr(args: ['\$0.99/month']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '1 month free trial',
+                  text: 'settings.SubscriptionsTrialOneMonth'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -451,10 +451,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.stars_rounded,
               iconColor: ZagColours.currentAccent,
-              text: 'Yearly • \$4.99/year',
+              text: 'settings.SubscriptionsPlanYearly'
+                  .tr(args: ['\$4.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '1 month free trial',
+                  text: 'settings.SubscriptionsTrialOneMonth'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -479,7 +480,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    'By subscribing, you agree to our',
+                    'settings.SubscriptionsLegalIntro'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context)
@@ -497,7 +498,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         onTap: () => _openUrl(
                             'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
                         child: Text(
-                          'Terms of Service',
+                          'settings.SubscriptionsTermsOfService'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -506,7 +507,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                       Text(
-                        ' and ',
+                        'settings.SubscriptionsAnd'.tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context)
@@ -519,7 +520,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       InkWell(
                         onTap: () => _openUrl('https://zagreus.app/privacy'),
                         child: Text(
-                          'Privacy Policy',
+                          'settings.SubscriptionsPrivacyPolicy'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -541,7 +542,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   _restorePurchases();
                 },
                 child: Text(
-                  'Restore Purchases',
+                  'settings.SubscriptionsRestorePurchases'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: ZagColours.accentColor(context),
@@ -556,7 +557,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.cancel_rounded,
               iconColor: ZagColours.red,
-              text: '[DEBUG] Cancel Subscription',
+              text: 'settings.SubscriptionsDebugCancel'.tr(),
               onTap: () {
                 Navigator.of(context).pop();
                 _cancelPro();
@@ -576,13 +577,13 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     if (isSupreme) {
       ZagDialog.dialog(
         context: context,
-        title: 'Zagreus Mega',
+        title: 'settings.SubscriptionsZagreusMegaTitle'.tr(),
         customContent: ZagDialog.content(
           children: [
             Padding(
               padding: ZagDialog.textDialogContentPadding(),
               child: Text(
-                'Supreme already includes every Mega feature.',
+                'settings.SubscriptionsMegaIncludedSupreme'.tr(),
                 style: TextStyle(
                   fontSize: ZagUI.FONT_SIZE_H2,
                   color: ZagColours.textColor(context),
@@ -599,23 +600,20 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     String megaIntro;
     if (isSupreme) {
       megaIntro =
-          'Supreme already includes every Mega feature.\n\nWant to downgrade? Pick a Mega plan below.';
+          'settings.SubscriptionsMegaIncludedSupremeDowngrade'.tr();
     } else if (isUltra) {
       megaIntro =
-          'Ultra already includes every Mega feature.\n\nWant to downgrade? Pick a Mega plan below.';
+          'settings.SubscriptionsMegaIncludedUltra'.tr();
     } else if (isMega) {
       megaIntro =
-          "You have an active Mega subscription.\n\nEnjoy the fully unlocked AI agent with Dashboard recommendations and Z-Bot powered by GPT-5 mini (15 messages every 12 hours).";
+          'settings.SubscriptionsMegaActiveMessage'.tr();
     } else {
-      megaIntro = 'Zagreus Mega unlocks:\n'
-          '• Fully unlocked AI agent and Dashboard recommendations\n'
-          '• Z-Bot powered by GPT-5 mini (15 messages every 12 hours)\n'
-          '• All Pro features';
+      megaIntro = 'settings.SubscriptionsMegaUnlocks'.tr();
     }
 
     ZagDialog.dialog(
       context: context,
-      title: 'Zagreus Mega',
+      title: 'settings.SubscriptionsZagreusMegaTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
@@ -634,10 +632,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.autorenew_rounded,
               iconColor: ZagColours.orange,
-              text: 'Switch to Yearly • \$14.99/year',
+              text: 'settings.SubscriptionsSwitchToYearly'
+                  .tr(args: ['\$14.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Best value • save vs monthly',
+                  text: 'settings.SubscriptionsBestValueSaveMonthly'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -658,10 +657,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.flash_on_rounded,
               iconColor: ZagColours.orange,
-              text: 'Monthly • \$1.99/month',
+              text: 'settings.SubscriptionsPlanMonthly'
+                  .tr(args: ['\$1.99/month']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '1 month free trial',
+                  text: 'settings.SubscriptionsTrialOneMonth'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -680,10 +680,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.stars_rounded,
               iconColor: ZagColours.orange,
-              text: 'Yearly • \$14.99/year',
+              text: 'settings.SubscriptionsPlanYearly'
+                  .tr(args: ['\$14.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '1 month free trial',
+                  text: 'settings.SubscriptionsTrialOneMonth'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -708,7 +709,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    'By subscribing, you agree to our',
+                    'settings.SubscriptionsLegalIntro'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context)
@@ -726,7 +727,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         onTap: () => _openUrl(
                             'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
                         child: Text(
-                          'Terms of Service',
+                          'settings.SubscriptionsTermsOfService'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -735,7 +736,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                       Text(
-                        ' and ',
+                        'settings.SubscriptionsAnd'.tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context)
@@ -748,7 +749,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       InkWell(
                         onTap: () => _openUrl('https://zagreus.app/privacy'),
                         child: Text(
-                          'Privacy Policy',
+                          'settings.SubscriptionsPrivacyPolicy'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -770,7 +771,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   _restorePurchases();
                 },
                 child: Text(
-                  'Restore Purchases',
+                  'settings.SubscriptionsRestorePurchases'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: ZagColours.accentColor(context),
@@ -787,10 +788,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   }
 
   String _formatPlanName(String raw) {
-    if (raw.isEmpty) return 'Pro';
+    if (raw.isEmpty) return 'settings.SubscriptionsPlanNamePro'.tr();
     final lower = raw.toLowerCase();
-    if (lower.contains('year')) return 'Yearly';
-    if (lower.contains('month')) return 'Monthly';
+    if (lower.contains('year')) {
+      return 'settings.SubscriptionsPlanNameYearly'.tr();
+    }
+    if (lower.contains('month')) {
+      return 'settings.SubscriptionsPlanNameMonthly'.tr();
+    }
     return raw[0].toUpperCase() + raw.substring(1);
   }
 
@@ -800,16 +805,16 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     // Check if IAP is available
     if (!iapService.isAvailable) {
       showZagInfoSnackBar(
-        title: 'Unavailable',
-        message: 'In-app purchases are not available',
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
       );
       return;
     }
 
     // Attempt real purchase
     showZagInfoSnackBar(
-      title: 'Processing',
-      message: 'Connecting to App Store...',
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
     );
 
     final bool success = isMonthly
@@ -826,15 +831,15 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     if (!iapService.isAvailable) {
       showZagInfoSnackBar(
-        title: 'Unavailable',
-        message: 'In-app purchases are not available',
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
       );
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Processing',
-      message: 'Connecting to App Store...',
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
     );
 
     // Purchase Mega subscription
@@ -850,15 +855,15 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     if (!iapService.isAvailable) {
       showZagInfoSnackBar(
-        title: 'Unavailable',
-        message: 'In-app purchases are not available',
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
       );
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Processing',
-      message: 'Connecting to App Store...',
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
     );
 
     final bool success = await iapService.purchaseUltra(isMonthly);
@@ -901,9 +906,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     setState(() {});
 
     showZagInfoSnackBar(
-      title: 'Pro Status Revoked',
-      message:
-          'Boot module restored to ${BIOSDatabase.BOOT_MODULE.read().name}',
+      title: 'settings.SubscriptionsProRevokedTitle'.tr(),
+      message: 'settings.SubscriptionsBootModuleRestored'
+          .tr(args: [BIOSDatabase.BOOT_MODULE.read().name]),
     );
   }
 
@@ -913,8 +918,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       showZagInfoSnackBar(
-        title: 'Error',
-        message: 'Could not open link',
+        title: 'zagreus.Error'.tr(),
+        message: 'settings.SubscriptionsOpenLinkFailed'.tr(),
       );
     }
   }
@@ -924,16 +929,14 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool isSupreme = ZagreusSupreme.isEnabled;
 
     final String introText = isSupreme
-        ? 'Supreme already includes every Ultra feature.\n\nWant to downgrade? Pick an Ultra plan below.'
+        ? 'settings.SubscriptionsUltraIncludedSupreme'.tr()
         : isUltra
-            ? "You have an active Ultra subscription.\n\nEnjoy GPT-5.2 Z-Bot responses, GPT-5.2 Dashboard results, and every Mega perk."
-            : 'Zagreus Ultra unlocks:\n'
-                '• GPT-5.2 responses for Z-Bot and Dashboard\n'
-                '• All Pro and Mega features';
+            ? 'settings.SubscriptionsUltraActiveMessage'.tr()
+            : 'settings.SubscriptionsUltraUnlocks'.tr();
 
     ZagDialog.dialog(
       context: context,
-      title: 'Zagreus Ultra',
+      title: 'settings.SubscriptionsZagreusUltraTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
@@ -951,10 +954,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.autorenew_rounded,
               iconColor: ZagColours.purple,
-              text: 'Switch to Yearly • \$34.99/year',
+              text: 'settings.SubscriptionsSwitchToYearly'
+                  .tr(args: ['\$34.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Best value • save over monthly',
+                  text: 'settings.SubscriptionsBestValueSaveOverMonthly'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -975,10 +979,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
               iconColor: ZagColours.purple,
-              text: 'Monthly • \$3.99/month',
+              text: 'settings.SubscriptionsPlanMonthly'
+                  .tr(args: ['\$3.99/month']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '2 week free trial',
+                  text: 'settings.SubscriptionsTrialTwoWeeks'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -997,10 +1002,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.stars_rounded,
               iconColor: ZagColours.purple,
-              text: 'Yearly • \$34.99/year',
+              text: 'settings.SubscriptionsPlanYearly'
+                  .tr(args: ['\$34.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: '2 week free trial',
+                  text: 'settings.SubscriptionsTrialTwoWeeks'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -1024,7 +1030,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    'By subscribing, you agree to our',
+                    'settings.SubscriptionsLegalIntro'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context)
@@ -1042,7 +1048,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         onTap: () => _openUrl(
                             'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
                         child: Text(
-                          'Terms of Service',
+                          'settings.SubscriptionsTermsOfService'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -1051,7 +1057,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                       Text(
-                        ' and ',
+                        'settings.SubscriptionsAnd'.tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context)
@@ -1064,7 +1070,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       InkWell(
                         onTap: () => _openUrl('https://zagreus.app/privacy'),
                         child: Text(
-                          'Privacy Policy',
+                          'settings.SubscriptionsPrivacyPolicy'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -1086,7 +1092,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   _restorePurchases();
                 },
                 child: Text(
-                  'Restore Purchases',
+                  'settings.SubscriptionsRestorePurchases'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: ZagColours.accentColor(context),
@@ -1107,17 +1113,15 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     ZagDialog.dialog(
       context: context,
-      title: 'Zagreus Supreme',
+      title: 'settings.SubscriptionsZagreusSupremeTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
               isSupreme
-                  ? "You have an active Supreme subscription.\n\nEnjoy world leading AI models for Z-Bot and recommendations, plus all Ultra, Mega, and Pro features."
-                  : 'Zagreus Supreme unlocks:\n'
-                      '• World leading AI models for Z-Bot\n'
-                      '• All Ultra, Mega, and Pro features',
+                  ? 'settings.SubscriptionsSupremeActiveMessage'.tr()
+                  : 'settings.SubscriptionsSupremeUnlocks'.tr(),
               style: const TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
               ),
@@ -1127,10 +1131,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.auto_awesome_rounded,
               iconColor: ZagColours.gold,
-              text: 'Monthly • \$14.99/month',
+              text: 'settings.SubscriptionsPlanMonthly'
+                  .tr(args: ['\$14.99/month']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Includes all Ultra + Mega + Pro features',
+                  text: 'settings.SubscriptionsSupremeIncludesAll'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -1149,10 +1154,11 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.stars_rounded,
               iconColor: ZagColours.gold,
-              text: 'Yearly • \$149.99/year',
+              text: 'settings.SubscriptionsPlanYearly'
+                  .tr(args: ['\$149.99/year']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'Best value • save over 15%',
+                  text: 'settings.SubscriptionsBestValueSaveOver15'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -1176,7 +1182,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   const Divider(),
                   const SizedBox(height: 8),
                   Text(
-                    'By subscribing, you agree to our',
+                    'settings.SubscriptionsLegalIntro'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context)
@@ -1194,7 +1200,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         onTap: () => _openUrl(
                             'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
                         child: Text(
-                          'Terms of Service',
+                          'settings.SubscriptionsTermsOfService'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -1203,7 +1209,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                         ),
                       ),
                       Text(
-                        ' and ',
+                        'settings.SubscriptionsAnd'.tr(),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context)
@@ -1216,7 +1222,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                       InkWell(
                         onTap: () => _openUrl('https://zagreus.app/privacy'),
                         child: Text(
-                          'Privacy Policy',
+                          'settings.SubscriptionsPrivacyPolicy'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: ZagColours.accentColor(context),
@@ -1238,7 +1244,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
                   _restorePurchases();
                 },
                 child: Text(
-                  'Restore Purchases',
+                  'settings.SubscriptionsRestorePurchases'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     color: ZagColours.accentColor(context),
@@ -1259,15 +1265,15 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
 
     if (!iapService.isAvailable) {
       showZagInfoSnackBar(
-        title: 'Unavailable',
-        message: 'In-app purchases are not available',
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
       );
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Processing',
-      message: 'Connecting to App Store...',
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
     );
 
     final bool success = await iapService.purchaseSupreme(isMonthly);
@@ -1289,39 +1295,8 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   @override
   void dispose() {
     _authSubscription?.cancel();
-    _cancelRevokeTimer();
     super.dispose();
   }
 
-  void _startRevokeTimer() {
-    _cancelRevokeTimer();
-    _revokeTimer = Timer(const Duration(seconds: 5), _showSecretRevokeDialog);
-  }
 
-  void _cancelRevokeTimer() {
-    _revokeTimer?.cancel();
-    _revokeTimer = null;
-  }
-
-  void _showSecretRevokeDialog() {
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('🤫 Secret Debug Menu'),
-        content: const Text(
-          'Long press (5 seconds) on the Zagreus Pro star icon to revoke Pro status for testing.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Got it',
-              style: TextStyle(color: ZagColours.accentColor(context)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

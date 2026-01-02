@@ -17,13 +17,13 @@ class OverseerrAPIHelper {
         if (showSnackbar) {
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Approved',
+              title: 'overseerr.RequestApproved'.tr(),
               message: request.media.getTitle(),
             );
           } else {
             showZagErrorSnackBar(
-              title: 'Failed to Approve Request',
-              error: 'Unable to approve request',
+              title: 'overseerr.FailedToApproveRequest'.tr(),
+              error: 'overseerr.UnableToApproveRequest'.tr(),
             );
           }
         }
@@ -47,13 +47,13 @@ class OverseerrAPIHelper {
         if (showSnackbar) {
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Declined',
+              title: 'overseerr.RequestDeclined'.tr(),
               message: request.media.getTitle(),
             );
           } else {
             showZagErrorSnackBar(
-              title: 'Failed to Decline Request',
-              error: 'Unable to decline request',
+              title: 'overseerr.FailedToDeclineRequest'.tr(),
+              error: 'overseerr.UnableToDeclineRequest'.tr(),
             );
           }
         }
@@ -77,13 +77,13 @@ class OverseerrAPIHelper {
         if (showSnackbar) {
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Request Deleted',
+              title: 'overseerr.RequestDeleted'.tr(),
               message: request.media.getTitle(),
             );
           } else {
             showZagErrorSnackBar(
-              title: 'Failed to Delete Request',
-              error: 'Unable to delete request',
+              title: 'overseerr.FailedToDeleteRequest'.tr(),
+              error: 'overseerr.UnableToDeleteRequest'.tr(),
             );
           }
         }
@@ -107,13 +107,13 @@ class OverseerrAPIHelper {
         if (showSnackbar) {
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Issue Resolved',
+              title: 'overseerr.IssueResolved'.tr(),
               message: issue.media.getTitle(),
             );
           } else {
             showZagErrorSnackBar(
-              title: 'Failed to Resolve Issue',
-              error: 'Unable to resolve issue',
+              title: 'overseerr.FailedToResolveIssue'.tr(),
+              error: 'overseerr.UnableToResolveIssue'.tr(),
             );
           }
         }
@@ -137,13 +137,13 @@ class OverseerrAPIHelper {
         if (showSnackbar) {
           if (success) {
             showZagSuccessSnackBar(
-              title: 'Issue Reopened',
+              title: 'overseerr.IssueReopened'.tr(),
               message: issue.media.getTitle(),
             );
           } else {
             showZagErrorSnackBar(
-              title: 'Failed to Reopen Issue',
-              error: 'Unable to reopen issue',
+              title: 'overseerr.FailedToReopenIssue'.tr(),
+              error: 'overseerr.UnableToReopenIssue'.tr(),
             );
           }
         }

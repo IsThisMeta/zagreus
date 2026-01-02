@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/overseerr.dart';
 
 extension OverseerrRequestExtension on OverseerrRequest {
@@ -6,24 +7,24 @@ extension OverseerrRequestExtension on OverseerrRequest {
     final status = OverseerrRequestStatus.fromValue(this.status);
     switch (status) {
       case OverseerrRequestStatus.PENDING:
-        return 'Pending';
+        return 'overseerr.Pending'.tr();
       case OverseerrRequestStatus.APPROVED:
         // Check media status for more detail
         final mediaStatus = OverseerrMediaStatus.fromValue(media.status);
         switch (mediaStatus) {
           case OverseerrMediaStatus.AVAILABLE:
-            return 'Available';
+            return 'overseerr.Available'.tr();
           case OverseerrMediaStatus.PARTIALLY_AVAILABLE:
-            return 'Partially Available';
+            return 'overseerr.PartiallyAvailable'.tr();
           case OverseerrMediaStatus.PROCESSING:
-            return 'Processing';
+            return 'overseerr.Processing'.tr();
           default:
-            return 'Approved';
+            return 'overseerr.Approved'.tr();
         }
       case OverseerrRequestStatus.DECLINED:
-        return 'Declined';
+        return 'overseerr.Declined'.tr();
       default:
-        return 'Unknown';
+        return 'zagreus.Unknown'.tr();
     }
   }
 
@@ -35,17 +36,27 @@ extension OverseerrRequestExtension on OverseerrRequest {
       final difference = now.difference(createdTime);
 
       if (difference.inMinutes == 0) {
-        return 'just now';
+        return 'overseerr.RelativeJustNow'.tr();
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes}m ago';
+        return 'overseerr.RelativeMinutesAgo'.tr(
+          args: [difference.inMinutes.toString()],
+        );
       } else if (difference.inHours < 24) {
-        return '${difference.inHours}h ago';
+        return 'overseerr.RelativeHoursAgo'.tr(
+          args: [difference.inHours.toString()],
+        );
       } else if (difference.inDays < 30) {
-        return '${difference.inDays}d ago';
+        return 'overseerr.RelativeDaysAgo'.tr(
+          args: [difference.inDays.toString()],
+        );
       } else if (difference.inDays < 365) {
-        return '${(difference.inDays / 30).floor()}mth ago';
+        return 'overseerr.RelativeMonthsAgo'.tr(
+          args: [(difference.inDays / 30).floor().toString()],
+        );
       } else {
-        return '${(difference.inDays / 365).floor()}yr ago';
+        return 'overseerr.RelativeYearsAgo'.tr(
+          args: [(difference.inDays / 365).floor().toString()],
+        );
       }
     } catch (e) {
       return '';
@@ -59,11 +70,11 @@ extension OverseerrIssueExtension on OverseerrIssue {
     final status = OverseerrIssueStatus.fromValue(this.status);
     switch (status) {
       case OverseerrIssueStatus.OPEN:
-        return 'Open';
+        return 'overseerr.Open'.tr();
       case OverseerrIssueStatus.RESOLVED:
-        return 'Resolved';
+        return 'overseerr.Resolved'.tr();
       default:
-        return 'Unknown';
+        return 'zagreus.Unknown'.tr();
     }
   }
 
@@ -72,15 +83,15 @@ extension OverseerrIssueExtension on OverseerrIssue {
     final type = OverseerrIssueType.fromValue(issueType);
     switch (type) {
       case OverseerrIssueType.VIDEO:
-        return 'Video';
+        return 'overseerr.Video'.tr();
       case OverseerrIssueType.AUDIO:
-        return 'Audio';
+        return 'overseerr.Audio'.tr();
       case OverseerrIssueType.SUBTITLE:
-        return 'Subtitles';
+        return 'overseerr.Subtitles'.tr();
       case OverseerrIssueType.OTHER:
-        return 'Other';
+        return 'overseerr.Other'.tr();
       default:
-        return 'Other';
+        return 'overseerr.Other'.tr();
     }
   }
 
@@ -92,17 +103,27 @@ extension OverseerrIssueExtension on OverseerrIssue {
       final difference = now.difference(createdTime);
 
       if (difference.inMinutes == 0) {
-        return 'just now';
+        return 'overseerr.RelativeJustNow'.tr();
       } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes}m ago';
+        return 'overseerr.RelativeMinutesAgo'.tr(
+          args: [difference.inMinutes.toString()],
+        );
       } else if (difference.inHours < 24) {
-        return '${difference.inHours}h ago';
+        return 'overseerr.RelativeHoursAgo'.tr(
+          args: [difference.inHours.toString()],
+        );
       } else if (difference.inDays < 30) {
-        return '${difference.inDays}d ago';
+        return 'overseerr.RelativeDaysAgo'.tr(
+          args: [difference.inDays.toString()],
+        );
       } else if (difference.inDays < 365) {
-        return '${(difference.inDays / 30).floor()}mth ago';
+        return 'overseerr.RelativeMonthsAgo'.tr(
+          args: [(difference.inDays / 30).floor().toString()],
+        );
       } else {
-        return '${(difference.inDays / 365).floor()}yr ago';
+        return 'overseerr.RelativeYearsAgo'.tr(
+          args: [(difference.inDays / 365).floor().toString()],
+        );
       }
     } catch (e) {
       return '';
@@ -114,11 +135,13 @@ extension OverseerrMediaExtension on OverseerrMedia {
   /// Get title from media (movie or series)
   String getTitle() {
     if (mediaType == 'movie') {
-      return movie?.title ?? 'TMDB ID: $tmdbId';
+      return movie?.title ??
+          'overseerr.TmdbId'.tr(args: [tmdbId.toString()]);
     } else if (mediaType == 'tv') {
-      return series?.name ?? 'TMDB ID: $tmdbId';
+      return series?.name ??
+          'overseerr.TmdbId'.tr(args: [tmdbId.toString()]);
     }
-    return 'TMDB ID: $tmdbId';
+    return 'overseerr.TmdbId'.tr(args: [tmdbId.toString()]);
   }
 
   /// Get year from media (movie or series)
@@ -219,15 +242,23 @@ extension OverseerrMediaExtension on OverseerrMedia {
       final difference = now.difference(addedDate);
 
       if (difference.inMinutes == 0) {
-        return 'Available just now';
+        return 'overseerr.AvailableJustNow'.tr();
       } else if (difference.inMinutes < 60) {
-        return 'Available ${difference.inMinutes}m ago';
+        return 'overseerr.AvailableMinutesAgo'.tr(
+          args: [difference.inMinutes.toString()],
+        );
       } else if (difference.inHours < 24) {
-        return 'Available ${difference.inHours}h ago';
+        return 'overseerr.AvailableHoursAgo'.tr(
+          args: [difference.inHours.toString()],
+        );
       } else if (difference.inDays < 30) {
-        return 'Available ${difference.inDays}d ago';
+        return 'overseerr.AvailableDaysAgo'.tr(
+          args: [difference.inDays.toString()],
+        );
       } else {
-        return 'Available ${(difference.inDays / 30).floor()}mth ago';
+        return 'overseerr.AvailableMonthsAgo'.tr(
+          args: [(difference.inDays / 30).floor().toString()],
+        );
       }
     } catch (e) {
       return '';
