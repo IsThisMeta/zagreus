@@ -1,6 +1,8 @@
 /// Library containing all type definitions for Radarr data.
 library radarr_types;
 
+import 'package:easy_localization/easy_localization.dart';
+
 part 'types/availability.dart';
 part 'types/credit_type.dart';
 part 'types/event_type.dart';

@@ -72,8 +72,8 @@ class _State extends State<RadarrMovieDetailsFilesPage>
   }) {
     if (movieFiles.isEmpty && extraFiles.isEmpty) {
       return ZagMessage(
-        text: 'No Files Found',
-        buttonText: 'Refresh',
+        text: 'radarr.NoFilesFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     }
@@ -143,7 +143,7 @@ class _RadarrBazarrSubtitleButtonsState
     if (api == null) return const SizedBox.shrink();
 
     return ZagTableCard(
-      title: 'Subtitles',
+      title: 'radarr.Subtitles'.tr(),
       content: const [],
       buttons: [
         ZagButton(
@@ -170,13 +170,13 @@ class _RadarrBazarrSubtitleButtonsState
     try {
       await api.movie.autoSearch(radarrId: widget.radarrId);
       showZagSuccessSnackBar(
-        title: 'Subtitle Search Started',
-        message: 'Bazarr is searching for subtitles...',
+        title: 'radarr.SubtitleSearchStarted'.tr(),
+        message: 'radarr.SubtitleSearchStartedMessage'.tr(),
       );
     } catch (e, stack) {
       ZagLogger().error('Failed to auto search subtitles', e, stack);
       showZagErrorSnackBar(
-        title: 'Search Failed',
+        title: 'radarr.SearchFailed'.tr(),
         error: e,
       );
     } finally {
@@ -198,8 +198,8 @@ class _RadarrBazarrSubtitleButtonsState
 
       if (results.isEmpty) {
         showZagInfoSnackBar(
-          title: 'No Subtitles Found',
-          message: 'No subtitles available from providers',
+          title: 'radarr.NoSubtitlesFound'.tr(),
+          message: 'radarr.NoSubtitlesAvailableFromProviders'.tr(),
         );
         return;
       }
@@ -217,7 +217,7 @@ class _RadarrBazarrSubtitleButtonsState
     } catch (e, stack) {
       ZagLogger().error('Failed to search subtitles', e, stack);
       showZagErrorSnackBar(
-        title: 'Search Failed',
+        title: 'radarr.SearchFailed'.tr(),
         error: e,
       );
       if (mounted) setState(() => _manualSearchState = ZagLoadingState.INACTIVE);
@@ -257,14 +257,19 @@ class _MovieSubtitleSearchResultsPageState
         forced: result.forced == 'True',
       );
       showZagSuccessSnackBar(
-        title: 'Subtitle Downloaded',
-        message: '${result.language} subtitle from ${result.provider}',
+        title: 'radarr.SubtitleDownloaded'.tr(),
+        message: 'radarr.SubtitleDownloadedMessage'.tr(
+          args: [
+            result.language ?? 'zagreus.Unknown'.tr(),
+            result.provider ?? 'radarr.UnknownProvider'.tr(),
+          ],
+        ),
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e, stack) {
       ZagLogger().error('Failed to download subtitle', e, stack);
       showZagErrorSnackBar(
-        title: 'Download Failed',
+        title: 'radarr.DownloadFailed'.tr(),
         error: e,
       );
     }
@@ -275,11 +280,12 @@ class _MovieSubtitleSearchResultsPageState
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
       appBar: ZagAppBar(
-        title: 'Subtitles (${widget.results.length})',
+        title: 'radarr.SubtitlesWithCount'
+            .tr(args: [widget.results.length.toString()]),
         scrollControllers: [scrollController],
       ),
       body: widget.results.isEmpty
-          ? ZagMessage(text: 'No Subtitles Found')
+          ? ZagMessage(text: 'radarr.NoSubtitlesFound'.tr())
           : ZagListViewBuilder(
               controller: scrollController,
               itemCount: widget.results.length,
@@ -325,21 +331,21 @@ class _MovieSubtitleResultTileState extends State<_MovieSubtitleResultTile> {
     if (widget.result.releaseInfo?.isNotEmpty ?? false) {
       return widget.result.releaseInfo!.first;
     }
-    return widget.result.provider ?? 'Unknown Provider';
+    return widget.result.provider ?? 'radarr.UnknownProvider'.tr();
   }
 
   TextSpan _subtitle1() {
     return TextSpan(
       children: [
         TextSpan(
-          text: widget.result.language ?? 'Unknown',
+          text: widget.result.language ?? 'zagreus.Unknown'.tr(),
           style: TextStyle(
             color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-        TextSpan(text: widget.result.provider ?? 'Unknown'),
+        TextSpan(text: widget.result.provider ?? 'radarr.UnknownProvider'.tr()),
         if (widget.result.score != null) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
           TextSpan(
@@ -356,18 +362,22 @@ class _MovieSubtitleResultTileState extends State<_MovieSubtitleResultTile> {
 
   TextSpan _subtitle2() {
     final flags = <String>[];
-    if (widget.result.hearingImpaired == 'True') flags.add('HI');
-    if (widget.result.forced == 'True') flags.add('Forced');
+    if (widget.result.hearingImpaired == 'True')
+      flags.add('radarr.SubtitleFlagHI'.tr());
+    if (widget.result.forced == 'True')
+      flags.add('radarr.SubtitleFlagForced'.tr());
 
     return TextSpan(
       children: [
         TextSpan(
-          text: '${widget.result.matches?.length ?? 0} Matches',
+          text: 'radarr.SubtitleMatches'
+              .tr(args: ['${widget.result.matches?.length ?? 0}']),
           style: const TextStyle(color: Colors.green),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(
-          text: '${widget.result.dontMatches?.length ?? 0} Missing',
+          text: 'radarr.SubtitleMissing'
+              .tr(args: ['${widget.result.dontMatches?.length ?? 0}']),
           style: TextStyle(color: ZagColours.red),
         ),
         if (flags.isNotEmpty) ...[
@@ -390,19 +400,19 @@ class _MovieSubtitleResultTileState extends State<_MovieSubtitleResultTile> {
   List<ZagHighlightedNode> _highlightedNodes() {
     final nodes = <ZagHighlightedNode>[
       ZagHighlightedNode(
-        text: widget.result.language ?? 'Unknown',
+        text: widget.result.language ?? 'zagreus.Unknown'.tr(),
         backgroundColor: ZagColours.currentAccent,
       ),
     ];
     if (widget.result.hearingImpaired == 'True') {
       nodes.add(ZagHighlightedNode(
-        text: 'HI',
+        text: 'radarr.SubtitleFlagHI'.tr(),
         backgroundColor: ZagColours.orange,
       ));
     }
     if (widget.result.forced == 'True') {
       nodes.add(ZagHighlightedNode(
-        text: 'Forced',
+        text: 'radarr.SubtitleFlagForced'.tr(),
         backgroundColor: ZagColours.purple,
       ));
     }
@@ -411,22 +421,26 @@ class _MovieSubtitleResultTileState extends State<_MovieSubtitleResultTile> {
 
   List<ZagTableContent> _tableContent() {
     return [
-      ZagTableContent(title: 'provider', body: widget.result.provider),
-      ZagTableContent(title: 'language', body: widget.result.language),
-      ZagTableContent(title: 'score', body: '${widget.result.score ?? 0}'),
       ZagTableContent(
-        title: 'matches',
+          title: 'radarr.Provider'.tr(), body: widget.result.provider),
+      ZagTableContent(
+          title: 'radarr.Language'.tr(), body: widget.result.language),
+      ZagTableContent(
+          title: 'radarr.Score'.tr(), body: '${widget.result.score ?? 0}'),
+      ZagTableContent(
+        title: 'radarr.Matches'.tr(),
         body: '${widget.result.matches?.length ?? 0}',
       ),
       ZagTableContent(
-        title: 'missing',
+          title: 'radarr.Missing'.tr(),
         body: '${widget.result.dontMatches?.length ?? 0}',
       ),
       if (widget.result.uploader?.isNotEmpty ?? false)
-        ZagTableContent(title: 'uploader', body: widget.result.uploader),
+        ZagTableContent(
+            title: 'radarr.Uploader'.tr(), body: widget.result.uploader),
       if (widget.result.releaseInfo?.isNotEmpty ?? false)
         ZagTableContent(
-          title: 'release',
+          title: 'radarr.Release'.tr(),
           body: widget.result.releaseInfo!.join('\n'),
         ),
     ];
@@ -436,7 +450,7 @@ class _MovieSubtitleResultTileState extends State<_MovieSubtitleResultTile> {
     return [
       ZagButton(
         type: ZagButtonType.TEXT,
-        text: 'Download',
+        text: 'radarr.Download'.tr(),
         icon: Icons.download_rounded,
         onTap: _startDownload,
         loadingState: _downloadState,

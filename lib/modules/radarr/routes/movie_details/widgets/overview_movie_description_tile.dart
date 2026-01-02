@@ -22,7 +22,7 @@ class RadarrMovieDetailsOverviewDescriptionTile extends StatelessWidget {
       body: [
         ZagTextSpan.extended(
           text: movie!.overview == null || movie!.overview!.isEmpty
-              ? 'sonarr.NoSummaryAvailable'.tr()
+              ? 'radarr.NoSummaryIsAvailable'.tr()
               : movie!.overview,
         ),
       ],

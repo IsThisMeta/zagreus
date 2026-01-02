@@ -105,9 +105,9 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Widget _notConfiguredTile() {
     return ZagBlock(
-      title: 'Bazarr Not Configured',
-      body: const [
-        TextSpan(text: 'Set up Bazarr in Settings to manage subtitles'),
+      title: 'radarr.BazarrNotConfigured'.tr(),
+      body: [
+        TextSpan(text: 'radarr.BazarrNotConfiguredDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.settings_rounded,
@@ -117,18 +117,18 @@ class _State extends State<RadarrBazarrSubtitleTile> {
   }
 
   Widget _loadingTile() {
-    return const ZagBlock(
-      title: 'Loading Subtitles',
-      body: [TextSpan(text: 'Fetching subtitle data from Bazarr...')],
-      trailing: ZagLoader(),
+    return ZagBlock(
+      title: 'radarr.BazarrLoadingSubtitles'.tr(),
+      body: [TextSpan(text: 'radarr.BazarrLoadingSubtitlesDescription'.tr())],
+      trailing: const ZagLoader(),
     );
   }
 
   Widget _errorTile() {
     return ZagBlock(
-      title: 'Connection Error',
-      body: const [
-        TextSpan(text: 'Could not load subtitle data from Bazarr'),
+      title: 'radarr.BazarrConnectionError'.tr(),
+      body: [
+        TextSpan(text: 'radarr.BazarrConnectionErrorDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -142,9 +142,9 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Widget _noDataTile() {
     return ZagBlock(
-      title: 'Not Found in Bazarr',
-      body: const [
-        TextSpan(text: 'This wasn\'t found in your Bazarr library'),
+      title: 'radarr.BazarrNotFound'.tr(),
+      body: [
+        TextSpan(text: 'radarr.BazarrNotFoundDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -162,8 +162,10 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
     if (existing.isEmpty && missing.isEmpty) {
       return ZagBlock(
-        title: 'No Subtitle Requirements',
-        body: const [TextSpan(text: 'Configure subtitle languages in Bazarr')],
+        title: 'radarr.BazarrNoSubtitleRequirements'.tr(),
+        body: [
+          TextSpan(text: 'radarr.BazarrNoSubtitleRequirementsDescription'.tr()),
+        ],
       );
     }
 
@@ -179,7 +181,7 @@ class _State extends State<RadarrBazarrSubtitleTile> {
     }
 
     return ZagBlock(
-      title: 'Subtitles',
+      title: 'radarr.Subtitles'.tr(),
       body: const [],
       bottom: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -196,14 +198,14 @@ class _State extends State<RadarrBazarrSubtitleTile> {
 
   Widget _proLockedTile() {
     return ZagBlock(
-      title: 'Zagreus Pro Required',
-      body: const [
-        TextSpan(text: 'Upgrade to Pro to manage subtitles with Bazarr'),
+      title: 'radarr.ZagreusProRequired'.tr(),
+      body: [
+        TextSpan(text: 'radarr.BazarrProRequiredDescription'.tr()),
       ],
       trailing: const ZagIconButton(icon: Icons.lock_rounded),
       onTap: () => showZagInfoSnackBar(
-        title: 'Zagreus Pro Required',
-        message: 'Upgrade to access Bazarr subtitle management',
+        title: 'radarr.ZagreusProRequired'.tr(),
+        message: 'radarr.BazarrProRequiredMessage'.tr(),
       ),
     );
   }
@@ -222,7 +224,8 @@ class _SubtitleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final String label = subtitle.name ?? subtitle.code2 ?? 'Unknown';
+    final String label =
+        subtitle.name ?? subtitle.code2 ?? 'zagreus.Unknown'.tr();
 
     // Downloaded: accent color border, Missing: gray border
     final borderColor = isDownloaded
@@ -253,4 +256,3 @@ class _SubtitleTag extends StatelessWidget {
     );
   }
 }
-

@@ -44,15 +44,15 @@ extension RadarrAvailabilityExtension on RadarrAvailability {
   String get readable {
     switch (this) {
       case RadarrAvailability.ANNOUNCED:
-        return 'Announced';
+        return 'radarr.Announced'.tr();
       case RadarrAvailability.IN_CINEMAS:
-        return 'In Cinemas';
+        return 'radarr.InCinemas'.tr();
       case RadarrAvailability.RELEASED:
-        return 'Released';
+        return 'radarr.Released'.tr();
       case RadarrAvailability.PREDB:
-        return 'PreDB';
+        return 'radarr.PreDB'.tr();
       case RadarrAvailability.TBA:
-        return 'TBA';
+        return 'radarr.TBA'.tr();
     }
   }
 }

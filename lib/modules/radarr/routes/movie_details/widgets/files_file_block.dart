@@ -23,15 +23,15 @@ class _State extends State<RadarrMovieDetailsFilesFileBlock> {
     return ZagTableCard(
       content: [
         ZagTableContent(
-          title: 'relative path',
+          title: 'radarr.RelativePath'.tr(),
           body: widget.file.zagRelativePath,
         ),
         ZagTableContent(
-          title: 'video',
+          title: 'radarr.Video'.tr(),
           body: widget.file.mediaInfo?.zagVideoCodec,
         ),
         ZagTableContent(
-          title: 'audio',
+          title: 'radarr.Audio'.tr(),
           body: [
             widget.file.mediaInfo?.zagAudioCodec,
             if (widget.file.mediaInfo?.audioChannels != null)
@@ -39,36 +39,36 @@ class _State extends State<RadarrMovieDetailsFilesFileBlock> {
           ].join(ZagUI.TEXT_BULLET.pad()),
         ),
         ZagTableContent(
-          title: 'size',
+          title: 'radarr.Size'.tr(),
           body: widget.file.zagSize,
         ),
         ZagTableContent(
-          title: 'languages',
+          title: 'radarr.Languages'.tr(),
           body: widget.file.zagLanguage,
         ),
         ZagTableContent(
-          title: 'quality',
+          title: 'radarr.Quality'.tr(),
           body: widget.file.zagQuality,
         ),
         ZagTableContent(
-          title: 'formats',
+          title: 'radarr.Formats'.tr(),
           body: widget.file.zagCustomFormats,
         ),
         ZagTableContent(
-          title: 'added on',
+          title: 'radarr.DateAdded'.tr(),
           body: widget.file.zagDateAdded,
         ),
       ],
       buttons: [
         if (widget.file.mediaInfo != null)
           ZagButton.text(
-            text: 'Media Info',
+            text: 'radarr.MediaInfo'.tr(),
             icon: Icons.info_outline_rounded,
             onTap: () async => _viewMediaInfo(),
           ),
         ZagButton(
           type: ZagButtonType.TEXT,
-          text: 'Delete',
+          text: 'zagreus.Delete'.tr(),
           icon: Icons.delete_rounded,
           onTap: () async => _deleteFile(),
           color: ZagColours.red,

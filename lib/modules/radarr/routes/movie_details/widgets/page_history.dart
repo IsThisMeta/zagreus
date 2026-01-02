@@ -59,8 +59,8 @@ class _State extends State<RadarrMovieDetailsHistoryPage>
   Widget _list(List<RadarrHistoryRecord>? history) {
     if ((history?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No History Found',
-        buttonText: 'Refresh',
+        text: 'radarr.NoHistoryFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     return ZagListViewBuilder(

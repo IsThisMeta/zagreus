@@ -14,9 +14,15 @@ class RadarrMovieDetailsFilesExtraFileBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return ZagTableCard(
       content: [
-        ZagTableContent(title: 'relative path', body: file.zagRelativePath),
-        ZagTableContent(title: 'type', body: file.zagType),
-        ZagTableContent(title: 'extension', body: file.zagExtension),
+        ZagTableContent(
+          title: 'radarr.RelativePath'.tr(),
+          body: file.zagRelativePath,
+        ),
+        ZagTableContent(title: 'radarr.Type'.tr(), body: file.zagType),
+        ZagTableContent(
+          title: 'radarr.Extension'.tr(),
+          body: file.zagExtension,
+        ),
       ],
     );
   }

@@ -59,8 +59,8 @@ class _State extends State<RadarrMovieDetailsCastCrewPage>
   Widget _list(List<RadarrMovieCredits>? credits) {
     if ((credits?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Credits Found',
-        buttonText: 'Refresh',
+        text: 'radarr.NoCreditsFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     List<RadarrMovieCredits> _cast = credits!
