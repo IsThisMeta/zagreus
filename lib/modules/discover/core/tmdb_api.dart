@@ -951,6 +951,177 @@ class TMDBApi {
     return dateString.split('-').first;
   }
 
+  // ===== Network/Studio Discovery Methods =====
+
+  /// Hardcoded list of popular TV networks with TMDB IDs
+  /// Based on Seerr's NetworkSlider implementation
+  static List<Map<String, dynamic>> getNetworksList() {
+    return [
+      {
+        'id': 213,
+        'name': 'Netflix',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/wwemzKWzjKYJFfCeiB57q3r4Bcm.png',
+      },
+      {
+        'id': 2739,
+        'name': 'Disney+',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/gJ8VX6JSu3ciXHuC2dDGAo2lvwM.png',
+      },
+      {
+        'id': 1024,
+        'name': 'Prime Video',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/ifhbNuuVnlwYy5oXA5VIb2YR8AZ.png',
+      },
+      {
+        'id': 2552,
+        'name': 'Apple TV+',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/4KAy34EHvRM25Ih8wb82AuGU7zJ.png',
+      },
+      {
+        'id': 453,
+        'name': 'Hulu',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/pqUTCleNUiTLAVlelGxUgWn1ELh.png',
+      },
+      {
+        'id': 49,
+        'name': 'HBO',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/tuomPhY2UtuPTqqFnKMVHvSb724.png',
+      },
+      {
+        'id': 4330,
+        'name': 'Paramount+',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/fi83B1oztoS47xxcemFdPMhIzK.png',
+      },
+      {
+        'id': 3353,
+        'name': 'Peacock',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/gIAcGTjKKr0KOHL5s4O36roJ8p7.png',
+      },
+      {
+        'id': 174,
+        'name': 'AMC',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/pmvRmATOCaDykE6JrVoeYxlFHw3.png',
+      },
+      {
+        'id': 67,
+        'name': 'Showtime',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/Allse9kbjiP6ExaQrnSpIhkurEi.png',
+      },
+      {
+        'id': 318,
+        'name': 'Starz',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/8GJjw3HHsAJYwIWKIPBPfqMxlEa.png',
+      },
+      {
+        'id': 71,
+        'name': 'The CW',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/ge9hzeaU7nMtQ4PjkFlc68dGAJ9.png',
+      },
+      {
+        'id': 2,
+        'name': 'ABC',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/ndAvF4JLsliGreX87jAc9GdjmJY.png',
+      },
+      {
+        'id': 19,
+        'name': 'FOX',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/1DSpHrWyOORkL9N2QHX7Adt31mQ.png',
+      },
+      {
+        'id': 6,
+        'name': 'NBC',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/o3OedEP0f9mfZr33jz2BfXOUK5.png',
+      },
+      {
+        'id': 16,
+        'name': 'CBS',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/nm8d7P7MJNiBLdgIzUK0gkuEA4r.png',
+      },
+      {
+        'id': 4,
+        'name': 'BBC One',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/mVn7xESaTNmjBUyUtGNvDQd3CT1.png',
+      },
+      {
+        'id': 56,
+        'name': 'Cartoon Network',
+        'logo': 'https://image.tmdb.org/t/p/w780_filter(duotone,ffffff,bababa)/c5OC6oVCg6QP4eqzW6XIq17CQjI.png',
+      },
+    ];
+  }
+
+  /// Get TV shows from a specific network using TMDB discover endpoint
+  static Future<List<Map<String, dynamic>>> getTvByNetwork(
+    int networkId, {
+    int page = 1,
+    String? region,
+  }) async {
+    try {
+      String url = '$_baseUrl/discover/tv?api_key=$_apiKey&page=$page';
+      url += '&with_networks=$networkId';
+      url += '&sort_by=popularity.desc';
+
+      if (region != null) {
+        url += '&region=$region';
+      }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode != 200) {
+        print('TMDB API Error (TV by Network): ${response.statusCode}');
+        return [];
+      }
+
+      final data = json.decode(response.body);
+      final results = data['results'] as List? ?? [];
+
+      return results.map<Map<String, dynamic>>((item) {
+        return {
+          'id': item['id'],
+          'title': item['name'] ?? 'Unknown',
+          'backdrop': getImageUrl(item['backdrop_path']),
+          'poster': getImageUrl(item['poster_path'], size: 'w342'),
+          'rating': (item['vote_average'] ?? 0).toDouble(),
+          'overview': item['overview'] ?? '',
+          'firstAirDate': item['first_air_date'],
+          'mediaType': 'tv',
+          'tmdbId': item['id'],
+          'popularity': item['popularity'] ?? 0,
+          'inLibrary': false,
+        };
+      }).toList();
+    } catch (e) {
+      print('TMDB API Error (TV by Network): $e');
+      return [];
+    }
+  }
+
+  /// Get network details from TMDB
+  static Future<Map<String, dynamic>?> getNetworkDetails(int networkId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/network/$networkId?api_key=$_apiKey'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'id': data['id'],
+          'name': data['name'],
+          'logo': data['logo_path'] != null
+              ? getImageUrl(data['logo_path'], size: 'w300')
+              : null,
+          'originCountry': data['origin_country'],
+          'headquarters': data['headquarters'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print('TMDB API Error (Network Details): $e');
+      return null;
+    }
+  }
+
   static List<Map<String, dynamic>> _getMockPopularPeople() {
     return [
       {

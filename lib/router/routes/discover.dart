@@ -12,7 +12,8 @@ enum DiscoverRoutes with ZagRoutesMixin {
   RECOMMENDED('recommended'),
   MISSING('missing'),
   DOWNLOADING_SOON('downloading_soon'),
-  TMDB_POPULAR_MOVIES('tmdb_popular_movies');
+  TMDB_POPULAR_MOVIES('tmdb_popular_movies'),
+  NETWORK_DISCOVER('network/:networkId');
 
   @override
   final String path;
@@ -40,6 +41,20 @@ enum DiscoverRoutes with ZagRoutesMixin {
         return route(widget: DiscoverDownloadingSoonRoute());
       case DiscoverRoutes.TMDB_POPULAR_MOVIES:
         return route(widget: const TMDBPopularMoviesRoute());
+      case DiscoverRoutes.NETWORK_DISCOVER:
+        return route(
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final networkId = int.tryParse(state.pathParameters['networkId'] ?? '') ?? 0;
+            final networkName = extra?['networkName'] as String? ?? 'Network';
+            final networkLogo = extra?['networkLogo'] as String?;
+            return NetworkDiscoverRoute(
+              networkId: networkId,
+              networkName: networkName,
+              networkLogo: networkLogo,
+            );
+          },
+        );
     }
   }
   
@@ -53,6 +68,7 @@ enum DiscoverRoutes with ZagRoutesMixin {
           DiscoverRoutes.MISSING.routes,
           DiscoverRoutes.DOWNLOADING_SOON.routes,
           DiscoverRoutes.TMDB_POPULAR_MOVIES.routes,
+          DiscoverRoutes.NETWORK_DISCOVER.routes,
         ];
       case DiscoverRoutes.RECENTLY_DOWNLOADED:
         return [];
@@ -63,6 +79,8 @@ enum DiscoverRoutes with ZagRoutesMixin {
       case DiscoverRoutes.DOWNLOADING_SOON:
         return [];
       case DiscoverRoutes.TMDB_POPULAR_MOVIES:
+        return [];
+      case DiscoverRoutes.NETWORK_DISCOVER:
         return [];
     }
   }

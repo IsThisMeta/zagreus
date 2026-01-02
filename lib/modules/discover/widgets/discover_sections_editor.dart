@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
-import 'package:zagreus/services/custom_sections_service.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/utils/zagreus_mega.dart';
-import 'package:zagreus/utils/zagreus_ultra.dart';
 
 class DiscoverSectionsEditor extends StatefulWidget {
   const DiscoverSectionsEditor({
@@ -39,6 +36,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const List<String> _defaultTVSections = [
     'recently_downloaded_shows',
     'airing_next',
+    'networks',
     'popular_tv_shows',
     'trending_new_tv_shows',
     'most_anticipated',
@@ -70,9 +68,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
 
   // Helper to check if we're on iPad
   bool get _isTablet => mounted && ZagPlatform.isTablet(context);
-
-  bool get _customSectionsEnabled =>
-      ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
 
   // Dynamic getters based on device type
   double get _posterHeightMin =>
@@ -148,8 +143,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'search',
   ];
 
-  late Future<List<CustomSectionConfig>> _customMovieSectionsFuture;
-  late Future<List<CustomSectionConfig>> _customTVSectionsFuture;
 
   bool get hasChanges => _hasChanges;
 
@@ -160,15 +153,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   void initState() {
     super.initState();
     _loadNonDeviceDependentSettings();
-    if (_customSectionsEnabled) {
-      _customMovieSectionsFuture =
-          CustomSectionsService().syncFromSupabase(mediaType: 'movie');
-      _customTVSectionsFuture =
-          CustomSectionsService().syncFromSupabase(mediaType: 'tv');
-    } else {
-      _customMovieSectionsFuture = Future.value(const <CustomSectionConfig>[]);
-      _customTVSectionsFuture = Future.value(const <CustomSectionConfig>[]);
-    }
   }
 
   @override
@@ -933,382 +917,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: _customSectionsSettingsArea(
-            mediaType: isMovie ? 'movie' : 'tv',
-          ),
-        ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
     );
   }
 
-  Widget _customSectionsSettingsArea({required String mediaType}) {
-    if (!_customSectionsEnabled) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
-    final future = mediaType == 'movie'
-        ? _customMovieSectionsFuture
-        : _customTVSectionsFuture;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'settings.DashboardSettingsCustomSectionsTitle'.tr(),
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsCustomSectionsDescription'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ZagButton.text(
-            text: 'settings.DashboardSettingsCreateCustomSection'.tr(),
-            icon: Icons.add_rounded,
-            color: ZagColours.currentAccent,
-            onTap: () => _showCreateCustomSectionDialog(mediaType),
-          ),
-          const SizedBox(height: 8),
-          FutureBuilder<List<CustomSectionConfig>>(
-            future: future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              final sections = snapshot.data ?? const <CustomSectionConfig>[];
-              if (sections.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'settings.DashboardSettingsNoCustomSections'.tr(),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.brightness == Brightness.dark
-                          ? Colors.white54
-                          : Colors.black45,
-                    ),
-                  ),
-                );
-              }
-
-              return Column(
-                children: [
-                  for (final config in sections)
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.brightness == Brightness.dark
-                            ? ZagColours.secondary
-                            : ZagColours.secondaryLight,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: theme.brightness == Brightness.dark
-                              ? Colors.white10
-                              : Colors.black12,
-                          width: 1,
-                        ),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: ZagColours.accentColor(context),
-                        ),
-                        title: Text(
-                          config.title,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        subtitle: Text(
-                          config.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: 'settings.DashboardSettingsRegenerate'
-                                  .tr(),
-                              icon: const Icon(Icons.refresh_rounded),
-                              onPressed: () =>
-                                  _regenerateCustomSectionFromSettings(config),
-                            ),
-                            IconButton(
-                              tooltip:
-                                  'settings.DashboardSettingsEdit'.tr(),
-                              icon: const Icon(Icons.edit_rounded),
-                              onPressed: () =>
-                                  _showEditCustomSectionDialog(config),
-                            ),
-                            IconButton(
-                              tooltip:
-                                  'settings.DashboardSettingsDelete'.tr(),
-                              icon: const Icon(Icons.delete_outline_rounded),
-                              color: Colors.red,
-                              onPressed: () =>
-                                  _deleteCustomSectionFromSettings(config),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _refreshCustomSectionsFutures(String mediaType) {
-    if (!_customSectionsEnabled) return;
-    setState(() {
-      if (mediaType == 'movie') {
-        _customMovieSectionsFuture =
-            CustomSectionsService().syncFromSupabase(mediaType: 'movie');
-      } else {
-        _customTVSectionsFuture =
-            CustomSectionsService().syncFromSupabase(mediaType: 'tv');
-      }
-    });
-  }
-
-  Future<void> _showCreateCustomSectionDialog(String mediaType) async {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'settings.DashboardSettingsCreateCustomSectionDialogTitle'.tr(),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'settings.DashboardSettingsSectionTitleLabel'.tr(),
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 50,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'settings.DashboardSettingsDescriptionLabel'.tr(),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-                maxLength: 300,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('zagreus.Cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (titleController.text.trim().isEmpty ||
-                  descriptionController.text.trim().isEmpty) {
-                showZagErrorSnackBar(
-                  title: 'settings.DashboardSettingsMissingFieldsTitle'.tr(),
-                  error: 'settings.DashboardSettingsMissingFieldsMessage'.tr(),
-                );
-                return;
-              }
-              Navigator.pop(context, true);
-            },
-            child: Text('settings.DashboardSettingsCreateAction'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && mounted) {
-      final config = await CustomSectionsService().createSection(
-        title: titleController.text.trim(),
-        description: descriptionController.text.trim(),
-        mediaType: mediaType,
-      );
-
-      try {
-        await CustomSectionsService().generateRecommendations(
-          sectionId: config.id,
-          title: config.title,
-          description: config.description,
-          mediaType: config.mediaType,
-          force: true,
-        );
-        showZagInfoSnackBar(
-          title: 'settings.DashboardSettingsCustomSectionCreatedTitle'.tr(),
-          message:
-              'settings.DashboardSettingsGeneratingRecommendationsMessage'.tr(),
-        );
-      } catch (e) {
-        // Best-effort; recommendations can still be fetched from the Dashboard.
-      }
-
-      _refreshCustomSectionsFutures(mediaType);
-    }
-  }
-
-  Future<void> _showEditCustomSectionDialog(CustomSectionConfig config) async {
-    final titleController = TextEditingController(text: config.title);
-    final descriptionController =
-        TextEditingController(text: config.description);
-
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title:
-            Text('settings.DashboardSettingsEditCustomSectionDialogTitle'.tr()),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'settings.DashboardSettingsSectionTitleLabel'.tr(),
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 50,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'settings.DashboardSettingsDescriptionLabel'.tr(),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-                maxLength: 300,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('zagreus.Cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (titleController.text.trim().isEmpty ||
-                  descriptionController.text.trim().isEmpty) {
-                showZagErrorSnackBar(
-                  title: 'settings.DashboardSettingsMissingFieldsTitle'.tr(),
-                  error: 'settings.DashboardSettingsMissingFieldsMessage'.tr(),
-                );
-                return;
-              }
-              Navigator.pop(context, true);
-            },
-            child: Text('settings.DashboardSettingsSaveAction'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (result == true && mounted) {
-      final updatedConfig = CustomSectionConfig(
-        id: config.id,
-        title: titleController.text.trim(),
-        description: descriptionController.text.trim(),
-        mediaType: config.mediaType,
-        createdAt: config.createdAt,
-        lastGeneratedAt: config.lastGeneratedAt,
-      );
-
-      await CustomSectionsService().updateSection(updatedConfig);
-      _refreshCustomSectionsFutures(config.mediaType);
-    }
-  }
-
-  Future<void> _deleteCustomSectionFromSettings(CustomSectionConfig config) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title:
-            Text('settings.DashboardSettingsDeleteCustomSectionDialogTitle'.tr()),
-        content: Text(
-          'settings.DashboardSettingsDeleteCustomSectionDialogMessage'
-              .tr(args: [config.title]),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('zagreus.Cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('zagreus.Delete'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      await CustomSectionsService().deleteSection(config.id);
-      _refreshCustomSectionsFutures(config.mediaType);
-    }
-  }
-
-  Future<void> _regenerateCustomSectionFromSettings(
-    CustomSectionConfig config,
-  ) async {
-    showZagInfoSnackBar(
-      title: 'settings.DashboardSettingsRegeneratingTitle'.tr(),
-      message: 'settings.DashboardSettingsGeneratingRecommendationsMessage'
-          .tr(),
-    );
-
-    final result = await CustomSectionsService().generateRecommendations(
-      sectionId: config.id,
-      title: config.title,
-      description: config.description,
-      mediaType: config.mediaType,
-      force: true,
-    );
-
-    if (!mounted) return;
-
-    if (!result.success) {
-      showZagErrorSnackBar(
-        title: 'settings.DashboardSettingsFailedToRegenerateTitle'.tr(),
-        error: result.errorMessage ??
-            'settings.DashboardSettingsUnknownError'.tr(),
-      );
-      return;
-    }
-
-    showZagInfoSnackBar(
-      title: 'settings.DashboardSettingsUpdatedTitle'.tr(),
-      message: 'settings.DashboardSettingsRecommendationsRefreshed'.tr(),
-    );
-    _refreshCustomSectionsFutures(config.mediaType);
-  }
 
   Widget _emptySectionsPlaceholder({required bool isMovie}) {
     return Center(
@@ -1454,6 +1067,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return Icons.person_search_rounded;
       case 'airing_next':
         return Icons.live_tv_rounded;
+      case 'networks':
+        return Icons.tv_rounded;
       case 'trending_new_tv_shows':
         return Icons.trending_up_rounded;
       case 'most_anticipated':

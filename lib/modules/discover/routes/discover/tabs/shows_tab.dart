@@ -72,6 +72,7 @@ class DiscoverTvSectionData {
   final bool hasRecentlyDownloadedShows;
   final Widget Function() recentlyDownloadedShowsSection;
   final Widget Function() airingNextSection;
+  final Widget Function() networksSection;
   final Widget Function() popularTvShowsSection;
   final Widget Function() trendingNewTvShowsSection;
   final Widget Function() mostAnticipatedShowsSection;
@@ -86,6 +87,7 @@ class DiscoverTvSectionData {
     required this.hasRecentlyDownloadedShows,
     required this.recentlyDownloadedShowsSection,
     required this.airingNextSection,
+    required this.networksSection,
     required this.popularTvShowsSection,
     required this.trendingNewTvShowsSection,
     required this.mostAnticipatedShowsSection,
@@ -101,6 +103,7 @@ List<Widget> buildTvSections(DiscoverTvSectionData data) {
   const defaultOrder = [
     'recently_downloaded_shows',
     'airing_next',
+    'networks',
     'popular_tv_shows',
     'trending_new_tv_shows',
     'most_anticipated',
@@ -156,6 +159,10 @@ List<Widget> buildTvSections(DiscoverTvSectionData data) {
         ? data.recentlyDownloadedShowsSection()
         : const SizedBox.shrink(),
     'airing_next': () => data.airingNextSection(),
+    'networks': () => Column(children: [
+          data.networksSection(),
+          if (data.showTitles) const SizedBox(height: 12)
+        ]),
     'popular_tv_shows': () => Column(children: [
           data.popularTvShowsSection(),
           if (data.showTitles) const SizedBox(height: 12)
