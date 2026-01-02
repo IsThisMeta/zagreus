@@ -219,5 +219,16 @@
     "sonarr.NoEpisodeFilesFoundDeleteMessage": "Aucun épisode sélectionné n'a de fichiers à supprimer",
     "sonarr.OneEpisode": "1 épisode",
     "sonarr.SearchingForEpisodes": "Recherche d'épisodes…",
-    "sonarr.QueueSize": "Taille de la file d’attente"
+    "sonarr.QueueSize": "Taille de la file d’attente",
+    "sonarr.CustomFormats": "Formats personnalisés",
+    "sonarr.CustomFormatScore": "Score de format personnalisé",
+    "sonarr.OnAir": "En diffusion",
+    "sonarr.MonitorAllEpisodes": "Tous les épisodes",
+    "sonarr.MonitorFutureEpisodes": "Épisodes futurs",
+    "sonarr.MonitorMissingEpisodes": "Épisodes manquants",
+    "sonarr.MonitorExistingEpisodes": "Épisodes existants",
+    "sonarr.MonitorPilotEpisode": "Épisode pilote",
+    "sonarr.MonitorFirstSeason": "Uniquement la première saison",
+    "sonarr.MonitorLatestSeason": "Uniquement la dernière saison",
+    "sonarr.MonitorNone": "Aucun"
 }

@@ -129,5 +129,6 @@
     "radarr.ViewWebGUI": "Voir l'interface web",
     "radarr.Wanted": "Recherché",
     "radarr.Weight": "Poids",
-    "radarr.Year": "Année"
+    "radarr.Year": "Année",
+    "radarr.CustomFormatScore": "Score de format personnalisé"
 }
