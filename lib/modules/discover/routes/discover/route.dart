@@ -3697,6 +3697,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     if (updated == true) {
       setState(() {
         _rebuildKey++; // Force complete rebuild of all tabs
+        _loadDeviceSpecificSettings(); // Reload poster height, hero height, columns
         _loadSavedSettings();
         _loadTrendingTimeWindowSetting();
         _currentMovieHeroIndex = 0;
@@ -4625,8 +4626,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         : ZagreusDatabase.DISCOVER_POSTER_HEIGHT.read();
 
     // Validate bounds based on device type
-    final minHeight = isTablet ? 150.0 : 150.0;
-    final maxHeight = isTablet ? 350.0 : 250.0;
+    final minHeight = isTablet ? 225.0 : 175.0;
+    final maxHeight = isTablet ? 325.0 : 275.0;
 
     if (savedHeight != null &&
         savedHeight >= minHeight &&
@@ -4634,7 +4635,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       _posterHeight = savedHeight;
     } else {
       // Default fallback
-      _posterHeight = isTablet ? 250.0 : 200.0;
+      _posterHeight = isTablet ? 275.0 : 225.0;
     }
 
     // Load hero height
@@ -4654,8 +4655,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       _heroHeight = isTablet ? 550.0 : 370.0;
     }
 
-    // Refresh UI with new settings
-    setState(() {});
   }
 
   Color _ratingColor(double rating) {
