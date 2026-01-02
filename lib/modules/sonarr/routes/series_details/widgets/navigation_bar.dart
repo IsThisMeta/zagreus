@@ -12,12 +12,12 @@ class SonarrSeriesDetailsNavigationBar extends StatelessWidget {
     Icons.people_rounded,
   ];
 
-  static final List<String> titles = [
-    'sonarr.Overview'.tr(),
-    'sonarr.Seasons'.tr(),
-    'sonarr.History'.tr(),
-    'Cast & Crew',
-  ];
+  static List<String> get titles => [
+        'sonarr.Overview'.tr(),
+        'sonarr.Seasons'.tr(),
+        'sonarr.History'.tr(),
+        'sonarr.CastAndCrew'.tr(),
+      ];
 
   final PageController? pageController;
 

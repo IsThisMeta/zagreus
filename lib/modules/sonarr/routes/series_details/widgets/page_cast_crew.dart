@@ -60,8 +60,8 @@ class _State extends State<SonarrSeriesDetailsCastCrewPage>
   Widget _list(List<SonarrSeriesCredits>? credits) {
     if ((credits?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Credits Found',
-        buttonText: 'Refresh',
+        text: 'sonarr.NoCreditsFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState!.show,
       );
     List<SonarrSeriesCredits> _cast =

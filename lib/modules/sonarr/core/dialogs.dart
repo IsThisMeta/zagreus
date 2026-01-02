@@ -927,26 +927,26 @@ class SonarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Queue Size',
+      title: 'sonarr.QueueSize'.tr(),
       buttons: [
         ZagDialog.button(
-          text: 'Set',
+          text: 'zagreus.Set'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text: 'Set the amount of items fetched for the queue.'),
+            text: 'sonarr.QueueSizeDescription'.tr()),
         Form(
           key: _formKey,
           child: ZagDialog.textFormInput(
             controller: _textController,
-            title: 'Queue Page Size',
+            title: 'sonarr.QueuePageSize'.tr(),
             onSubmitted: (_) => _setValues(true),
             validator: (value) {
               int? _value = int.tryParse(value!);
               if (_value != null && _value >= 1) return null;
-              return 'Minimum of 1 Item';
+              return 'sonarr.MinimumOfOneItem'.tr();
             },
             keyboardType: TextInputType.number,
           ),

@@ -49,7 +49,7 @@ class SonarrSeriesDetailsSeasonAllTile extends StatelessWidget {
         '${series!.zagPercentageComplete}%',
         ZagUI.TEXT_BULLET,
         '${series!.statistics?.episodeFileCount ?? 0}/${series!.statistics?.episodeCount ?? 0}',
-        'Episodes Available',
+        'sonarr.EpisodesAvailable'.tr(),
       ].join(' '),
     );
   }

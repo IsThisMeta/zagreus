@@ -23,7 +23,9 @@ class SonarrSeriesDetailsCastCrewTile extends StatelessWidget {
       body: [
         TextSpan(text: _position),
         TextSpan(
-          text: credits.type == 'cast' ? 'Cast' : 'Crew',
+          text: credits.type == 'cast'
+              ? 'sonarr.Cast'.tr()
+              : 'sonarr.Crew'.tr(),
           style: TextStyle(
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
             color: credits.type == 'cast'

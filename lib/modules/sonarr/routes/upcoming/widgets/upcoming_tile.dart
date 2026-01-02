@@ -54,10 +54,13 @@ class _State extends State<SonarrUpcomingTile> {
       children: [
         TextSpan(
             text: widget.record.seasonNumber == 0
-                ? 'Specials'
-                : 'Season ${widget.record.seasonNumber}'),
+                ? 'sonarr.Specials'.tr()
+                : 'sonarr.SeasonNumber'
+                    .tr(args: [widget.record.seasonNumber.toString()])),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-        TextSpan(text: 'Episode ${widget.record.episodeNumber}'),
+        TextSpan(text: 'sonarr.EpisodeNumber'.tr(args: [
+          widget.record.episodeNumber.toString(),
+        ])),
       ],
     );
   }
@@ -66,7 +69,9 @@ class _State extends State<SonarrUpcomingTile> {
     return TextSpan(
       style: const TextStyle(fontStyle: FontStyle.italic),
       children: [
-        TextSpan(text: widget.record.title ?? 'Unknown Title'),
+        TextSpan(
+          text: widget.record.title ?? 'sonarr.UnknownTitle'.tr(),
+        ),
       ],
     );
   }
@@ -84,11 +89,19 @@ class _State extends State<SonarrUpcomingTile> {
       ),
       children: [
         if (!widget.record.hasFile!)
-          TextSpan(text: widget.record.zagHasAired ? 'Missing' : 'Unaired'),
+          TextSpan(
+            text: widget.record.zagHasAired
+                ? 'sonarr.Missing'.tr()
+                : 'sonarr.Unaired'.tr(),
+          ),
         if (widget.record.hasFile!)
           TextSpan(
-            text:
-                'Downloaded (${widget.record.episodeFile?.quality?.quality?.name ?? 'Unknown'})',
+            text: 'sonarr.DownloadedWithQuality'.tr(
+              args: [
+                widget.record.episodeFile?.quality?.quality?.name ??
+                    'zagreus.Unknown'.tr(),
+              ],
+            ),
           ),
       ],
     );
@@ -113,7 +126,7 @@ class _State extends State<SonarrUpcomingTile> {
         .command
         .episodeSearch(episodeIds: [widget.record.id!])
         .then((_) => showZagSuccessSnackBar(
-              title: 'Searching for Episode...',
+              title: 'sonarr.SearchingForEpisode'.tr(),
               message: widget.record.title,
             ))
         .catchError((error, stack) {
@@ -122,7 +135,7 @@ class _State extends State<SonarrUpcomingTile> {
               error,
               stack);
           showZagErrorSnackBar(
-            title: 'Failed to Search',
+            title: 'sonarr.FailedToSearch'.tr(),
             error: error,
           );
         });

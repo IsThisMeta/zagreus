@@ -105,9 +105,9 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   Widget _notConfiguredTile() {
     return ZagBlock(
-      title: 'Bazarr Not Configured',
-      body: const [
-        TextSpan(text: 'Set up Bazarr in Settings to manage subtitles'),
+      title: 'sonarr.BazarrNotConfigured'.tr(),
+      body: [
+        TextSpan(text: 'sonarr.BazarrNotConfiguredDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.settings_rounded,
@@ -117,18 +117,18 @@ class _State extends State<SonarrBazarrSubtitleTile> {
   }
 
   Widget _loadingTile() {
-    return const ZagBlock(
-      title: 'Loading Subtitles',
-      body: [TextSpan(text: 'Fetching subtitle data from Bazarr...')],
-      trailing: ZagLoader(),
+    return ZagBlock(
+      title: 'sonarr.BazarrLoadingSubtitles'.tr(),
+      body: [TextSpan(text: 'sonarr.BazarrLoadingSubtitlesDescription'.tr())],
+      trailing: const ZagLoader(),
     );
   }
 
   Widget _errorTile() {
     return ZagBlock(
-      title: 'Connection Error',
-      body: const [
-        TextSpan(text: 'Could not load subtitle data from Bazarr'),
+      title: 'sonarr.BazarrConnectionError'.tr(),
+      body: [
+        TextSpan(text: 'sonarr.BazarrConnectionErrorDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -142,9 +142,9 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   Widget _noDataTile() {
     return ZagBlock(
-      title: 'Not Found in Bazarr',
-      body: const [
-        TextSpan(text: 'This wasn\'t found in your Bazarr library'),
+      title: 'sonarr.BazarrNotFound'.tr(),
+      body: [
+        TextSpan(text: 'sonarr.BazarrNotFoundDescription'.tr()),
       ],
       trailing: ZagIconButton(
         icon: Icons.refresh_rounded,
@@ -166,14 +166,20 @@ class _State extends State<SonarrBazarrSubtitleTile> {
     String subtitle;
 
     if (episodeCount == 0) {
-      title = 'No Episodes With Files';
-      subtitle = 'Episodes need files before subtitles can be downloaded';
+      title = 'sonarr.BazarrNoEpisodesWithFiles'.tr();
+      subtitle = 'sonarr.BazarrNoEpisodesWithFilesDescription'.tr();
     } else if (hasMissing) {
-      title = '$downloadedCount/$episodeCount Episodes Complete';
-      subtitle = '$missingCount episodes missing subtitles';
+      title = 'sonarr.BazarrEpisodesCompleteTitle'.tr(
+        args: [downloadedCount.toString(), episodeCount.toString()],
+      );
+      subtitle = 'sonarr.BazarrEpisodesMissingSubtitles'.tr(
+        args: [missingCount.toString()],
+      );
     } else {
-      title = 'All Episodes Complete';
-      subtitle = 'Subtitles available for all $episodeCount episodes';
+      title = 'sonarr.BazarrAllEpisodesComplete'.tr();
+      subtitle = 'sonarr.BazarrAllEpisodesCompleteDescription'.tr(
+        args: [episodeCount.toString()],
+      );
     }
 
     return ZagBlock(
@@ -184,16 +190,15 @@ class _State extends State<SonarrBazarrSubtitleTile> {
 
   Widget _proLockedTile() {
     return ZagBlock(
-      title: 'Zagreus Pro Required',
-      body: const [
-        TextSpan(text: 'Upgrade to Pro to manage subtitles with Bazarr'),
+      title: 'sonarr.ZagreusProRequired'.tr(),
+      body: [
+        TextSpan(text: 'sonarr.BazarrProRequiredDescription'.tr()),
       ],
       trailing: const ZagIconButton(icon: Icons.lock_rounded),
       onTap: () => showZagInfoSnackBar(
-        title: 'Zagreus Pro Required',
-        message: 'Upgrade to access Bazarr subtitle management',
+        title: 'sonarr.ZagreusProRequired'.tr(),
+        message: 'sonarr.BazarrProRequiredMessage'.tr(),
       ),
     );
   }
 }
-

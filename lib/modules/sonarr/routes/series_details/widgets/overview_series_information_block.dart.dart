@@ -23,64 +23,66 @@ class SonarrSeriesDetailsOverviewInformationBlock extends StatelessWidget {
       content: [
         ZagTableContent(
           title: 'sonarr.Monitoring'.tr(),
-          body: (series?.monitored ?? false) ? 'Yes' : 'No',
+          body: (series?.monitored ?? false)
+              ? 'zagreus.Yes'.tr()
+              : 'zagreus.No'.tr(),
         ),
         ZagTableContent(
-          title: 'type',
+          title: 'sonarr.Type'.tr(),
           body: series?.zagSeriesType,
         ),
         ZagTableContent(
-          title: 'path',
+          title: 'sonarr.Path'.tr(),
           body: series?.path,
         ),
         ZagTableContent(
-          title: 'quality',
+          title: 'sonarr.Quality'.tr(),
           body: qualityProfile?.name,
         ),
         ZagTableContent(
-          title: 'language',
+          title: 'sonarr.Language'.tr(),
           body: languageProfile?.name,
         ),
         ZagTableContent(
-          title: 'tags',
+          title: 'sonarr.Tags'.tr(),
           body: series?.zagTags(tags),
         ),
         ZagTableContent(title: '', body: ''),
         ZagTableContent(
-          title: 'status',
+          title: 'sonarr.Status'.tr(),
           body: series?.status?.toTitleCase(),
         ),
         ZagTableContent(
-          title: 'next airing',
+          title: 'sonarr.NextAiring'.tr(),
           body: series?.zagNextAiring(),
         ),
         ZagTableContent(
-          title: 'added on',
+          title: 'sonarr.AddedOn'.tr(),
           body: series?.zagDateAdded,
         ),
         ZagTableContent(title: '', body: ''),
         ZagTableContent(
-          title: 'year',
+          title: 'sonarr.Year'.tr(),
           body: series?.zagYear,
         ),
         ZagTableContent(
-          title: 'network',
+          title: 'sonarr.Network'.tr(),
           body: series?.zagNetwork,
         ),
         ZagTableContent(
-          title: 'runtime',
+          title: 'sonarr.Runtime'.tr(),
           body: series?.zagRuntime,
         ),
         ZagTableContent(
-          title: 'rating',
+          title: 'sonarr.Rating'.tr(),
           body: series?.certification,
         ),
         ZagTableContent(
-          title: 'genres',
+          title: 'sonarr.Genres'.tr(),
           body: series?.zagGenres,
         ),
         ZagTableContent(
-          title: 'alternate titles',
+          title: 'sonarr.AlternateTitles'.tr(),
           body: series?.zagAlternateTitles,
         ),
       ],

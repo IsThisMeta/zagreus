@@ -399,13 +399,13 @@ class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
         episodeId: widget.episodeId,
       );
       showZagSuccessSnackBar(
-        title: 'Subtitle Search Started',
-        message: 'Bazarr is searching for subtitles...',
+        title: 'sonarr.SubtitleSearchStarted'.tr(),
+        message: 'sonarr.SubtitleSearchStartedMessage'.tr(),
       );
     } catch (e, stack) {
       ZagLogger().error('Failed to auto-search subtitles', e, stack);
       showZagErrorSnackBar(
-        title: 'Subtitle Search Failed',
+        title: 'sonarr.SubtitleSearchFailed'.tr(),
         error: e,
       );
     } finally {
@@ -425,8 +425,8 @@ class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
 
       if (results.isEmpty) {
         showZagInfoSnackBar(
-          title: 'No Subtitles Found',
-          message: 'No subtitles available from providers',
+          title: 'sonarr.NoSubtitlesFound'.tr(),
+          message: 'sonarr.NoSubtitlesAvailableFromProviders'.tr(),
         );
         return;
       }
@@ -445,7 +445,7 @@ class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
     } catch (e, stack) {
       ZagLogger().error('Failed to search subtitles', e, stack);
       showZagErrorSnackBar(
-        title: 'Subtitle Search Failed',
+        title: 'sonarr.SubtitleSearchFailed'.tr(),
         error: e,
       );
       if (mounted) setState(() => _manualSearchState = ZagLoadingState.INACTIVE);
@@ -455,7 +455,7 @@ class _BazarrSubtitleButtonsState extends State<_BazarrSubtitleButtons> {
   @override
   Widget build(BuildContext context) {
     return ZagTableCard(
-      title: 'Subtitles',
+      title: 'sonarr.Subtitles'.tr(),
       content: const [],
       buttons: [
         ZagButton(
@@ -511,14 +511,19 @@ class _EpisodeSubtitleSearchResultsPageState
         forced: result.forced == 'True',
       );
       showZagSuccessSnackBar(
-        title: 'Subtitle Downloaded',
-        message: '${result.language} subtitle from ${result.provider}',
+        title: 'sonarr.SubtitleDownloaded'.tr(),
+        message: 'sonarr.SubtitleDownloadedMessage'.tr(
+          args: [
+            result.language ?? 'zagreus.Unknown'.tr(),
+            result.provider ?? 'sonarr.UnknownProvider'.tr(),
+          ],
+        ),
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e, stack) {
       ZagLogger().error('Failed to download subtitle', e, stack);
       showZagErrorSnackBar(
-        title: 'Download Failed',
+        title: 'sonarr.DownloadFailed'.tr(),
         error: e,
       );
     }
@@ -529,11 +534,12 @@ class _EpisodeSubtitleSearchResultsPageState
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
       appBar: ZagAppBar(
-        title: 'Subtitles (${widget.results.length})',
+        title: 'sonarr.SubtitlesWithCount'
+            .tr(args: [widget.results.length.toString()]),
         scrollControllers: [scrollController],
       ),
       body: widget.results.isEmpty
-          ? ZagMessage(text: 'No Subtitles Found')
+          ? ZagMessage(text: 'sonarr.NoSubtitlesFound'.tr())
           : ZagListViewBuilder(
               controller: scrollController,
               itemCount: widget.results.length,
@@ -580,21 +586,21 @@ class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> 
     if (widget.result.releaseInfo?.isNotEmpty ?? false) {
       return widget.result.releaseInfo!.first;
     }
-    return widget.result.provider ?? 'Unknown Provider';
+    return widget.result.provider ?? 'sonarr.UnknownProvider'.tr();
   }
 
   TextSpan _subtitle1() {
     return TextSpan(
       children: [
         TextSpan(
-          text: widget.result.language ?? 'Unknown',
+          text: widget.result.language ?? 'zagreus.Unknown'.tr(),
           style: TextStyle(
             color: ZagColours.currentAccent,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
           ),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-        TextSpan(text: widget.result.provider ?? 'Unknown'),
+        TextSpan(text: widget.result.provider ?? 'sonarr.UnknownProvider'.tr()),
         if (widget.result.score != null) ...[
           TextSpan(text: ZagUI.TEXT_BULLET.pad()),
           TextSpan(
@@ -611,18 +617,22 @@ class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> 
 
   TextSpan _subtitle2() {
     final flags = <String>[];
-    if (widget.result.hearingImpaired == 'True') flags.add('HI');
-    if (widget.result.forced == 'True') flags.add('Forced');
+    if (widget.result.hearingImpaired == 'True')
+      flags.add('sonarr.SubtitleFlagHI'.tr());
+    if (widget.result.forced == 'True')
+      flags.add('sonarr.SubtitleFlagForced'.tr());
 
     return TextSpan(
       children: [
         TextSpan(
-          text: '${widget.result.matches?.length ?? 0} Matches',
+          text: 'sonarr.SubtitleMatches'
+              .tr(args: ['${widget.result.matches?.length ?? 0}']),
           style: const TextStyle(color: Colors.green),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
         TextSpan(
-          text: '${widget.result.dontMatches?.length ?? 0} Missing',
+          text: 'sonarr.SubtitleMissing'
+              .tr(args: ['${widget.result.dontMatches?.length ?? 0}']),
           style: TextStyle(color: ZagColours.red),
         ),
         if (flags.isNotEmpty) ...[
@@ -645,20 +655,20 @@ class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> 
   List<ZagHighlightedNode> _highlightedNodes() {
     final nodes = <ZagHighlightedNode>[
       ZagHighlightedNode(
-        text: widget.result.language ?? 'Unknown',
+        text: widget.result.language ?? 'zagreus.Unknown'.tr(),
         backgroundColor: ZagColours.currentAccent,
       ),
     ];
 
     if (widget.result.hearingImpaired == 'True') {
       nodes.add(ZagHighlightedNode(
-        text: 'HI',
+        text: 'sonarr.SubtitleFlagHI'.tr(),
         backgroundColor: ZagColours.orange,
       ));
     }
     if (widget.result.forced == 'True') {
       nodes.add(ZagHighlightedNode(
-        text: 'Forced',
+        text: 'sonarr.SubtitleFlagForced'.tr(),
         backgroundColor: ZagColours.purple,
       ));
     }
@@ -668,22 +678,26 @@ class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> 
 
   List<ZagTableContent> _tableContent() {
     return [
-      ZagTableContent(title: 'provider', body: widget.result.provider),
-      ZagTableContent(title: 'language', body: widget.result.language),
-      ZagTableContent(title: 'score', body: '${widget.result.score ?? 0}'),
       ZagTableContent(
-        title: 'matches',
+          title: 'sonarr.Provider'.tr(), body: widget.result.provider),
+      ZagTableContent(
+          title: 'sonarr.Language'.tr(), body: widget.result.language),
+      ZagTableContent(
+          title: 'sonarr.Score'.tr(), body: '${widget.result.score ?? 0}'),
+      ZagTableContent(
+        title: 'sonarr.Matches'.tr(),
         body: '${widget.result.matches?.length ?? 0}',
       ),
       ZagTableContent(
-        title: 'missing',
+        title: 'sonarr.Missing'.tr(),
         body: '${widget.result.dontMatches?.length ?? 0}',
       ),
       if (widget.result.uploader?.isNotEmpty ?? false)
-        ZagTableContent(title: 'uploader', body: widget.result.uploader),
+        ZagTableContent(
+            title: 'sonarr.Uploader'.tr(), body: widget.result.uploader),
       if (widget.result.releaseInfo?.isNotEmpty ?? false)
         ZagTableContent(
-          title: 'release',
+          title: 'sonarr.Release'.tr(),
           body: widget.result.releaseInfo!.join('\n'),
         ),
     ];
@@ -693,7 +707,7 @@ class _EpisodeSubtitleResultTileState extends State<_EpisodeSubtitleResultTile> 
     return [
       ZagButton(
         type: ZagButtonType.TEXT,
-        text: 'Download',
+        text: 'sonarr.Download'.tr(),
         icon: Icons.download_rounded,
         onTap: _startDownload,
         loadingState: _downloadState,

@@ -91,7 +91,8 @@ class _SubtitleTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final String label = subtitle.name ?? subtitle.code2 ?? 'Unknown';
+    final String label =
+        subtitle.name ?? subtitle.code2 ?? 'zagreus.Unknown'.tr();
 
     // Downloaded: accent color border, Missing: gray border
     final borderColor = isDownloaded
