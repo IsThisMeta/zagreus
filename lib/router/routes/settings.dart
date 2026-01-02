@@ -63,7 +63,8 @@ import 'package:zagreus/modules/settings/routes/configuration_bazarr/route.dart'
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_ssh/route.dart';
-import 'package:zagreus/modules/settings/routes/configuration_ssh/pages/connection_details.dart';
+import 'package:zagreus/modules/ssh/routes/ssh/pages/add_connection.dart';
+import 'package:zagreus/modules/ssh/routes/ssh/pages/edit_connection.dart';
 import 'package:zagreus/modules/settings/core/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_wake_on_lan/route.dart';
 import 'package:zagreus/modules/settings/routes/z_agent/route.dart';
@@ -145,7 +146,8 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_BAZARR_CONNECTION_DETAILS('connection_details'),
   CONFIGURATION_BAZARR_CONNECTION_DETAILS_HEADERS('headers'),
   CONFIGURATION_SSH('ssh'),
-  CONFIGURATION_SSH_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_SSH_ADD_CONNECTION('add'),
+  CONFIGURATION_SSH_EDIT_CONNECTION('edit/:connectionId'),
   Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
@@ -339,8 +341,13 @@ enum SettingsRoutes with ZagRoutesMixin {
         );
       case SettingsRoutes.CONFIGURATION_SSH:
         return route(widget: const ConfigurationSSHRoute());
-      case SettingsRoutes.CONFIGURATION_SSH_CONNECTION_DETAILS:
-        return route(widget: const ConfigurationSSHConnectionDetailsRoute());
+      case SettingsRoutes.CONFIGURATION_SSH_ADD_CONNECTION:
+        return route(widget: const SSHAddConnectionRoute());
+      case SettingsRoutes.CONFIGURATION_SSH_EDIT_CONNECTION:
+        return route(builder: (_, state) {
+          final connectionId = state.pathParameters['connectionId'] ?? '';
+          return SSHEditConnectionRoute(connectionId: connectionId);
+        });
       case SettingsRoutes.Z_AGENT:
         return route(widget: const ZAgentSettingsRoute());
       case SettingsRoutes.NOTIFICATIONS:
@@ -523,7 +530,8 @@ enum SettingsRoutes with ZagRoutesMixin {
         ];
       case SettingsRoutes.CONFIGURATION_SSH:
         return [
-          SettingsRoutes.CONFIGURATION_SSH_CONNECTION_DETAILS.routes,
+          SettingsRoutes.CONFIGURATION_SSH_ADD_CONNECTION.routes,
+          SettingsRoutes.CONFIGURATION_SSH_EDIT_CONNECTION.routes,
         ];
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return [

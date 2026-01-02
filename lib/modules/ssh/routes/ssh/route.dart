@@ -5,6 +5,7 @@ import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/ssh/core/state.dart';
 import 'package:zagreus/modules/ssh/routes/ssh/widgets/connection_card.dart';
+import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/router/routes/ssh.dart';
 
 class SSHRoute extends StatefulWidget {
@@ -32,15 +33,9 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
       module: ZagModule.SSH,
       drawer: ZagDrawer(page: ZagModule.SSH.key),
       appBar: ZagAppBar(
-        title: 'SSH',
+        title: 'ssh.Connections'.tr(),
         useDrawer: true,
         scrollControllers: [scrollController],
-        actions: [
-          ZagIconButton(
-            icon: Icons.add_rounded,
-            onPressed: () => SSHRoutes.ADD_CONNECTION.go(),
-          ),
-        ],
       ),
       body: _body(),
     );
@@ -62,7 +57,6 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
             ...connections.map((connection) => SSHConnectionCard(
               connection: connection,
               onConnect: () => _connectToServer(connection),
-              onEdit: () => _editConnection(connection),
               onDelete: () => _deleteConnection(connection),
             )),
           ],
@@ -93,7 +87,7 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
           ZagButton.text(
             text: 'ssh.AddConnection'.tr(),
             icon: Icons.add_rounded,
-            onTap: () => SSHRoutes.ADD_CONNECTION.go(),
+            onTap: () => SettingsRoutes.CONFIGURATION_SSH.go(),
           ),
         ],
       ),
@@ -102,12 +96,6 @@ class _State extends State<SSHRoute> with ZagScrollControllerMixin {
 
   void _connectToServer(SSHConnection connection) {
     SSHRoutes.TERMINAL.go(
-      params: {'connectionId': connection.id},
-    );
-  }
-
-  void _editConnection(SSHConnection connection) {
-    SSHRoutes.EDIT_CONNECTION.go(
       params: {'connectionId': connection.id},
     );
   }

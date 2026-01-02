@@ -56,7 +56,7 @@ class _State extends State<SSHEditConnectionRoute> with ZagScrollControllerMixin
       return ZagScaffold(
         scaffoldKey: _scaffoldKey,
         appBar: ZagAppBar(title: 'ssh.EditConnection'.tr()),
-        body: const Center(child: Text('Connection not found')),
+        body: Center(child: Text('ssh.ConnectionNotFound'.tr())),
       );
     }
 

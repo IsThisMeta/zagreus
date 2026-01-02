@@ -51,7 +51,15 @@ class _State extends State<SSHTerminalRoute> {
     if (_connection == null || _isConnecting) return;
 
     setState(() => _isConnecting = true);
-    _terminal.write('Connecting to ${_connection!.host}:${_connection!.port}...\r\n');
+    _terminal.write(
+      'ssh.TerminalConnectingTo'.tr(
+        args: [
+          _connection!.host,
+          _connection!.port.toString(),
+        ],
+      ),
+    );
+    _terminal.write('\r\n');
 
     _outputSubscription = SSHService.instance.outputStream.listen((data) {
       _terminal.write(String.fromCharCodes(data));
@@ -59,9 +67,13 @@ class _State extends State<SSHTerminalRoute> {
 
     _statusSubscription = SSHService.instance.statusStream.listen((status) {
       if (status == SSHConnectionStatus.disconnected && mounted) {
-        _terminal.write('\r\n[Disconnected]\r\n');
+        _terminal.write('\r\n${'ssh.TerminalDisconnected'.tr()}\r\n');
       } else if (status == SSHConnectionStatus.error && mounted) {
-        _terminal.write('\r\n[Error: ${SSHService.instance.errorMessage}]\r\n');
+        _terminal.write(
+          '\r\n${'ssh.TerminalError'.tr(
+            args: [SSHService.instance.errorMessage ?? 'Unknown error'],
+          )}\r\n',
+        );
       }
     });
 
@@ -78,7 +90,11 @@ class _State extends State<SSHTerminalRoute> {
     if (mounted) {
       setState(() => _isConnecting = false);
       if (!success) {
-        _terminal.write('\r\n[Connection failed: ${SSHService.instance.errorMessage}]\r\n');
+        _terminal.write(
+          '\r\n${'ssh.TerminalConnectionFailed'.tr(
+            args: [SSHService.instance.errorMessage ?? 'Unknown error'],
+          )}\r\n',
+        );
       }
     }
   }
@@ -98,8 +114,8 @@ class _State extends State<SSHTerminalRoute> {
     if (_connection == null) {
       return ZagScaffold(
         scaffoldKey: scaffoldKey,
-        appBar: ZagAppBar(title: 'SSH'),
-        body: const Center(child: Text('Connection not found')),
+        appBar: ZagAppBar(title: 'ssh.SshTitle'.tr()),
+        body: Center(child: Text('ssh.ConnectionNotFound'.tr())),
       );
     }
 
@@ -202,7 +218,7 @@ class _State extends State<SSHTerminalRoute> {
 
   Future<void> _reconnect() async {
     await SSHService.instance.disconnect();
-    _terminal.write('\r\n[Reconnecting...]\r\n');
+    _terminal.write('\r\n${'ssh.TerminalReconnecting'.tr()}\r\n');
     await _connect();
   }
 }

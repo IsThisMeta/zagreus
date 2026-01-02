@@ -133,6 +133,23 @@ class ReadarrAPI {
     }
   }
 
+  Future<List<String>> getAllBookIDs() async {
+    try {
+      Response response = await _dio.get('book');
+      List<String> _entries = [];
+      for (var entry in response.data) {
+        _entries.add(entry['foreignBookId'] ?? '');
+      }
+      return _entries;
+    } on DioException catch (error, stack) {
+      logError('Failed to fetch book IDs', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to fetch book IDs', error, stack);
+      return Future.error(error);
+    }
+  }
+
   Future<bool> refreshAuthor(int authorID) async {
     try {
       await _dio.post(
@@ -707,6 +724,28 @@ class ReadarrAPI {
     }
   }
 
+  /// Search for both authors and books using the unified /search endpoint.
+  /// This returns mixed results where each item can be either an author or a book.
+  Future<List<ReadarrUnifiedSearchResult>> searchUnified(String search) async {
+    if (search == '') return [];
+    try {
+      Response response = await _dio.get('search', queryParameters: {
+        'term': search,
+      });
+      List<ReadarrUnifiedSearchResult> entries = [];
+      for (var entry in response.data) {
+        entries.add(ReadarrUnifiedSearchResult.fromJson(entry));
+      }
+      return entries;
+    } on DioException catch (error, stack) {
+      logError('Failed to unified search ($search)', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to unified search ($search)', error, stack);
+      return Future.error(error);
+    }
+  }
+
   Future<int?> addAuthor(
       ReadarrSearchData entry,
       ReadarrQualityProfile quality,
@@ -736,6 +775,59 @@ class ReadarrAPI {
       return Future.error(error);
     } catch (error, stack) {
       logError('Failed to add author (${entry.title})', error, stack);
+      return Future.error(error);
+    }
+  }
+
+  /// Add a book to Readarr. This will also add the author if not already present.
+  Future<int?> addBook(
+      ReadarrUnifiedSearchResult entry,
+      ReadarrQualityProfile quality,
+      ReadarrRootFolder rootFolder,
+      ReadarrMetadataProfile metadata,
+      ReadarrMonitorStatus monitorStatus,
+      {bool? search = false}) async {
+    if (entry.type != ReadarrSearchResultType.book) {
+      logError('addBook called with non-book entry', 'Invalid entry type', StackTrace.current);
+      return Future.error('Invalid entry type: expected book');
+    }
+
+    try {
+      // Build the author object for the book
+      final authorData = entry.rawAuthorData ?? {};
+
+      // Build the book data from the raw book data
+      final bookData = entry.rawBookData ?? {};
+
+      Response response = await _dio.post(
+        'book',
+        data: json.encode({
+          'title': entry.bookTitle,
+          'foreignBookId': entry.foreignBookId,
+          'qualityProfileId': quality.id,
+          'metadataProfileId': metadata.id,
+          'rootFolderPath': rootFolder.path,
+          'monitored': monitorStatus != ReadarrMonitorStatus.NONE,
+          'author': {
+            'foreignAuthorId': authorData['foreignAuthorId'],
+            'authorName': authorData['authorName'] ?? entry.bookAuthorName,
+            'qualityProfileId': quality.id,
+            'metadataProfileId': metadata.id,
+            'rootFolderPath': rootFolder.path,
+            'monitored': monitorStatus != ReadarrMonitorStatus.NONE,
+          },
+          'editions': bookData['editions'] ?? [],
+          'addOptions': {
+            'searchForNewBook': search,
+          },
+        }),
+      );
+      return response.data['id'];
+    } on DioException catch (error, stack) {
+      logError('Failed to add book (${entry.bookTitle})', error, stack);
+      return Future.error(error);
+    } catch (error, stack) {
+      logError('Failed to add book (${entry.bookTitle})', error, stack);
       return Future.error(error);
     }
   }

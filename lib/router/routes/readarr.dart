@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/readarr/core/api.dart';
 import 'package:zagreus/modules/readarr/routes/add_details.dart';
+import 'package:zagreus/modules/readarr/routes/add_book_details.dart';
 import 'package:zagreus/modules/readarr/routes/add_search.dart';
 import 'package:zagreus/modules/readarr/routes/details_book.dart';
 import 'package:zagreus/modules/readarr/routes/details_author.dart';
@@ -15,6 +16,7 @@ enum ReadarrRoutes with ZagRoutesMixin {
   HOME('/readarr'),
   ADD_AUTHOR('add_author'),
   ADD_AUTHOR_DETAILS('details'),
+  ADD_BOOK_DETAILS('book_details'),
   AUTHOR('author/:author'),
   AUTHOR_BOOK('book/:book'),
   AUTHOR_BOOK_RELEASES('releases'),
@@ -42,6 +44,12 @@ enum ReadarrRoutes with ZagRoutesMixin {
         return route(builder: (_, state) {
           return AddAuthorDetailsRoute(
             data: state.extra as ReadarrSearchData?,
+          );
+        });
+      case ReadarrRoutes.ADD_BOOK_DETAILS:
+        return route(builder: (_, state) {
+          return AddBookDetailsRoute(
+            data: state.extra as ReadarrUnifiedSearchResult?,
           );
         });
       case ReadarrRoutes.AUTHOR:
@@ -87,6 +95,7 @@ enum ReadarrRoutes with ZagRoutesMixin {
       case ReadarrRoutes.ADD_AUTHOR:
         return [
           ReadarrRoutes.ADD_AUTHOR_DETAILS.routes,
+          ReadarrRoutes.ADD_BOOK_DETAILS.routes,
         ];
       case ReadarrRoutes.AUTHOR:
         return [

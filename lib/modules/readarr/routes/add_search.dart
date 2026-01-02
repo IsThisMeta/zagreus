@@ -15,13 +15,14 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<RefreshIndicatorState> _refreshKey =
       GlobalKey<RefreshIndicatorState>();
-  Future<List<ReadarrSearchData>>? _future;
-  List<String> _availableIDs = [];
+  Future<List<ReadarrUnifiedSearchResult>>? _future;
+  List<String> _availableAuthorIDs = [];
+  List<String> _availableBookIDs = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchAvailableAuthors();
+    _fetchAvailableItems();
   }
 
   @override
@@ -35,21 +36,26 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
     final _model = Provider.of<ReadarrState>(context, listen: false);
     final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
     setState(() {
-      _future = _api.searchAuthors(_model.addSearchQuery);
+      _future = _api.searchUnified(_model.addSearchQuery);
     });
   }
 
-  Future<void> _fetchAvailableAuthors() async {
-    await ReadarrAPI.from(ZagProfile.forModule('readarr'))
-        .getAllAuthorIDs()
-        .then((data) => _availableIDs = data)
-        .catchError((error) => _availableIDs = []);
+  Future<void> _fetchAvailableItems() async {
+    final _api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
+    // Fetch available author IDs
+    await _api.getAllAuthorIDs()
+        .then((data) => _availableAuthorIDs = data)
+        .catchError((error) => _availableAuthorIDs = []);
+    // Fetch available book IDs (foreignBookIds from all books)
+    await _api.getAllBookIDs()
+        .then((data) => _availableBookIDs = data)
+        .catchError((error) => _availableBookIDs = []);
   }
 
   Widget _appBar() {
     return ZagAppBar(
       scrollControllers: [scrollController],
-      title: 'readarr.AddAuthor'.tr(),
+      title: 'readarr.AddAuthorOrBook'.tr(),
       bottom: ReadarrAddSearchBar(
         callback: _refresh,
         scrollController: scrollController,
@@ -64,13 +70,13 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
       onRefresh: _refresh,
       child: FutureBuilder(
         future: _future,
-        builder: (context, AsyncSnapshot<List<ReadarrSearchData>?> snapshot) {
+        builder: (context, AsyncSnapshot<List<ReadarrUnifiedSearchResult>?> snapshot) {
           if (snapshot.connectionState == ConnectionState.none)
             return Container();
           if (snapshot.hasError) {
             if (snapshot.connectionState != ConnectionState.waiting)
               ZagLogger().error(
-                'Unable to fetch Readarr author lookup',
+                'Unable to fetch Readarr search results',
                 snapshot.error,
                 snapshot.stackTrace,
               );
@@ -84,7 +90,7 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _list(List<ReadarrSearchData>? data) {
+  Widget _list(List<ReadarrUnifiedSearchResult>? data) {
     if ((data?.length ?? 0) == 0)
       return ZagListView(
         controller: scrollController,
@@ -93,10 +99,16 @@ class _State extends State<AddAuthorRoute> with ZagScrollControllerMixin {
     return ZagListViewBuilder(
       controller: scrollController,
       itemCount: data!.length,
-      itemBuilder: (context, index) => ReadarrAddSearchResultTile(
-        data: data[index],
-        alreadyAdded: _availableIDs.contains(data[index].foreignAuthorId),
-      ),
+      itemBuilder: (context, index) {
+        final item = data[index];
+        final isAlreadyAdded = item.type == ReadarrSearchResultType.author
+            ? _availableAuthorIDs.contains(item.foreignAuthorId)
+            : _availableBookIDs.contains(item.foreignBookId);
+        return ReadarrUnifiedSearchResultTile(
+          data: item,
+          alreadyAdded: isAlreadyAdded,
+        );
+      },
     );
   }
 }

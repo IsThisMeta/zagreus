@@ -9,3 +9,4 @@ export 'data/qualityprofile.dart';
 export 'data/release.dart';
 export 'data/rootfolder.dart';
 export 'data/search.dart';
+export 'data/unified_search.dart';

@@ -19,3 +19,4 @@ export 'widgets/releases_search_bar.dart';
 export 'widgets/releases_sorting_button.dart';
 export 'widgets/releases_tile.dart';
 export 'widgets/search_result_tile.dart';
+export 'widgets/unified_search_result_tile.dart';
