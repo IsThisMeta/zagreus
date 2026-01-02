@@ -27,6 +27,8 @@ class MovieGenreDiscoverRoute extends StatefulWidget {
 }
 
 class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Map<String, dynamic>> _movies = [];
@@ -347,9 +349,8 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
     }
 
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath (need more vertical space for title)
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -388,10 +389,10 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
 
   Widget _movieTile(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
-    final showOverlayTitle = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() && 
-        (ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
-    final showTitleBeneath = (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true) &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showOverlayTitle = _showTitles && 
+        false;
+    final showTitleBeneath = (_showTitles) &&
+        true;
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),
@@ -495,7 +496,7 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
           fit: StackFit.expand,
           children: [
             _buildPosterImage(movie),
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -550,7 +551,7 @@ class _State extends State<MovieGenreDiscoverRoute> with ZagScrollControllerMixi
                   ),
                 ),
               ),
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Positioned(
                 bottom: 8,
                 left: 8,

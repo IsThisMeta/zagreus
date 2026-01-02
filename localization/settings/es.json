@@ -320,8 +320,6 @@
     "settings.DashboardSettingsItemsPerRowDescription": "Controla cuántos pósters caben horizontalmente en las cuadrículas completas del tablero para películas y series.",
     "settings.DashboardSettingsShowTitles": "Mostrar títulos",
     "settings.DashboardSettingsShowTitlesDescription": "Activa o desactiva los títulos en los pósters de películas y series.",
-    "settings.DashboardSettingsTitlesOnPoster": "Títulos en los pósters",
-    "settings.DashboardSettingsTitlesOnPosterDescription": "Muestra los títulos superpuestos en los pósters en lugar de debajo. Requiere que Mostrar títulos esté activado.",
     "settings.DashboardSettingsMonochromeRatings": "Calificaciones monocromas",
     "settings.DashboardSettingsMonochromeRatingsDescription": "Muestra las insignias de calificación en blanco en lugar de color.",
     "settings.DashboardSettingsShowHeroCarousel": "Mostrar carrusel destacado",

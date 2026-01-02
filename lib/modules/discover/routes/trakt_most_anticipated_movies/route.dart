@@ -24,6 +24,8 @@ class TraktMostAnticipatedMoviesRoute extends StatefulWidget {
 
 class _State extends State<TraktMostAnticipatedMoviesRoute>
     with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   static const int _pageSize = 40;
 
@@ -264,9 +266,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       gridSpacing = 10.0;
     }
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -312,9 +313,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     final String year = releaseDate != null && releaseDate.length >= 4
         ? releaseDate.substring(0, 4)
         : '';
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),
@@ -425,7 +425,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
           children: [
             _buildPoster(movie),
             // Gradient overlay
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -484,7 +484,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                 ),
               ),
             // Title at bottom
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Positioned(
                 bottom: 8,
                 left: 8,

@@ -24,6 +24,8 @@ class TMDBRecentlyReleasedMoviesRoute extends StatefulWidget {
 
 class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Map<String, dynamic>> _movies = [];
@@ -431,9 +433,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
       gridSpacing = 10.0;
     }
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -476,9 +477,8 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
     final int? serviceItemId = movie['serviceItemId'] as int?;
     final int? tmdbId = movie['tmdbId'] as int?;
     final isSelected = _selectedMovieIndices.contains(index);
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode
@@ -616,7 +616,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
             // Poster
             _buildPosterImage(movie),
             // Gradient overlay
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -703,7 +703,7 @@ class _State extends State<TMDBRecentlyReleasedMoviesRoute>
                 ),
               ),
             // Title at bottom
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Positioned(
                 bottom: 8,
                 left: 8,

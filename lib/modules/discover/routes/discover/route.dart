@@ -186,7 +186,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   // Add extra height for titles beneath (approx 58px for 3-line title + spacing)
   double get _posterListHeight {
     final baseHeight = _posterHeight + 8.0;
-    if (_showTitles && !_titlesOnPoster) {
+    if (_showTitles) {
       return baseHeight + 58.0; // Extra space for 3-line title beneath
     }
     return baseHeight;
@@ -472,6 +472,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       [_moviesHeroPageController, _tvHeroPageController];
   int _currentMovieHeroIndex = 0;
   int _currentTVHeroIndex = 0;
+  int _rebuildKey = 0; // Incremented to force full tab rebuild on settings save
   String _trendingTimeWindow = 'day'; // 'day' or 'week'
   List<Map<String, dynamic>> _trendingMovies = [];
   List<Map<String, dynamic>> _trendingTVShows = [];
@@ -511,8 +512,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
 
-  bool get _titlesOnPoster =>
-      ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false;
 
   bool get _showHeroCarousel =>
       ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.read() ?? true;
@@ -2296,7 +2295,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     final showAgentTab = _showAgentTab;
     final tabs = ZagPageView(
       key: ValueKey(
-          'discover_tabs_${enableLegacyModules}_${enableCalendar}_$showAgentTab'),
+          'discover_tabs_${enableLegacyModules}_${enableCalendar}_${showAgentTab}_$_rebuildKey'),
       controller: _pageController,
       children: [
         if (enableLegacyModules) _modulesPage(),
@@ -3697,6 +3696,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
     if (updated == true) {
       setState(() {
+        _rebuildKey++; // Force complete rebuild of all tabs
         _loadSavedSettings();
         _loadTrendingTimeWindowSetting();
         _currentMovieHeroIndex = 0;
@@ -7204,9 +7204,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _popularMovieCard(Map<String, dynamic> movie) {
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = (!_titlesOnPoster);
-
+    final _showTitles = (true);
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -7294,7 +7292,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7314,7 +7312,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7340,7 +7338,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie['title'] ?? '',
@@ -7453,9 +7451,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _recentlyReleasedMovieCard(Map<String, dynamic> movie) {
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -7543,7 +7538,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7563,7 +7558,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7589,7 +7584,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie['title'] ?? 'zagreus.Unknown'.tr(),
@@ -7704,9 +7699,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _popularTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -7789,7 +7781,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -7809,7 +7801,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -7835,7 +7827,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   show['title'] ?? 'zagreus.Unknown'.tr(),
@@ -7958,9 +7950,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _trendingNewTVShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -8043,7 +8032,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -8063,7 +8052,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -8089,7 +8078,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   show['title'] ?? 'zagreus.Unknown'.tr(),
@@ -8942,9 +8931,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedShowCard(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
     final double rating = (show['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -9026,7 +9012,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -9046,7 +9032,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -9072,7 +9058,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   show['title'] ?? 'zagreus.Unknown'.tr(),
@@ -9181,9 +9167,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _mostAnticipatedMovieCard(Map<String, dynamic> movie) {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final double rating = (movie['rating'] ?? 0.0).toDouble();
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -9262,7 +9245,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -9282,7 +9265,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -9308,7 +9291,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie['title'] ?? 'zagreus.Unknown'.tr(),
@@ -11936,9 +11919,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _missingMovieCard(RadarrMovie movie) {
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -11968,7 +11948,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                   ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -11988,7 +11968,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -12014,7 +11994,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie.title ?? 'zagreus.Unknown'.tr(),
@@ -12064,8 +12044,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       releaseText = 'TBA';
     }
 
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
+    
+    
 
     return Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -12138,7 +12118,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title gradient overlay (on top of orange gradient, only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
@@ -12157,7 +12137,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -12183,7 +12163,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie.title ?? 'zagreus.Unknown'.tr(),
@@ -12256,9 +12236,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _movieCard(RadarrMovie movie) {
-    final showOverlayTitle = _showTitles && _titlesOnPoster;
-    final showTitleBeneath = _showTitles && !_titlesOnPoster;
-
     return Padding(
       padding: const EdgeInsets.only(right: 12),
       child: GestureDetector(
@@ -12310,7 +12287,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                     ),
                   ),
                   // Gradient overlay (only when showing overlay title)
-                  if (showOverlayTitle)
+                  if (false)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -12330,7 +12307,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       ),
                     ),
                   // Title overlay (only when not showing beneath)
-                  if (showOverlayTitle)
+                  if (false)
                     Positioned(
                       bottom: 8,
                       left: 8,
@@ -12356,7 +12333,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                 ],
               ),
               // Title beneath poster
-              if (showTitleBeneath) ...[
+              if (_showTitles) ...[
                 const SizedBox(height: 6),
                 Text(
                   movie.title ?? 'zagreus.Unknown'.tr(),

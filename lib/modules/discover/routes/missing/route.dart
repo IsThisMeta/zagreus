@@ -19,6 +19,8 @@ class DiscoverMissingRoute extends StatefulWidget {
 }
 
 class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<RadarrMovie> _movies = [];
@@ -242,9 +244,8 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
       gridSpacing = 10.0;
     }
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -273,9 +274,8 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
   
   Widget _movieTile(RadarrMovie movie, int index) {
     final isSelected = _selectedMovieIndices.contains(index);
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),

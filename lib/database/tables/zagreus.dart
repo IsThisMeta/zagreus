@@ -139,7 +139,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   DISCOVER_COLUMNS_PER_ROW<int>(3),
   DISCOVER_HERO_HEIGHT<double>(370.0),
   DISCOVER_SHOW_TITLES<bool>(true),
-  DISCOVER_TITLES_ON_POSTER<bool>(false),
+
   DISCOVER_MONOCHROME_RATINGS<bool>(false),
   DISCOVER_TRENDING_TIME_WINDOW<String>('day'),
   DISCOVER_SHOW_HERO_CAROUSEL<bool>(true),

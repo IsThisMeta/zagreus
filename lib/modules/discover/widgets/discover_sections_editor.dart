@@ -50,12 +50,12 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   ];
 
   // Phone poster height
-  static const double _posterHeightMinPhone = 150.0;
-  static const double _posterHeightMaxPhone = 250.0;
+  static const double _posterHeightMinPhone = 175.0;
+  static const double _posterHeightMaxPhone = 275.0;
 
   // iPad poster height (larger range for bigger screen)
-  static const double _posterHeightMinIPad = 150.0;
-  static const double _posterHeightMaxIPad = 350.0;
+  static const double _posterHeightMinIPad = 225.0;
+  static const double _posterHeightMaxIPad = 325.0;
 
   // Phone defaults
   static const double _heroHeightMinPhone = 300.0;
@@ -122,11 +122,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
-  double _posterHeight = 210.0;
+  double _posterHeight = 225.0;
   double _heroHeight = 400.0;
   int _columnsPerRow = 3;
   bool _showTitles = true;
-  bool _titlesOnPoster = false;
+
   bool _monochromeRatings = false;
   bool _showHeroCarousel = true;
   bool _hideInLibraryFromHero = false;
@@ -189,12 +189,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _showTitles = savedShowTitles;
     }
 
-    // Load titles on poster setting
-    final savedTitlesOnPoster =
-        ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read();
-    if (savedTitlesOnPoster != null) {
-      _titlesOnPoster = savedTitlesOnPoster;
-    }
+
 
     // Load monochrome ratings setting
     final savedMonochromeRatings =
@@ -242,7 +237,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _posterHeight = savedPosterHeight;
     } else {
       // Set to default for this device type
-      _posterHeight = isTablet ? 250.0 : 200.0;
+      _posterHeight = isTablet ? 275.0 : 225.0;
     }
 
     // Load hero height from device-specific key
@@ -293,7 +288,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     }
 
     ZagreusDatabase.DISCOVER_SHOW_TITLES.update(_showTitles);
-    ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.update(_titlesOnPoster);
     ZagreusDatabase.DISCOVER_MONOCHROME_RATINGS.update(_monochromeRatings);
     ZagreusDatabase.DISCOVER_SHOW_HERO_CAROUSEL.update(_showHeroCarousel);
     ZagreusDatabase.DISCOVER_HIDE_IN_LIBRARY_FROM_HERO
@@ -316,11 +310,10 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _movieSections = List<String>.from(_defaultMovieSections);
       _tvSections = List<String>.from(_defaultTVSections);
       // Use device-specific defaults
-      _posterHeight = isTablet ? 250.0 : 200.0;
+      _posterHeight = isTablet ? 275.0 : 225.0;
       _heroHeight = isTablet ? 550.0 : 370.0;
       _columnsPerRow = isTablet ? 4 : 3;
       _showTitles = true;
-      _titlesOnPoster = false;
       _monochromeRatings = false;
       _showHeroCarousel = true;
       _hideInLibraryFromHero = false;
@@ -577,45 +570,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ),
           ),
           const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  'settings.DashboardSettingsTitlesOnPoster'.tr(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: theme.brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
-                  ),
-                ),
-              ),
-              Switch(
-                value: _titlesOnPoster,
-                activeColor: ZagColours.accentColor(context),
-                onChanged: _showTitles
-                    ? (value) {
-                        setState(() {
-                          _titlesOnPoster = value;
-                          _hasChanges = true;
-                        });
-                        widget.onHasChangesChanged?.call(_hasChanges);
-                      }
-                    : null,
-              ),
-            ],
-          ),
-          Text(
-            'settings.DashboardSettingsTitlesOnPosterDescription'.tr(),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
-          ),
+
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -320,8 +320,6 @@
   "settings.DashboardSettingsItemsPerRowDescription": "Controls how many posters fit horizontally in the full Dashboard grids for movies and shows.",
   "settings.DashboardSettingsShowTitles": "Show Titles",
   "settings.DashboardSettingsShowTitlesDescription": "Toggle titles on or off for movie and show posters.",
-  "settings.DashboardSettingsTitlesOnPoster": "Titles On Posters",
-  "settings.DashboardSettingsTitlesOnPosterDescription": "Show titles overlaid on posters instead of beneath them. Requires Show Titles to be enabled.",
   "settings.DashboardSettingsMonochromeRatings": "Monochrome Ratings",
   "settings.DashboardSettingsMonochromeRatingsDescription": "Display rating badges in white instead of colored.",
   "settings.DashboardSettingsShowHeroCarousel": "Show Hero Carousel",

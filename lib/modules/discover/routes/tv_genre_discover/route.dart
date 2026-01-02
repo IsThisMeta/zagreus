@@ -27,6 +27,8 @@ class TvGenreDiscoverRoute extends StatefulWidget {
 }
 
 class _State extends State<TvGenreDiscoverRoute> with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Map<String, dynamic>> _shows = [];
@@ -350,9 +352,8 @@ class _State extends State<TvGenreDiscoverRoute> with ZagScrollControllerMixin {
     }
 
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath (need more vertical space for title)
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -391,10 +392,10 @@ class _State extends State<TvGenreDiscoverRoute> with ZagScrollControllerMixin {
 
   Widget _showTile(Map<String, dynamic> show) {
     final bool inLibrary = show['inLibrary'] ?? false;
-    final showOverlayTitle = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() && 
-        (ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
-    final showTitleBeneath = (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true) &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showOverlayTitle = _showTitles && 
+        false;
+    final showTitleBeneath = (_showTitles) &&
+        true;
 
     return GestureDetector(
       onTap: () => _handleShowTap(show),
@@ -498,7 +499,7 @@ class _State extends State<TvGenreDiscoverRoute> with ZagScrollControllerMixin {
           fit: StackFit.expand,
           children: [
             _buildPosterImage(show),
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -553,7 +554,7 @@ class _State extends State<TvGenreDiscoverRoute> with ZagScrollControllerMixin {
                   ),
                 ),
               ),
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (_showTitles)
               Positioned(
                 bottom: 8,
                 left: 8,

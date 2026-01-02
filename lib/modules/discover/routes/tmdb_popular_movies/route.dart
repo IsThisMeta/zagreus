@@ -24,6 +24,8 @@ class TMDBPopularMoviesRoute extends StatefulWidget {
 
 class _State extends State<TMDBPopularMoviesRoute>
     with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<Map<String, dynamic>> _movies = [];
@@ -438,9 +440,8 @@ class _State extends State<TMDBPopularMoviesRoute>
     }
 
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath (need more vertical space for title)
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -481,9 +482,8 @@ class _State extends State<TMDBPopularMoviesRoute>
     final int? serviceItemId = movie['serviceItemId'] as int?;
     final int? tmdbId = movie['tmdbId'] as int?;
     final isSelected = _selectedMovieIndices.contains(index);
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode
@@ -616,7 +616,7 @@ class _State extends State<TMDBPopularMoviesRoute>
     bool inLibrary,
     bool isSelected,
   ) {
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+    final showTitles = _showTitles;
 
     return Container(
       decoration: BoxDecoration(

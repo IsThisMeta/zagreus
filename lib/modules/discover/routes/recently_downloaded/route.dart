@@ -23,6 +23,8 @@ class DiscoverRecentlyDownloadedRoute extends StatefulWidget {
 
 class _State extends State<DiscoverRecentlyDownloadedRoute>
     with ZagScrollControllerMixin {
+  bool get _showTitles => ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<RadarrMovie> _movies = [];
@@ -230,9 +232,8 @@ class _State extends State<DiscoverRecentlyDownloadedRoute>
       );
     }
     // Check if titles should be beneath posters
-    final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final showTitles = _showTitles;
+    final titlesBeneath = showTitles;
 
     // Adjust aspect ratio when titles are beneath (need more vertical space for title)
     final aspectRatio = titlesBeneath ? 0.48 : 0.58;
@@ -292,8 +293,7 @@ class _MovieGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showTitles = ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true;
-    final titlesBeneath = showTitles &&
-        !(ZagreusDatabase.DISCOVER_TITLES_ON_POSTER.read() ?? false);
+    final titlesBeneath = showTitles;
 
     return GestureDetector(
       onTap: () {
@@ -356,7 +356,7 @@ class _MovieGridItem extends StatelessWidget {
             // Poster
             _buildPosterImage(context, movie),
             // Gradient for text readability
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -376,7 +376,7 @@ class _MovieGridItem extends StatelessWidget {
                 ),
               ),
             // Title
-            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read())
+            if (ZagreusDatabase.DISCOVER_SHOW_TITLES.read() ?? true)
               Positioned(
                 bottom: 8,
                 left: 8,
