@@ -67,14 +67,16 @@ class _State extends State<LidarrCatalogueTile> {
         setState(() => widget.data.monitored = !widget.data.monitored!);
       widget.refreshState();
       showZagSuccessSnackBar(
-        title: widget.data.monitored! ? 'Monitoring' : 'No Longer Monitoring',
+        title: widget.data.monitored!
+            ? 'lidarr.Monitoring'.tr()
+            : 'lidarr.NoLongerMonitoring'.tr(),
         message: widget.data.title,
       );
     }).catchError((error) {
       showZagErrorSnackBar(
         title: widget.data.monitored!
-            ? 'Failed to Stop Monitoring'
-            : 'Failed to Monitor',
+            ? 'lidarr.FailedToStopMonitoring'.tr()
+            : 'lidarr.FailedToMonitor'.tr(),
         error: error,
       );
     });
@@ -122,9 +124,9 @@ class _State extends State<LidarrCatalogueTile> {
     await _api
         .refreshArtist(widget.data.artistID)
         .then((_) => showZagSuccessSnackBar(
-            title: 'Refreshing...', message: widget.data.title))
+            title: 'lidarr.Refreshing'.tr(), message: widget.data.title))
         .catchError((error) =>
-            showZagErrorSnackBar(title: 'Failed to Refresh', error: error));
+            showZagErrorSnackBar(title: 'lidarr.FailedToRefresh'.tr(), error: error));
   }
 
   Future<void> _removeArtist() async {
@@ -139,11 +141,12 @@ class _State extends State<LidarrCatalogueTile> {
               .removeArtist(widget.data.artistID, deleteFiles: true)
               .then((_) {
             showZagSuccessSnackBar(
-                title: 'Removed (With Data)', message: widget.data.title);
+                title: 'lidarr.RemovedWithData'.tr(),
+                message: widget.data.title);
             widget.refresh();
           }).catchError((error) {
             showZagErrorSnackBar(
-              title: 'Failed to Remove (With Data)',
+              title: 'lidarr.FailedToRemoveWithData'.tr(),
               error: error,
             );
           });
@@ -152,11 +155,14 @@ class _State extends State<LidarrCatalogueTile> {
         await _api
             .removeArtist(widget.data.artistID, deleteFiles: false)
             .then((_) {
-          showZagSuccessSnackBar(title: 'Removed', message: widget.data.title);
+          showZagSuccessSnackBar(
+            title: 'lidarr.Removed'.tr(),
+            message: widget.data.title,
+          );
           widget.refresh();
         }).catchError((error) {
           showZagErrorSnackBar(
-            title: 'Failed to Remove',
+            title: 'lidarr.FailedToRemove'.tr(),
             error: error,
           );
         });

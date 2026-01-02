@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/lidarr.dart';
 
 enum LidarrCatalogueSorting {
@@ -33,19 +34,19 @@ extension LidarrCatalogueSortingExtension on LidarrCatalogueSorting {
   String get readable {
     switch (this) {
       case LidarrCatalogueSorting.alphabetical:
-        return 'Alphabetical';
+        return 'lidarr.SortAlphabetical'.tr();
       case LidarrCatalogueSorting.dateAdded:
-        return 'Date Added';
+        return 'lidarr.SortDateAdded'.tr();
       case LidarrCatalogueSorting.size:
-        return 'Size';
+        return 'lidarr.SortSize'.tr();
       case LidarrCatalogueSorting.metadata:
-        return 'Metadata Profile';
+        return 'lidarr.SortMetadataProfile'.tr();
       case LidarrCatalogueSorting.quality:
-        return 'Quality Profile';
+        return 'lidarr.SortQualityProfile'.tr();
       case LidarrCatalogueSorting.tracks:
-        return 'Tracks';
+        return 'lidarr.SortTracks'.tr();
       case LidarrCatalogueSorting.type:
-        return 'Type';
+        return 'lidarr.SortType'.tr();
     }
   }
 

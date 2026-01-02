@@ -14,10 +14,10 @@ class LidarrNavigationBar extends StatelessWidget {
   ];
 
   static List<String> get titles => [
-        'Artists',
-        'Missing',
-        'History',
-        'Queue',
+        'lidarr.Artists'.tr(),
+        'lidarr.Missing'.tr(),
+        'lidarr.History'.tr(),
+        'lidarr.Queue'.tr(),
       ];
 
   const LidarrNavigationBar({

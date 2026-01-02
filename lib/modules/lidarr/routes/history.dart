@@ -82,8 +82,8 @@ class _State extends State<LidarrHistory> with AutomaticKeepAliveClientMixin {
   Widget get _list {
     if (_results?.isEmpty ?? true) {
       return ZagMessage(
-        text: 'No History Found',
-        buttonText: 'Refresh',
+        text: 'lidarr.NoHistoryFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refresh,
       );
     }

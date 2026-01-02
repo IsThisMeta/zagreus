@@ -1,3 +1,4 @@
+import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/lidarr.dart';
 
 enum LidarrReleasesSorting {
@@ -33,19 +34,19 @@ extension LidarrReleasesSortingExtension on LidarrReleasesSorting {
   String get readable {
     switch (this) {
       case LidarrReleasesSorting.age:
-        return 'Age';
+        return 'lidarr.SortAge'.tr();
       case LidarrReleasesSorting.alphabetical:
-        return 'Alphabetical';
+        return 'lidarr.SortAlphabetical'.tr();
       case LidarrReleasesSorting.seeders:
-        return 'Seeders';
+        return 'lidarr.SortSeeders'.tr();
       case LidarrReleasesSorting.weight:
-        return 'Weight';
+        return 'lidarr.SortWeight'.tr();
       case LidarrReleasesSorting.type:
-        return 'Type';
+        return 'lidarr.SortType'.tr();
       case LidarrReleasesSorting.size:
-        return 'Size';
+        return 'lidarr.SortSize'.tr();
       case LidarrReleasesSorting.customFormatScore:
-        return 'Custom Format Score';
+        return 'lidarr.SortCustomFormatScore'.tr();
     }
   }
 

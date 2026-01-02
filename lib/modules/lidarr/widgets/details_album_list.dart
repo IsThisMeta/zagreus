@@ -78,7 +78,8 @@ class _State extends State<LidarrDetailsAlbumList>
             controller: LidarrArtistNavigationBar.scrollControllers[1],
             itemCount: _results!.isEmpty ? 1 : _results!.length,
             itemBuilder: _results!.isEmpty
-                ? (context, _) => const ZagMessage(text: 'No Albums Found')
+                ? (context, _) =>
+                    ZagMessage(text: 'lidarr.NoAlbumsFound'.tr())
                 : (context, index) => LidarrDetailsAlbumTile(
                       data: _results![index],
                       artistId: widget.artistID,

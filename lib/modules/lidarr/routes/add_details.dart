@@ -86,8 +86,8 @@ class _State extends State<AddArtistDetailsRoute>
   Widget build(BuildContext context) {
     if (widget.data == null) {
       return InvalidRoutePage(
-        title: 'Add Artist',
-        message: 'Artist Not Found',
+        title: 'lidarr.AddArtist'.tr(),
+        message: 'lidarr.ArtistNotFound'.tr(),
       );
     }
 
@@ -104,11 +104,11 @@ class _State extends State<AddArtistDetailsRoute>
       actions: [
         ZagActionBarCard(
           title: 'zagreus.Options'.tr(),
-          subtitle: 'radarr.StartSearchFor'.tr(),
+          subtitle: 'lidarr.StartSearchFor'.tr(),
           onTap: () async => LidarrDialogs().addArtistOptions(context),
         ),
         ZagButton.text(
-          text: 'Add',
+          text: 'zagreus.Add'.tr(),
           icon: Icons.add_rounded,
           onTap: () async => _addArtist(),
         ),
@@ -150,7 +150,7 @@ class _State extends State<AddArtistDetailsRoute>
         LidarrDescriptionBlock(
           title: widget.data?.title ?? 'zagreus.Unknown'.tr(),
           description: (widget.data?.overview ?? '').isEmpty
-              ? 'No Summary Available'
+              ? 'lidarr.NoSummaryAvailable'.tr()
               : widget.data!.overview,
           uri: widget.data?.posterURI ?? '',
           squareImage: true,
@@ -158,8 +158,8 @@ class _State extends State<AddArtistDetailsRoute>
           onLongPress: () async {
             if (widget.data?.discogsLink?.isEmpty ?? true) {
               showZagInfoSnackBar(
-                title: 'No Discogs Page Available',
-                message: 'No Discogs URL is available',
+                title: 'lidarr.NoDiscogsPageAvailable'.tr(),
+                message: 'lidarr.NoDiscogsUrlAvailable'.tr(),
               );
             }
             widget.data?.discogsLink?.openLink();
@@ -169,9 +169,11 @@ class _State extends State<AddArtistDetailsRoute>
           builder: (context, _) {
             final _rootfolder = LidarrDatabase.ADD_ROOT_FOLDER.read();
             return ZagBlock(
-              title: 'Root Folder',
+              title: 'lidarr.RootFolder'.tr(),
               body: [
-                TextSpan(text: _rootfolder?.path ?? 'Unknown Root Folder'),
+                TextSpan(
+                    text: _rootfolder?.path ??
+                        'lidarr.UnknownRootFolder'.tr()),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -190,7 +192,7 @@ class _State extends State<AddArtistDetailsRoute>
               LidarrMonitorStatus.ALL;
 
           return ZagBlock(
-            title: 'Monitor',
+            title: 'lidarr.Monitor'.tr(),
             trailing: const ZagIconButton.arrow(),
             body: [TextSpan(text: _status.readable)],
             onTap: () async {
@@ -204,9 +206,11 @@ class _State extends State<AddArtistDetailsRoute>
           builder: (context, _) {
             final _profile = LidarrDatabase.ADD_QUALITY_PROFILE.read();
             return ZagBlock(
-              title: 'Quality Profile',
+              title: 'lidarr.QualityProfile'.tr(),
               body: [
-                TextSpan(text: _profile?.name ?? 'Unknown Profile'),
+                TextSpan(
+                    text:
+                        _profile?.name ?? 'lidarr.UnknownProfile'.tr()),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -222,9 +226,11 @@ class _State extends State<AddArtistDetailsRoute>
           builder: (context, _) {
             final _profile = LidarrDatabase.ADD_METADATA_PROFILE.read();
             return ZagBlock(
-              title: 'Metadata Profile',
+              title: 'lidarr.MetadataProfile'.tr(),
               body: [
-                TextSpan(text: _profile?.name ?? 'Unknown Profile'),
+                TextSpan(
+                    text:
+                        _profile?.name ?? 'lidarr.UnknownProfile'.tr()),
               ],
               trailing: const ZagIconButton.arrow(),
               onTap: () async {
@@ -255,7 +261,7 @@ class _State extends State<AddArtistDetailsRoute>
     )
         .then((id) {
       showZagSuccessSnackBar(
-        title: 'Artist Added',
+        title: 'lidarr.ArtistAdded'.tr(),
         message: widget.data!.title,
       );
       ZagRouter.router.pop();
@@ -265,8 +271,8 @@ class _State extends State<AddArtistDetailsRoute>
       ZagLogger().error('Failed to add artist', error, stack);
       showZagErrorSnackBar(
         title: search
-            ? 'Failed to Add Artist (With Search)'
-            : 'Failed to Add Artist',
+            ? 'lidarr.FailedToAddArtistWithSearch'.tr()
+            : 'lidarr.FailedToAddArtist'.tr(),
         error: error,
       );
     });

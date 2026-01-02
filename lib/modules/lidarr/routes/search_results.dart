@@ -46,7 +46,7 @@ class _State extends State<ArtistAlbumReleasesRoute>
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Releases',
+      title: 'lidarr.Releases'.tr(),
       scrollControllers: [scrollController],
       bottom: LidarrReleasesSearchBar(scrollController: scrollController),
       actions: const [
@@ -87,8 +87,8 @@ class _State extends State<ArtistAlbumReleasesRoute>
   Widget _list() {
     if ((_results?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Releases Found',
-        buttonText: 'Refresh',
+        text: 'lidarr.NoReleasesFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refreshKey.currentState?.show,
       );
     return Consumer<LidarrState>(
@@ -99,7 +99,7 @@ class _State extends State<ArtistAlbumReleasesRoute>
           return ZagListView(
             controller: scrollController,
             children: [
-              ZagMessage.inList(text: 'No Releases Found'),
+              ZagMessage.inList(text: 'lidarr.NoReleasesFound'.tr()),
             ],
           );
         return ZagListViewBuilder(

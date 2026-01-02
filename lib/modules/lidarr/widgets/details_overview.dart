@@ -28,7 +28,7 @@ class _State extends State<LidarrDetailsOverview>
         LidarrDescriptionBlock(
           title: widget.data.title,
           description: widget.data.overview == ''
-              ? 'No Summary Available'
+              ? 'lidarr.NoSummaryAvailable'.tr()
               : widget.data.overview,
           uri: widget.data.posterURI(),
           squareImage: true,
@@ -37,27 +37,27 @@ class _State extends State<LidarrDetailsOverview>
         ZagTableCard(
           content: [
             ZagTableContent(
-              title: 'Path',
+              title: 'lidarr.Path'.tr(),
               body: widget.data.path,
             ),
             ZagTableContent(
-              title: 'Quality',
+              title: 'lidarr.Quality'.tr(),
               body: widget.data.quality,
             ),
             ZagTableContent(
-              title: 'Metadata',
+              title: 'lidarr.Metadata'.tr(),
               body: widget.data.metadata,
             ),
             ZagTableContent(
-              title: 'Albums',
+              title: 'lidarr.Albums'.tr(),
               body: widget.data.albums,
             ),
             ZagTableContent(
-              title: 'Tracks',
+              title: 'lidarr.Tracks'.tr(),
               body: widget.data.tracks,
             ),
             ZagTableContent(
-              title: 'Genres',
+              title: 'lidarr.Genres'.tr(),
               body: widget.data.genre,
             ),
           ],

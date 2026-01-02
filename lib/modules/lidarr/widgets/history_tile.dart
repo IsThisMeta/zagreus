@@ -32,8 +32,8 @@ class _State extends State<LidarrHistoryTile> {
   Future<void> _enterArtist() async {
     if (widget.entry.artistID == -1) {
       showZagInfoSnackBar(
-        title: 'No Artist Available',
-        message: 'There is no artist associated with this history entry',
+        title: 'lidarr.NoArtistAvailable'.tr(),
+        message: 'lidarr.NoArtistAvailableDescription'.tr(),
       );
     } else {
       LidarrRoutes.ARTIST.go(

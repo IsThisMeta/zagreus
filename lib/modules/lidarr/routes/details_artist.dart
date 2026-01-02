@@ -59,7 +59,7 @@ class _State extends State<ArtistDetailsRoute> {
     if (_error) {
       return ZagScaffold(
         scaffoldKey: _scaffoldKey,
-        appBar: ZagAppBar(title: 'Artist Details'),
+        appBar: ZagAppBar(title: 'lidarr.ArtistDetails'.tr()),
         body: ZagMessage.error(onTap: _fetch),
       );
     }
@@ -92,7 +92,7 @@ class _State extends State<ArtistDetailsRoute> {
     }
 
     return ZagAppBar(
-      title: 'Artist Details',
+      title: 'lidarr.ArtistDetails'.tr(),
       pageController: _pageController,
       scrollControllers: LidarrArtistNavigationBar.scrollControllers,
       actions: _actions,
@@ -114,7 +114,7 @@ class _State extends State<ArtistDetailsRoute> {
 
   Future<void> _removeCallback(bool withData) async {
     showZagSuccessSnackBar(
-      title: 'Artist Removed',
+      title: 'lidarr.ArtistRemoved'.tr(),
       message: data!.title,
     );
     ZagRouter.router.pop();

@@ -82,14 +82,18 @@ class LidarrCatalogueData {
 
   String get tracks {
     return statistics['trackCount'] == 1
-        ? '${statistics['trackCount']} Track'
-        : '${statistics['trackCount']} Tracks';
+        ? 'lidarr.TrackCount'
+            .tr(args: [statistics['trackCount'].toString()])
+        : 'lidarr.TracksCount'
+            .tr(args: [statistics['trackCount'].toString()]);
   }
 
   String get albums {
     return statistics['albumCount'] == 1
-        ? '${statistics['albumCount']} Album'
-        : '${statistics['albumCount']} Albums';
+        ? 'lidarr.AlbumCount'
+            .tr(args: [statistics['albumCount'].toString()])
+        : 'lidarr.AlbumsCount'
+            .tr(args: [statistics['albumCount'].toString()]);
   }
 
   String? get bandsintownURI {

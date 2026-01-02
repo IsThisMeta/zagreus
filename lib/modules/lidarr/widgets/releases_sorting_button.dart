@@ -24,7 +24,7 @@ class _State extends State<LidarrReleasesSortButton> {
         child: Consumer<LidarrState>(
           builder: (context, model, _) =>
               ZagPopupMenuButton<LidarrReleasesSorting>(
-            tooltip: 'Sort Releases',
+            tooltip: 'lidarr.SortReleases'.tr(),
             icon: Icons.sort_rounded,
             onSelected: (result) {
               if (model.sortReleasesType == result) {

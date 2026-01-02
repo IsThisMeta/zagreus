@@ -52,7 +52,7 @@ class _State extends State<ArtistAlbumDetailsRoute>
 
   PreferredSizeWidget get _appBar {
     return ZagAppBar(
-      title: 'Album Details',
+      title: 'lidarr.AlbumDetails'.tr(),
       scrollControllers: [scrollController],
       actions: <Widget>[
         ZagIconButton(
@@ -97,8 +97,8 @@ class _State extends State<ArtistAlbumDetailsRoute>
   Widget _list(List<LidarrTrackData> results) {
     if (results.isEmpty) {
       return ZagMessage(
-        text: 'No Tracks Found',
-        buttonText: 'Refresh',
+        text: 'lidarr.NoTracksFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: _refresh,
       );
     }
@@ -119,13 +119,13 @@ class _State extends State<ArtistAlbumDetailsRoute>
     LidarrAPI _api = LidarrAPI.from(ZagProfile.forModule('lidarr'));
     _api.searchAlbums([widget.albumId]).then((_) {
       showZagSuccessSnackBar(
-        title: 'Searching...',
+        title: 'lidarr.Searching'.tr(),
         message: '',
       );
     }).catchError((error, stack) {
       ZagLogger().error('Failed to search for album', error, stack);
       showZagErrorSnackBar(
-        title: 'Failed to Search',
+        title: 'lidarr.FailedToSearch'.tr(),
         error: error,
       );
     });

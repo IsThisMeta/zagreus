@@ -49,7 +49,7 @@ class _State extends State<AddArtistRoute> with ZagScrollControllerMixin {
   Widget _appBar() {
     return ZagAppBar(
       scrollControllers: [scrollController],
-      title: 'Add Artist',
+      title: 'lidarr.AddArtist'.tr(),
       bottom: LidarrAddSearchBar(
         callback: _refresh,
         scrollController: scrollController,
@@ -88,7 +88,7 @@ class _State extends State<AddArtistRoute> with ZagScrollControllerMixin {
     if ((data?.length ?? 0) == 0)
       return ZagListView(
         controller: scrollController,
-        children: const [ZagMessage(text: 'No Results Found')],
+        children: [ZagMessage(text: 'lidarr.NoResultsFound'.tr())],
       );
     return ZagListViewBuilder(
       controller: scrollController,

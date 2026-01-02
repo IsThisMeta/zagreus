@@ -743,11 +743,12 @@ class LidarrAPI {
       List<LidarrReleaseData> entries = [];
       for (var entry in response.data) {
         entries.add(LidarrReleaseData(
-          title: entry['title'] ?? 'Unknown Title',
+          title: entry['title'] ?? 'lidarr.UnknownTitle'.tr(),
           guid: entry['guid'] ?? '',
-          quality: entry['quality']['quality']['name'] ?? 'Unknown',
-          protocol: entry['protocol'] ?? 'Unknown Protocol',
-          indexer: entry['indexer'] ?? 'Unknown Indexer',
+          quality:
+              entry['quality']['quality']['name'] ?? 'zagreus.Unknown'.tr(),
+          protocol: entry['protocol'] ?? 'lidarr.UnknownProtocol'.tr(),
+          indexer: entry['indexer'] ?? 'lidarr.UnknownIndexer'.tr(),
           infoUrl: entry['infoUrl'] ?? '',
           approved: entry['approved'] ?? false,
           releaseWeight: entry['releaseWeight'] ?? 0,

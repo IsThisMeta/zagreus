@@ -59,7 +59,7 @@ class _State extends State<LidarrQueueRoute> with ZagScrollControllerMixin {
 
   PreferredSizeWidget _appBar() {
     return ZagAppBar(
-      title: 'Queue',
+      title: 'lidarr.Queue'.tr(),
       scrollControllers: [_controller],
     );
   }
@@ -92,7 +92,7 @@ class _State extends State<LidarrQueueRoute> with ZagScrollControllerMixin {
             final records = snapshot.data!.records ?? [];
             if (records.isEmpty) {
               return ZagMessage(
-                text: 'Empty Queue',
+                text: 'lidarr.EmptyQueue'.tr(),
                 buttonText: 'zagreus.Refresh'.tr(),
                 onTap: _refreshKey.currentState?.show,
               );

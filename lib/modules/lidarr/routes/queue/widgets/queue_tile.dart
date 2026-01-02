@@ -26,7 +26,7 @@ class LidarrQueueTile extends StatelessWidget {
     final statusLine = TextSpan(
       children: [
         TextSpan(
-          text: (record.status ?? 'Unknown').toTitleCase(),
+          text: _localizedStatus(record.status),
           style: TextStyle(color: ZagColours.blueGrey),
         ),
         TextSpan(text: ZagUI.TEXT_BULLET.pad()),
@@ -39,8 +39,10 @@ class LidarrQueueTile extends StatelessWidget {
 
     return ZagExpandableListTile(
       title: (record.title ?? '').isNotEmpty
-          ? record.title ?? 'Unknown'
-          : (record.albumTitle.isNotEmpty ? record.albumTitle : 'Unknown'),
+          ? record.title ?? 'zagreus.Unknown'.tr()
+          : (record.albumTitle.isNotEmpty
+              ? record.albumTitle
+              : 'zagreus.Unknown'.tr()),
       collapsedSubtitles: [
         if (record.albumTitle.isNotEmpty) TextSpan(text: record.albumTitle),
         subtitle,
@@ -77,7 +79,7 @@ class LidarrQueueTile extends StatelessWidget {
     return [
       if ((record.status ?? '').isNotEmpty)
         ZagHighlightedNode(
-          text: (record.status ?? '').toTitleCase(),
+          text: _localizedStatus(record.status),
           backgroundColor: ZagColours.blueGrey,
         ),
       if (record.timeleft != null && record.timeleft!.isNotEmpty)
@@ -102,18 +104,32 @@ class LidarrQueueTile extends StatelessWidget {
   List<ZagTableContent> _tableContent() {
     return [
       if (record.artistName.isNotEmpty)
-        ZagTableContent(title: 'Artist', body: record.artistName),
+        ZagTableContent(title: 'lidarr.Artist'.tr(), body: record.artistName),
       if (record.albumTitle.isNotEmpty)
-        ZagTableContent(title: 'Album', body: record.albumTitle),
+        ZagTableContent(title: 'lidarr.Album'.tr(), body: record.albumTitle),
       if ((record.status ?? '').isNotEmpty)
-        ZagTableContent(title: 'Status', body: record.status),
+        ZagTableContent(
+            title: 'lidarr.Status'.tr(), body: _localizedStatus(record.status)),
       if ((record.timeleft ?? '').isNotEmpty)
-        ZagTableContent(title: 'Time Left', body: record.timeleft),
+        ZagTableContent(
+            title: 'lidarr.TimeLeft'.tr(), body: record.timeleft),
       if (record.size != null)
-        ZagTableContent(title: 'Size', body: record.size!.toInt().asBytes()),
+        ZagTableContent(
+            title: 'lidarr.Size'.tr(), body: record.size!.toInt().asBytes()),
       if (record.sizeleft != null)
         ZagTableContent(
-            title: 'Remaining', body: record.sizeleft!.toInt().asBytes()),
+            title: 'lidarr.Remaining'.tr(),
+            body: record.sizeleft!.toInt().asBytes()),
     ];
+  }
+
+  String _localizedStatus(String? status) {
+    final value = (status ?? '').toLowerCase();
+    if (value.contains('paused')) return 'lidarr.Paused'.tr();
+    if (value.contains('queued')) return 'lidarr.Queued'.tr();
+    if (value.contains('down')) return 'lidarr.Downloading'.tr();
+    if (value.contains('completed')) return 'lidarr.Completed'.tr();
+    if (value.isEmpty) return 'zagreus.Unknown'.tr();
+    return status!.toTitleCase();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/double/time.dart';
 import 'package:zagreus/modules/lidarr.dart';
 
 abstract class LidarrHistoryData {
@@ -24,30 +25,25 @@ abstract class LidarrHistoryData {
   String get timestampString {
     if (timestampObject != null) {
       Duration age = DateTime.now().difference(timestampObject!);
-      if (age.inDays >= 1) {
-        return age.inDays == 1
-            ? '${age.inDays} Day Ago'
-            : '${age.inDays} Days Ago';
-      }
-      if (age.inHours >= 1) {
-        return age.inHours == 1
-            ? '${age.inHours} Hour Ago'
-            : '${age.inHours} Hours Ago';
-      }
-      return age.inMinutes == 1
-          ? '${age.inMinutes} Minute Ago'
-          : '${age.inMinutes} Minutes Ago';
+      return (age.inMinutes / 60).asTimeAgo();
     }
-    return 'Unknown Date/Time';
+    return 'zagreus.UnknownDate'.tr();
   }
 
   List<TextSpan> get subtitle;
 
-  final Map historyReasonMessages = {
-    'Upgrade': 'Upgraded File',
-    'MissingFromDisk': 'Missing From Disk',
-    'Manual': 'Manually Removed',
-  };
+  String? historyReasonMessage(String reason) {
+    switch (reason) {
+      case 'Upgrade':
+        return 'lidarr.HistoryReasonUpgrade'.tr();
+      case 'MissingFromDisk':
+        return 'lidarr.HistoryReasonMissingFromDisk'.tr();
+      case 'Manual':
+        return 'lidarr.HistoryReasonManual'.tr();
+      default:
+        return null;
+    }
+  }
 }
 
 class LidarrHistoryDataGeneric extends LidarrHistoryData {
@@ -98,7 +94,7 @@ class LidarrHistoryDataGrabbed extends LidarrHistoryData {
         text: '$timestampString\n',
       ),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} $indexer',
+        text: '${LidarrConstants.eventTypeMessage(eventType)} $indexer',
         style: TextStyle(
           color: ZagColours.orange,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -124,7 +120,7 @@ class LidarrHistoryDataTrackFileImported extends LidarrHistoryData {
     return [
       TextSpan(text: timestampString),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} ($quality)',
+        text: '${LidarrConstants.eventTypeMessage(eventType)} ($quality)',
         style: TextStyle(
           color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -150,7 +146,7 @@ class LidarrHistoryDataDownloadImported extends LidarrHistoryData {
     return [
       TextSpan(text: timestampString),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} ($quality)',
+        text: '${LidarrConstants.eventTypeMessage(eventType)} ($quality)',
         style: TextStyle(
           color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -173,7 +169,7 @@ class LidarrHistoryDataAlbumImportIncomplete extends LidarrHistoryData {
     return [
       TextSpan(text: timestampString),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
+        text: '${LidarrConstants.eventTypeMessage(eventType)}',
         style: TextStyle(
           color: ZagColours.orange,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -200,7 +196,7 @@ class LidarrHistoryDataTrackFileDeleted extends LidarrHistoryData {
       TextSpan(text: timestampString),
       TextSpan(
         text:
-            '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]} (${super.historyReasonMessages[reason] ?? reason})',
+            '${LidarrConstants.eventTypeMessage(eventType)} (${super.historyReasonMessage(reason) ?? reason})',
         style: TextStyle(
           color: ZagColours.red,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -223,7 +219,7 @@ class LidarrHistoryDataTrackFileRenamed extends LidarrHistoryData {
     return [
       TextSpan(text: timestampString),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
+        text: '${LidarrConstants.eventTypeMessage(eventType)}',
         style: TextStyle(
           color: ZagColours.blue,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -246,7 +242,7 @@ class LidarrHistoryDataTrackFileRetagged extends LidarrHistoryData {
     return [
       TextSpan(text: timestampString),
       TextSpan(
-        text: '${LidarrConstants.EVENT_TYPE_MESSAGES[eventType]}',
+        text: '${LidarrConstants.eventTypeMessage(eventType)}',
         style: TextStyle(
           color: ZagColours.blue,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,

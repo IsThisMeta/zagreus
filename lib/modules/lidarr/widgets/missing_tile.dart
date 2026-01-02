@@ -35,7 +35,8 @@ class _State extends State<LidarrMissingTile> {
           ),
         ),
         TextSpan(
-          text: 'Released ${widget.entry.releaseDateString}',
+          text: 'lidarr.ReleasedOn'
+              .tr(args: [widget.entry.releaseDateString]),
           style: const TextStyle(
             color: ZagColours.red,
             fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -63,9 +64,9 @@ class _State extends State<LidarrMissingTile> {
     await _api
         .searchAlbums([widget.entry.albumID])
         .then((_) => showZagSuccessSnackBar(
-            title: 'Searching...', message: widget.entry.title))
+            title: 'lidarr.Searching'.tr(), message: widget.entry.title))
         .catchError((error) =>
-            showZagErrorSnackBar(title: 'Failed to Search', error: error));
+            showZagErrorSnackBar(title: 'lidarr.FailedToSearch'.tr(), error: error));
   }
 
   Future<void> _interactiveSearch() async {

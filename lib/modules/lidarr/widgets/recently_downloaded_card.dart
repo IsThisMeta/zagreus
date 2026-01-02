@@ -69,7 +69,7 @@ class LidarrRecentlyDownloadedCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Recently Downloaded Albums',
+                  'lidarr.RecentlyDownloadedAlbums'.tr(),
                   style: (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -86,7 +86,7 @@ class LidarrRecentlyDownloadedCard extends StatelessWidget {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    'See All',
+                    'lidarr.SeeAll'.tr(),
                     style: TextStyle(
                       color: lidarrColor,
                       fontSize: 13,
@@ -103,7 +103,7 @@ class LidarrRecentlyDownloadedCard extends StatelessWidget {
               height: 100,
               child: Center(
                 child: Text(
-                  'No recently downloaded albums',
+                  'lidarr.NoRecentlyDownloadedAlbums'.tr(),
                   style: TextStyle(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     fontSize: 13,

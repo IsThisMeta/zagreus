@@ -412,6 +412,8 @@ class _State extends State<ConfigurationGeneralRoute>
         return 'Français';
       case 'el':
         return 'Ελληνικά';
+      case 'nl':
+        return 'Nederlands';
       case 'tr':
         return 'Türkçe';
       case 'zh_Hans':
@@ -437,6 +439,7 @@ class _State extends State<ConfigurationGeneralRoute>
       ('de', 'Deutsch'),
       ('fr', 'Français'),
       ('el', 'Ελληνικά'),
+      ('nl', 'Nederlands'),
       ('tr', 'Türkçe'),
       ('zh_Hans', '简体中文'),
     ];

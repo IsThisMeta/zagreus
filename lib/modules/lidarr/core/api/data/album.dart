@@ -23,11 +23,13 @@ class LidarrAlbumData {
     if (releaseDateObject != null) {
       return DateFormat('MMMM dd, y').format(releaseDateObject!);
     }
-    return 'Unknown Release Date';
+    return 'lidarr.UnknownReleaseDate'.tr();
   }
 
   String get tracks {
-    return trackCount != 1 ? '$trackCount Tracks' : '$trackCount Track';
+    return trackCount != 1
+        ? 'lidarr.TracksCount'.tr(args: [trackCount.toString()])
+        : 'lidarr.TrackCount'.tr(args: [trackCount.toString()]);
   }
 
   String albumCoverURI() {

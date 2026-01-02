@@ -31,8 +31,8 @@ class LidarrAddSearchResultTile extends StatelessWidget {
         onLongPress: () async {
           if (data.discogsLink == null || data.discogsLink == '')
             showZagInfoSnackBar(
-              title: 'No Discogs Page Available',
-              message: 'No Discogs URL is available',
+              title: 'lidarr.NoDiscogsPageAvailable'.tr(),
+              message: 'lidarr.NoDiscogsUrlAvailable'.tr(),
             );
           data.discogsLink!.openLink();
         },
@@ -49,7 +49,7 @@ class LidarrAddSearchResultTile extends StatelessWidget {
   Future<void> _enterDetails(BuildContext context) async {
     if (alreadyAdded) {
       showZagInfoSnackBar(
-        title: 'Artist Already in Lidarr',
+        title: 'lidarr.ArtistAlreadyInLidarr'.tr(),
         message: data.title,
       );
     } else {

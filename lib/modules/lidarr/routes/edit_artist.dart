@@ -90,7 +90,7 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
 
   PreferredSizeWidget get _appBar {
     return ZagAppBar(
-      title: widget.data?.title ?? 'Edit Artist',
+      title: widget.data?.title ?? 'lidarr.EditArtist'.tr(),
       scrollControllers: [scrollController],
     );
   }
@@ -130,26 +130,26 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
         controller: scrollController,
         children: <Widget>[
           ZagBlock(
-            title: 'Monitored',
+            title: 'lidarr.Monitored'.tr(),
             trailing: ZagSwitch(
               value: _monitored!,
               onChanged: (value) => setState(() => _monitored = value),
             ),
           ),
           ZagBlock(
-            title: 'Quality Profile',
+            title: 'lidarr.QualityProfile'.tr(),
             body: [TextSpan(text: _qualityProfile!.name)],
             trailing: const ZagIconButton.arrow(),
             onTap: _changeProfile,
           ),
           ZagBlock(
-            title: 'Metadata Profile',
+            title: 'lidarr.MetadataProfile'.tr(),
             body: [TextSpan(text: _metadataProfile!.name)],
             trailing: const ZagIconButton.arrow(),
             onTap: _changeMetadata,
           ),
           ZagBlock(
-            title: 'Artist Path',
+            title: 'lidarr.ArtistPath'.tr(),
             body: [TextSpan(text: _path)],
             trailing: const ZagIconButton.arrow(),
             onTap: _changePath,
@@ -159,7 +159,8 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
 
   Future<void> _changePath() async {
     Tuple2<bool, String> _values =
-        await ZagDialogs().editText(context, 'Artist Path', prefill: _path!);
+        await ZagDialogs()
+            .editText(context, 'lidarr.ArtistPath'.tr(), prefill: _path!);
     if (_values.item1 && mounted) setState(() => _path = _values.item2);
   }
 
@@ -195,14 +196,14 @@ class _State extends State<ArtistEditRoute> with ZagScrollControllerMixin {
       widget.data!.monitored = _monitored;
       widget.data!.albumFolders = _albumFolders;
       showZagSuccessSnackBar(
-        title: 'Artist Updated',
+        title: 'lidarr.ArtistUpdated'.tr(),
         message: widget.data!.title,
       );
       ZagRouter.router.pop();
     }).catchError((error, stack) {
       ZagLogger().error('Failed to update artist', error, stack);
       showZagErrorSnackBar(
-        title: 'Failed to Update',
+        title: 'lidarr.FailedToUpdate'.tr(),
         error: error,
       );
     });

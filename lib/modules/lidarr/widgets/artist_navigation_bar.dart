@@ -6,10 +6,10 @@ class LidarrArtistNavigationBar extends StatelessWidget {
       List.generate(icons.length, (_) => ScrollController());
   final PageController pageController;
 
-  static const List<String> titles = [
-    'Overview',
-    'Albums',
-  ];
+  static List<String> get titles => [
+        'lidarr.Overview'.tr(),
+        'lidarr.Albums'.tr(),
+      ];
 
   static const List<IconData> icons = [
     Icons.subject_rounded,

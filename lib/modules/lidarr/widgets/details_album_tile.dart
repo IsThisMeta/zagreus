@@ -58,13 +58,15 @@ class _State extends State<LidarrDetailsAlbumTile> {
         setState(() => widget.data.monitored = !widget.data.monitored);
       widget.refreshState();
       showZagSuccessSnackBar(
-          title: widget.data.monitored ? 'Monitoring' : 'No Longer Monitoring',
+          title: widget.data.monitored
+              ? 'lidarr.Monitoring'.tr()
+              : 'lidarr.NoLongerMonitoring'.tr(),
           message: widget.data.title);
     }).catchError((error) {
       showZagErrorSnackBar(
         title: widget.data.monitored
-            ? 'Failed to Stop Monitoring'
-            : 'Failed to Monitor',
+            ? 'lidarr.FailedToStopMonitoring'.tr()
+            : 'lidarr.FailedToMonitor'.tr(),
         error: error,
       );
     });

@@ -60,9 +60,9 @@ class _State extends State<LidarrDetailsSettingsButton> {
     await _api
         .refreshArtist(widget.data!.artistID)
         .then((_) => showZagSuccessSnackBar(
-            title: 'Refreshing...', message: widget.data!.title))
+            title: 'lidarr.Refreshing'.tr(), message: widget.data!.title))
         .catchError((error) =>
-            showZagErrorSnackBar(title: 'Failed to Refresh', error: error));
+            showZagErrorSnackBar(title: 'lidarr.FailedToRefresh'.tr(), error: error));
   }
 
   Future<void> _removeArtist(BuildContext context) async {
@@ -77,14 +77,14 @@ class _State extends State<LidarrDetailsSettingsButton> {
               .removeArtist(widget.data!.artistID, deleteFiles: true)
               .then((_) => widget.remove(true))
               .catchError((error) => showZagErrorSnackBar(
-                  title: 'Failed to Remove (With Data)', error: error));
+                  title: 'lidarr.FailedToRemoveWithData'.tr(), error: error));
         }
       } else {
         await _api
             .removeArtist(widget.data!.artistID)
             .then((_) => widget.remove(false))
             .catchError((error) =>
-                showZagErrorSnackBar(title: 'Failed to Remove', error: error));
+                showZagErrorSnackBar(title: 'lidarr.FailedToRemove'.tr(), error: error));
       }
     }
   }

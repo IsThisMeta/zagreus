@@ -79,8 +79,8 @@ class _State extends State<LidarrMissing> with AutomaticKeepAliveClientMixin {
   Widget get _list {
     if (_results?.isEmpty ?? true) {
       return ZagMessage(
-        text: 'No Missing Albums',
-        buttonText: 'Refresh',
+        text: 'lidarr.NoMissingAlbums'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: widget.refreshIndicatorKey.currentState!.show,
       );
     }

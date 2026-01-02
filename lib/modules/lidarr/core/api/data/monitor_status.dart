@@ -1,3 +1,5 @@
+import 'package:zagreus/core.dart';
+
 enum LidarrMonitorStatus {
   ALL,
   FUTURE,
@@ -52,19 +54,19 @@ extension LidarrMonitorStatusExtension on LidarrMonitorStatus {
   String get readable {
     switch (this) {
       case LidarrMonitorStatus.ALL:
-        return 'All Albums';
+        return 'lidarr.MonitorAllAlbums'.tr();
       case LidarrMonitorStatus.FUTURE:
-        return 'Future Albums';
+        return 'lidarr.MonitorFutureAlbums'.tr();
       case LidarrMonitorStatus.MISSING:
-        return 'Missing Albums';
+        return 'lidarr.MonitorMissingAlbums'.tr();
       case LidarrMonitorStatus.EXISTING:
-        return 'Existing Albums';
+        return 'lidarr.MonitorExistingAlbums'.tr();
       case LidarrMonitorStatus.ONLY_FIRST_ALBUM:
-        return 'Only First Album';
+        return 'lidarr.MonitorFirstAlbumOnly'.tr();
       case LidarrMonitorStatus.ONLY_LAST_ALBUM:
-        return 'Only Latest Album';
+        return 'lidarr.MonitorLatestAlbumOnly'.tr();
       case LidarrMonitorStatus.NONE:
-        return 'None';
+        return 'lidarr.MonitorNone'.tr();
     }
   }
 }

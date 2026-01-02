@@ -93,8 +93,8 @@ class _State extends State<LidarrCatalogue>
   Widget _list() {
     if ((_results?.length ?? 0) == 0)
       return ZagMessage(
-        text: 'No Artists Found',
-        buttonText: 'Refresh',
+        text: 'lidarr.NoArtistsFound'.tr(),
+        buttonText: 'zagreus.Refresh'.tr(),
         onTap: widget.refreshIndicatorKey.currentState?.show,
       );
     return Consumer<LidarrState>(
@@ -105,7 +105,7 @@ class _State extends State<LidarrCatalogue>
           return ZagListView(
             controller: LidarrNavigationBar.scrollControllers[0],
             children: [
-              ZagMessage.inList(text: 'No Artists Found'),
+              ZagMessage.inList(text: 'lidarr.NoArtistsFound'.tr()),
             ],
           );
         return ZagListViewBuilder(

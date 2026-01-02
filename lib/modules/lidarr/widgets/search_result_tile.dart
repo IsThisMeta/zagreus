@@ -44,7 +44,7 @@ class _State extends State<LidarrReleasesTile> {
           color: zagProtocolColor,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
         ),
-        text: widget.release.protocol.toTitleCase(),
+        text: _protocolLabel(),
       ),
       if (widget.release.isTorrent)
         TextSpan(
@@ -99,7 +99,7 @@ class _State extends State<LidarrReleasesTile> {
   List<ZagHighlightedNode> _highlightedNodes() {
     return [
       ZagHighlightedNode(
-        text: widget.release.protocol.toTitleCase(),
+        text: _protocolLabel(),
         backgroundColor: zagProtocolColor,
       ),
     ];
@@ -107,23 +107,31 @@ class _State extends State<LidarrReleasesTile> {
 
   List<ZagTableContent> _tableContent() {
     return [
+      ZagTableContent(title: 'lidarr.Source'.tr(), body: _protocolLabel()),
       ZagTableContent(
-          title: 'source', body: widget.release.protocol.toTitleCase()),
-      ZagTableContent(title: 'age', body: widget.release.ageHours.asTimeAgo()),
-      ZagTableContent(title: 'indexer', body: widget.release.indexer),
-      ZagTableContent(title: 'size', body: widget.release.size.asBytes()),
-      ZagTableContent(title: 'quality', body: widget.release.quality),
+          title: 'lidarr.Age'.tr(),
+          body: widget.release.ageHours.asTimeAgo()),
+      ZagTableContent(
+          title: 'lidarr.Indexer'.tr(), body: widget.release.indexer),
+      ZagTableContent(
+          title: 'lidarr.Size'.tr(), body: widget.release.size.asBytes()),
+      ZagTableContent(
+          title: 'lidarr.Quality'.tr(), body: widget.release.quality),
       if (widget.release.customFormats?.isNotEmpty ?? false)
         ZagTableContent(
-          title: 'custom formats',
+          title: 'lidarr.CustomFormats'.tr(),
           body: widget.release.customFormats!.join('\n'),
         ),
       if (widget.release.protocol == 'torrent' &&
           widget.release.seeders != null)
-        ZagTableContent(title: 'seeders', body: '${widget.release.seeders}'),
+        ZagTableContent(
+            title: 'lidarr.Seeders'.tr(),
+            body: '${widget.release.seeders}'),
       if (widget.release.protocol == 'torrent' &&
           widget.release.leechers != null)
-        ZagTableContent(title: 'leechers', body: '${widget.release.leechers}'),
+        ZagTableContent(
+            title: 'lidarr.Leechers'.tr(),
+            body: '${widget.release.leechers}'),
     ];
   }
 
@@ -140,25 +148,36 @@ class _State extends State<LidarrReleasesTile> {
       ZagButton(
         type: ZagButtonType.TEXT,
         icon: Icons.download_rounded,
-        text: 'Download',
+        text: 'lidarr.Download'.tr(),
         onTap: _startDownload,
         loadingState: _downloadState,
       ),
       if (widget.release.infoUrl.isNotEmpty)
         ZagButton.text(
-          text: 'Indexer',
+          text: 'lidarr.Indexer'.tr(),
           icon: Icons.info_outline_rounded,
           color: ZagColours.blue,
           onTap: widget.release.infoUrl.openLink,
         ),
       if (!widget.release.approved)
         ZagButton.text(
-          text: 'Rejected',
+          text: 'lidarr.Rejected'.tr(),
           icon: Icons.report_outlined,
           color: ZagColours.red,
           onTap: _showWarnings,
         ),
     ];
+  }
+
+  String _protocolLabel() {
+    switch (widget.release.protocol.toLowerCase()) {
+      case 'torrent':
+        return 'lidarr.Torrent'.tr();
+      case 'usenet':
+        return 'lidarr.Usenet'.tr();
+      default:
+        return widget.release.protocol.toTitleCase();
+    }
   }
 
   Future<void> _startDownload() async {
@@ -168,15 +187,15 @@ class _State extends State<LidarrReleasesTile> {
         .downloadRelease(widget.release.guid, widget.release.indexerId)
         .then((_) {
       showZagSuccessSnackBar(
-        title: 'Downloading...',
+        title: 'lidarr.Downloading'.tr(),
         message: widget.release.title,
         showButton: true,
-        buttonText: 'Back',
+        buttonText: 'lidarr.Back'.tr(),
         buttonOnPressed: ZagRouter().popToRootRoute,
       );
     }).catchError((error, stack) {
       showZagErrorSnackBar(
-        title: 'Failed to Start Downloading',
+        title: 'lidarr.FailedToStartDownloading'.tr(),
         error: error,
       );
     });

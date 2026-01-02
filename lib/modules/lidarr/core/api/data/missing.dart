@@ -1,4 +1,5 @@
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/double/time.dart';
 
 class LidarrMissingData {
   String title;
@@ -24,21 +25,9 @@ class LidarrMissingData {
   String get releaseDateString {
     if (releaseDateObject != null) {
       Duration age = DateTime.now().difference(releaseDateObject!);
-      if (age.inDays >= 1) {
-        return age.inDays <= 1
-            ? '${age.inDays} Day Ago'
-            : '${age.inDays} Days Ago';
-      }
-      if (age.inHours >= 1) {
-        return age.inHours <= 1
-            ? '${age.inHours} Hour Ago'
-            : '${age.inHours} Hours Ago';
-      }
-      return age.inMinutes <= 1
-          ? '${age.inMinutes} Minute Ago'
-          : '${age.inMinutes} Minutes Ago';
+      return (age.inMinutes / 60).asTimeAgo();
     }
-    return 'Unknown Date/Time';
+    return 'zagreus.UnknownDate'.tr();
   }
 
   String albumCoverURI() {

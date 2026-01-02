@@ -18,7 +18,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Monitoring Options',
+      title: 'lidarr.MonitoringOptions'.tr(),
       content: List.generate(
         LidarrMonitorStatus.values.length,
         (index) => ZagDialog.tile(
@@ -46,7 +46,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Quality Profile',
+      title: 'lidarr.QualityProfile'.tr(),
       content: List.generate(
         qualities.length,
         (index) => ZagDialog.tile(
@@ -74,7 +74,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Metadata Profile',
+      title: 'lidarr.MetadataProfile'.tr(),
       content: List.generate(
         metadatas.length,
         (index) => ZagDialog.tile(
@@ -101,22 +101,22 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Remove Artist',
+      title: 'lidarr.RemoveArtist'.tr(),
       buttons: [
         ZagDialog.button(
-          text: 'Remove + Files',
+          text: 'lidarr.RemoveWithFiles'.tr(),
           textColor: ZagColours.red,
           onPressed: () => _setValues(true, true),
         ),
         ZagDialog.button(
-          text: 'Remove',
+          text: 'zagreus.Remove'.tr(),
           textColor: ZagColours.red,
           onPressed: () => _setValues(true, false),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text: 'Are you sure you want to remove the artist from Lidarr?'),
+            text: 'lidarr.RemoveArtistConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -133,17 +133,16 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Download Release',
+      title: 'lidarr.DownloadRelease'.tr(),
       buttons: <Widget>[
         ZagDialog.button(
-          text: 'Download',
+          text: 'lidarr.Download'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text:
-                'Are you sure you want to download this release? It has been marked as a rejected release by Lidarr.'),
+            text: 'lidarr.DownloadReleaseConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -160,16 +159,16 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Search All Missing',
+      title: 'lidarr.SearchAllMissing'.tr(),
       buttons: <Widget>[
         ZagDialog.button(
-          text: 'Search',
+          text: 'lidarr.Search'.tr(),
           onPressed: () => _setValues(true),
         ),
       ],
       content: [
         ZagDialog.textContent(
-            text: 'Are you sure you want to search for all missing albums?'),
+            text: 'lidarr.SearchAllMissingConfirmation'.tr()),
       ],
       contentPadding: ZagDialog.textDialogContentPadding(),
     );
@@ -179,9 +178,9 @@ class LidarrDialogs {
   static Future<List<dynamic>> editArtist(
       BuildContext context, LidarrCatalogueData entry) async {
     List<List<dynamic>> _options = [
-      ['Edit Artist', Icons.edit_rounded, 'edit_artist'],
-      ['Refresh Artist', Icons.refresh_rounded, 'refresh_artist'],
-      ['Remove Artist', Icons.delete_rounded, 'remove_artist'],
+      ['lidarr.EditArtist'.tr(), Icons.edit_rounded, 'edit_artist'],
+      ['lidarr.RefreshArtist'.tr(), Icons.refresh_rounded, 'refresh_artist'],
+      ['lidarr.RemoveArtist'.tr(), Icons.delete_rounded, 'remove_artist'],
     ];
     bool _flag = false;
     String _value = '';
@@ -222,7 +221,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Root Folder',
+      title: 'lidarr.RootFolder'.tr(),
       content: List.generate(
         folders.length,
         (index) => ZagDialog.tile(
@@ -247,11 +246,11 @@ class LidarrDialogs {
 
   static Future<List<dynamic>> globalSettings(BuildContext context) async {
     List<List<dynamic>> _options = [
-      ['View Web GUI', Icons.language_rounded, 'web_gui'],
-      ['Update Library', Icons.autorenew_rounded, 'update_library'],
-      ['Run RSS Sync', Icons.rss_feed_rounded, 'rss_sync'],
-      ['Search All Missing', Icons.search_rounded, 'missing_search'],
-      ['Backup Database', Icons.save_rounded, 'backup'],
+      ['lidarr.ViewWebGui'.tr(), Icons.language_rounded, 'web_gui'],
+      ['lidarr.UpdateLibrary'.tr(), Icons.autorenew_rounded, 'update_library'],
+      ['lidarr.RunRssSync'.tr(), Icons.rss_feed_rounded, 'rss_sync'],
+      ['lidarr.SearchAllMissing'.tr(), Icons.search_rounded, 'missing_search'],
+      ['lidarr.BackupDatabase'.tr(), Icons.save_rounded, 'backup'],
     ];
     bool _flag = false;
     String _value = '';
@@ -264,7 +263,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Settings',
+      title: 'zagreus.Settings'.tr(),
       content: List.generate(
         _options.length,
         (index) => ZagDialog.tile(
@@ -291,7 +290,7 @@ class LidarrDialogs {
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Page',
+      title: 'zagreus.Page'.tr(),
       content: List.generate(
         LidarrNavigationBar.titles.length,
         (index) => ZagDialog.tile(

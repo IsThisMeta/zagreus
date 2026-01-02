@@ -190,28 +190,28 @@ class _State extends State<LidarrRoute> {
           await _api
               .updateLibrary()
               .then((_) => showZagSuccessSnackBar(
-                  title: 'Updating Library...',
-                  message: 'Updating your library in the background'))
+                  title: 'lidarr.UpdatingLibrary'.tr(),
+                  message: 'lidarr.UpdatingLibraryDescription'.tr()))
               .catchError((error) => showZagErrorSnackBar(
-                  title: 'Failed to Update Library', error: error));
+                  title: 'lidarr.FailedToUpdateLibrary'.tr(), error: error));
           break;
         case 'rss_sync':
           await _api
               .triggerRssSync()
               .then((_) => showZagSuccessSnackBar(
-                  title: 'Running RSS Sync...',
-                  message: 'Running RSS sync in the background'))
+                  title: 'lidarr.RunningRssSync'.tr(),
+                  message: 'lidarr.RunningRssSyncDescription'.tr()))
               .catchError((error) => showZagErrorSnackBar(
-                  title: 'Failed to Run RSS Sync', error: error));
+                  title: 'lidarr.FailedToRunRssSync'.tr(), error: error));
           break;
         case 'backup':
           await _api
               .triggerBackup()
               .then((_) => showZagSuccessSnackBar(
-                  title: 'Backing Up Database...',
-                  message: 'Backing up database in the background'))
+                  title: 'lidarr.BackingUpDatabase'.tr(),
+                  message: 'lidarr.BackingUpDatabaseDescription'.tr()))
               .catchError((error) => showZagErrorSnackBar(
-                  title: 'Failed to Backup Database', error: error));
+                  title: 'lidarr.FailedToBackupDatabase'.tr(), error: error));
           break;
         case 'missing_search':
           {
@@ -221,10 +221,10 @@ class _State extends State<LidarrRoute> {
               await _api
                   .searchAllMissing()
                   .then((_) => showZagSuccessSnackBar(
-                      title: 'Searching...',
-                      message: 'Search for all missing albums'))
+                      title: 'lidarr.Searching'.tr(),
+                      message: 'lidarr.SearchAllMissingDescription'.tr()))
                   .catchError((error) => showZagErrorSnackBar(
-                      title: 'Failed to Search', error: error));
+                      title: 'lidarr.FailedToSearch'.tr(), error: error));
             break;
           }
         default:

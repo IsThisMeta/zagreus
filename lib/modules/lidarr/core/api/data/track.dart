@@ -21,7 +21,7 @@ class LidarrTrackData {
   TextSpan file(bool monitored) {
     if (hasFile) {
       return TextSpan(
-        text: 'Downloaded',
+        text: 'lidarr.Downloaded'.tr(),
         style: TextStyle(
           color: ZagColours.currentAccent,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -29,7 +29,7 @@ class LidarrTrackData {
       );
     } else {
       return TextSpan(
-        text: 'Not Downloaded',
+        text: 'lidarr.NotDownloaded'.tr(),
         style: TextStyle(
           color: ZagColours.red,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
