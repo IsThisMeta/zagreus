@@ -9,6 +9,13 @@ class TMDBApi {
   // Get API key from secure config file
   static String get _apiKey => ApiKeys.tmdbApiKey;
 
+  // Genre caching - genres rarely change, cache for 24 hours
+  static List<Map<String, dynamic>>? _movieGenresCache;
+  static DateTime? _movieGenresCacheTime;
+  static List<Map<String, dynamic>>? _tvGenresCache;
+  static DateTime? _tvGenresCacheTime;
+  static const Duration _genresCacheDuration = Duration(hours: 24);
+
   static String getImageUrl(String? path, {String size = 'original'}) {
     if (path == null || path.isEmpty) return '';
     return '$_imageBaseUrl/$size$path';
@@ -1279,8 +1286,15 @@ class TMDBApi {
     10768: ['1F2937', 'F87171'], // War & Politics - darkred
   };
 
-  /// Get movie genres list from TMDB
+  /// Get movie genres list from TMDB (cached for 24 hours)
   static Future<List<Map<String, dynamic>>> getMovieGenres() async {
+    // Return cached data if valid
+    if (_movieGenresCache != null &&
+        _movieGenresCacheTime != null &&
+        DateTime.now().difference(_movieGenresCacheTime!) < _genresCacheDuration) {
+      return _movieGenresCache!;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/genre/movie/list?api_key=$_apiKey'),
@@ -1288,15 +1302,14 @@ class TMDBApi {
 
       if (response.statusCode != 200) {
         print('TMDB API Error (Movie Genres): ${response.statusCode}');
-        return [];
+        return _movieGenresCache ?? [];
       }
 
       final data = json.decode(response.body);
       final genres = data['genres'] as List? ?? [];
 
-      // Fetch backdrops for each genre
-      final genresWithBackdrops = <Map<String, dynamic>>[];
-      for (final genre in genres) {
+      // Fetch backdrops for each genre in parallel for speed
+      final futures = genres.map((genre) async {
         final genreId = genre['id'] as int;
         final genreName = genre['name'] as String;
 
@@ -1309,7 +1322,6 @@ class TMDBApi {
         if (moviesResponse.statusCode == 200) {
           final moviesData = json.decode(moviesResponse.body);
           final results = moviesData['results'] as List? ?? [];
-          // Collect all backdrop paths (matching Seerr's approach)
           for (final movie in results) {
             if (movie['backdrop_path'] != null) {
               backdrops.add(movie['backdrop_path'] as String);
@@ -1317,35 +1329,44 @@ class TMDBApi {
           }
         }
 
-        // Use the 5th backdrop if available, otherwise use the first
         final backdropPath = backdrops.length > 4 ? backdrops[4] : (backdrops.isNotEmpty ? backdrops[0] : null);
 
-        // Build backdrop URL with duotone filter
-        String? backdropUrl;
-        if (backdropPath != null) {
-          final colors = genreColorMap[genreId] ?? genreColorMap[0]!;
-          backdropUrl = 'https://image.tmdb.org/t/p/w1280_filter(duotone,${colors[0]},${colors[1]})$backdropPath';
-        }
+        // Use plain backdrop without duotone filter
+        final backdropUrl = backdropPath != null
+            ? 'https://image.tmdb.org/t/p/w780$backdropPath'
+            : null;
 
-        genresWithBackdrops.add({
+        return {
           'id': genreId,
           'name': genreName,
           'backdrop': backdropUrl,
-        });
-      }
+        };
+      });
 
-      // Sort alphabetically by name
-      genresWithBackdrops.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+      final genresWithBackdrops = await Future.wait(futures);
+      final sortedGenres = genresWithBackdrops.toList()
+        ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
-      return genresWithBackdrops;
+      // Update cache
+      _movieGenresCache = sortedGenres;
+      _movieGenresCacheTime = DateTime.now();
+
+      return sortedGenres;
     } catch (e) {
       print('TMDB API Error (Movie Genres): $e');
-      return [];
+      return _movieGenresCache ?? [];
     }
   }
 
-  /// Get TV genres list from TMDB
+  /// Get TV genres list from TMDB (cached for 24 hours)
   static Future<List<Map<String, dynamic>>> getTvGenres() async {
+    // Return cached data if valid
+    if (_tvGenresCache != null &&
+        _tvGenresCacheTime != null &&
+        DateTime.now().difference(_tvGenresCacheTime!) < _genresCacheDuration) {
+      return _tvGenresCache!;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/genre/tv/list?api_key=$_apiKey'),
@@ -1353,15 +1374,14 @@ class TMDBApi {
 
       if (response.statusCode != 200) {
         print('TMDB API Error (TV Genres): ${response.statusCode}');
-        return [];
+        return _tvGenresCache ?? [];
       }
 
       final data = json.decode(response.body);
       final genres = data['genres'] as List? ?? [];
 
-      // Fetch backdrops for each genre
-      final genresWithBackdrops = <Map<String, dynamic>>[];
-      for (final genre in genres) {
+      // Fetch backdrops for each genre in parallel for speed
+      final futures = genres.map((genre) async {
         final genreId = genre['id'] as int;
         final genreName = genre['name'] as String;
 
@@ -1374,7 +1394,6 @@ class TMDBApi {
         if (showsResponse.statusCode == 200) {
           final showsData = json.decode(showsResponse.body);
           final results = showsData['results'] as List? ?? [];
-          // Collect all backdrop paths (matching Seerr's approach)
           for (final show in results) {
             if (show['backdrop_path'] != null) {
               backdrops.add(show['backdrop_path'] as String);
@@ -1382,30 +1401,32 @@ class TMDBApi {
           }
         }
 
-        // Use the 5th backdrop if available, otherwise use the first
         final backdropPath = backdrops.length > 4 ? backdrops[4] : (backdrops.isNotEmpty ? backdrops[0] : null);
 
-        // Build backdrop URL with duotone filter
-        String? backdropUrl;
-        if (backdropPath != null) {
-          final colors = genreColorMap[genreId] ?? genreColorMap[0]!;
-          backdropUrl = 'https://image.tmdb.org/t/p/w1280_filter(duotone,${colors[0]},${colors[1]})$backdropPath';
-        }
+        // Use plain backdrop without duotone filter
+        final backdropUrl = backdropPath != null
+            ? 'https://image.tmdb.org/t/p/w780$backdropPath'
+            : null;
 
-        genresWithBackdrops.add({
+        return {
           'id': genreId,
           'name': genreName,
           'backdrop': backdropUrl,
-        });
-      }
+        };
+      });
 
-      // Sort alphabetically by name
-      genresWithBackdrops.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+      final genresWithBackdrops = await Future.wait(futures);
+      final sortedGenres = genresWithBackdrops.toList()
+        ..sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
-      return genresWithBackdrops;
+      // Update cache
+      _tvGenresCache = sortedGenres;
+      _tvGenresCacheTime = DateTime.now();
+
+      return sortedGenres;
     } catch (e) {
       print('TMDB API Error (TV Genres): $e');
-      return [];
+      return _tvGenresCache ?? [];
     }
   }
 
