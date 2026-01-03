@@ -107,6 +107,7 @@ class OverseerrState extends ZagModuleState {
           headers: {
             if (_basicAuthHeader != null) 'Authorization': _basicAuthHeader!,
             'X-Api-Key': _apiKey,
+            'Content-Type': 'application/json',
             ..._headers,
           },
           connectTimeout: const Duration(seconds: 60),
