@@ -958,13 +958,41 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		return
 	}
 
-	// Parse the webhook data
+	// Parse the webhook data - try JSON first, then form data
 	var webhookData map[string]interface{}
+	contentType := c.GetHeader("Content-Type")
+	log.Printf("Tautulli webhook content-type: %s", contentType)
+
+	// Try to bind JSON first
 	if err := c.ShouldBindJSON(&webhookData); err != nil {
-		log.Printf("Failed to parse Tautulli webhook: %v", err)
-		c.JSON(400, gin.H{"error": "Invalid webhook data"})
-		return
+		log.Printf("JSON parsing failed, trying form data: %v", err)
+
+		// Try form data
+		if err := c.Request.ParseForm(); err != nil {
+			log.Printf("Form parsing also failed: %v", err)
+			c.JSON(400, gin.H{"error": "Invalid webhook data"})
+			return
+		}
+
+		// Convert form data to map
+		webhookData = make(map[string]interface{})
+		for key, values := range c.Request.PostForm {
+			if len(values) == 1 {
+				webhookData[key] = values[0]
+			} else {
+				webhookData[key] = values
+			}
+		}
+
+		// If still empty, try reading raw body for debugging
+		if len(webhookData) == 0 {
+			log.Printf("No form data found, webhook data is empty")
+			c.JSON(400, gin.H{"error": "Invalid webhook data"})
+			return
+		}
 	}
+
+	log.Printf("Tautulli webhook data keys: %v", getMapKeys(webhookData))
 
 	action := stringFromInterface(webhookData["action"])
 	if action == "" {
