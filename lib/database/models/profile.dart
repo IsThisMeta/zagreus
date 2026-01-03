@@ -237,27 +237,27 @@ class ZagProfile extends HiveObject {
 
   @JsonKey()
   @HiveField(40, defaultValue: false)
-  bool overseerrEnabled;
+  bool seerrEnabled;
 
   @JsonKey()
   @HiveField(41, defaultValue: '')
-  String overseerrHost;
+  String seerrHost;
 
   @JsonKey()
   @HiveField(42, defaultValue: '')
-  String overseerrKey;
+  String seerrKey;
 
   @JsonKey()
   @HiveField(43, defaultValue: <String, String>{})
-  Map<String, String> overseerrHeaders;
+  Map<String, String> seerrHeaders;
 
   @JsonKey()
   @HiveField(68, defaultValue: '')
-  String overseerrLocalHost;
+  String seerrLocalHost;
 
   @JsonKey()
   @HiveField(69, defaultValue: '')
-  String overseerrLocalSsids;
+  String seerrLocalSsids;
 
   @JsonKey()
   @HiveField(44, defaultValue: false)
@@ -391,13 +391,13 @@ class ZagProfile extends HiveObject {
     required this.tautulliHeaders,
     required this.tautulliLocalHost,
     required this.tautulliLocalSsids,
-    //Overseerr
-    required this.overseerrEnabled,
-    required this.overseerrHost,
-    required this.overseerrKey,
-    required this.overseerrHeaders,
-    required this.overseerrLocalHost,
-    required this.overseerrLocalSsids,
+    //Seerr
+    required this.seerrEnabled,
+    required this.seerrHost,
+    required this.seerrKey,
+    required this.seerrHeaders,
+    required this.seerrLocalHost,
+    required this.seerrLocalSsids,
     //Unraid
     required this.unraidEnabled,
     required this.unraidHost,
@@ -473,13 +473,13 @@ class ZagProfile extends HiveObject {
     Map<String, String>? tautulliHeaders,
     String? tautulliLocalHost,
     String? tautulliLocalSsids,
-    //Overseerr
-    bool? overseerrEnabled,
-    String? overseerrHost,
-    String? overseerrKey,
-    Map<String, String>? overseerrHeaders,
-    String? overseerrLocalHost,
-    String? overseerrLocalSsids,
+    //Seerr
+    bool? seerrEnabled,
+    String? seerrHost,
+    String? seerrKey,
+    Map<String, String>? seerrHeaders,
+    String? seerrLocalHost,
+    String? seerrLocalSsids,
     //Unraid
     bool? unraidEnabled,
     String? unraidHost,
@@ -554,13 +554,13 @@ class ZagProfile extends HiveObject {
       tautulliHeaders: tautulliHeaders ?? {},
       tautulliLocalHost: tautulliLocalHost ?? '',
       tautulliLocalSsids: tautulliLocalSsids ?? '',
-      // Overseerr
-      overseerrEnabled: overseerrEnabled ?? false,
-      overseerrHost: overseerrHost ?? '',
-      overseerrKey: overseerrKey ?? '',
-      overseerrHeaders: overseerrHeaders ?? {},
-      overseerrLocalHost: overseerrLocalHost ?? '',
-      overseerrLocalSsids: overseerrLocalSsids ?? '',
+      // Seerr
+      seerrEnabled: seerrEnabled ?? false,
+      seerrHost: seerrHost ?? '',
+      seerrKey: seerrKey ?? '',
+      seerrHeaders: seerrHeaders ?? {},
+      seerrLocalHost: seerrLocalHost ?? '',
+      seerrLocalSsids: seerrLocalSsids ?? '',
       // Unraid
       unraidEnabled: unraidEnabled ?? false,
       unraidHost: unraidHost ?? '',
@@ -653,10 +653,10 @@ class ZagProfile extends HiveObject {
         ssidList: tautulliLocalSsids,
       );
 
-  String effectiveOverseerrHost() => ZagLocalConnectionService().resolveHost(
-        remoteHost: overseerrHost,
-        localHost: overseerrLocalHost,
-        ssidList: overseerrLocalSsids,
+  String effectiveSeerrHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: seerrHost,
+        localHost: seerrLocalHost,
+        ssidList: seerrLocalSsids,
       );
 
   String effectiveUnraidHost() => ZagLocalConnectionService().resolveHost(
@@ -912,7 +912,7 @@ class ZagProfile extends HiveObject {
         : profiles.first;
 
     // Module keys we support for multi-instance
-    final supportedModules = ['radarr', 'sonarr', 'lidarr', 'readarr', 'sabnzbd', 'nzbget', 'tautulli', 'overseerr'];
+    final supportedModules = ['radarr', 'sonarr', 'lidarr', 'readarr', 'sabnzbd', 'nzbget', 'tautulli', 'seerr'];
     
     // Track created instances for the target profile
     final List<String> newInstances = [];
@@ -986,7 +986,7 @@ class ZagProfile extends HiveObject {
       case 'sabnzbd': return profile.sabnzbdEnabled;
       case 'nzbget': return profile.nzbgetEnabled;
       case 'tautulli': return profile.tautulliEnabled;
-      case 'overseerr': return profile.overseerrEnabled;
+      case 'seerr': return profile.seerrEnabled;
       case 'bazarr': return profile.bazarrEnabled;
       default: return false;
     }

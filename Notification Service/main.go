@@ -49,21 +49,20 @@ func main() {
 			auth.POST("/register", handleRegister)
 		}
 
-		// Webhook routes
+		// Webhook routes (legacy - require X-User-Id header)
 		webhook := v1.Group("/webhook")
 		{
 			webhook.POST("/sonarr", handleSonarrWebhook)
 			webhook.POST("/radarr", handleRadarrWebhook)
 			webhook.POST("/lidarr", handleLidarrWebhook)
-			webhook.POST("/overseerr", handleOverseerrWebhook)
-			webhook.POST("/tautulli", handleTautulliWebhook)
+			webhook.POST("/seerr", handleSeerrWebhook)
 			webhook.POST("/custom", handleCustomWebhook)
 		}
 
-		// Overseerr webhook route (uses webhook ID without signature)
-		overseerr := v1.Group("/overseerr/webhook")
+		// Seerr webhook route (uses webhook ID without signature)
+		seerr := v1.Group("/seerr/webhook")
 		{
-			overseerr.POST("/:id", handleOverseerrWebhookWithID)
+			seerr.POST("/:id", handleSeerrWebhookWithID)
 		}
 
 		// Tautulli webhook route (uses webhook ID without signature)
@@ -75,7 +74,7 @@ func main() {
 		// Preferences routes
 		preferences := v1.Group("/preferences")
 		{
-			preferences.POST("/overseerr", handleSetOverseerrPreference)
+			preferences.POST("/seerr", handleSetSeerrPreference)
 		}
 
 		// Notifications webhook (for Flutter app compatibility)

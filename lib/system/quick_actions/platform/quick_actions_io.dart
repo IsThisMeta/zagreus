@@ -40,8 +40,8 @@ class IO implements ZagQuickActions {
         ZagModule.SABNZBD.shortcutItem,
       if (ZagreusDatabase.QUICK_ACTIONS_RADARR.read())
         ZagModule.RADARR.shortcutItem,
-      if (ZagreusDatabase.QUICK_ACTIONS_OVERSEERR.read() && ZagreusPro.isEnabled)
-        ZagModule.OVERSEERR.shortcutItem,
+      if (ZagreusDatabase.QUICK_ACTIONS_SEERR.read() && ZagreusPro.isEnabled)
+        ZagModule.SEERR.shortcutItem,
       if (ZagreusDatabase.QUICK_ACTIONS_NZBGET.read())
         ZagModule.NZBGET.shortcutItem,
       if (ZagreusDatabase.QUICK_ACTIONS_LIDARR.read())

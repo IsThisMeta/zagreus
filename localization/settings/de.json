@@ -386,7 +386,7 @@
     "settings.SubscriptionsProIncludedUltra": "Ultra already includes every Pro feature.\n\nWant to downgrade? Pick a Pro plan below.",
     "settings.SubscriptionsProRevokedTitle": "Pro Status Revoked",
     "settings.SubscriptionsProUnlock": "Unlock all modules & power features",
-    "settings.SubscriptionsProUnlocks": "Zagreus Pro unlocks:\n• Dashboard Pro\n• Unraid\n• Overseerr\n• Prowlarr\n• Enhanced Cast & Crew\n• Ratings & Links\n• Automatic Network Switching\n• Multiple instances per profile\n• And more\n\nChoose a plan to get started.",
+    "settings.SubscriptionsProUnlocks": "Zagreus Pro unlocks:\n• Dashboard Pro\n• Unraid\n• Seerr\n• Prowlarr\n• Enhanced Cast & Crew\n• Ratings & Links\n• Automatic Network Switching\n• Multiple instances per profile\n• And more\n\nChoose a plan to get started.",
     "settings.SubscriptionsProcessingMessage": "Connecting to App Store...",
     "settings.SubscriptionsProcessingTitle": "Processing",
     "settings.SubscriptionsRestorePurchases": "Restore Purchases",

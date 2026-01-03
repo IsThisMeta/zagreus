@@ -37,7 +37,7 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   QUICK_ACTIONS_SONARR<bool>(false),
   QUICK_ACTIONS_NZBGET<bool>(false),
   QUICK_ACTIONS_SABNZBD<bool>(false),
-  QUICK_ACTIONS_OVERSEERR<bool>(false),
+  QUICK_ACTIONS_SEERR<bool>(false),
   QUICK_ACTIONS_TAUTULLI<bool>(false),
   QUICK_ACTIONS_SEARCH<bool>(false),
   USE_24_HOUR_TIME<bool>(false),
@@ -91,8 +91,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   LIDARR_TOAST_ON_DOWNLOAD<bool>(true),
   LIDARR_TOAST_ON_UPGRADE<bool>(true),
   LIDARR_TOAST_ON_ARTIST_ADD<bool>(true),
-  // Overseerr notifications
-  OVERSEERR_NOTIFICATIONS_ENABLED<bool>(true),
+  // Seerr notifications
+  SEERR_NOTIFICATIONS_ENABLED<bool>(true),
   // Tautulli notifications
   TAUTULLI_NOTIFICATIONS_ENABLED<bool>(true),
   // Notification prompt (one-time)

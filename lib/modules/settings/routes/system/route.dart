@@ -11,7 +11,7 @@ import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/backup_tile.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/build_details.dart';
 import 'package:zagreus/modules/settings/routes/system/widgets/restore_tile.dart';
-import 'package:zagreus/modules/overseerr.dart';
+import 'package:zagreus/modules/seerr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/router/routes/settings.dart';
 import 'package:zagreus/supabase/auth.dart';
@@ -248,11 +248,11 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       tautulliKey: demoConfig['tautulli_key'] ?? '',
       tautulliHeaders: {},
 
-      // Overseerr
-      overseerrEnabled: demoConfig['overseerr_enabled'] ?? false,
-      overseerrHost: demoConfig['overseerr_host'] ?? '',
-      overseerrKey: demoConfig['overseerr_key'] ?? '',
-      overseerrHeaders: {},
+      // Seerr
+      seerrEnabled: demoConfig['seerr_enabled'] ?? false,
+      seerrHost: demoConfig['seerr_host'] ?? '',
+      seerrKey: demoConfig['seerr_key'] ?? '',
+      seerrHeaders: {},
       // Unraid
       unraidEnabled: demoConfig['unraid_enabled'] ?? true,
       unraidHost:
@@ -265,21 +265,21 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     // Save the profile
     await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
 
-    // Hack: Toggle Radarr, Sonarr, and Overseerr states to ensure they reinitialize properly
+    // Hack: Toggle Radarr, Sonarr, and Seerr states to ensure they reinitialize properly
     if (!mounted) return;
 
     final radarrState = context.read<RadarrState>();
     final sonarrState = context.read<SonarrState>();
-    final overseerrState = context.read<OverseerrState>();
+    final seerrState = context.read<SeerrState>();
 
     // First disable them
     profile.radarrEnabled = false;
     profile.sonarrEnabled = false;
-    profile.overseerrEnabled = false;
+    profile.seerrEnabled = false;
     await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
     radarrState.reset();
     sonarrState.reset();
-    overseerrState.reset();
+    seerrState.reset();
 
     // Small delay to ensure state update completes
     await Future.delayed(const Duration(milliseconds: 100));
@@ -287,11 +287,11 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     // Now re-enable them
     profile.radarrEnabled = demoConfig['radarr_enabled'] ?? false;
     profile.sonarrEnabled = demoConfig['sonarr_enabled'] ?? false;
-    profile.overseerrEnabled = demoConfig['overseerr_enabled'] ?? false;
+    profile.seerrEnabled = demoConfig['seerr_enabled'] ?? false;
     await ZagBox.profiles.update(ZagProfile.DEFAULT_PROFILE, profile);
     radarrState.reset();
     sonarrState.reset();
-    overseerrState.reset();
+    seerrState.reset();
 
     // Set the drawer order (excluding Dashboard since it's always added automatically)
     // First disable automatic manage
@@ -308,7 +308,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       ZagModule.SABNZBD,
       ZagModule.NZBGET,
       ZagModule.TAUTULLI,
-      ZagModule.OVERSEERR,
+      ZagModule.SEERR,
       ZagModule.EXTERNAL_MODULES,
     ];
     ZagreusDatabase.DRAWER_MANUAL_ORDER.update(orderedModules);

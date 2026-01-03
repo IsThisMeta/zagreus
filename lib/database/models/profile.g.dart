@@ -70,14 +70,14 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
           : (fields[35] as Map?)?.cast<String, String>(),
       tautulliLocalHost: fields[58] == null ? '' : fields[58] as String?,
       tautulliLocalSsids: fields[59] == null ? '' : fields[59] as String?,
-      overseerrEnabled: fields[40] == null ? false : fields[40] as bool?,
-      overseerrHost: fields[41] == null ? '' : fields[41] as String?,
-      overseerrKey: fields[42] == null ? '' : fields[42] as String?,
-      overseerrHeaders: fields[43] == null
+      seerrEnabled: fields[40] == null ? false : fields[40] as bool?,
+      seerrHost: fields[41] == null ? '' : fields[41] as String?,
+      seerrKey: fields[42] == null ? '' : fields[42] as String?,
+      seerrHeaders: fields[43] == null
           ? {}
           : (fields[43] as Map?)?.cast<String, String>(),
-      overseerrLocalHost: fields[68] == null ? '' : fields[68] as String?,
-      overseerrLocalSsids: fields[69] == null ? '' : fields[69] as String?,
+      seerrLocalHost: fields[68] == null ? '' : fields[68] as String?,
+      seerrLocalSsids: fields[69] == null ? '' : fields[69] as String?,
       unraidEnabled: fields[44] == null ? false : fields[44] as bool?,
       unraidHost: fields[45] == null ? '' : fields[45] as String?,
       unraidKey: fields[46] == null ? '' : fields[46] as String?,
@@ -193,17 +193,17 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
       ..writeByte(59)
       ..write(obj.tautulliLocalSsids)
       ..writeByte(40)
-      ..write(obj.overseerrEnabled)
+      ..write(obj.seerrEnabled)
       ..writeByte(41)
-      ..write(obj.overseerrHost)
+      ..write(obj.seerrHost)
       ..writeByte(42)
-      ..write(obj.overseerrKey)
+      ..write(obj.seerrKey)
       ..writeByte(43)
-      ..write(obj.overseerrHeaders)
+      ..write(obj.seerrHeaders)
       ..writeByte(68)
-      ..write(obj.overseerrLocalHost)
+      ..write(obj.seerrLocalHost)
       ..writeByte(69)
-      ..write(obj.overseerrLocalSsids)
+      ..write(obj.seerrLocalSsids)
       ..writeByte(44)
       ..write(obj.unraidEnabled)
       ..writeByte(45)
@@ -316,15 +316,15 @@ ZagProfile _$ZagProfileFromJson(Map<String, dynamic> json) => ZagProfile(
       ),
       tautulliLocalHost: json['tautulliLocalHost'] as String?,
       tautulliLocalSsids: json['tautulliLocalSsids'] as String?,
-      overseerrEnabled: json['overseerrEnabled'] as bool?,
-      overseerrHost: json['overseerrHost'] as String?,
-      overseerrKey: json['overseerrKey'] as String?,
-      overseerrHeaders:
-          (json['overseerrHeaders'] as Map<String, dynamic>?)?.map(
+      seerrEnabled: json['seerrEnabled'] as bool?,
+      seerrHost: json['seerrHost'] as String?,
+      seerrKey: json['seerrKey'] as String?,
+      seerrHeaders:
+          (json['seerrHeaders'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, e as String),
       ),
-      overseerrLocalHost: json['overseerrLocalHost'] as String?,
-      overseerrLocalSsids: json['overseerrLocalSsids'] as String?,
+      seerrLocalHost: json['seerrLocalHost'] as String?,
+      seerrLocalSsids: json['seerrLocalSsids'] as String?,
       unraidEnabled: json['unraidEnabled'] as bool?,
       unraidHost: json['unraidHost'] as String?,
       unraidKey: json['unraidKey'] as String?,
@@ -396,12 +396,12 @@ Map<String, dynamic> _$ZagProfileToJson(ZagProfile instance) =>
       'tautulliHeaders': instance.tautulliHeaders,
       'tautulliLocalHost': instance.tautulliLocalHost,
       'tautulliLocalSsids': instance.tautulliLocalSsids,
-      'overseerrEnabled': instance.overseerrEnabled,
-      'overseerrHost': instance.overseerrHost,
-      'overseerrKey': instance.overseerrKey,
-      'overseerrHeaders': instance.overseerrHeaders,
-      'overseerrLocalHost': instance.overseerrLocalHost,
-      'overseerrLocalSsids': instance.overseerrLocalSsids,
+      'seerrEnabled': instance.seerrEnabled,
+      'seerrHost': instance.seerrHost,
+      'seerrKey': instance.seerrKey,
+      'seerrHeaders': instance.seerrHeaders,
+      'seerrLocalHost': instance.seerrLocalHost,
+      'seerrLocalSsids': instance.seerrLocalSsids,
       'unraidEnabled': instance.unraidEnabled,
       'unraidHost': instance.unraidHost,
       'unraidKey': instance.unraidKey,

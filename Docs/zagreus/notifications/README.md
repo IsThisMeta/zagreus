@@ -28,7 +28,7 @@ Notifications are only supported on a limited set of platforms at this time beca
 | :-----------------------: | :--------: | :-----------: |
 |    [Lidarr](lidarr.md)    |      ✅     |       ❌       |
 |           NZBGet          |      ❌     |       ❌       |
-| [Overseerr](overseerr.md) |      ✅     |       ❌       |
+| [Seerr](seerr.md) |      ✅     |       ❌       |
 |    [Radarr](radarr.md)    |      ✅     |       ✅       |
 |          SABnzbd          |      ❌     |       ❌       |
 |    [Sonarr](sonarr.md)    |      ✅     |       ✅       |

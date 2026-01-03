@@ -156,52 +156,29 @@ List<Widget> buildTvSections(DiscoverTvSectionData data) {
     ZagreusDatabase.DISCOVER_TV_SECTION_ORDER_MIGRATED.update(true);
   }
 
-  // Map of section builders
+  // Map of section builders - no extra spacing between sections
+  // Each section handles its own internal spacing (title -> content)
   final sectionBuilders = <String, Widget Function()>{
     'recently_downloaded_shows': () => data.hasRecentlyDownloadedShows
         ? data.recentlyDownloadedShowsSection()
         : const SizedBox.shrink(),
     'airing_next': () => data.airingNextSection(),
-    'networks': () => Column(children: [
-          data.networksSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
-    'tv_genres': () => Column(children: [
-          data.tvGenresSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
-    'popular_tv_shows': () => Column(children: [
-          data.popularTvShowsSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
-    'trending_new_tv_shows': () => Column(children: [
-          data.trendingNewTvShowsSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
+    'networks': () => data.networksSection(),
+    'tv_genres': () => data.tvGenresSection(),
+    'popular_tv_shows': () => data.popularTvShowsSection(),
+    'trending_new_tv_shows': () => data.trendingNewTvShowsSection(),
     'most_anticipated': () => data.mostAnticipatedShowsSection(),
     'up_next': () => data.hasAiAccess
-        ? Column(children: [
-            data.upNextSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.upNextSection()
         : const SizedBox.shrink(),
     'magic_shows': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicShowsSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicShowsSection()
         : const SizedBox.shrink(),
     'magic_shows_cast_crew': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicShowsCastCrewSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicShowsCastCrewSection()
         : const SizedBox.shrink(),
     'magic_people': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicPeopleShowsSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicPeopleShowsSection()
         : const SizedBox.shrink(),
   };
 

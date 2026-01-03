@@ -135,73 +135,34 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
     ZagreusDatabase.DISCOVER_MOVIES_SECTION_ORDER_MIGRATED.update(true);
   }
 
-  // Map of section builders
+  // Map of section builders - no extra spacing between sections
+  // Each section handles its own internal spacing (title -> content)
   final sectionBuilders = <String, Widget Function()>{
     'recently_downloaded': () => data.hasRecentlyDownloaded
-        ? Column(children: [
-            data.recentlyDownloadedSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.recentlyDownloadedSection()
         : const SizedBox.shrink(),
-    'recommended': () => Column(children: [
-          data.recommendedMoviesSection(),
-          if (data.showTitles) const SizedBox(height: 4)
-        ]),
+    'recommended': () => data.recommendedMoviesSection(),
     'missing': () => data.hasMissingMovies
-        ? Column(children: [
-            data.missingMoviesSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.missingMoviesSection()
         : const SizedBox.shrink(),
-    'downloading_soon': () => Column(children: [
-          data.downloadingSoonSection(),
-          if (data.showTitles) const SizedBox(height: 4)
-        ]),
-    'studios': () => Column(children: [
-          data.studiosSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
-    'movie_genres': () => Column(children: [
-          data.movieGenresSection(),
-          if (data.showTitles) const SizedBox(height: 12)
-        ]),
-    'popular_movies': () => Column(children: [
-          data.popularMoviesSection(),
-          if (data.showTitles) const SizedBox(height: 4)
-        ]),
-    'recently_released_movies': () => Column(children: [
-          data.recentlyReleasedMoviesSection(),
-          if (data.showTitles) const SizedBox(height: 4)
-        ]),
-    'most_anticipated_movies': () =>
-        data.mostAnticipatedMoviesSection(), // Works even if empty
-    'popular_people': () => Column(children: [
-          data.popularPeopleSection(),
-          if (data.showTitles) const SizedBox(height: 4)
-        ]),
+    'downloading_soon': () => data.downloadingSoonSection(),
+    'studios': () => data.studiosSection(),
+    'movie_genres': () => data.movieGenresSection(),
+    'popular_movies': () => data.popularMoviesSection(),
+    'recently_released_movies': () => data.recentlyReleasedMoviesSection(),
+    'most_anticipated_movies': () => data.mostAnticipatedMoviesSection(),
+    'popular_people': () => data.popularPeopleSection(),
     'deep_cuts': () => data.hasAiAccess
-        ? Column(children: [
-            data.deepCutsSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.deepCutsSection()
         : const SizedBox.shrink(),
     'magic_movies': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicMoviesSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicMoviesSection()
         : const SizedBox.shrink(),
     'magic_movies_cast_crew': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicMoviesCastCrewSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicMoviesCastCrewSection()
         : const SizedBox.shrink(),
     'magic_people': () => data.hasAiAccess
-        ? Column(children: [
-            data.magicPeopleSection(),
-            if (data.showTitles) const SizedBox(height: 4)
-          ])
+        ? data.magicPeopleSection()
         : const SizedBox.shrink(),
   };
 

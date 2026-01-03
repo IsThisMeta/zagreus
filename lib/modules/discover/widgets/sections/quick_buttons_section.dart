@@ -6,7 +6,7 @@ import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/radarr/core/state.dart';
 import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
-import 'package:zagreus/modules/overseerr/core/state.dart';
+import 'package:zagreus/modules/seerr/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
 import 'package:zagreus/modules/search/core/state.dart';
 import 'package:zagreus/widgets/ui.dart';
@@ -102,12 +102,12 @@ class QuickButtonsSection extends StatelessWidget {
       ));
     }
 
-    // Overseerr (displayed as "Seerr")
-    if (enabledButtons.contains('overseerr') && context.read<OverseerrState>().enabled) {
+    // Seerr (displayed as "Seerr")
+    if (enabledButtons.contains('seerr') && context.read<SeerrState>().enabled) {
       services.add(_QuickButtonService(
-        module: ZagModule.OVERSEERR,
-        color: ZagColours.overseerr,
-        onTap: () => ZagModule.OVERSEERR.launch(restore: false),
+        module: ZagModule.SEERR,
+        color: ZagColours.seerr,
+        onTap: () => ZagModule.SEERR.launch(restore: false),
         labelOverride: 'Seerr',
       ));
     }

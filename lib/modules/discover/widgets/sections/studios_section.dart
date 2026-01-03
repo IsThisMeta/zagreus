@@ -29,7 +29,7 @@ class StudiosSection extends StatelessWidget {
               ),
             ),
           ),
-        if (showTitle) const SizedBox(height: 12),
+        if (showTitle) const SizedBox(height: 8),
         SizedBox(
           height: 80,
           child: ListView.builder(

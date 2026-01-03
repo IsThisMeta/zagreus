@@ -147,9 +147,10 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   }
 
   bool _isProModule(ZagModule module) {
-    return module == ZagModule.OVERSEERR ||
+    return module == ZagModule.SEERR ||
         module == ZagModule.UNRAID ||
-        module == ZagModule.BAZARR;
+        module == ZagModule.BAZARR ||
+        module == ZagModule.SSH;
   }
 
   Widget _tileFromModuleMap(ZagModule module) {

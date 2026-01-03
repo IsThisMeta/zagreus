@@ -22,7 +22,7 @@ class ZagModuleAdapter extends TypeAdapter<ZagModule> {
       case 2:
         return ZagModule.NZBGET;
       case 3:
-        return ZagModule.OVERSEERR;
+        return ZagModule.SEERR;
       case 4:
         return ZagModule.RADARR;
       case 5:
@@ -67,7 +67,7 @@ class ZagModuleAdapter extends TypeAdapter<ZagModule> {
       case ZagModule.NZBGET:
         writer.writeByte(2);
         break;
-      case ZagModule.OVERSEERR:
+      case ZagModule.SEERR:
         writer.writeByte(3);
         break;
       case ZagModule.RADARR:

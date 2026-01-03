@@ -17,7 +17,7 @@ class ServerSectionsEditor extends StatefulWidget {
 class ServerSectionsEditorState extends State<ServerSectionsEditor> {
   static const List<String> _allSections = [
     'server_issues',
-    'overseerr_requests',
+    'seerr_requests',
     'tautulli_streams',
     'disk_space',
     'download_history',
@@ -29,13 +29,13 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'disk_space',
     'download_history',
     'server_issues',
-    'overseerr_requests',
+    'seerr_requests',
     'tautulli_streams',
   ];
 
   static const Map<String, String> _sectionNames = {
     'server_issues': 'Server Issues',
-    'overseerr_requests': 'Overseerr Requests',
+    'seerr_requests': 'Seerr Requests',
     'tautulli_streams': 'Tautulli Streams',
     'disk_space': 'Disk Space',
     'download_history': 'Download History',
@@ -311,7 +311,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     switch (section) {
       case 'server_issues':
         return Icons.warning_rounded;
-      case 'overseerr_requests':
+      case 'seerr_requests':
         return Icons.movie_filter_rounded;
       case 'tautulli_streams':
         return Icons.play_circle_outline_rounded;

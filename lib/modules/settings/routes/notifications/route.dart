@@ -412,7 +412,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           },
         ),
         ZagDivider(),
-        _overseerrWebhookSection(),
+        _seerrWebhookSection(),
         ZagDivider(),
         _tautulliWebhookSection(),
       ],
@@ -753,14 +753,14 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _overseerrWebhookSection() {
+  Widget _seerrWebhookSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
           child: Text(
-            'Overseerr Webhook URL',
+            'Seerr Webhook URL',
             style: TextStyle(
               fontSize: ZagUI.FONT_SIZE_H2,
               fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -768,19 +768,19 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
-          title: 'Enable Overseerr Notifications',
+          title: 'Enable Seerr Notifications',
           body: [],
           trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
             builder: (context, _) {
               final notificationsEnabled =
                   ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
-              return ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.listenableBuilder(
+              return ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.listenableBuilder(
                 builder: (context, _) => ZagSwitch(
-                  value: ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.read(),
+                  value: ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.read(),
                   onChanged: notificationsEnabled
                       ? (value) async {
                           // Update local preference first
-                          ZagreusDatabase.OVERSEERR_NOTIFICATIONS_ENABLED.update(value);
+                          ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.update(value);
 
                           // Update backend preference
                           try {
@@ -791,7 +791,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                             }
 
                             final response = await http.post(
-                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/overseerr'),
+                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/seerr'),
                               headers: {'Content-Type': 'application/json'},
                               body: json.encode({
                                 'webhook_id': webhookID,
@@ -800,12 +800,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                             );
 
                             if (response.statusCode == 200) {
-                              ZagLogger().debug('Overseerr preference updated: enabled=$value');
+                              ZagLogger().debug('Seerr preference updated: enabled=$value');
                             } else {
-                              ZagLogger().warning('Failed to update Overseerr preference: ${response.statusCode}');
+                              ZagLogger().warning('Failed to update Seerr preference: ${response.statusCode}');
                             }
                           } catch (e, stackTrace) {
-                            ZagLogger().error('Failed to update Overseerr preference', e, stackTrace);
+                            ZagLogger().error('Failed to update Seerr preference', e, stackTrace);
                           }
                         }
                       : null,
@@ -818,7 +818,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           title: 'Copy Webhook URL',
           body: [
             TextSpan(
-              text: 'Paste into Overseerr webhook settings',
+              text: 'Paste into Seerr webhook settings',
             ),
           ],
           trailing: Icon(
@@ -862,7 +862,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                   throw Exception('No webhook ID returned');
                 }
 
-                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/overseerr/webhook/$webhookID';
+                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/seerr/webhook/$webhookID';
                 await Clipboard.setData(ClipboardData(text: webhookUrl));
                 showZagInfoSnackBar(
                   title: 'Copied',
@@ -872,7 +872,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 throw Exception('Failed to get webhook ID: ${response.statusCode}');
               }
             } catch (e, stackTrace) {
-              ZagLogger().error('Failed to copy Overseerr webhook URL', e, stackTrace);
+              ZagLogger().error('Failed to copy Seerr webhook URL', e, stackTrace);
               showZagErrorSnackBar(
                 title: 'Error',
                 message: 'Failed to generate webhook URL',

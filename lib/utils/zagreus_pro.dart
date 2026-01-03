@@ -99,11 +99,11 @@ class ZagreusPro {
         print('🔒 Pro: Disabled Bazarr module');
       }
 
-      // Disable Overseerr (Pro-only)
-      if (profile.overseerrEnabled) {
-        profile.overseerrEnabled = false;
+      // Disable Seerr (Pro-only)
+      if (profile.seerrEnabled) {
+        profile.seerrEnabled = false;
         anyDisabled = true;
-        print('🔒 Pro: Disabled Overseerr module');
+        print('🔒 Pro: Disabled Seerr module');
       }
 
       // Disable Unraid (Pro-only)
@@ -111,6 +111,13 @@ class ZagreusPro {
         profile.unraidEnabled = false;
         anyDisabled = true;
         print('🔒 Pro: Disabled Unraid module');
+      }
+
+      // Disable SSH (Pro-only)
+      if (profile.sshEnabled) {
+        profile.sshEnabled = false;
+        anyDisabled = true;
+        print('🔒 Pro: Disabled SSH module');
       }
 
       if (anyDisabled) {

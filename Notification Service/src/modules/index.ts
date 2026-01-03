@@ -3,7 +3,7 @@ import * as Middleware from '../server/middleware';
 import { Controller as Auth } from './auth';
 import { Controller as Custom } from './custom';
 import { Controller as Lidarr } from './lidarr';
-import { Controller as Overseerr } from './overseerr';
+import { Controller as Seerr } from './seerr';
 import { Controller as Radarr } from './radarr';
 import { Controller as Sonarr } from './sonarr';
 import { Controller as Tautulli } from './tautulli';
@@ -25,7 +25,7 @@ router.use(Middleware.extractProfile);
 // Webhook Modules
 Custom.enable(router);
 Lidarr.enable(router);
-Overseerr.enable(router);
+Seerr.enable(router);
 Radarr.enable(router);
 Sonarr.enable(router);
 Tautulli.enable(router);

@@ -145,7 +145,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return 'Lidarr';
       case 'readarr':
         return 'Readarr';
-      case 'overseerr':
+      case 'seerr':
         return 'Seerr';
       case 'tautulli':
         return 'Tautulli';
@@ -182,7 +182,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'sonarr',
     'lidarr',
     'readarr',
-    'overseerr',
+    'seerr',
     'tautulli',
     'sabnzbd',
     'nzbget',

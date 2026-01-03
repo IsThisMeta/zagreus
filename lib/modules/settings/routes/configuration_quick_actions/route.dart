@@ -46,10 +46,10 @@ class _State extends State<ConfigurationQuickActionsRoute>
           ZagModule.NZBGET.title,
           ZagreusDatabase.QUICK_ACTIONS_NZBGET,
         ),
-        if (ZagModule.OVERSEERR.featureFlag && ZagreusPro.isEnabled)
+        if (ZagModule.SEERR.featureFlag && ZagreusPro.isEnabled)
           _actionTile(
-            ZagModule.OVERSEERR.title,
-            ZagreusDatabase.QUICK_ACTIONS_OVERSEERR,
+            ZagModule.SEERR.title,
+            ZagreusDatabase.QUICK_ACTIONS_SEERR,
           ),
         _actionTile(
           ZagModule.RADARR.title,

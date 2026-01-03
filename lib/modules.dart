@@ -10,7 +10,7 @@ import 'package:zagreus/system/session_state.dart';
 import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/lidarr.dart';
-import 'package:zagreus/modules/overseerr.dart';
+import 'package:zagreus/modules/seerr.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
@@ -29,7 +29,7 @@ const MODULE_DASHBOARD_KEY = 'dashboard';
 const MODULE_EXTERNAL_MODULES_KEY = 'external_modules';
 const MODULE_LIDARR_KEY = 'lidarr';
 const MODULE_NZBGET_KEY = 'nzbget';
-const MODULE_OVERSEERR_KEY = 'overseerr';
+const MODULE_SEERR_KEY = 'seerr';
 const MODULE_RADARR_KEY = 'radarr';
 const MODULE_SABNZBD_KEY = 'sabnzbd';
 const MODULE_SEARCH_KEY = 'search';
@@ -54,7 +54,7 @@ enum ZagModule {
   @HiveField(2)
   NZBGET(MODULE_NZBGET_KEY),
   @HiveField(3)
-  OVERSEERR(MODULE_OVERSEERR_KEY),
+  SEERR(MODULE_SEERR_KEY),
   @HiveField(4)
   RADARR(MODULE_RADARR_KEY),
   @HiveField(5)
@@ -101,8 +101,8 @@ enum ZagModule {
         return ZagModule.SETTINGS;
       case MODULE_SONARR_KEY:
         return ZagModule.SONARR;
-      case MODULE_OVERSEERR_KEY:
-        return ZagModule.OVERSEERR;
+      case MODULE_SEERR_KEY:
+        return ZagModule.SEERR;
       case MODULE_TAUTULLI_KEY:
         return ZagModule.TAUTULLI;
       case MODULE_WAKE_ON_LAN_KEY:
@@ -136,7 +136,7 @@ enum ZagModule {
 extension ZagModuleEnablementExtension on ZagModule {
   bool get featureFlag {
     switch (this) {
-      case ZagModule.OVERSEERR:
+      case ZagModule.SEERR:
         return true;
       case ZagModule.WAKE_ON_LAN:
         return ZagWakeOnLAN.isSupported;
@@ -161,8 +161,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagProfile.current.lidarrEnabled;
       case ZagModule.NZBGET:
         return ZagProfile.hasEnabledInstance('nzbget');
-      case ZagModule.OVERSEERR:
-        return ZagProfile.current.overseerrEnabled;
+      case ZagModule.SEERR:
+        return ZagProfile.current.seerrEnabled;
       case ZagModule.RADARR:
         return ZagProfile.current.radarrEnabled;
       case ZagModule.SABNZBD:
@@ -188,7 +188,7 @@ extension ZagModuleEnablementExtension on ZagModule {
       case ZagModule.BAZARR:
         return ZagProfile.current.bazarrEnabled;
       case ZagModule.SSH:
-        return ZagProfile.current.sshEnabled;
+        return ZagreusPro.isEnabled && ZagProfile.current.sshEnabled;
     }
   }
 }
@@ -214,8 +214,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Sonarr';
       case ZagModule.TAUTULLI:
         return 'Tautulli';
-      case ZagModule.OVERSEERR:
-        return 'Overseerr';
+      case ZagModule.SEERR:
+        return 'Seerr';
       case ZagModule.WAKE_ON_LAN:
         return 'Wake on LAN';
       case ZagModule.EXTERNAL_MODULES:
@@ -253,8 +253,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return ZagIcons.SONARR;
       case ZagModule.TAUTULLI:
         return ZagIcons.TAUTULLI;
-      case ZagModule.OVERSEERR:
-        return ZagIcons.OVERSEERR;
+      case ZagModule.SEERR:
+        return ZagIcons.SEERR;
       case ZagModule.WAKE_ON_LAN:
         return Icons.settings_remote_rounded;
       case ZagModule.EXTERNAL_MODULES:
@@ -292,7 +292,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFF3FC6F4);
       case ZagModule.TAUTULLI:
         return const Color(0xFFDBA23A);
-      case ZagModule.OVERSEERR:
+      case ZagModule.SEERR:
         return const Color(0xFF6366F1);
       case ZagModule.WAKE_ON_LAN:
         return ZagColours.currentAccent;
@@ -331,8 +331,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://sonarr.tv';
       case ZagModule.TAUTULLI:
         return 'https://tautulli.com';
-      case ZagModule.OVERSEERR:
-        return 'https://overseerr.dev';
+      case ZagModule.SEERR:
+        return 'https://seerr.dev';
       case ZagModule.WAKE_ON_LAN:
         return null;
       case ZagModule.EXTERNAL_MODULES:
@@ -370,8 +370,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://github.com/Sonarr/Sonarr';
       case ZagModule.TAUTULLI:
         return 'https://github.com/Tautulli/Tautulli';
-      case ZagModule.OVERSEERR:
-        return 'https://github.com/sct/overseerr';
+      case ZagModule.SEERR:
+        return 'https://github.com/sct/seerr';
       case ZagModule.WAKE_ON_LAN:
         return null;
       case ZagModule.EXTERNAL_MODULES:
@@ -409,7 +409,7 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Manage Television Series';
       case ZagModule.TAUTULLI:
         return 'View Plex Activity';
-      case ZagModule.OVERSEERR:
+      case ZagModule.SEERR:
         return 'Manage Requests for New Content';
       case ZagModule.WAKE_ON_LAN:
         return 'Wake Your Machine';
@@ -448,8 +448,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.';
       case ZagModule.TAUTULLI:
         return 'Tautulli is an application that you can run alongside your Plex Media Server to monitor activity and track various statistics. Most importantly, these statistics include what has been watched, who watched it, when and where they watched it, and how it was watched.';
-      case ZagModule.OVERSEERR:
-        return 'Overseerr is a free and open source software application for managing requests for your media library. It integrates with your existing services, such as Sonarr, Radarr, and Plex!';
+      case ZagModule.SEERR:
+        return 'Seerr is a free and open source software application for managing requests for your media library. It integrates with your existing services, such as Sonarr, Radarr, and Plex!';
       case ZagModule.WAKE_ON_LAN:
         return 'Wake on LAN is an industry standard protocol for waking computers up from a very low power mode remotely by sending a specially constructed packet to the machine.';
       case ZagModule.EXTERNAL_MODULES:
@@ -489,8 +489,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return ZagRoutes.sonarr.root.path;
       case ZagModule.TAUTULLI:
         return ZagRoutes.tautulli.root.path;
-      case ZagModule.OVERSEERR:
-        return ZagRoutes.overseerr.root.path;
+      case ZagModule.SEERR:
+        return ZagRoutes.seerr.root.path;
       case ZagModule.WAKE_ON_LAN:
         return null;
       case ZagModule.EXTERNAL_MODULES:
@@ -516,8 +516,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_LIDARR;
       case ZagModule.NZBGET:
         return SettingsRoutes.CONFIGURATION_NZBGET;
-      case ZagModule.OVERSEERR:
-        return SettingsRoutes.CONFIGURATION_OVERSEERR;
+      case ZagModule.SEERR:
+        return SettingsRoutes.CONFIGURATION_SEERR;
       case ZagModule.RADARR:
         return SettingsRoutes.CONFIGURATION_RADARR;
       case ZagModule.SABNZBD:
@@ -610,7 +610,7 @@ extension ZagModuleWebhookExtension on ZagModule {
         return true;
       case ZagModule.SONARR:
         return true;
-      case ZagModule.OVERSEERR:
+      case ZagModule.SEERR:
         return true;
       case ZagModule.TAUTULLI:
         return true;
@@ -627,8 +627,8 @@ extension ZagModuleWebhookExtension on ZagModule {
         return 'https://docs.zagreus.app/zagreus/notifications/radarr';
       case ZagModule.SONARR:
         return 'https://docs.zagreus.app/zagreus/notifications/sonarr';
-      case ZagModule.OVERSEERR:
-        return 'https://docs.zagreus.app/zagreus/notifications/overseerr';
+      case ZagModule.SEERR:
+        return 'https://docs.zagreus.app/zagreus/notifications/seerr';
       case ZagModule.TAUTULLI:
         return 'https://docs.zagreus.app/zagreus/notifications/tautulli';
       default:
@@ -680,8 +680,8 @@ extension ZagModuleExtension on ZagModule {
         return context.read<NZBGetState>();
       case ZagModule.SABNZBD:
         return context.read<SABnzbdState>();
-      case ZagModule.OVERSEERR:
-        return context.read<OverseerrState>();
+      case ZagModule.SEERR:
+        return context.read<SeerrState>();
       case ZagModule.TAUTULLI:
         return context.read<TautulliState>();
       case ZagModule.EXTERNAL_MODULES:

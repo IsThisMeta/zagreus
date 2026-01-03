@@ -58,22 +58,22 @@ type RadarrMovie struct {
 	Overview   string                   `json:"overview,omitempty"`
 }
 
-// Overseerr webhook structures
-type OverseerrWebhook struct {
+// Seerr webhook structures
+type SeerrWebhook struct {
 	NotificationType string                   `json:"notification_type"` // Kept for compatibility
-	Type             string                   `json:"type"`              // Actual field Overseerr sends
+	Type             string                   `json:"type"`              // Actual field Seerr sends
 	Event            string                   `json:"event"`
 	Subject          string                   `json:"subject"`
 	Message          string                   `json:"message"`
 	Image            string                   `json:"image"`
-	Media            *OverseerrMedia          `json:"media"`
-	Request          *OverseerrRequest        `json:"request"`
-	Issue            *OverseerrIssue          `json:"issue"`
-	Comment          *OverseerrComment        `json:"comment"`
+	Media            *SeerrMedia          `json:"media"`
+	Request          *SeerrRequest        `json:"request"`
+	Issue            *SeerrIssue          `json:"issue"`
+	Comment          *SeerrComment        `json:"comment"`
 	Extra            []interface{}            `json:"extra"` // Array, not map
 }
 
-type OverseerrMedia struct {
+type SeerrMedia struct {
 	MediaType string `json:"media_type"`
 	TmdbID    string `json:"tmdbId"`
 	ImdbID    string `json:"imdbId"`
@@ -82,7 +82,7 @@ type OverseerrMedia struct {
 	Status4k  string `json:"status4k"`
 }
 
-type OverseerrRequest struct {
+type SeerrRequest struct {
 	RequestID                       string `json:"request_id"`
 	RequestedByUsername             string `json:"requestedBy_username"`
 	RequestedByEmail                string `json:"requestedBy_email"`
@@ -91,7 +91,7 @@ type OverseerrRequest struct {
 	RequestedBySettingsTelegramChatID string `json:"requestedBy_settings_telegramChatId"`
 }
 
-type OverseerrIssue struct {
+type SeerrIssue struct {
 	IssueID           int    `json:"issue_id"`
 	IssueType         string `json:"issue_type"`
 	IssueStatus       string `json:"issue_status"`
@@ -100,7 +100,7 @@ type OverseerrIssue struct {
 	CreatedByAvatar   string `json:"createdBy_avatar"`
 }
 
-type OverseerrComment struct {
+type SeerrComment struct {
 	CommentMessage       string `json:"comment_message"`
 	CommentedByEmail     string `json:"commentedBy_email"`
 	CommentedByUsername  string `json:"commentedBy_username"`
@@ -465,8 +465,8 @@ func handleLidarrWebhook(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Lidarr webhook received"})
 }
 
-func handleOverseerrWebhook(c *gin.Context) {
-	var webhook OverseerrWebhook
+func handleSeerrWebhook(c *gin.Context) {
+	var webhook SeerrWebhook
 	if err := c.ShouldBindJSON(&webhook); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid webhook data"})
 		return
@@ -484,7 +484,7 @@ func handleOverseerrWebhook(c *gin.Context) {
 		notificationType = webhook.NotificationType
 	}
 
-	log.Printf("Received Overseerr webhook: %s for user %s", notificationType, userID)
+	log.Printf("Received Seerr webhook: %s for user %s", notificationType, userID)
 
 	var title, body string
 	var posterURL string
@@ -528,8 +528,8 @@ func handleOverseerrWebhook(c *gin.Context) {
 
 	switch notificationType {
 	case "TEST_NOTIFICATION":
-		title = "Overseerr Test"
-		body = "Zagreus is ready for Overseerr notifications!"
+		title = "Seerr Test"
+		body = "Zagreus is ready for Seerr notifications!"
 
 	case "MEDIA_PENDING":
 		title = webhook.Event
@@ -632,7 +632,7 @@ func handleOverseerrWebhook(c *gin.Context) {
 		}
 
 	default:
-		log.Printf("Unknown Overseerr notification type: %s", notificationType)
+		log.Printf("Unknown Seerr notification type: %s", notificationType)
 		c.JSON(200, WebhookResponse{Success: true, Message: "Event ignored"})
 		return
 	}
@@ -640,7 +640,7 @@ func handleOverseerrWebhook(c *gin.Context) {
 	if title != "" && body != "" {
 		metadata := map[string]string{
 			"event_type": notificationType,
-			"source":     "overseerr",
+			"source":     "seerr",
 		}
 		if webhook.Media != nil {
 			metadata["content_type"] = webhook.Media.MediaType
@@ -676,19 +676,19 @@ func handleOverseerrWebhook(c *gin.Context) {
 	})
 }
 
-func handleOverseerrWebhookWithID(c *gin.Context) {
+func handleSeerrWebhookWithID(c *gin.Context) {
 	webhookID := c.Param("id")
 	if webhookID == "" {
 		c.JSON(400, gin.H{"error": "Missing webhook ID"})
 		return
 	}
 
-	// Check if Overseerr notifications are enabled for this webhook
-	if !isOverseerrEnabled(webhookID) {
-		log.Printf("Overseerr notifications disabled for webhook %s, skipping", webhookID)
+	// Check if Seerr notifications are enabled for this webhook
+	if !isSeerrEnabled(webhookID) {
+		log.Printf("Seerr notifications disabled for webhook %s, skipping", webhookID)
 		c.JSON(200, gin.H{
 			"success": true,
-			"message": "Overseerr notifications disabled for this webhook",
+			"message": "Seerr notifications disabled for this webhook",
 		})
 		return
 	}
@@ -707,9 +707,9 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 		return
 	}
 
-	var webhook OverseerrWebhook
+	var webhook SeerrWebhook
 	if err := c.ShouldBindJSON(&webhook); err != nil {
-		log.Printf("Failed to parse Overseerr webhook: %v", err)
+		log.Printf("Failed to parse Seerr webhook: %v", err)
 		c.JSON(400, gin.H{"error": "Invalid webhook data"})
 		return
 	}
@@ -720,7 +720,7 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 		notificationType = webhook.NotificationType
 	}
 
-	log.Printf("Received Overseerr webhook: %s for webhook %s (%d devices)", notificationType, webhookID, len(deviceTokens))
+	log.Printf("Received Seerr webhook: %s for webhook %s (%d devices)", notificationType, webhookID, len(deviceTokens))
 
 	var title, body string
 	var posterURL string
@@ -764,8 +764,8 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 
 	switch notificationType {
 	case "TEST_NOTIFICATION":
-		title = "Overseerr Test"
-		body = "Zagreus is ready for Overseerr notifications!"
+		title = "Seerr Test"
+		body = "Zagreus is ready for Seerr notifications!"
 
 	case "MEDIA_PENDING":
 		title = webhook.Event
@@ -868,7 +868,7 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 		}
 
 	default:
-		log.Printf("Unknown Overseerr notification type: %s", notificationType)
+		log.Printf("Unknown Seerr notification type: %s", notificationType)
 		c.JSON(200, WebhookResponse{Success: true, Message: "Event ignored"})
 		return
 	}
@@ -876,7 +876,7 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 	if title != "" && body != "" {
 		metadata := map[string]string{
 			"event_type": notificationType,
-			"source":     "overseerr",
+			"source":     "seerr",
 		}
 		if webhook.Media != nil {
 			metadata["content_type"] = webhook.Media.MediaType
@@ -927,18 +927,13 @@ func handleOverseerrWebhookWithID(c *gin.Context) {
 			return
 		}
 
-		log.Printf("Successfully sent Overseerr notification to %d/%d devices", successCount, len(deviceTokens))
+		log.Printf("Successfully sent Seerr notification to %d/%d devices", successCount, len(deviceTokens))
 	}
 
 	c.JSON(200, WebhookResponse{
 		Success: true,
 		Message: fmt.Sprintf("Notification sent to %d device(s)", len(deviceTokens)),
 	})
-}
-
-func handleTautulliWebhook(c *gin.Context) {
-	// Similar structure
-	c.JSON(200, gin.H{"message": "Tautulli webhook received"})
 }
 
 // handleTautulliWebhookWithID handles Tautulli webhooks using webhook ID for auth

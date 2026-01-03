@@ -86,10 +86,10 @@ CREATE TABLE demo_config_v2 (
   tautulli_host TEXT,
   tautulli_key TEXT,
 
-  -- Overseerr
-  overseerr_enabled BOOLEAN DEFAULT false,
-  overseerr_host TEXT,
-  overseerr_key TEXT,
+  -- Seerr
+  seerr_enabled BOOLEAN DEFAULT false,
+  seerr_host TEXT,
+  seerr_key TEXT,
 
   -- Unraid
   unraid_enabled BOOLEAN DEFAULT true,
@@ -116,7 +116,7 @@ INSERT INTO demo_config_v2 (
   sonarr_enabled, sonarr_host, sonarr_key,
   bazarr_enabled, bazarr_host, bazarr_key,
   tautulli_enabled, tautulli_host, tautulli_key,
-  overseerr_enabled, overseerr_host, overseerr_key,
+  seerr_enabled, seerr_host, seerr_key,
   unraid_enabled, unraid_host, unraid_key,
   external_module_enabled, external_module_name, external_module_host
 ) VALUES (

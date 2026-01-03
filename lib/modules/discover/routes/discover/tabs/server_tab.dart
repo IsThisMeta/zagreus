@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zagreus/api/overseerr/models.dart';
+import 'package:zagreus/api/seerr/models.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/ui_preferences.dart';
@@ -8,8 +8,8 @@ import 'package:zagreus/modules/discover/widgets/tautulli_stream_card.dart';
 import 'package:zagreus/modules/lidarr/core/api/api.dart';
 import 'package:zagreus/modules/lidarr/core/api/data/history.dart';
 import 'package:zagreus/modules/lidarr/widgets/recently_downloaded_card.dart';
-import 'package:zagreus/modules/overseerr/core/state.dart';
-import 'package:zagreus/modules/overseerr/routes/requests/widgets/request_tile.dart';
+import 'package:zagreus/modules/seerr/core/state.dart';
+import 'package:zagreus/modules/seerr/routes/requests/widgets/request_tile.dart';
 import 'package:zagreus/modules/radarr.dart';
 import 'package:zagreus/modules/readarr/core/api/api.dart';
 import 'package:zagreus/modules/readarr/core/api/data/history.dart';
@@ -35,16 +35,16 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
 
   List<RadarrDiskSpace> _diskSpaces = [];
   List<_ServerIssue> _serverIssues = [];
-  List<OverseerrRequest> _overseerrRequests = [];
+  List<SeerrRequest> _seerrRequests = [];
   Map<String, double> _downloadHistoryChartData = {};
   double _downloadHistoryTotalGB = 0;
   int _downloadHistoryWeeks = 2; // Default to 2 weeks for better overview
   List<LidarrRecentlyDownloadedAlbum> _lidarrRecentlyDownloaded = [];
   List<ReadarrRecentlyDownloadedBook> _readarrRecentlyDownloaded = [];
-  bool _overseerrEnabled = false;
-  bool _overseerrLoading = false;
-  String? _overseerrError;
-  String _overseerrRequestFilter = 'pending';
+  bool _seerrEnabled = false;
+  bool _seerrLoading = false;
+  String? _seerrError;
+  String _seerrRequestFilter = 'pending';
   bool _isLoading = false;
   String? _error;
 
@@ -62,8 +62,8 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   @override
   void initState() {
     super.initState();
-    _overseerrRequestFilter =
-        UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.read() as String;
+    _seerrRequestFilter =
+        UIPreferencesDatabase.SEERR_REQUEST_FILTER.read() as String;
     _loadData();
   }
 
@@ -71,7 +71,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     await Future.wait([
       _loadDiskSpaces(),
       _loadServerIssues(),
-      _loadOverseerrRequests(),
+      _loadSeerrRequests(),
       _loadTautulliStreams(),
       _loadDownloadHistory(),
       _loadLidarrRecentlyDownloaded(),
@@ -227,38 +227,38 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     }
   }
 
-  Future<void> _loadOverseerrRequests() async {
+  Future<void> _loadSeerrRequests() async {
     if (!mounted) return;
 
-    final overseerrState = context.read<OverseerrState>();
-    final isConfigured = overseerrState.enabled &&
-        overseerrState.host.isNotEmpty &&
-        overseerrState.apiKey.isNotEmpty;
+    final seerrState = context.read<SeerrState>();
+    final isConfigured = seerrState.enabled &&
+        seerrState.host.isNotEmpty &&
+        seerrState.apiKey.isNotEmpty;
 
     if (!isConfigured) {
       if (!mounted) return;
       setState(() {
-        _overseerrEnabled = false;
-        _overseerrLoading = false;
-        _overseerrError = null;
-        _overseerrRequests = [];
+        _seerrEnabled = false;
+        _seerrLoading = false;
+        _seerrError = null;
+        _seerrRequests = [];
       });
       return;
     }
 
     setState(() {
-      _overseerrEnabled = true;
-      _overseerrLoading = true;
-      _overseerrError = null;
+      _seerrEnabled = true;
+      _seerrLoading = true;
+      _seerrError = null;
     });
 
     try {
       // Fetch requests using the saved filter preference
-      // Note: Client-side filtering is applied in _buildOverseerrSectionWithFilter
-      overseerrState.requestsFilter = _overseerrRequestFilter;
-      await overseerrState.fetchRequests();
-      final requests = overseerrState.requests ?? [];
-      final sorted = List<OverseerrRequest>.from(requests)
+      // Note: Client-side filtering is applied in _buildSeerrSectionWithFilter
+      seerrState.requestsFilter = _seerrRequestFilter;
+      await seerrState.fetchRequests();
+      final requests = seerrState.requests ?? [];
+      final sorted = List<SeerrRequest>.from(requests)
         ..sort(
           (a, b) {
             final aDate = DateTime.tryParse(a.createdAt) ??
@@ -271,26 +271,26 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
 
       if (!mounted) return;
       setState(() {
-        _overseerrRequests = sorted;
-        _overseerrLoading = false;
-        _overseerrError = overseerrState.requestsError;
+        _seerrRequests = sorted;
+        _seerrLoading = false;
+        _seerrError = seerrState.requestsError;
       });
     } catch (e) {
-      ZagLogger().warning('Failed to fetch Overseerr requests: $e');
+      ZagLogger().warning('Failed to fetch Seerr requests: $e');
       if (!mounted) return;
       setState(() {
-        _overseerrError = e.toString();
-        _overseerrLoading = false;
-        _overseerrRequests = [];
+        _seerrError = e.toString();
+        _seerrLoading = false;
+        _seerrRequests = [];
       });
     }
   }
 
-  bool get _shouldShowOverseerrSection =>
-      _overseerrEnabled ||
-      _overseerrLoading ||
-      _overseerrError != null ||
-      _overseerrRequests.isNotEmpty;
+  bool get _shouldShowSeerrSection =>
+      _seerrEnabled ||
+      _seerrLoading ||
+      _seerrError != null ||
+      _seerrRequests.isNotEmpty;
 
   Future<void> _loadTautulliStreams() async {
     if (!mounted) return;
@@ -606,7 +606,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         ? List<String>.from(sectionOrder)
         : [
             'server_issues',
-            'overseerr_requests',
+            'seerr_requests',
             'tautulli_streams',
             'disk_space',
             'download_history',
@@ -621,8 +621,8 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     // Build section widgets (conditionally include based on settings)
     final sectionWidgets = <String, List<Widget>>{
       'server_issues': _buildServerIssuesSection(),
-      if (_shouldShowOverseerrSection)
-        'overseerr_requests': _buildOverseerrSection(),
+      if (_shouldShowSeerrSection)
+        'seerr_requests': _buildSeerrSection(),
       if (_shouldShowTautulliStreamsSection)
         'tautulli_streams': _buildTautulliStreamsSection(),
       'disk_space': _buildDiskSpaceSection(),
@@ -714,63 +714,63 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     ];
   }
 
-  List<Widget> _buildOverseerrSection() {
+  List<Widget> _buildSeerrSection() {
     return [
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
         child: Row(
           children: [
             Text(
-              'Overseerr Requests',
+              'Seerr Requests',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color:
-                    _overseerrEnabled ? ZagModule.OVERSEERR.color : Colors.grey,
+                    _seerrEnabled ? ZagModule.SEERR.color : Colors.grey,
               ),
             ),
             const Spacer(),
-            if (_overseerrEnabled) _buildFilterSelector(),
+            if (_seerrEnabled) _buildFilterSelector(),
           ],
         ),
       ),
-      if (_overseerrLoading)
+      if (_seerrLoading)
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
           child: Center(
             child: ZagLoader(),
           ),
         )
-      else if (!_overseerrEnabled)
+      else if (!_seerrEnabled)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'Enable Overseerr',
+            title: 'Enable Seerr',
             body: const [
               TextSpan(
                 text:
-                    'Turn on Overseerr in Settings to see requests and manage approvals here.',
+                    'Turn on Seerr in Settings to see requests and manage approvals here.',
               ),
             ],
             trailing: const Icon(Icons.settings_rounded),
-            onTap: SettingsRoutes.CONFIGURATION_OVERSEERR.go,
+            onTap: SettingsRoutes.CONFIGURATION_SEERR.go,
           ),
         )
-      else if (_overseerrError != null)
+      else if (_seerrError != null)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
             title: 'Unable to load requests',
             body: const [
               TextSpan(
-                text: 'Tap to retry. We could not reach Overseerr.',
+                text: 'Tap to retry. We could not reach Seerr.',
               ),
             ],
             trailing: const Icon(Icons.refresh_rounded),
-            onTap: _loadOverseerrRequests,
+            onTap: _loadSeerrRequests,
           ),
         )
-      else if (_overseerrRequests.isEmpty)
+      else if (_seerrRequests.isEmpty)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
@@ -779,14 +779,14 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
               TextSpan(text: 'All caught up for now.'),
             ],
             trailing: const Icon(Icons.inbox_outlined),
-            onTap: () => ZagModule.OVERSEERR.launch(),
+            onTap: () => ZagModule.SEERR.launch(),
           ),
         )
       else ...[
-        ..._overseerrRequests.take(4).map(
+        ..._seerrRequests.take(4).map(
               (request) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: OverseerrRequestTile(
+                child: SeerrRequestTile(
                   request: request,
                 ),
               ),
@@ -797,7 +797,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   }
 
   String _getEmptyStateTitle() {
-    switch (_overseerrRequestFilter) {
+    switch (_seerrRequestFilter) {
       case 'pending':
         return 'No pending requests';
       case 'approved':
@@ -840,7 +840,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         ),
       ),
       child: DropdownButton<String>(
-        value: _overseerrRequestFilter,
+        value: _seerrRequestFilter,
         underline: const SizedBox(),
         isDense: true,
         style: TextStyle(
@@ -865,10 +865,10 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         onChanged: (newFilter) {
           if (newFilter == null) return;
           setState(() {
-            _overseerrRequestFilter = newFilter;
+            _seerrRequestFilter = newFilter;
           });
-          UIPreferencesDatabase.OVERSEERR_REQUEST_FILTER.update(newFilter);
-          _loadOverseerrRequests();
+          UIPreferencesDatabase.SEERR_REQUEST_FILTER.update(newFilter);
+          _loadSeerrRequests();
         },
       ),
     );

@@ -1,0 +1,10 @@
+{
+    "seerr.Users": "Пользователи",
+    "seerr.UnknownUser": "Неизвестный пользователь",
+    "seerr.NoUsersFound": "Пользователи не найдены",
+    "seerr.NoRequestsFound": "Запросы не найдены",
+    "seerr.Requests": "Запросы",
+    "seerr.NoRequests": "Нет запросов",
+    "seerr.OneRequest": "1 запрос",
+    "seerr.SomeRequests": "{} запросов"
+}

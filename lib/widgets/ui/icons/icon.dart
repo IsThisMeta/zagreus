@@ -70,7 +70,7 @@ class ZagIcons {
   static const IconData LIDARR = IconData(0xe902, fontFamily: _fontFamily);
   static const IconData MUSICBRAINZ = IconData(0xe904, fontFamily: _fontFamily);
   static const IconData NZBGET = IconData(0xe905, fontFamily: _fontFamily);
-  static const IconData OVERSEERR = IconData(0xe906, fontFamily: _fontFamily);
+  static const IconData SEERR = IconData(0xe906, fontFamily: _fontFamily);
   static const IconData RADARR = IconData(0xe907, fontFamily: _fontFamily);
   static const IconData READARR = IconData(0xe901, fontFamily: _fontFamily);
   static const IconData SABNZBD = IconData(0xe908, fontFamily: _fontFamily);

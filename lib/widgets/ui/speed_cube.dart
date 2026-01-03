@@ -109,8 +109,9 @@ class _ZagSpeedCubeState extends State<ZagSpeedCube>
     // Filter out premium modules if not Pro
     modules = modules.where((module) {
       if ((module == ZagModule.DISCOVER ||
-              module == ZagModule.OVERSEERR ||
-              module == ZagModule.UNRAID) &&
+              module == ZagModule.SEERR ||
+              module == ZagModule.UNRAID ||
+              module == ZagModule.SSH) &&
           !isPro) {
         return false;
       }
