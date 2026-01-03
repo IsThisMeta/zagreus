@@ -130,6 +130,49 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   static const int _columnsPerRowMinIPad = 2; // Default 4, range 2-6
   static const int _columnsPerRowMaxIPad = 6;
 
+  // Named hero sizes for phone (300-500, 50px intervals)
+  static const Map<String, double> _heroSizesPhone = {
+    'Very Small': 300.0,
+    'Small': 350.0,
+    'Regular': 400.0,
+    'Large': 450.0,
+    'Very Large': 500.0,
+  };
+
+  // Named hero sizes for iPad (450-650, 50px intervals)
+  static const Map<String, double> _heroSizesIPad = {
+    'Very Small': 450.0,
+    'Small': 500.0,
+    'Regular': 550.0,
+    'Large': 600.0,
+    'Very Large': 650.0,
+  };
+
+  // Get hero sizes based on device type
+  Map<String, double> get _heroSizes =>
+      _isTablet ? _heroSizesIPad : _heroSizesPhone;
+
+  // Convert pixel value to hero size name
+  String _heroHeightToSizeName(double height) {
+    final sizes = _heroSizes;
+    for (final entry in sizes.entries) {
+      if ((entry.value - height).abs() < 1.0) {
+        return entry.key;
+      }
+    }
+    // Find closest match
+    String closest = 'Regular';
+    double minDiff = double.infinity;
+    for (final entry in sizes.entries) {
+      final diff = (entry.value - height).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = entry.key;
+      }
+    }
+    return closest;
+  }
+
   // Helper to check if we're on iPad
   bool get _isTablet => mounted && ZagPlatform.isTablet(context);
 
@@ -183,8 +226,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
   late List<String> _movieSections;
   late List<String> _tvSections;
   bool _hasChanges = false;
-  double _posterHeight = 225.0;
-  double _heroHeight = 400.0;
+  double _posterHeight = 225.0; // Regular for phone
+  double _heroHeight = 400.0; // Regular for phone
   int _columnsPerRow = 3;
   bool _showTitles = true;
 
@@ -310,7 +353,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _heroHeight = savedHeroHeight;
     } else {
       // Set to default for this device type
-      _heroHeight = isTablet ? 550.0 : 370.0;
+      _heroHeight = isTablet ? 550.0 : 400.0;
     }
 
     // Load columns per row from device-specific key
@@ -372,7 +415,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       _tvSections = List<String>.from(_defaultTVSections);
       // Use device-specific defaults
       _posterHeight = isTablet ? 275.0 : 225.0;
-      _heroHeight = isTablet ? 550.0 : 370.0;
+      _heroHeight = isTablet ? 550.0 : 400.0;
       _columnsPerRow = isTablet ? 4 : 3;
       _showTitles = true;
       _monochromeRatings = false;
@@ -448,6 +491,55 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Quick Buttons section at top
+          Text(
+            'settings.DashboardSettingsQuickButtonsTitle'.tr(),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'settings.DashboardSettingsQuickButtonsDescription'.tr(),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white54
+                  : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _allQuickButtonServices.map((service) {
+              final isSelected = _quickButtons.contains(service);
+              final displayName = _getQuickButtonDisplayName(service);
+              return FilterChip(
+                label: Text(displayName),
+                selected: isSelected,
+                onSelected: (selected) {
+                  setState(() {
+                    if (selected) {
+                      _quickButtons.add(service);
+                    } else {
+                      _quickButtons.remove(service);
+                    }
+                    _hasChanges = true;
+                  });
+                  widget.onHasChangesChanged?.call(_hasChanges);
+                },
+                selectedColor: ZagColours.accentColor(context).withOpacity(0.3),
+                checkmarkColor: ZagColours.accentColor(context),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 32),
+          // Poster Height
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -504,102 +596,119 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
             ],
           ),
           const SizedBox(height: 32),
-          Text(
-            'settings.DashboardSettingsHeroHeight'.tr(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsHeroHeightValue'
-                .tr(args: [_heroHeight.round().toString()]),
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black54,
-            ),
-          ),
-          Slider(
-            value: _heroHeight,
-            min: _heroHeightMin,
-            max: _heroHeightMax,
-            divisions: 20,
-            activeColor: ZagColours.accentColor(context),
-            inactiveColor: theme.brightness == Brightness.dark
-                ? Colors.white24
-                : Colors.black26,
-            onChanged: (value) {
-              setState(() {
-                _heroHeight = value;
-                _hasChanges = true;
-              });
-              widget.onHasChangesChanged?.call(_hasChanges);
-            },
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsHeroHeightDescription'.tr(),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'settings.DashboardSettingsHeroHeight'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white24
+                        : Colors.black26,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _heroHeightToSizeName(_heroHeight),
+                    dropdownColor: theme.brightness == Brightness.dark
+                        ? Colors.grey[850]
+                        : Colors.white,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                    items: _heroSizes.keys.map((sizeName) {
+                      return DropdownMenuItem<String>(
+                        value: sizeName,
+                        child: Text(sizeName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _heroHeight = _heroSizes[value]!;
+                          _hasChanges = true;
+                        });
+                        widget.onHasChangesChanged?.call(_hasChanges);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 32),
-          Text(
-            'settings.DashboardSettingsItemsPerRow'.tr(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsItemsPerRowValue'
-                .tr(args: [_columnsPerRow.toString()]),
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black54,
-            ),
-          ),
-          Slider(
-            value: _columnsPerRow.toDouble(),
-            min: _columnsPerRowMin.toDouble(),
-            max: _columnsPerRowMax.toDouble(),
-            divisions: _columnsPerRowMax - _columnsPerRowMin,
-            activeColor: ZagColours.accentColor(context),
-            inactiveColor: theme.brightness == Brightness.dark
-                ? Colors.white24
-                : Colors.black26,
-            onChanged: (value) {
-              setState(() {
-                _columnsPerRow = value.round();
-                _hasChanges = true;
-              });
-              widget.onHasChangesChanged?.call(_hasChanges);
-            },
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsItemsPerRowDescription'.tr(),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'settings.DashboardSettingsItemsPerRow'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.white24
+                        : Colors.black26,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: _columnsPerRow,
+                    dropdownColor: theme.brightness == Brightness.dark
+                        ? Colors.grey[850]
+                        : Colors.white,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                    items: List.generate(
+                      _columnsPerRowMax - _columnsPerRowMin + 1,
+                      (index) => _columnsPerRowMin + index,
+                    ).map((value) {
+                      return DropdownMenuItem<int>(
+                        value: value,
+                        child: Text('$value'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _columnsPerRow = value;
+                          _hasChanges = true;
+                        });
+                        widget.onHasChangesChanged?.call(_hasChanges);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 32),
           Row(
@@ -746,53 +855,6 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                   ? Colors.white54
                   : Colors.black45,
             ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'settings.DashboardSettingsQuickButtonsTitle'.tr(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'settings.DashboardSettingsQuickButtonsDescription'.tr(),
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white54
-                  : Colors.black45,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _allQuickButtonServices.map((service) {
-              final isSelected = _quickButtons.contains(service);
-              final displayName = _getQuickButtonDisplayName(service);
-              return FilterChip(
-                label: Text(displayName),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _quickButtons.add(service);
-                    } else {
-                      _quickButtons.remove(service);
-                    }
-                    _hasChanges = true;
-                  });
-                  widget.onHasChangesChanged?.call(_hasChanges);
-                },
-                selectedColor: ZagColours.accentColor(context).withOpacity(0.3),
-                checkmarkColor: ZagColours.accentColor(context),
-              );
-            }).toList(),
           ),
           const SizedBox(height: 32),
           Text(
