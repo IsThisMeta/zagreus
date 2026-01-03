@@ -76,6 +76,7 @@ import 'package:zagreus/supabase/auth.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/utils/zagreus_mega.dart';
 import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/utils/zagreus_supreme.dart';
 import 'package:zagreus/services/deep_cuts_service.dart';
 import 'package:zagreus/services/up_next_service.dart';
 import 'package:zagreus/services/magic_movies_service.dart';
@@ -108,8 +109,7 @@ class _UserOption {
 }
 
 const double _userListExtraPadding = 32.0;
-const EdgeInsets _moduleSectionTitlePadding =
-    EdgeInsets.symmetric(horizontal: 16, vertical: 12);
+// Base padding - actual padding is computed dynamically in _sectionPadding()
 const double _heroTitleFontSize = 26;
 const double _posterAspectRatio = 2 / 3;
 const int _discoverPreviewLimit = 10;
@@ -201,8 +201,19 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     return 18;
   }
 
+  /// Dynamic section padding that scales with system text size
+  EdgeInsets _sectionPadding(BuildContext context) {
+    final textScaler = MediaQuery.textScalerOf(context);
+    // Base vertical padding of 6, scales with text size (min 4, max 12)
+    final verticalPadding = (6.0 * textScaler.scale(1.0)).clamp(4.0, 12.0);
+    return EdgeInsets.symmetric(horizontal: 16, vertical: verticalPadding);
+  }
+
   // Magic People Section (Shows tab / Sonarr instance)
   Widget _magicPeopleShowsSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicPeopleService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -244,7 +255,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicPeopleSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.groups_rounded,
@@ -2126,7 +2137,8 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB.read();
   bool get _showCalendarTab => ZagreusDatabase.SHOW_CALENDAR_TAB.read();
   bool get _isSignedIn => ZagSupabaseAuth().isSignedIn;
-  bool get _hasAiTier => ZagreusMega.isEnabled || ZagreusUltra.isEnabled;
+  /// AI features require Mega, Ultra, or Supreme (NOT Pro)
+  bool get _hasAiTier => ZagreusMega.isEnabled || ZagreusUltra.isEnabled || ZagreusSupreme.isEnabled;
   bool get _hasAiAccess => _isSignedIn && _hasAiTier;
   bool get _showAgentTab => ZagreusDatabase.SHOW_AGENT_TAB.read() && _hasAiTier;
 
@@ -2367,7 +2379,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             .withOpacity(0.5);
 
     return Padding(
-      padding: padding ?? _moduleSectionTitlePadding,
+      padding: padding ?? _sectionPadding(context),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -2894,7 +2906,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             showTitles: _showTitles,
             hasAiAccess: _hasAiAccess,
             hasRecentlyDownloaded: _recentlyDownloaded.isNotEmpty,
-            hasMissingMovies: _missingMovies.isNotEmpty,
             recentlyDownloadedSection: _recentlyDownloadedSection,
             recommendedMoviesSection: _recommendedMoviesSection,
             missingMoviesSection: _missingMoviesSection,
@@ -7023,6 +7034,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   Widget _missingMoviesSection() {
     final previewMovies = _missingMovies.take(_discoverPreviewLimit).toList();
+    final radarrState = context.read<RadarrState>();
+    final isRadarrConfigured = radarrState.enabled;
+
     return MissingMoviesSection(
       header: _sectionTitleRow(
         context: context,
@@ -7031,35 +7045,65 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.RadarrLabel'.tr(),
         moduleLabelColor: const Color(0xFFFEC333),
         title: _discoverSectionTitle('missing'),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DiscoverMissingRoute(
-                initialData: _missingMovies,
-              ),
-            ),
-          );
-        },
+        onTap: previewMovies.isNotEmpty
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiscoverMissingRoute(
+                      initialData: _missingMovies,
+                    ),
+                  ),
+                );
+              }
+            : null,
         onLongPress: () => _refreshSection(
           scrollKey: _scrollIdMissing,
           loader: _loadMissingMovies,
           sectionLabel: _discoverSectionTitle('missing'),
         ),
+        showArrow: previewMovies.isNotEmpty,
       ),
       list: SizedBox(
         height: _posterListHeight,
-        child: ListView.builder(
-          key: _missingMoviesListKey,
-          controller: _sectionScrollController(_scrollIdMissing),
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: previewMovies.length,
-          itemBuilder: (context, index) {
-            final movie = previewMovies[index];
-            return _missingMovieCard(movie);
-          },
-        ),
+        child: previewMovies.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isRadarrConfigured ? Icons.check_circle_outline : Icons.movie_outlined,
+                        size: 48,
+                        color: Colors.grey.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        isRadarrConfigured
+                            ? 'discover.NoMissingMovies'.tr()
+                            : 'discover.ConfigureRadarr'.tr(),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : ListView.builder(
+                key: _missingMoviesListKey,
+                controller: _sectionScrollController(_scrollIdMissing),
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: previewMovies.length,
+                itemBuilder: (context, index) {
+                  final movie = previewMovies[index];
+                  return _missingMovieCard(movie);
+                },
+              ),
       ),
     );
   }
@@ -7149,7 +7193,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_movies'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _popularMovies.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -7395,7 +7439,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('recently_released_movies'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _recentlyReleasedMovies.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -7642,7 +7686,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_tv_shows'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _popularTVShows.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -7893,7 +7937,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('trending_new_tv_shows'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _trendingNewTVShows.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -8873,7 +8917,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TraktLabel'.tr(),
         moduleLabelColor: const Color(0xFFED2224),
         title: _discoverSectionTitle('most_anticipated'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _mostAnticipatedShows.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -9109,7 +9153,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TraktLabel'.tr(),
         moduleLabelColor: const Color(0xFFED2224),
         title: _discoverSectionTitle('most_anticipated_movies'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _mostAnticipatedMovies.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -9363,7 +9407,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         moduleLabel: 'discover.TmdbLabel'.tr(),
         moduleLabelColor: const Color(0xFF6688FF),
         title: _discoverSectionTitle('popular_people'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: _sectionPadding(context),
         onTap: _popularPeople.isNotEmpty
             ? () {
                 Navigator.of(context).push(
@@ -9576,6 +9620,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _deepCutsSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final deepCutsService = DeepCutsService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -9617,7 +9664,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, futureSnapshot) {
         return DeepCutsSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(
@@ -9939,6 +9986,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   }
 
   Widget _upNextSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final upNextService = UpNextService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -9980,7 +10030,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
       builder: (context, futureSnapshot) {
         return UpNextSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(
@@ -10311,6 +10361,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Magic Movies Section
   Widget _magicMoviesSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicMoviesService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -10352,7 +10405,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicMoviesSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.auto_fix_high_rounded,
@@ -10589,6 +10642,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Magic Movies Cast & Crew Section
   Widget _magicMoviesCastCrewSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicMoviesCastCrewService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -10631,7 +10687,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicMoviesCastCrewSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.groups_rounded,
@@ -10861,6 +10917,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Magic People Section (Movies tab / Radarr instance)
   Widget _magicPeopleSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicPeopleService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -10900,7 +10959,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicPeopleSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.groups_rounded,
@@ -11271,6 +11330,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Magic Shows Section
   Widget _magicShowsSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicShowsService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -11312,7 +11374,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicShowsSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.auto_fix_high_rounded,
@@ -11553,6 +11615,9 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
   // Magic Shows Cast & Crew Section
   Widget _magicShowsCastCrewSection() {
+    // Require AI tier (Mega/Ultra/Supreme) - Pro users should not see this
+    if (!_hasAiAccess) return const SizedBox.shrink();
+
     final service = MagicShowsCastCrewService();
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final instanceKey =
@@ -11595,7 +11660,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
         return MagicShowsCastCrewSection(
           header: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: _sectionPadding(context),
             child: Row(
               children: [
                 Icon(Icons.person_search_rounded,

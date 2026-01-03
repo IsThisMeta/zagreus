@@ -37,7 +37,6 @@ class DiscoverMoviesSectionData {
   final bool showTitles;
   final bool hasAiAccess;
   final bool hasRecentlyDownloaded;
-  final bool hasMissingMovies;
   final Widget Function() recentlyDownloadedSection;
   final Widget Function() recommendedMoviesSection;
   final Widget Function() missingMoviesSection;
@@ -57,7 +56,6 @@ class DiscoverMoviesSectionData {
     required this.showTitles,
     required this.hasAiAccess,
     required this.hasRecentlyDownloaded,
-    required this.hasMissingMovies,
     required this.recentlyDownloadedSection,
     required this.recommendedMoviesSection,
     required this.missingMoviesSection,
@@ -142,12 +140,16 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
         ? data.recentlyDownloadedSection()
         : const SizedBox.shrink(),
     'recommended': () => data.recommendedMoviesSection(),
-    'missing': () => data.hasMissingMovies
-        ? data.missingMoviesSection()
-        : const SizedBox.shrink(),
+    'missing': () => data.missingMoviesSection(),
     'downloading_soon': () => data.downloadingSoonSection(),
-    'studios': () => data.studiosSection(),
-    'movie_genres': () => data.movieGenresSection(),
+    'studios': () => Column(children: [
+          data.studiosSection(),
+          const SizedBox(height: 8),
+        ]),
+    'movie_genres': () => Column(children: [
+          data.movieGenresSection(),
+          const SizedBox(height: 8),
+        ]),
     'popular_movies': () => data.popularMoviesSection(),
     'recently_released_movies': () => data.recentlyReleasedMoviesSection(),
     'most_anticipated_movies': () => data.mostAnticipatedMoviesSection(),

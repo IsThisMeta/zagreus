@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xterm/xterm.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/models/ssh_connection.dart';
@@ -32,6 +34,11 @@ class _State extends State<SSHTerminalRoute> {
   StreamSubscription? _statusSubscription;
   bool _isConnecting = false;
 
+  // Buffer for batching output writes to reduce UI updates
+  final List<Uint8List> _outputBuffer = [];
+  Timer? _outputFlushTimer;
+  static const _outputFlushInterval = Duration(milliseconds: 16); // ~60fps
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +69,7 @@ class _State extends State<SSHTerminalRoute> {
     _terminal.write('\r\n');
 
     _outputSubscription = SSHService.instance.outputStream.listen((data) {
-      _terminal.write(String.fromCharCodes(data));
+      _bufferOutput(data);
     });
 
     _statusSubscription = SSHService.instance.statusStream.listen((status) {
@@ -152,8 +159,33 @@ class _State extends State<SSHTerminalRoute> {
     return true;
   }
 
+  void _bufferOutput(Uint8List data) {
+    _outputBuffer.add(data);
+    _outputFlushTimer ??= Timer(_outputFlushInterval, _flushOutputBuffer);
+  }
+
+  void _flushOutputBuffer() {
+    _outputFlushTimer = null;
+    if (_outputBuffer.isEmpty) return;
+
+    // Combine all buffered data into single write
+    final totalLength = _outputBuffer.fold<int>(0, (sum, data) => sum + data.length);
+    final combined = Uint8List(totalLength);
+    var offset = 0;
+    for (final data in _outputBuffer) {
+      combined.setRange(offset, offset + data.length, data);
+      offset += data.length;
+    }
+    _outputBuffer.clear();
+
+    // Write combined data to terminal
+    _terminal.write(String.fromCharCodes(combined));
+  }
+
   @override
   void dispose() {
+    _outputFlushTimer?.cancel();
+    _flushOutputBuffer(); // Flush any remaining data
     _outputSubscription?.cancel();
     _statusSubscription?.cancel();
     SSHService.instance.disconnect();
@@ -227,18 +259,95 @@ class _State extends State<SSHTerminalRoute> {
   Widget _body() {
     return Container(
       color: Colors.black,
-      child: TerminalView(
-        _terminal,
-        controller: _terminalController,
-        autofocus: true,
-        backgroundOpacity: 1.0,
-        theme: _terminalTheme(),
-        textStyle: const TerminalStyle(
-          fontSize: 14,
-          fontFamily: 'monospace',
+      child: GestureDetector(
+        onLongPressStart: (details) => _showContextMenu(details.globalPosition),
+        child: TerminalView(
+          _terminal,
+          controller: _terminalController,
+          autofocus: true,
+          backgroundOpacity: 1.0,
+          theme: _terminalTheme(),
+          textStyle: const TerminalStyle(
+            fontSize: 14,
+            fontFamily: 'monospace',
+          ),
         ),
       ),
     );
+  }
+
+  void _showContextMenu(Offset position) {
+    final selectedText = _terminalController.selection != null
+        ? _terminal.buffer.getText(_terminalController.selection!)
+        : null;
+    final hasSelection = selectedText != null && selectedText.isNotEmpty;
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: [
+        if (hasSelection)
+          PopupMenuItem<String>(
+            value: 'copy',
+            child: Row(
+              children: [
+                const Icon(Icons.copy_rounded, size: 20),
+                const SizedBox(width: 12),
+                Text('ssh.Copy'.tr()),
+              ],
+            ),
+          ),
+        PopupMenuItem<String>(
+          value: 'paste',
+          child: Row(
+            children: [
+              const Icon(Icons.paste_rounded, size: 20),
+              const SizedBox(width: 12),
+              Text('ssh.Paste'.tr()),
+            ],
+          ),
+        ),
+        if (hasSelection)
+          PopupMenuItem<String>(
+            value: 'clear_selection',
+            child: Row(
+              children: [
+                const Icon(Icons.deselect_rounded, size: 20),
+                const SizedBox(width: 12),
+                Text('ssh.ClearSelection'.tr()),
+              ],
+            ),
+          ),
+      ],
+    ).then((value) {
+      if (value == null) return;
+      switch (value) {
+        case 'copy':
+          if (selectedText != null) {
+            Clipboard.setData(ClipboardData(text: selectedText));
+            _terminalController.clearSelection();
+          }
+          break;
+        case 'paste':
+          _pasteFromClipboard();
+          break;
+        case 'clear_selection':
+          _terminalController.clearSelection();
+          break;
+      }
+    });
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data?.text != null && data!.text!.isNotEmpty) {
+      SSHService.instance.write(data.text!);
+    }
   }
 
   TerminalTheme _terminalTheme() {

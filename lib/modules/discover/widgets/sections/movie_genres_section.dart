@@ -55,7 +55,7 @@ class _MovieGenresSectionState extends State<MovieGenresSection> {
                 ),
               ),
             ),
-          if (widget.showTitle) const SizedBox(height: 8),
+          if (widget.showTitle) SizedBox(height: 4 * MediaQuery.textScalerOf(context).scale(1.0)),
           SizedBox(
             height: 100,
             child: ListView.builder(
@@ -102,7 +102,7 @@ class _MovieGenresSectionState extends State<MovieGenresSection> {
               ),
             ),
           ),
-        if (widget.showTitle) const SizedBox(height: 8),
+        if (widget.showTitle) SizedBox(height: 4 * MediaQuery.textScalerOf(context).scale(1.0)),
         SizedBox(
           height: 100,
           child: ListView.builder(

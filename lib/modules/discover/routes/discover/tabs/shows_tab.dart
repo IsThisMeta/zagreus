@@ -163,8 +163,14 @@ List<Widget> buildTvSections(DiscoverTvSectionData data) {
         ? data.recentlyDownloadedShowsSection()
         : const SizedBox.shrink(),
     'airing_next': () => data.airingNextSection(),
-    'networks': () => data.networksSection(),
-    'tv_genres': () => data.tvGenresSection(),
+    'networks': () => Column(children: [
+          data.networksSection(),
+          const SizedBox(height: 8),
+        ]),
+    'tv_genres': () => Column(children: [
+          data.tvGenresSection(),
+          const SizedBox(height: 8),
+        ]),
     'popular_tv_shows': () => data.popularTvShowsSection(),
     'trending_new_tv_shows': () => data.trendingNewTvShowsSection(),
     'most_anticipated': () => data.mostAnticipatedShowsSection(),

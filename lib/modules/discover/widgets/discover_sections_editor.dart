@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/system/platform.dart';
+import 'package:zagreus/utils/zagreus_mega.dart';
+import 'package:zagreus/utils/zagreus_ultra.dart';
+import 'package:zagreus/utils/zagreus_supreme.dart';
 
 class DiscoverSectionsEditor extends StatefulWidget {
   const DiscoverSectionsEditor({
@@ -48,6 +51,21 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'magic_shows_cast_crew',
     'magic_people',
   ];
+
+  /// AI sections that require Mega/Ultra/Supreme subscription
+  static const List<String> _aiSections = [
+    'deep_cuts',
+    'up_next',
+    'magic_movies',
+    'magic_movies_cast_crew',
+    'magic_shows',
+    'magic_shows_cast_crew',
+    'magic_people',
+  ];
+
+  /// Check if user has AI tier (Mega/Ultra/Supreme)
+  static bool get _hasAiAccess =>
+      ZagreusMega.isEnabled || ZagreusUltra.isEnabled || ZagreusSupreme.isEnabled;
 
   // Phone poster height
   static const double _posterHeightMinPhone = 175.0;
@@ -857,12 +875,19 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     required bool isMovie,
   }) {
     final theme = Theme.of(context);
-    final availableSections =
-        defaults.where((section) => !sections.contains(section)).toList();
+    // Filter out AI sections if user doesn't have AI access
+    final availableSections = defaults
+        .where((section) => !sections.contains(section))
+        .where((section) => _hasAiAccess || !_aiSections.contains(section))
+        .toList();
+    // Also filter display of AI sections from current list if no AI access
+    final displaySections = _hasAiAccess
+        ? sections
+        : sections.where((s) => !_aiSections.contains(s)).toList();
 
     return CustomScrollView(
       slivers: [
-        if (sections.isEmpty)
+        if (displaySections.isEmpty)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -873,12 +898,22 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
           SliverPadding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             sliver: SliverReorderableList(
-              itemCount: sections.length,
+              itemCount: displaySections.length,
               onReorder: (oldIndex, newIndex) {
                 setState(() {
                   if (newIndex > oldIndex) newIndex -= 1;
-                  final item = sections.removeAt(oldIndex);
-                  sections.insert(newIndex, item);
+                  final item = displaySections.removeAt(oldIndex);
+                  // Also update the original sections list
+                  sections.remove(item);
+                  // Find the right position in original list
+                  if (newIndex >= displaySections.length) {
+                    sections.add(item);
+                  } else {
+                    final targetSection = displaySections[newIndex];
+                    final targetIndex = sections.indexOf(targetSection);
+                    sections.insert(targetIndex, item);
+                  }
+                  displaySections.insert(newIndex, item);
                   _setHasChanges();
                 });
               },
@@ -900,7 +935,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
                 );
               },
               itemBuilder: (context, index) {
-                final section = sections[index];
+                final section = displaySections[index];
                 final name = _sectionName(section);
 
                 return Container(
@@ -1036,8 +1071,11 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     required List<String> defaults,
   }) {
     final sections = isMovie ? _movieSections : _tvSections;
-    final available =
-        defaults.where((section) => !sections.contains(section)).toList();
+    // Filter out AI sections if user doesn't have AI access
+    final available = defaults
+        .where((section) => !sections.contains(section))
+        .where((section) => _hasAiAccess || !_aiSections.contains(section))
+        .toList();
 
     if (available.isEmpty) {
       return;
