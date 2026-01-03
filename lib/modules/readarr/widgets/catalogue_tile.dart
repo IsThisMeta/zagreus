@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
+import 'package:zagreus/extensions/int/bytes.dart';
+import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/router/routes/readarr.dart';
 
 class ReadarrCatalogueTile extends StatelessWidget {
+  static final itemExtent = ZagBlock.calculateItemExtent(2);
+
   final ReadarrCatalogueData data;
 
   const ReadarrCatalogueTile({
@@ -13,97 +17,125 @@ class ReadarrCatalogueTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ZagCard(
-      context: context,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(ZagUI.BORDER_RADIUS),
-        onTap: () => ReadarrRoutes.AUTHOR.go(params: {
-          'author': data.authorID.toString(),
-        }),
-        child: Row(
-          children: [
-            _poster(context),
-            Expanded(child: _details(context)),
+    return Consumer<ReadarrState>(
+      builder: (context, state, _) {
+        return ZagBlock(
+          key: ObjectKey(data),
+          backgroundUrl: data.fanartURI(),
+          backgroundHeaders: ZagProfile.forModule('readarr').readarrHeaders,
+          posterUrl: data.posterURI(),
+          posterHeaders: ZagProfile.forModule('readarr').readarrHeaders,
+          posterPlaceholderIcon: Icons.menu_book_rounded,
+          disabled: !(data.monitored ?? false),
+          title: data.title,
+          body: [
+            _subtitle1(context, state),
+            _subtitle2(context, state),
           ],
+          onTap: () => _onTap(),
+          onLongPress: () => _onLongPress(context),
+        );
+      },
+    );
+  }
+
+  TextSpan _buildChildTextSpan(
+    BuildContext context,
+    String? text,
+    ReadarrCatalogueSorting sorting,
+    ReadarrState state,
+  ) {
+    TextStyle? style;
+    if (state.sortCatalogueType == sorting) {
+      style = TextStyle(
+        color: ZagColours.currentAccent,
+        fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+      );
+    }
+    return TextSpan(
+      text: text,
+      style: style,
+    );
+  }
+
+  TextSpan _subtitle1(BuildContext context, ReadarrState state) {
+    return TextSpan(
+      children: [
+        _buildChildTextSpan(
+          context,
+          data.bookStats,
+          ReadarrCatalogueSorting.books,
+          state,
         ),
-      ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        _buildChildTextSpan(
+          context,
+          data.sizeOnDisk.asBytes(),
+          ReadarrCatalogueSorting.size,
+          state,
+        ),
+      ],
     );
   }
 
-  Widget _poster(BuildContext context) {
-    return ZagNetworkImage(
-      context: context,
-      url: data.posterURI(),
-      height: 90.0,
-      width: 60.0,
-      headers: ZagProfile.forModule('readarr').readarrHeaders,
+  TextSpan _subtitle2(BuildContext context, ReadarrState state) {
+    return TextSpan(
+      children: [
+        _buildChildTextSpan(
+          context,
+          data.quality ?? ZagUI.TEXT_EMDASH,
+          ReadarrCatalogueSorting.quality,
+          state,
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        _buildChildTextSpan(
+          context,
+          data.metadata ?? ZagUI.TEXT_EMDASH,
+          ReadarrCatalogueSorting.metadata,
+          state,
+        ),
+      ],
     );
   }
 
-  Widget _details(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Author name
-          Text(
-            data.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4.0),
-          // Subtitle based on sort type
-          Consumer<ReadarrState>(
-            builder: (context, state, _) {
-              String? subtitle = data.subtitle(state.sortCatalogueType);
-              return Text(
-                subtitle ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13.0,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 4.0),
-          // Book statistics
-          Row(
-            children: [
-              Icon(
-                Icons.book,
-                size: 14.0,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-              const SizedBox(width: 4.0),
-              Expanded(
-                child: Text(
-                  data.bookStats,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13.0,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-                ),
-              ),
-              // Monitored indicator
-              if (data.monitored == true)
-                Icon(
-                  Icons.visibility,
-                  size: 14.0,
-                  color: ZagColours.currentAccent,
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
+  void _onTap() {
+    ReadarrRoutes.AUTHOR.go(params: {
+      'author': data.authorID.toString(),
+    });
+  }
+
+  Future<void> _onLongPress(BuildContext context) async {
+    final values = await ReadarrDialogs.editAuthor(context, data);
+    if (values[0] == true) {
+      final action = values[1] as String;
+      switch (action) {
+        case 'edit_author':
+          ReadarrRoutes.AUTHOR_EDIT.go(params: {
+            'author': data.authorID.toString(),
+          });
+          break;
+        case 'refresh_author':
+          final api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
+          await api.refreshAuthor(data.authorID);
+          showZagSnackBar(
+            title: 'readarr.Readarr'.tr(),
+            message: 'readarr.RefreshingAuthor'.tr(),
+            type: ZagSnackbarType.INFO,
+          );
+          break;
+        case 'remove_author':
+          final deleteValues = await ReadarrDialogs.deleteAuthor(context);
+          if (deleteValues[0] == true) {
+            final api = ReadarrAPI.from(ZagProfile.forModule('readarr'));
+            await api.removeAuthor(data.authorID, deleteFiles: deleteValues[1]);
+            showZagSnackBar(
+              title: 'readarr.Readarr'.tr(),
+              message: 'readarr.AuthorRemoved'.tr(),
+              type: ZagSnackbarType.SUCCESS,
+            );
+          }
+          break;
+      }
+    }
   }
 }
