@@ -102,13 +102,14 @@ class NewznabAPI {
       String linkInfo = item.getElement('guid')?.innerText ?? '';
 
       NewznabResultData data = NewznabResultData(
-        title: item.getElement('title')?.innerText ?? 'Unknown Title',
-        category: item.getElement('category')?.innerText ?? 'Unknown Category',
+        title: item.getElement('title')?.innerText ?? 'search.UnknownTitle'.tr(),
+        category:
+            item.getElement('category')?.innerText ?? 'search.UnknownCategory'.tr(),
         size: size ?? 0,
         linkComments: item.getElement('comments')?.innerText ?? '',
         linkDownload: item.getElement('link')?.innerText ?? '',
         linkInfo: linkInfo,
-        date: item.getElement('pubDate')?.innerText ?? 'Unknown Date',
+        date: item.getElement('pubDate')?.innerText ?? 'search.UnknownDate'.tr(),
         grabs: grabs,
       );
       results.add(data);

@@ -52,7 +52,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
     if (downloadUrl == null || downloadUrl.isEmpty) {
       showZagErrorSnackBar(
         title: 'search.FailedToSend'.tr(),
-        error: 'No download URL available',
+        error: 'search.NoDownloadUrlAvailable'.tr(),
       );
       return;
     }
@@ -176,7 +176,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
     if (downloadUrl == null || downloadUrl.isEmpty) {
       showZagErrorSnackBar(
         title: 'search.FailedToDownloadNZB'.tr(),
-        error: 'No download URL',
+        error: 'search.NoDownloadUrl'.tr(),
       );
       return;
     }
@@ -186,7 +186,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
       message: 'search.DownloadingNZBToDevice'.tr(),
     );
 
-    final cleanTitle = (item.title ?? 'download')
+    final cleanTitle = (item.title ?? 'search.DefaultDownloadName'.tr())
         .replaceAll(RegExp(r'[^0-9a-zA-Z. -]+'), '');
 
     try {

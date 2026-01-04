@@ -4,6 +4,7 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/database.dart';
 import 'package:zagreus/database/models/external_module.dart';
 import 'package:zagreus/database/models/indexer.dart';
+import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/modules/radarr.dart';
@@ -260,6 +261,9 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       unraidKey: demoConfig['unraid_key'] ??
           '4f881bebb9da6a41431cfa5b194b36fa12094a87b5164886542ddfa2e235066c',
       unraidHeaders: const <String, String>{},
+
+      // SSH
+      sshEnabled: demoConfig['ssh_enabled'] ?? false,
     );
 
     // Save the profile
@@ -309,6 +313,8 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
       ZagModule.NZBGET,
       ZagModule.TAUTULLI,
       ZagModule.SEERR,
+      ZagModule.SEARCH,
+      ZagModule.SSH,
       ZagModule.EXTERNAL_MODULES,
     ];
     ZagreusDatabase.DRAWER_MANUAL_ORDER.update(orderedModules);
@@ -341,16 +347,18 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     final prowlarrHost = demoConfig['prowlarr_host'] ?? 'https://prowlarr.scarletmacaw.box.ca';
     final prowlarrKey = demoConfig['prowlarr_key'] ?? '8f0d5a060da944c1a20e4cde56692c1c';
 
-    if (prowlarrEnabled) {
-      // Clear existing indexers
-      final indexerKeys = List.of(ZagBox.indexers.keys);
-      for (final key in indexerKeys) {
-        await ZagBox.indexers.delete(key);
-      }
+    // Clear existing indexers first
+    final indexerKeys = List.of(ZagBox.indexers.keys);
+    for (final key in indexerKeys) {
+      await ZagBox.indexers.delete(key);
+    }
 
+    int indexerIndex = 0;
+
+    if (prowlarrEnabled) {
       // Create Prowlarr indexer
       await ZagBox.indexers.update(
-        0,
+        indexerIndex++,
         ZagIndexer(
           displayName: 'Prowlarr',
           host: prowlarrHost,
@@ -359,6 +367,56 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           isProwlarr: true,
         ),
       );
+    }
+
+    // Create Search indexer (NZBgeek) if enabled
+    final searchEnabled = demoConfig['search_enabled'] ?? false;
+    if (searchEnabled) {
+      final searchDisplayName = demoConfig['search_display_name'] ?? 'NZBgeek';
+      final searchHost = demoConfig['search_host'] ?? '';
+      final searchKey = demoConfig['search_key'] ?? '';
+
+      if (searchHost.isNotEmpty) {
+        await ZagBox.indexers.update(
+          indexerIndex++,
+          ZagIndexer(
+            displayName: searchDisplayName,
+            host: searchHost,
+            apiKey: searchKey,
+            headers: {},
+            isProwlarr: false,
+          ),
+        );
+      }
+    }
+
+    // Create SSH connection if enabled
+    final sshEnabled = demoConfig['ssh_enabled'] ?? false;
+    if (sshEnabled) {
+      final sshHost = demoConfig['ssh_host'] ?? '';
+      final sshPort = demoConfig['ssh_port'] ?? 22;
+      final sshUser = demoConfig['ssh_user'] ?? '';
+      final sshPass = demoConfig['ssh_pass'] ?? '';
+
+      if (sshHost.isNotEmpty && sshUser.isNotEmpty) {
+        // Clear existing SSH connections
+        final sshKeys = List.of(ZagBox.sshConnections.keys);
+        for (final key in sshKeys) {
+          await ZagBox.sshConnections.delete(key);
+        }
+
+        // Create demo SSH connection
+        final sshConnection = SSHConnection.create(
+          profileId: ZagProfile.DEFAULT_PROFILE,
+          name: 'Demo Server',
+          host: sshHost,
+          port: sshPort,
+          username: sshUser,
+          authType: SSHAuthType.password,
+          password: sshPass,
+        );
+        await ZagBox.sshConnections.update(sshConnection.id, sshConnection);
+      }
     }
 
     showZagSuccessSnackBar(

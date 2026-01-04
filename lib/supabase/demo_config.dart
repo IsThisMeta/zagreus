@@ -96,6 +96,24 @@ CREATE TABLE demo_config_v2 (
   unraid_host TEXT,
   unraid_key TEXT,
 
+  -- Prowlarr
+  prowlarr_enabled BOOLEAN DEFAULT false,
+  prowlarr_host TEXT,
+  prowlarr_key TEXT,
+
+  -- SSH
+  ssh_enabled BOOLEAN DEFAULT false,
+  ssh_host TEXT,
+  ssh_port INTEGER DEFAULT 22,
+  ssh_user TEXT,
+  ssh_pass TEXT,
+
+  -- Search (Indexer)
+  search_enabled BOOLEAN DEFAULT false,
+  search_display_name TEXT,
+  search_host TEXT,
+  search_key TEXT,
+
   -- External Module
   external_module_enabled BOOLEAN DEFAULT false,
   external_module_name TEXT,
