@@ -188,6 +188,8 @@ class _State extends State<SSHTerminalRoute> {
     _flushOutputBuffer(); // Flush any remaining data
     _outputSubscription?.cancel();
     _statusSubscription?.cancel();
+    _ctrlPressed.dispose();
+    _altPressed.dispose();
     SSHService.instance.disconnect();
     super.dispose();
   }
@@ -323,21 +325,49 @@ class _State extends State<SSHTerminalRoute> {
     }
   }
 
-  bool _ctrlPressed = false;
-  bool _altPressed = false;
+  final ValueNotifier<bool> _ctrlPressed = ValueNotifier(false);
+  final ValueNotifier<bool> _altPressed = ValueNotifier(false);
 
   Widget _toolbarKey(String label, VoidCallback onTap, {bool isCtrl = false, bool isAlt = false}) {
-    final isActive = (isCtrl && _ctrlPressed) || (isAlt && _altPressed);
+    if (isCtrl || isAlt) {
+      return ValueListenableBuilder<bool>(
+        valueListenable: isCtrl ? _ctrlPressed : _altPressed,
+        builder: (context, isActive, _) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (_) => onTap(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: isActive
+                  ? BoxDecoration(
+                      border: Border.all(color: ZagColours.currentAccent, width: 1.5),
+                      borderRadius: BorderRadius.circular(6),
+                    )
+                  : null,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: ZagColours.currentAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
     return GestureDetector(
-      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => onTap(),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? ZagColours.currentAccent : Theme.of(context).textTheme.bodyMedium?.color,
+            color: ZagColours.currentAccent,
             fontSize: 16,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
@@ -353,11 +383,11 @@ class _State extends State<SSHTerminalRoute> {
   }
 
   void _toggleCtrl() {
-    setState(() => _ctrlPressed = !_ctrlPressed);
+    _ctrlPressed.value = !_ctrlPressed.value;
   }
 
   void _toggleAlt() {
-    setState(() => _altPressed = !_altPressed);
+    _altPressed.value = !_altPressed.value;
   }
 
   void _sendArrow(String direction) {
@@ -405,7 +435,8 @@ class _State extends State<SSHTerminalRoute> {
 
   Future<void> _reconnect() async {
     await SSHService.instance.disconnect();
-    _terminal.write('\r\n${'ssh.TerminalReconnecting'.tr()}\r\n');
+    _terminal.buffer.clear();
+    _terminal.buffer.setCursor(0, 0);
     await _connect();
   }
 }
