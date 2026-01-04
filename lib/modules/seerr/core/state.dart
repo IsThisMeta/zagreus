@@ -189,6 +189,13 @@ class SeerrState extends ZagModuleState {
       final enrichedRequests = <SeerrRequest>[];
       for (final request in response.results) {
         try {
+          // Skip enrichment if no valid TMDB ID
+          if (request.media.tmdbId == 0) {
+            ZagLogger().debug('Skipping enrichment for request ${request.id} - no valid TMDB ID');
+            enrichedRequests.add(request);
+            continue;
+          }
+
           // Check if media details are missing
           if ((request.media.mediaType == 'movie' && request.media.movie == null) ||
               (request.media.mediaType == 'tv' && request.media.series == null)) {
@@ -397,6 +404,13 @@ class SeerrState extends ZagModuleState {
       final enrichedIssues = <SeerrIssue>[];
       for (final issue in response.results) {
         try {
+          // Skip enrichment if no valid TMDB ID
+          if (issue.media.tmdbId == 0) {
+            ZagLogger().debug('Skipping enrichment for issue ${issue.id} - no valid TMDB ID');
+            enrichedIssues.add(issue);
+            continue;
+          }
+
           // Check if media details are missing
           if ((issue.media.mediaType == 'movie' && issue.media.movie == null) ||
               (issue.media.mediaType == 'tv' && issue.media.series == null)) {
