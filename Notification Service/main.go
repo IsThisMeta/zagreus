@@ -55,6 +55,7 @@ func main() {
 			webhook.POST("/sonarr", handleSonarrWebhook)
 			webhook.POST("/radarr", handleRadarrWebhook)
 			webhook.POST("/lidarr", handleLidarrWebhook)
+			webhook.POST("/prowlarr", handleProwlarrWebhook)
 			webhook.POST("/seerr", handleSeerrWebhook)
 			webhook.POST("/custom", handleCustomWebhook)
 		}

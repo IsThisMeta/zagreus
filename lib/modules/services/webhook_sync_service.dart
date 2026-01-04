@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/box.dart';
+import 'package:zagreus/database/models/indexer.dart';
+import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
+import 'package:zagreus/modules/prowlarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/radarr/core/state.dart';
 import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -81,6 +85,21 @@ class WebhookSyncService {
         } else {
           ZagLogger().debug('Profile $profileName has Sonarr disabled');
         }
+      }
+
+      // Check Prowlarr instances (stored separately in indexers)
+      final prowlarrIndexers = ZagBox.indexers.data.where((i) => i.isProwlarr).toList();
+      ZagLogger().debug('Found ${prowlarrIndexers.length} Prowlarr instances');
+
+      for (final indexer in prowlarrIndexers) {
+        final indexerKey = indexer.displayName.isNotEmpty
+            ? indexer.displayName
+            : indexer.host;
+        await _syncIfNeeded(
+          profileName: indexerKey,
+          service: 'prowlarr',
+          syncFunction: () => _syncProwlarrWebhook(indexer),
+        );
       }
     } catch (e, stack) {
       ZagLogger().error('Failed to check webhook sync', e, stack);
@@ -173,18 +192,71 @@ class WebhookSyncService {
     }
   }
 
+  /// Sync Prowlarr webhook
+  static Future<bool> _syncProwlarrWebhook(ZagIndexer indexer) async {
+    try {
+      // Check if user is authenticated
+      if (!ZagSupabase.isSupported ||
+          ZagSupabase.client.auth.currentUser == null) {
+        ZagLogger()
+            .debug('Cannot sync Prowlarr webhook - user not authenticated');
+        return false;
+      }
+
+      final bool useSlowMode = ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE.read();
+
+      // Create Dio client for Prowlarr
+      final client = Dio(
+        BaseOptions(
+          baseUrl: indexer.host.endsWith('/')
+              ? '${indexer.host}api/v1/'
+              : '${indexer.host}/api/v1/',
+          headers: {
+            'X-Api-Key': indexer.apiKey,
+            ...indexer.headers,
+          },
+          followRedirects: true,
+          maxRedirects: 5,
+          contentType: Headers.jsonContentType,
+          responseType: ResponseType.json,
+          connectTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+          receiveTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+          sendTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+        ),
+      );
+
+      // Sync webhook
+      return await ProwlarrWebhookManager.syncWebhook(client);
+    } catch (e, stack) {
+      ZagLogger().error('Failed to sync Prowlarr webhook', e, stack);
+      return false;
+    }
+  }
+
   /// Manually trigger a sync for a specific profile and service
   static Future<bool> manualSync(String profileName, String service) async {
     try {
-      final profile = ZagBox.profiles.read(profileName);
-      if (profile == null) return false;
-
       bool success = false;
 
-      if (service == 'radarr' && profile.radarrEnabled) {
-        success = await _syncRadarrWebhook(profile);
-      } else if (service == 'sonarr' && profile.sonarrEnabled) {
-        success = await _syncSonarrWebhook(profile);
+      if (service == 'prowlarr') {
+        // For Prowlarr, profileName is the indexer displayName or host
+        final prowlarrIndexers = ZagBox.indexers.data.where((i) => i.isProwlarr).toList();
+        final indexer = prowlarrIndexers.firstWhere(
+          (i) => (i.displayName.isNotEmpty ? i.displayName : i.host) == profileName,
+          orElse: () => ZagIndexer(),
+        );
+        if (indexer.host.isNotEmpty) {
+          success = await _syncProwlarrWebhook(indexer);
+        }
+      } else {
+        final profile = ZagBox.profiles.read(profileName);
+        if (profile == null) return false;
+
+        if (service == 'radarr' && profile.radarrEnabled) {
+          success = await _syncRadarrWebhook(profile);
+        } else if (service == 'sonarr' && profile.sonarrEnabled) {
+          success = await _syncSonarrWebhook(profile);
+        }
       }
 
       if (success) {

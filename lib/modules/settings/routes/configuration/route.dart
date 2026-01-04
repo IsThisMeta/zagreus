@@ -153,15 +153,19 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
     final bool isPro = ZagreusPro.isEnabled;
     final bool isLocked = _isProModule(module) && !isPro;
 
+    // Get description - Search has a custom description
+    String description;
+    if (isLocked) {
+      description = 'settings.ZagreusProRequiredTitle'.tr();
+    } else if (module == ZagModule.SEARCH) {
+      description = 'search.ConfigureSearchAndProwlarr'.tr();
+    } else {
+      description = 'settings.ConfigureModule'.tr(args: [module.title]);
+    }
+
     return ZagBlock(
       title: module.title,
-      body: [
-        TextSpan(
-          text: isLocked
-            ? 'settings.ZagreusProRequiredTitle'.tr()
-            : 'settings.ConfigureModule'.tr(args: [module.title])
-        )
-      ],
+      body: [TextSpan(text: description)],
       trailing: ZagIconButton(
         icon: isLocked ? Icons.lock_rounded : module.icon,
       ),

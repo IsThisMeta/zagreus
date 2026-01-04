@@ -9,7 +9,7 @@ class SeerrState extends ZagModuleState {
     reset();
   }
 
-  /// Trim whitespace, drop accidental /api suffixes, capture basic auth, ensure trailing slash.
+  /// Trim whitespace, drop accidental /api(/v1) suffixes, capture basic auth, ensure trailing slash.
   String _normalizeHost(String host) {
     var value = host.trim();
     _basicAuthHeader = null;
@@ -22,9 +22,9 @@ class SeerrState extends ZagModuleState {
       value = uri.replace(userInfo: '').toString();
     }
 
-    // Remove trailing slashes and accidental /api suffixes so we can append our own.
+    // Remove trailing slashes and accidental /api(/v1) suffixes so we can append our own.
     value = value.replaceAll(RegExp(r'/+$'), '');
-    value = value.replaceFirst(RegExp(r'/api/?$'), '');
+    value = value.replaceFirst(RegExp(r'/api(/v1)?/?$'), '');
 
     return '$value/';
   }
@@ -103,7 +103,7 @@ class SeerrState extends ZagModuleState {
 
         // Create Dio client with custom headers and API key
         final dio = Dio(BaseOptions(
-          baseUrl: '$_host/api/',
+          baseUrl: '${_host}api/',
           headers: {
             if (_basicAuthHeader != null) 'Authorization': _basicAuthHeader!,
             'X-Api-Key': _apiKey,

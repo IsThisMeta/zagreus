@@ -607,5 +607,22 @@
     "settings.EnableTautulliNotifications": "Abilita notifiche Tautulli",
     "settings.TautulliWebhookPasteHint": "Incolla nelle impostazioni agente notifiche di Tautulli",
     "settings.NotificationsPushSectionTitle": "Notifiche push",
-    "settings.NotificationsToastsSectionTitle": "Toast in-app"
+    "settings.NotificationsToastsSectionTitle": "Toast in-app",
+    "settings.ReviewDemo": "Demo di revisione",
+    "settings.ReviewAccess": "Accesso alla revisione",
+    "settings.ReviewPassword": "Password",
+    "settings.ReviewPasswordHint": "Inserisci la password di revisione",
+    "settings.ReviewAccessDenied": "Accesso negato",
+    "settings.ReviewInvalidPassword": "Password non valida",
+    "settings.LoadingDemoConfiguration": "Caricamento configurazione demo",
+    "settings.CheckingDemoAvailability": "Verifica disponibilità demo...",
+    "settings.DemoUnavailable": "Demo non disponibile",
+    "settings.DemoUnavailableDescription": "La configurazione demo non è disponibile al momento",
+    "settings.DemoExternalModuleName": "Modulo demo",
+    "settings.DemoConfigurationLoaded": "Configurazione demo caricata",
+    "settings.DemoConfigurationLoadedMessage": "Tutti i moduli sono stati configurati",
+    "settings.VersionWithValue": "Versione {}",
+    "settings.CheckForUpdate": "Controlla aggiornamenti",
+    "settings.CheckingForUpdate": "Controllo...",
+    "settings.UpdateAvailable": "Aggiornamento disponibile: v{}"
 }

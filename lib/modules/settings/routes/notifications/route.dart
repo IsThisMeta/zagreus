@@ -18,6 +18,7 @@ import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/radarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/sonarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/lidarr/core/webhook_manager.dart';
+import 'package:zagreus/modules/prowlarr/core/webhook_manager.dart';
 import 'package:zagreus/system/webhooks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,6 +39,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   _WebhookStatus _sonarrStatus =
       const _WebhookStatus(_WebhookStatusType.idle);
   _WebhookStatus _lidarrStatus =
+      const _WebhookStatus(_WebhookStatusType.idle);
+  _WebhookStatus _prowlarrStatus =
       const _WebhookStatus(_WebhookStatusType.idle);
   bool _notificationsAuthorized = false;
 
@@ -77,6 +80,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           _lidarrStatus = const _WebhookStatus(
             _WebhookStatusType.notConfigured,
           );
+          _prowlarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
         });
         return;
       }
@@ -94,6 +100,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             _WebhookStatusType.signInRequired,
           );
           _lidarrStatus = const _WebhookStatus(
+            _WebhookStatusType.signInRequired,
+          );
+          _prowlarrStatus = const _WebhookStatus(
             _WebhookStatusType.signInRequired,
           );
         });
@@ -231,6 +240,55 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
         });
       }
+
+      // Sync Prowlarr if configured (stored in indexers, not profile)
+      final prowlarrIndexers = ZagBox.indexers.data.where((i) => i.isProwlarr).toList();
+      if (prowlarrIndexers.isNotEmpty) {
+        setState(() {
+          _prowlarrStatus = const _WebhookStatus(_WebhookStatusType.syncing);
+        });
+
+        try {
+          // Sync the first Prowlarr instance (most users have just one)
+          final indexer = prowlarrIndexers.first;
+          final client = Dio(
+            BaseOptions(
+              baseUrl: indexer.host.endsWith('/')
+                  ? '${indexer.host}api/v1/'
+                  : '${indexer.host}/api/v1/',
+              headers: {
+                'X-Api-Key': indexer.apiKey,
+                ...indexer.headers,
+              },
+              contentType: Headers.jsonContentType,
+              responseType: ResponseType.json,
+              followRedirects: true,
+              maxRedirects: 5,
+            ),
+          );
+          final success = await ProwlarrWebhookManager.syncWebhook(client);
+          setState(() {
+            _prowlarrStatus = const _WebhookStatus(_WebhookStatusType.success);
+          });
+        } catch (e) {
+          setState(() {
+            String errorMsg = e.toString();
+            if (errorMsg.startsWith('Exception: ')) {
+              errorMsg = errorMsg.substring(11);
+            }
+            _prowlarrStatus = _WebhookStatus(
+              _WebhookStatusType.failed,
+              message: errorMsg,
+            );
+          });
+        }
+      } else {
+        setState(() {
+          _prowlarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
+        });
+      }
     } catch (e, stack) {
       ZagLogger().error('Failed to sync notification webhooks', e, stack);
       if (!mounted) return;
@@ -243,6 +301,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         }
         if (_lidarrStatus.type == _WebhookStatusType.idle) {
           _lidarrStatus = const _WebhookStatus(_WebhookStatusType.error);
+        }
+        if (_prowlarrStatus.type == _WebhookStatusType.idle) {
+          _prowlarrStatus = const _WebhookStatus(_WebhookStatusType.error);
         }
       });
     }
@@ -346,6 +407,42 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           });
         }
       }
+
+      // Remove Prowlarr webhook if configured
+      final prowlarrIndexers = ZagBox.indexers.data.where((i) => i.isProwlarr).toList();
+      if (prowlarrIndexers.isNotEmpty) {
+        setState(() {
+          _prowlarrStatus = const _WebhookStatus(_WebhookStatusType.removing);
+        });
+
+        try {
+          final indexer = prowlarrIndexers.first;
+          final client = Dio(
+            BaseOptions(
+              baseUrl: indexer.host.endsWith('/')
+                  ? '${indexer.host}api/v1/'
+                  : '${indexer.host}/api/v1/',
+              headers: {
+                'X-Api-Key': indexer.apiKey,
+                ...indexer.headers,
+              },
+              contentType: Headers.jsonContentType,
+              responseType: ResponseType.json,
+              followRedirects: true,
+              maxRedirects: 5,
+            ),
+          );
+          await ProwlarrWebhookManager.removeWebhook(client);
+          setState(() {
+            _prowlarrStatus = const _WebhookStatus(_WebhookStatusType.removed);
+          });
+        } catch (e) {
+          setState(() {
+            _prowlarrStatus =
+                const _WebhookStatus(_WebhookStatusType.removeFailed);
+          });
+        }
+      }
     } catch (e, stack) {
       ZagLogger().error('Failed to remove webhooks', e, stack);
     }
@@ -435,6 +532,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         _statusBlock('settings.RadarrStatus'.tr(), _radarrStatus),
         _statusBlock('settings.SonarrStatus'.tr(), _sonarrStatus),
         _statusBlock('settings.LidarrStatus'.tr(), _lidarrStatus),
+        _statusBlock('settings.ProwlarrStatus'.tr(), _prowlarrStatus),
         ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
           builder: (context, _) {
             if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
@@ -446,6 +544,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 _radarrEventsButton(),
                 _sonarrEventsButton(),
                 _lidarrEventsButton(),
+                _prowlarrEventsButton(),
               ],
             );
           },
@@ -897,6 +996,30 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     );
   }
 
+  Widget _prowlarrEventsButton() {
+    return ZagBlock(
+      title: 'settings.ProwlarrEvents'.tr(),
+      body: [
+        TextSpan(text: 'settings.NotificationEventsDescription'.tr()),
+      ],
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: ZagColours.grey,
+      ),
+      onTap: () => _showProwlarrEventsPage(),
+    );
+  }
+
+  void _showProwlarrEventsPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => _ProwlarrEventsPage(
+          onSync: _syncWebhooksInBackground,
+        ),
+      ),
+    );
+  }
+
   void _showCombinedEventsPage({
     required String title,
     required List<_EventConfig> pushEvents,
@@ -918,16 +1041,6 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'settings.SeerrWebhookUrlTitle'.tr(),
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
         ZagBlock(
           title: 'settings.EnableSeerrNotifications'.tr(),
           body: [],
@@ -1049,16 +1162,6 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-          child: Text(
-            'settings.TautulliWebhookUrlTitle'.tr(),
-            style: TextStyle(
-              fontSize: ZagUI.FONT_SIZE_H2,
-              fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-            ),
-          ),
-        ),
         ZagBlock(
           title: 'settings.EnableTautulliNotifications'.tr(),
           body: [],
@@ -1241,7 +1344,7 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
           _buildSectionHeader('settings.NotificationsPushSectionTitle'),
           for (final event in widget.pushEvents)
             _buildPushEventToggle(context, event),
-          
+
           // In-App Toasts Section
           ZagDivider(),
           _buildSectionHeader('settings.NotificationsToastsSectionTitle'),
@@ -1302,6 +1405,80 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Prowlarr events page (push notifications only, no toasts since it's not media)
+class _ProwlarrEventsPage extends StatefulWidget {
+  final VoidCallback? onSync;
+
+  const _ProwlarrEventsPage({this.onSync});
+
+  @override
+  State<_ProwlarrEventsPage> createState() => _ProwlarrEventsPageState();
+}
+
+class _ProwlarrEventsPageState extends State<_ProwlarrEventsPage> with ZagScrollControllerMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return ZagScaffold(
+      scaffoldKey: _scaffoldKey,
+      appBar: ZagAppBar(
+        title: 'settings.ProwlarrEvents'.tr(),
+        scrollControllers: [scrollController],
+      ),
+      body: ZagListView(
+        controller: scrollController,
+        children: [
+          _buildSectionHeader('settings.NotificationsPushSectionTitle'),
+          _buildEventToggle(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB,
+          ),
+          _buildEventToggle(
+            'settings.NotificationEventOnHealthIssue',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_ISSUE,
+          ),
+          _buildEventToggle(
+            'settings.NotificationEventOnApplicationUpdate',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String titleKey) {
+    return Padding(
+      padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
+      child: Text(
+        titleKey.tr(),
+        style: TextStyle(
+          fontSize: ZagUI.FONT_SIZE_H2,
+          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventToggle(String titleKey, ZagreusDatabase<bool> database) {
+    return ZagBlock(
+      title: titleKey.tr(),
+      body: [],
+      trailing: database.listenableBuilder(
+        builder: (context, _) => ZagSwitch(
+          value: database.read(),
+          onChanged: (value) async {
+            database.update(value);
+            if (widget.onSync != null) {
+              widget.onSync!();
+            }
+          },
+        ),
       ),
     );
   }

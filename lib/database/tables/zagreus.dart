@@ -91,6 +91,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   LIDARR_TOAST_ON_DOWNLOAD<bool>(true),
   LIDARR_TOAST_ON_UPGRADE<bool>(true),
   LIDARR_TOAST_ON_ARTIST_ADD<bool>(true),
+  // Prowlarr webhook events
+  PROWLARR_WEBHOOK_ON_GRAB<bool>(true),
+  PROWLARR_WEBHOOK_ON_HEALTH_ISSUE<bool>(true),
+  PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE<bool>(false),
   // Seerr notifications
   SEERR_NOTIFICATIONS_ENABLED<bool>(true),
   // Tautulli notifications

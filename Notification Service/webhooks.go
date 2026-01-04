@@ -465,6 +465,11 @@ func handleLidarrWebhook(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Lidarr webhook received"})
 }
 
+func handleProwlarrWebhook(c *gin.Context) {
+	// Similar to other *arr webhooks
+	c.JSON(200, gin.H{"message": "Prowlarr webhook received"})
+}
+
 func handleSeerrWebhook(c *gin.Context) {
 	var webhook SeerrWebhook
 	if err := c.ShouldBindJSON(&webhook); err != nil {
@@ -1608,6 +1613,73 @@ func handleWebhookWithPayload(c *gin.Context) {
 		default:
 			log.Printf("Unknown Tautulli action: %s", action)
 			c.JSON(200, gin.H{"success": true, "message": "Action not handled: " + action})
+			return
+		}
+
+	} else if genericWebhook["release"] != nil || genericWebhook["indexer"] != nil {
+		// Prowlarr event (has release or indexer field)
+		indexerName := ""
+		releaseTitle := ""
+
+		if release, ok := genericWebhook["release"].(map[string]interface{}); ok {
+			releaseTitle = stringFromInterface(release["releaseTitle"])
+			if indexer := stringFromInterface(release["indexer"]); indexer != "" {
+				indexerName = indexer
+			}
+		}
+
+		// Also check for top-level indexer field
+		if indexerName == "" {
+			if indexer, ok := genericWebhook["indexer"].(map[string]interface{}); ok {
+				indexerName = stringFromInterface(indexer["name"])
+			}
+		}
+
+		metadata["event_type"] = eventType
+		metadata["content_type"] = "indexer"
+		if indexerName != "" {
+			metadata["indexer"] = indexerName
+		}
+		if releaseTitle != "" {
+			metadata["release"] = releaseTitle
+		}
+
+		// Handle Prowlarr events
+		switch eventType {
+		case "Test":
+			title = "Prowlarr Test"
+			body = "Test notification from Prowlarr"
+
+		case "Grab":
+			title = "Release Grabbed"
+			if releaseTitle != "" && indexerName != "" {
+				body = fmt.Sprintf("%s grabbed from %s", releaseTitle, indexerName)
+			} else if releaseTitle != "" {
+				body = fmt.Sprintf("%s has been grabbed", releaseTitle)
+			} else {
+				body = "A release has been grabbed"
+			}
+
+		case "HealthIssue":
+			title = "Prowlarr Health Issue"
+			if healthCheck, ok := genericWebhook["healthCheck"].(map[string]interface{}); ok {
+				message := stringFromInterface(healthCheck["message"])
+				if message != "" {
+					body = message
+				} else {
+					body = "A health issue was detected"
+				}
+			} else {
+				body = "A health issue was detected"
+			}
+
+		case "ApplicationUpdate":
+			title = "Prowlarr Update"
+			body = "A new version of Prowlarr is available"
+
+		default:
+			log.Printf("Unknown Prowlarr event type: %s", eventType)
+			c.JSON(200, gin.H{"success": true, "message": "Event type not handled: " + eventType})
 			return
 		}
 

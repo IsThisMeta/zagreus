@@ -36,14 +36,16 @@ class _State extends State<ConfigurationSearchRoute>
   }
 
   Widget _bottomNavigationBar() {
+    final isPro = ZagreusPro.isEnabled;
     return ZagBottomActionBar(
       actions: [
-        if (ZagreusPro.isEnabled)
-          ZagButton.text(
-            text: 'search.AddProwlarr'.tr(),
-            icon: Icons.travel_explore_rounded,
-            onTap: SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.go,
-          ),
+        ZagButton.text(
+          text: 'search.AddProwlarr'.tr(),
+          icon: isPro ? Icons.travel_explore_rounded : Icons.lock_rounded,
+          onTap: isPro
+              ? SettingsRoutes.CONFIGURATION_SEARCH_ADD_PROWLARR.go
+              : () => _showProUpgradeToast('search.AddProwlarr'.tr()),
+        ),
         ZagButton.text(
           text: 'search.AddIndexer'.tr(),
           icon: Icons.add_rounded,
@@ -130,6 +132,15 @@ class _State extends State<ConfigurationSearchRoute>
           value: _db.read(),
           onChanged: _db.update,
         ),
+      ),
+    );
+  }
+
+  void _showProUpgradeToast(String featureName) {
+    showZagInfoSnackBar(
+      title: 'settings.ZagreusProRequiredTitle'.tr(),
+      message: 'settings.ZagreusProRequiredMessage'.tr(
+        args: [featureName],
       ),
     );
   }

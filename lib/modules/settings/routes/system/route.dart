@@ -119,7 +119,7 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
 
   Widget _buildDemoButton() {
     return ZagBlock(
-      title: 'Review Demo',
+      title: 'settings.ReviewDemo'.tr(),
       body: [],
       trailing: ZagIconButton(
         icon: Icons.play_circle_outline_rounded,
@@ -135,13 +135,13 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     final password = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Review Access'),
+        title: Text('settings.ReviewAccess'.tr()),
         content: TextField(
           controller: passwordController,
           obscureText: true,
           decoration: InputDecoration(
-            labelText: 'Password',
-            hintText: 'Enter review password',
+            labelText: 'settings.ReviewPassword'.tr(),
+            hintText: 'settings.ReviewPasswordHint'.tr(),
             focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: ZagColours.currentAccent),
             ),
@@ -155,14 +155,14 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
             child: Text(
-              'Cancel',
+              'zagreus.Cancel'.tr(),
               style: TextStyle(color: Colors.white),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(passwordController.text),
             child: Text(
-              'Continue',
+              'settings.ContinueAction'.tr(),
               style: TextStyle(color: ZagColours.accentColor(context)),
             ),
           ),
@@ -174,16 +174,16 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     if (password != 'review2025') {
       if (password != null) {
         showZagErrorSnackBar(
-          title: 'Access Denied',
-          message: 'Invalid password',
+          title: 'settings.ReviewAccessDenied'.tr(),
+          message: 'settings.ReviewInvalidPassword'.tr(),
         );
       }
       return;
     }
 
     showZagInfoSnackBar(
-      title: 'Loading Demo Configuration',
-      message: 'Checking demo availability...',
+      title: 'settings.LoadingDemoConfiguration'.tr(),
+      message: 'settings.CheckingDemoAvailability'.tr(),
     );
 
     // Check Supabase for demo config
@@ -191,8 +191,8 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
 
     if (demoConfig == null || demoConfig['enabled'] != true) {
       showZagErrorSnackBar(
-        title: 'Demo Unavailable',
-        message: 'Demo configuration is not available at this time',
+        title: 'settings.DemoUnavailable'.tr(),
+        message: 'settings.DemoUnavailableDescription'.tr(),
       );
       return;
     }
@@ -320,7 +320,8 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
         await ZagBox.externalModules.delete(key);
       }
 
-      final moduleName = demoConfig['external_module_name'] ?? 'Test';
+      final moduleName =
+          demoConfig['external_module_name'] ?? 'settings.DemoExternalModuleName'.tr();
       final moduleHost = demoConfig['external_module_host'] ?? 'https://zagreus.app';
 
       await ZagBox.externalModules.update(
@@ -361,8 +362,8 @@ class _State extends State<SystemRoute> with ZagScrollControllerMixin {
     }
 
     showZagSuccessSnackBar(
-      title: 'Demo Configuration Loaded',
-      message: 'All modules have been configured',
+      title: 'settings.DemoConfigurationLoaded'.tr(),
+      message: 'settings.DemoConfigurationLoadedMessage'.tr(),
     );
   }
 }

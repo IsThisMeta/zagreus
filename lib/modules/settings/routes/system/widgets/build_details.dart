@@ -70,8 +70,9 @@ class _State extends State<BuildDetails> {
         return ZagTableCard(
           content: [
             ZagTableContent(
-              body:
-                  'Version ${package.data?.version ?? 'zagreus.Unknown'.tr()}',
+              body: 'settings.VersionWithValue'.tr(
+                args: [package.data?.version ?? 'zagreus.Unknown'.tr()],
+              ),
             ),
           ],
           buttons: [
@@ -95,7 +96,7 @@ class _State extends State<BuildDetails> {
     if (isCheckingVersion) {
       return ZagButton.text(
         icon: ZagIcons.REFRESH,
-        text: 'Checking...',
+        text: 'settings.CheckingForUpdate'.tr(),
         onTap: null,
       );
     }
@@ -106,14 +107,16 @@ class _State extends State<BuildDetails> {
       return ZagButton.text(
         icon: latestVersion == null ? null : ZagIcons.CHECK_MARK,
         color: ZagColours.currentAccent,
-        text: latestVersion == null ? 'Check For Update' : 'settings.UpToDate'.tr(),
+        text: latestVersion == null
+            ? 'settings.CheckForUpdate'.tr()
+            : 'settings.UpToDate'.tr(),
         onTap: _checkVersion,
       );
     } else {
       return ZagButton.text(
         icon: null,
         color: ZagColours.orange,
-        text: 'Update Available: v$latestVersion',
+        text: 'settings.UpdateAvailable'.tr(args: [latestVersion ?? '']),
         onTap: () => 'https://zagreus.app/changelog'.openLink(),
       );
     }
