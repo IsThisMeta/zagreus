@@ -116,6 +116,9 @@ class SonarrEpisodeDetailsSheet extends ZagBottomModalSheet {
           text: episode!.overview ?? 'sonarr.NoSummaryAvailable'.tr(),
           maxLines: 0,
           softWrap: true,
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.black87
+              : ZagColours.grey,
         ),
       ),
     ];

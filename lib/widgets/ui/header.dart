@@ -40,13 +40,14 @@ class ZagHeader extends StatelessWidget {
     );
   }
 
-  Widget _subtitle() {
+  Widget _subtitle(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Padding(
       child: Text(
         subtitle!,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: ZagUI.FONT_SIZE_H4,
-          color: ZagColours.grey,
+          color: isLight ? Colors.black87 : ZagColours.grey,
           fontWeight: FontWeight.w300,
         ),
       ),
@@ -62,7 +63,7 @@ class ZagHeader extends StatelessWidget {
         children: [
           _headerText(context),
           _barSeperator(context),
-          if (subtitle != null) _subtitle(),
+          if (subtitle != null) _subtitle(context),
         ],
       ),
       padding: const EdgeInsets.only(
