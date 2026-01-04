@@ -76,6 +76,13 @@ func main() {
 		preferences := v1.Group("/preferences")
 		{
 			preferences.POST("/seerr", handleSetSeerrPreference)
+			preferences.POST("/tautulli", handleSetTautulliPreference)
+		}
+
+		// Webhook management routes
+		webhookMgmt := v1.Group("/webhook")
+		{
+			webhookMgmt.DELETE("", handleDeleteWebhook)
 		}
 
 		// Notifications webhook (for Flutter app compatibility)

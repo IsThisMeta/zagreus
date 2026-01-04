@@ -1024,13 +1024,17 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		metadata["title"] = mediaTitle
 	}
 
-	// Handle Tautulli events
-	switch action {
-	case "Test":
+	// Normalize action to lowercase for case-insensitive matching
+	// Tautulli sends lowercase actions (test, play, stop) via {action} variable
+	actionLower := strings.ToLower(action)
+
+	// Handle Tautulli events (case-insensitive)
+	switch actionLower {
+	case "test":
 		title = "Tautulli Test"
 		body = "Test notification from Tautulli"
 
-	case "PlaybackStart":
+	case "play", "playbackstart":
 		title = "Playback Started"
 		if userName != "" && mediaTitle != "" {
 			body = fmt.Sprintf("%s started watching %s", userName, mediaTitle)
@@ -1040,7 +1044,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Playback started"
 		}
 
-	case "PlaybackStop":
+	case "stop", "playbackstop":
 		title = "Playback Stopped"
 		if userName != "" && mediaTitle != "" {
 			body = fmt.Sprintf("%s stopped watching %s", userName, mediaTitle)
@@ -1048,7 +1052,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Playback stopped"
 		}
 
-	case "PlaybackPause":
+	case "pause", "playbackpause":
 		title = "Playback Paused"
 		if mediaTitle != "" {
 			body = fmt.Sprintf("Paused: %s", mediaTitle)
@@ -1056,7 +1060,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Playback paused"
 		}
 
-	case "PlaybackResume":
+	case "resume", "playbackresume":
 		title = "Playback Resumed"
 		if mediaTitle != "" {
 			body = fmt.Sprintf("Resumed: %s", mediaTitle)
@@ -1064,7 +1068,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Playback resumed"
 		}
 
-	case "BufferWarning":
+	case "buffer", "bufferwarning":
 		title = "Buffer Warning"
 		if userName != "" {
 			body = fmt.Sprintf("Buffering issues for %s", userName)
@@ -1072,7 +1076,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Buffering issues detected"
 		}
 
-	case "RecentlyAdded":
+	case "created", "recentlyadded":
 		title = "Recently Added"
 		if mediaTitle != "" {
 			body = fmt.Sprintf("%s has been added to Plex", mediaTitle)
@@ -1080,7 +1084,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "New content added to Plex"
 		}
 
-	case "PlexServerDown":
+	case "intdown", "plexserverdown":
 		title = "Plex Server Down"
 		if serverName != "" {
 			body = fmt.Sprintf("%s is not responding", serverName)
@@ -1088,7 +1092,7 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Plex server is not responding"
 		}
 
-	case "PlexServerBackUp":
+	case "intup", "plexserverbackup":
 		title = "Plex Server Back Up"
 		if serverName != "" {
 			body = fmt.Sprintf("%s is back online", serverName)
@@ -1096,23 +1100,23 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Plex server is back online"
 		}
 
-	case "PlexRemoteAccessDown":
+	case "extdown", "plexremoteaccessdown":
 		title = "Remote Access Down"
 		body = "Plex remote access is down"
 
-	case "PlexRemoteAccessBackUp":
+	case "extup", "plexremoteaccessbackup":
 		title = "Remote Access Restored"
 		body = "Plex remote access is back up"
 
-	case "PlexUpdateAvailable":
+	case "pmsupdate", "plexupdateavailable":
 		title = "Plex Update Available"
 		body = "A new version of Plex is available"
 
-	case "TautulliUpdateAvailable":
+	case "tautulliupdate", "tautulliupdateavailable":
 		title = "Tautulli Update Available"
 		body = "A new version of Tautulli is available"
 
-	case "UserConcurrentStreams":
+	case "concurrent", "userconcurrentstreams":
 		title = "Concurrent Streams"
 		if userName != "" {
 			body = fmt.Sprintf("%s has multiple concurrent streams", userName)
@@ -1120,12 +1124,22 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 			body = "Multiple concurrent streams detected"
 		}
 
-	case "UserNewDevice":
+	case "newdevice", "usernewdevice":
 		title = "New Device"
 		if userName != "" {
 			body = fmt.Sprintf("%s is streaming from a new device", userName)
 		} else {
 			body = "New device detected"
+		}
+
+	case "watched":
+		title = "Watched"
+		if userName != "" && mediaTitle != "" {
+			body = fmt.Sprintf("%s finished watching %s", userName, mediaTitle)
+		} else if mediaTitle != "" {
+			body = fmt.Sprintf("Finished: %s", mediaTitle)
+		} else {
+			body = "Media watched"
 		}
 
 	default:
@@ -1506,13 +1520,17 @@ func handleWebhookWithPayload(c *gin.Context) {
 			metadata["title"] = mediaTitle
 		}
 
-		// Handle Tautulli events
-		switch action {
-		case "Test":
+		// Normalize action to lowercase for case-insensitive matching
+		// Tautulli sends lowercase actions (test, play, stop) via {action} variable
+		actionLower := strings.ToLower(action)
+
+		// Handle Tautulli events (case-insensitive)
+		switch actionLower {
+		case "test":
 			title = "Tautulli Test"
 			body = "Test notification from Tautulli"
 
-		case "PlaybackStart":
+		case "play", "playbackstart":
 			title = "Playback Started"
 			if userName != "" && mediaTitle != "" {
 				body = fmt.Sprintf("%s started watching %s", userName, mediaTitle)
@@ -1522,7 +1540,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Playback started"
 			}
 
-		case "PlaybackStop":
+		case "stop", "playbackstop":
 			title = "Playback Stopped"
 			if userName != "" && mediaTitle != "" {
 				body = fmt.Sprintf("%s stopped watching %s", userName, mediaTitle)
@@ -1530,7 +1548,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Playback stopped"
 			}
 
-		case "PlaybackPause":
+		case "pause", "playbackpause":
 			title = "Playback Paused"
 			if mediaTitle != "" {
 				body = fmt.Sprintf("Paused: %s", mediaTitle)
@@ -1538,7 +1556,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Playback paused"
 			}
 
-		case "PlaybackResume":
+		case "resume", "playbackresume":
 			title = "Playback Resumed"
 			if mediaTitle != "" {
 				body = fmt.Sprintf("Resumed: %s", mediaTitle)
@@ -1546,7 +1564,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Playback resumed"
 			}
 
-		case "BufferWarning":
+		case "buffer", "bufferwarning":
 			title = "Buffer Warning"
 			if userName != "" {
 				body = fmt.Sprintf("Buffering issues for %s", userName)
@@ -1554,7 +1572,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Buffering issues detected"
 			}
 
-		case "RecentlyAdded":
+		case "created", "recentlyadded":
 			title = "Recently Added"
 			if mediaTitle != "" {
 				body = fmt.Sprintf("%s has been added to Plex", mediaTitle)
@@ -1562,7 +1580,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "New content added to Plex"
 			}
 
-		case "PlexServerDown":
+		case "intdown", "plexserverdown":
 			title = "Plex Server Down"
 			if serverName != "" {
 				body = fmt.Sprintf("%s is not responding", serverName)
@@ -1570,7 +1588,7 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Plex server is not responding"
 			}
 
-		case "PlexServerBackUp":
+		case "intup", "plexserverbackup":
 			title = "Plex Server Back Up"
 			if serverName != "" {
 				body = fmt.Sprintf("%s is back online", serverName)
@@ -1578,23 +1596,23 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Plex server is back online"
 			}
 
-		case "PlexRemoteAccessDown":
+		case "extdown", "plexremoteaccessdown":
 			title = "Remote Access Down"
 			body = "Plex remote access is down"
 
-		case "PlexRemoteAccessBackUp":
+		case "extup", "plexremoteaccessbackup":
 			title = "Remote Access Restored"
 			body = "Plex remote access is back up"
 
-		case "PlexUpdateAvailable":
+		case "pmsupdate", "plexupdateavailable":
 			title = "Plex Update Available"
 			body = "A new version of Plex is available"
 
-		case "TautulliUpdateAvailable":
+		case "tautulliupdate", "tautulliupdateavailable":
 			title = "Tautulli Update Available"
 			body = "A new version of Tautulli is available"
 
-		case "UserConcurrentStreams":
+		case "concurrent", "userconcurrentstreams":
 			title = "Concurrent Streams"
 			if userName != "" {
 				body = fmt.Sprintf("%s has multiple concurrent streams", userName)
@@ -1602,12 +1620,22 @@ func handleWebhookWithPayload(c *gin.Context) {
 				body = "Multiple concurrent streams detected"
 			}
 
-		case "UserNewDevice":
+		case "newdevice", "usernewdevice":
 			title = "New Device"
 			if userName != "" {
 				body = fmt.Sprintf("%s is streaming from a new device", userName)
 			} else {
 				body = "New device detected"
+			}
+
+		case "watched":
+			title = "Watched"
+			if userName != "" && mediaTitle != "" {
+				body = fmt.Sprintf("%s finished watching %s", userName, mediaTitle)
+			} else if mediaTitle != "" {
+				body = fmt.Sprintf("Finished: %s", mediaTitle)
+			} else {
+				body = "Media watched"
 			}
 
 		default:

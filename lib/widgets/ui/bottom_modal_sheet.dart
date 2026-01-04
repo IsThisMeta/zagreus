@@ -8,11 +8,15 @@ class ZagBottomModalSheet<T> {
   Future<T?> showModal({
     Widget Function(BuildContext context)? builder,
   }) async {
+    // Use theme-aware background color
+    final backgroundColor = ZagTheme.themeMode == 'light'
+        ? ZagColours.primaryLight
+        : (ZagTheme.isAMOLEDTheme ? Colors.black : ZagColours.primary);
+
     return showBarModalBottomSheet<T>(
       context: ZagState.context,
       expand: false,
-      backgroundColor:
-          ZagTheme.isAMOLEDTheme ? Colors.black : ZagColours.primary,
+      backgroundColor: backgroundColor,
       shape: ZagShapeBorder(
         topOnly: true,
         useBorder: ZagUI.shouldUseBorder,

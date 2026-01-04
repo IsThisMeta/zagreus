@@ -1056,28 +1056,23 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                           // Update local preference first
                           ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.update(value);
 
-                          // Update backend preference
                           try {
-                            final webhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
-                            if (webhookID.isEmpty) {
-                              ZagLogger().warning('No webhook ID found, skipping backend update');
-                              return;
-                            }
+                            final oldWebhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
 
-                            final response = await http.post(
-                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/seerr'),
-                              headers: {'Content-Type': 'application/json'},
-                              body: json.encode({
-                                'webhook_id': webhookID,
-                                'enabled': value,
-                              }),
-                            );
-
-                            if (response.statusCode == 200) {
-                              ZagLogger().debug('Seerr preference updated: enabled=$value');
-                            } else {
-                              ZagLogger().warning('Failed to update Seerr preference: ${response.statusCode}');
+                            // If turning OFF and we have a webhook, delete it (invalidate old URL)
+                            if (!value && oldWebhookID.isNotEmpty) {
+                              // Delete old webhook mapping
+                              await http.delete(
+                                Uri.parse('https://zagreus-notifications.fly.dev/v1/webhook'),
+                                headers: {'Content-Type': 'application/json'},
+                                body: json.encode({'webhook_id': oldWebhookID}),
+                              );
+                              // Clear local webhook ID so a new one is generated when re-enabled
+                              ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.update('');
+                              ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.update('');
+                              ZagLogger().debug('Seerr webhook deleted, new URL will be generated when re-enabled');
                             }
+                            // When turning ON, a new webhook will be generated on next "Copy URL" tap
                           } catch (e, stackTrace) {
                             ZagLogger().error('Failed to update Seerr preference', e, stackTrace);
                           }
@@ -1177,28 +1172,23 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                           // Update local preference first
                           ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.update(value);
 
-                          // Update backend preference
                           try {
-                            final webhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
-                            if (webhookID.isEmpty) {
-                              ZagLogger().warning('No webhook ID found, skipping backend update');
-                              return;
-                            }
+                            final oldWebhookID = ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.read();
 
-                            final response = await http.post(
-                              Uri.parse('https://zagreus-notifications.fly.dev/v1/preferences/tautulli'),
-                              headers: {'Content-Type': 'application/json'},
-                              body: json.encode({
-                                'webhook_id': webhookID,
-                                'enabled': value,
-                              }),
-                            );
-
-                            if (response.statusCode == 200) {
-                              ZagLogger().debug('Tautulli preference updated: enabled=$value');
-                            } else {
-                              ZagLogger().warning('Failed to update Tautulli preference: ${response.statusCode}');
+                            // If turning OFF and we have a webhook, delete it (invalidate old URL)
+                            if (!value && oldWebhookID.isNotEmpty) {
+                              // Delete old webhook mapping
+                              await http.delete(
+                                Uri.parse('https://zagreus-notifications.fly.dev/v1/webhook'),
+                                headers: {'Content-Type': 'application/json'},
+                                body: json.encode({'webhook_id': oldWebhookID}),
+                              );
+                              // Clear local webhook ID so a new one is generated when re-enabled
+                              ZagreusDatabase.NOTIFICATION_WEBHOOK_ID.update('');
+                              ZagreusDatabase.NOTIFICATION_WEBHOOK_SIGNATURE.update('');
+                              ZagLogger().debug('Tautulli webhook deleted, new URL will be generated when re-enabled');
                             }
+                            // When turning ON, a new webhook will be generated on next "Copy URL" tap
                           } catch (e, stackTrace) {
                             ZagLogger().error('Failed to update Tautulli preference', e, stackTrace);
                           }

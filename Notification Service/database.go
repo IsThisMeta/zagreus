@@ -401,3 +401,113 @@ func handleSetSeerrPreference(c *gin.Context) {
 	})
 }
 
+// Set Tautulli notification preference for a webhook ID
+func setTautulliEnabled(webhookID string, enabled bool) error {
+	if db == nil {
+		return nil
+	}
+
+	_, err := db.Exec(`
+		UPDATE webhook_mappings
+		SET tautulli_enabled = $1,
+		    updated_at = CURRENT_TIMESTAMP
+		WHERE webhook_id = $2
+	`, enabled, webhookID)
+
+	return err
+}
+
+// Check if Tautulli notifications are enabled for a webhook ID
+func isTautulliEnabled(webhookID string) bool {
+	if db == nil {
+		return true // Default to enabled if no database
+	}
+
+	var enabled bool
+	err := db.QueryRow(`
+		SELECT COALESCE(tautulli_enabled, true) FROM webhook_mappings
+		WHERE webhook_id = $1
+	`, webhookID).Scan(&enabled)
+
+	if err != nil {
+		log.Printf("Failed to check Tautulli enabled status: %v", err)
+		return true // Default to enabled on error
+	}
+
+	return enabled
+}
+
+// Handle setting Tautulli notification preference
+func handleSetTautulliPreference(c *gin.Context) {
+	var req struct {
+		WebhookID string `json:"webhook_id"`
+		Enabled   bool   `json:"enabled"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	if req.WebhookID == "" {
+		c.JSON(400, gin.H{"error": "Webhook ID required"})
+		return
+	}
+
+	if err := setTautulliEnabled(req.WebhookID, req.Enabled); err != nil {
+		log.Printf("Failed to update Tautulli preference: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to update preference"})
+		return
+	}
+
+	log.Printf("Updated Tautulli preference for webhook %s: enabled=%v", req.WebhookID, req.Enabled)
+	c.JSON(200, gin.H{
+		"success": true,
+		"webhook_id": req.WebhookID,
+		"tautulli_enabled": req.Enabled,
+	})
+}
+
+// Delete a webhook mapping (invalidates the old URL)
+func deleteWebhookMapping(webhookID string) error {
+	if db == nil {
+		return nil
+	}
+
+	_, err := db.Exec(`
+		DELETE FROM webhook_mappings
+		WHERE webhook_id = $1
+	`, webhookID)
+
+	return err
+}
+
+// Handle deleting a webhook mapping
+func handleDeleteWebhook(c *gin.Context) {
+	var req struct {
+		WebhookID string `json:"webhook_id"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	if req.WebhookID == "" {
+		c.JSON(400, gin.H{"error": "Webhook ID required"})
+		return
+	}
+
+	if err := deleteWebhookMapping(req.WebhookID); err != nil {
+		log.Printf("Failed to delete webhook mapping: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to delete webhook"})
+		return
+	}
+
+	log.Printf("Deleted webhook mapping: %s", req.WebhookID)
+	c.JSON(200, gin.H{
+		"success": true,
+		"webhook_id": req.WebhookID,
+	})
+}
+
