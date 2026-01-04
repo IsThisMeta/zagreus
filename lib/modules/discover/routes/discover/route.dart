@@ -480,7 +480,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _mostAnticipatedMovies = [];
   List<Map<String, dynamic>> _popularPeople = [];
   final Map<String, Map<String, dynamic>?> _traktRatingCache = {};
-  bool _isLoading = true;
+  bool _isRecentlyDownloadedLoading = true; // Section-specific loading for recently downloaded
   String? _error;
 
   // Hero carousel state
@@ -1191,7 +1191,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Future<void> _loadRecentlyDownloaded({bool showGlobalLoader = true}) async {
     if (showGlobalLoader) {
       setState(() {
-        _isLoading = true;
+        _isRecentlyDownloadedLoading = true;
         _error = null;
       });
     } else {
@@ -1207,7 +1207,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // If Radarr is not enabled, just use empty list
         setState(() {
           _recentlyDownloaded = [];
-          if (showGlobalLoader) _isLoading = false;
+          if (showGlobalLoader) _isRecentlyDownloadedLoading = false;
         });
         return;
       }
@@ -1217,7 +1217,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         // If API not configured, use empty list
         setState(() {
           _recentlyDownloaded = [];
-          if (showGlobalLoader) _isLoading = false;
+          if (showGlobalLoader) _isRecentlyDownloadedLoading = false;
         });
         return;
       }
@@ -1263,7 +1263,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       setState(() {
         _recentlyDownloaded = downloadedMovies;
-        if (showGlobalLoader) _isLoading = false;
+        if (showGlobalLoader) _isRecentlyDownloadedLoading = false;
       });
 
       // Refresh AI sections (fetch only, don't trigger generation)
@@ -1301,7 +1301,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     } catch (e) {
       setState(() {
         _error = e.toString();
-        if (showGlobalLoader) _isLoading = false;
+        if (showGlobalLoader) _isRecentlyDownloadedLoading = false;
       });
     }
   }
@@ -2893,7 +2893,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   Widget _moviesTab() {
     return DiscoverMoviesTab(
       data: DiscoverMoviesTabData(
-        isLoading: _isLoading,
         error: _error,
         onRefresh: _loadRecentlyDownloaded,
         onRetry: () {
@@ -2913,6 +2912,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             showTitles: _showTitles,
             hasAiAccess: _hasAiAccess,
             hasRecentlyDownloaded: _recentlyDownloaded.isNotEmpty,
+            isRecentlyDownloadedLoading: _isRecentlyDownloadedLoading,
             recentlyDownloadedSection: _recentlyDownloadedSection,
             recommendedMoviesSection: _recommendedMoviesSection,
             missingMoviesSection: _missingMoviesSection,

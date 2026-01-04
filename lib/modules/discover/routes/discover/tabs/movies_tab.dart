@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 
 class DiscoverMoviesTabData {
-  final bool isLoading;
   final String? error;
   final RefreshCallback onRefresh;
   final VoidCallback onRetry;
@@ -17,7 +16,6 @@ class DiscoverMoviesTabData {
   final Widget metadataCredits;
 
   const DiscoverMoviesTabData({
-    required this.isLoading,
     required this.error,
     required this.onRefresh,
     required this.onRetry,
@@ -37,6 +35,7 @@ class DiscoverMoviesSectionData {
   final bool showTitles;
   final bool hasAiAccess;
   final bool hasRecentlyDownloaded;
+  final bool isRecentlyDownloadedLoading;
   final Widget Function() recentlyDownloadedSection;
   final Widget Function() recommendedMoviesSection;
   final Widget Function() missingMoviesSection;
@@ -56,6 +55,7 @@ class DiscoverMoviesSectionData {
     required this.showTitles,
     required this.hasAiAccess,
     required this.hasRecentlyDownloaded,
+    required this.isRecentlyDownloadedLoading,
     required this.recentlyDownloadedSection,
     required this.recommendedMoviesSection,
     required this.missingMoviesSection,
@@ -136,9 +136,15 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
   // Map of section builders - no extra spacing between sections
   // Each section handles its own internal spacing (title -> content)
   final sectionBuilders = <String, Widget Function()>{
-    'recently_downloaded': () => data.hasRecentlyDownloaded
-        ? data.recentlyDownloadedSection()
-        : const SizedBox.shrink(),
+    'recently_downloaded': () {
+      if (data.isRecentlyDownloadedLoading) {
+        // Show loading placeholder while fetching
+        return const SizedBox.shrink();
+      }
+      return data.hasRecentlyDownloaded
+          ? data.recentlyDownloadedSection()
+          : const SizedBox.shrink();
+    },
     'recommended': () => data.recommendedMoviesSection(),
     'missing': () => data.missingMoviesSection(),
     'downloading_soon': () => data.downloadingSoonSection(),
@@ -189,14 +195,7 @@ class DiscoverMoviesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6688FF)),
-        ),
-      );
-    }
-
+    // Note: We no longer block the entire UI for loading - sections handle their own loading states
     if (data.error != null) {
       return Center(
         child: Column(
