@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:zagreus/core.dart';
 
 part 'category.g.dart';
 
@@ -41,5 +42,13 @@ class ProwlarrCategory {
     if (categoryId >= 6000 && categoryId <= 6999) return Icons.lock_rounded;
     if (categoryId >= 7000 && categoryId <= 7999) return Icons.book_rounded;
     return Icons.category_rounded;
+  }
+
+  /// Returns comma-separated list of subcategory names
+  String get subcategoriesTitleList {
+    if (subCategories == null || subCategories!.isEmpty) {
+      return 'search.NoSubcategoriesFound'.tr();
+    }
+    return subCategories!.map((subcat) => subcat.name).join(', ');
   }
 }
