@@ -88,13 +88,28 @@ class NewznabAPI {
         .forEach((item) {
       int? size = int.tryParse(
           item.getElement('enclosure')?.getAttribute('length') ?? 'nosize');
+
+      // Parse grabs from newznab:attr elements
+      int? grabs;
+      for (final attr in item.findAllElements('newznab:attr')) {
+        if (attr.getAttribute('name') == 'grabs') {
+          grabs = int.tryParse(attr.getAttribute('value') ?? '');
+          break;
+        }
+      }
+
+      // Get info URL from guid element (usually the details page)
+      String linkInfo = item.getElement('guid')?.innerText ?? '';
+
       NewznabResultData data = NewznabResultData(
         title: item.getElement('title')?.innerText ?? 'Unknown Title',
         category: item.getElement('category')?.innerText ?? 'Unknown Category',
         size: size ?? 0,
         linkComments: item.getElement('comments')?.innerText ?? '',
         linkDownload: item.getElement('link')?.innerText ?? '',
+        linkInfo: linkInfo,
         date: item.getElement('pubDate')?.innerText ?? 'Unknown Date',
+        grabs: grabs,
       );
       results.add(data);
     });

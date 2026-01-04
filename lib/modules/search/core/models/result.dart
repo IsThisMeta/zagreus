@@ -7,7 +7,9 @@ class NewznabResultData {
   int size;
   String linkDownload;
   String linkComments;
+  String linkInfo;
   String date;
+  int? grabs;
 
   NewznabResultData({
     required this.title,
@@ -15,7 +17,9 @@ class NewznabResultData {
     required this.size,
     required this.linkComments,
     required this.linkDownload,
+    this.linkInfo = '',
     required this.date,
+    this.grabs,
   });
 
   DateTime? get dateObject {

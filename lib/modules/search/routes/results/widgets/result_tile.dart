@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/extensions/int/bytes.dart';
+import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/extensions/string/string.dart';
 import 'package:zagreus/modules/search.dart';
 
-class SearchResultTile extends StatelessWidget {
+class SearchResultTile extends StatefulWidget {
   final NewznabResultData data;
 
   const SearchResultTile({
@@ -13,71 +14,153 @@ class SearchResultTile extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<SearchResultTile> createState() => _SearchResultTileState();
+}
+
+class _SearchResultTileState extends State<SearchResultTile> {
+  ZagLoadingState _downloadState = ZagLoadingState.INACTIVE;
+
+  @override
   Widget build(BuildContext context) {
     return ZagExpandableListTile(
-      title: data.title,
+      title: widget.data.title,
       collapsedSubtitles: [
         _subtitle1(),
         _subtitle2(),
       ],
+      collapsedTrailing: _trailing(),
+      expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
-      collapsedTrailing: _trailing(context),
-      expandedTableButtons: _tableButtons(context),
+      expandedTableButtons: _tableButtons(),
     );
   }
 
   TextSpan _subtitle1() {
-    return TextSpan(children: [
-      TextSpan(text: data.size.asBytes()),
-      TextSpan(text: ZagUI.TEXT_BULLET.pad()),
-      TextSpan(text: data.category),
-    ]);
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: 'search.Usenet'.tr(),
+          style: TextStyle(
+            color: ZagColours.blue,
+            fontWeight: ZagUI.FONT_WEIGHT_BOLD,
+          ),
+        ),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(text: widget.data.category),
+        TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+        TextSpan(text: widget.data.age),
+      ],
+    );
   }
 
   TextSpan _subtitle2() {
-    return TextSpan(text: data.age);
+    return TextSpan(
+      children: [
+        TextSpan(text: widget.data.size.asBytes()),
+        if (widget.data.grabs != null) ...[
+          TextSpan(text: ZagUI.TEXT_BULLET.pad()),
+          TextSpan(
+            text: 'search.GrabsCount'.tr(
+              args: [widget.data.grabs.toString()],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  List<ZagHighlightedNode> _highlightedNodes() {
+    return [
+      ZagHighlightedNode(
+        text: 'search.Usenet'.tr(),
+        backgroundColor: ZagColours.blue,
+      ),
+    ];
   }
 
   List<ZagTableContent> _tableContent() {
     return [
-      ZagTableContent(title: 'search.Age'.tr(), body: data.age),
-      ZagTableContent(title: 'search.Size'.tr(), body: data.size.asBytes()),
-      ZagTableContent(title: 'search.Category'.tr(), body: data.category),
+      ZagTableContent(title: 'search.Age'.tr(), body: widget.data.age),
+      ZagTableContent(title: 'search.Size'.tr(), body: widget.data.size.asBytes()),
+      ZagTableContent(title: 'search.Category'.tr(), body: widget.data.category),
+      ZagTableContent(title: 'search.Protocol'.tr(), body: 'search.Usenet'.tr()),
+      if (widget.data.grabs != null)
+        ZagTableContent(
+          title: 'search.Grabs'.tr(),
+          body: '${widget.data.grabs}',
+        ),
       if (SearchDatabase.SHOW_LINKS.read())
         ZagTableContent(title: '', body: ''),
       if (SearchDatabase.SHOW_LINKS.read())
         ZagTableContent(
             title: 'search.Comments'.tr(),
-            body: data.linkComments,
+            body: widget.data.linkComments,
             bodyIsUrl: true),
       if (SearchDatabase.SHOW_LINKS.read())
         ZagTableContent(
             title: 'search.Download'.tr(),
-            body: data.linkDownload,
+            body: widget.data.linkDownload,
             bodyIsUrl: true),
     ];
   }
 
-  List<ZagButton> _tableButtons(BuildContext context) {
+  List<ZagButton> _tableButtons() {
     return [
-      ZagButton.text(
-        icon: Icons.download_rounded,
+      ZagButton(
+        type: ZagButtonType.TEXT,
         text: 'search.Download'.tr(),
-        onTap: () async => _sendToClient(context),
+        icon: Icons.download_rounded,
+        onTap: _sendToClient,
+        loadingState: _downloadState,
       ),
+      if (widget.data.linkInfo.isNotEmpty)
+        ZagButton.text(
+          text: 'search.Info'.tr(),
+          icon: Icons.info_outline_rounded,
+          color: ZagColours.blue,
+          onTap: widget.data.linkInfo.openLink,
+        ),
+      if (widget.data.linkComments.isNotEmpty)
+        ZagButton.text(
+          text: 'search.Comments'.tr(),
+          icon: Icons.comment_outlined,
+          color: ZagColours.blueGrey,
+          onTap: widget.data.linkComments.openLink,
+        ),
     ];
   }
 
-  ZagIconButton _trailing(BuildContext context) {
+  Widget _trailing() {
     return ZagIconButton(
       icon: Icons.download_rounded,
-      onPressed: () => _sendToClient(context),
+      color: ZagColours.accent,
+      onPressed: _sendToClient,
+      loadingState: _downloadState,
     );
   }
 
-  Future<void> _sendToClient(BuildContext context) async {
+  Future<void> _sendToClient() async {
+    setState(() => _downloadState = ZagLoadingState.ACTIVE);
+
     Tuple2<bool, SearchDownloadType?> result =
         await SearchDialogs().downloadResult(context);
-    if (result.item1) result.item2!.execute(context, data);
+
+    if (result.item1 && result.item2 != null) {
+      try {
+        await result.item2!.execute(context, widget.data);
+        if (mounted) {
+          setState(() => _downloadState = ZagLoadingState.INACTIVE);
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _downloadState = ZagLoadingState.ERROR);
+        }
+      }
+    } else {
+      // User cancelled
+      if (mounted) {
+        setState(() => _downloadState = ZagLoadingState.INACTIVE);
+      }
+    }
   }
 }

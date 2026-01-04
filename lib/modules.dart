@@ -441,7 +441,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.SABNZBD:
         return 'SABnzbd is a multi-platform binary newsgroup downloader. The program works in the background and simplifies the downloading verifying and extracting of files from Usenet.';
       case ZagModule.SEARCH:
-        return 'Zagreus currently supports all indexers that support the newznab protocol, including NZBHydra2.';
+        return 'Zagreus currently supports all indexers that support the newznab protocol, including NZBHydra2. Prowlarr is added as an indexer.';
       case ZagModule.SETTINGS:
         return null;
       case ZagModule.SONARR:
