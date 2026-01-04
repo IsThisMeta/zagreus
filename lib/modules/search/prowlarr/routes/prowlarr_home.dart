@@ -159,7 +159,8 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
 
     return ZagListView(
       controller: scrollController,
-      children: categories.map((category) {
+      children: List.generate(categories.length, (index) {
+        final category = categories[index];
         final hasSubcategories = category.subCategories != null &&
                                  category.subCategories!.isNotEmpty;
 
@@ -176,7 +177,10 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
                       )
                     ]
                   : null,
-          trailing: const ZagIconButton.arrow(),
+          trailing: ZagIconButton(
+            icon: category.icon,
+            color: ZagColours().byListIndex(index),
+          ),
           onTap: () {
             _state.setSelectedCategory(category);
 
@@ -206,7 +210,7 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
             }
           },
         );
-      }).toList(),
+      }),
     );
   }
 }

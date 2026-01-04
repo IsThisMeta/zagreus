@@ -70,18 +70,27 @@ class _State extends State<ProwlarrSubcategoriesPage>
               ),
             ),
           ],
-          trailing: const ZagIconButton.arrow(),
+          trailing: ZagIconButton(
+            icon: widget.parentCategory.icon,
+            color: ZagColours().byListIndex(0),
+          ),
           onTap: () => _navigateToSearch(categoryId: widget.parentCategory.id),
         ),
         ZagDivider(),
-        ...subcategories.map((subcategory) => ZagBlock(
-              title: subcategory.name ?? 'zagreus.Unknown'.tr(),
-              body: subcategory.description != null
-                  ? [TextSpan(text: subcategory.description!)]
-                  : null,
-              trailing: const ZagIconButton.arrow(),
-              onTap: () => _navigateToSearch(categoryId: subcategory.id),
-            )),
+        ...List.generate(subcategories.length, (index) {
+          final subcategory = subcategories[index];
+          return ZagBlock(
+            title: subcategory.name ?? 'zagreus.Unknown'.tr(),
+            body: subcategory.description != null
+                ? [TextSpan(text: subcategory.description!)]
+                : null,
+            trailing: ZagIconButton(
+              icon: subcategory.icon,
+              color: ZagColours().byListIndex(index + 1),
+            ),
+            onTap: () => _navigateToSearch(categoryId: subcategory.id),
+          );
+        }),
       ],
     );
   }
