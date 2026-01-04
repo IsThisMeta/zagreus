@@ -33,6 +33,8 @@ class _State extends State<SSHTerminalRoute> {
   StreamSubscription? _outputSubscription;
   StreamSubscription? _statusSubscription;
   bool _isConnecting = false;
+  bool _isReconnecting = false;
+  bool _hasConnected = false;
 
   // Buffer for batching output writes to reduce UI updates
   final List<Uint8List> _outputBuffer = [];
@@ -73,7 +75,9 @@ class _State extends State<SSHTerminalRoute> {
     });
 
     _statusSubscription = SSHService.instance.statusStream.listen((status) {
-      if (status == SSHConnectionStatus.disconnected && mounted) {
+      if (status == SSHConnectionStatus.connected) {
+        _hasConnected = true;
+      } else if (status == SSHConnectionStatus.disconnected && mounted && _hasConnected && !_isReconnecting) {
         _terminal.write('\r\n${'ssh.TerminalDisconnected'.tr()}\r\n');
       } else if (status == SSHConnectionStatus.error && mounted) {
         _terminal.write(
@@ -302,7 +306,6 @@ class _State extends State<SSHTerminalRoute> {
               _toolbarKey('▲', () => _sendArrow('A')),
               _toolbarKey('▼', () => _sendArrow('B')),
               _toolbarKey('▶', () => _sendArrow('C')),
-              _toolbarKey('/', () => SSHService.instance.write('/')),
               _toolbarKey('⌫', () => _sendBackspace()),
               const SizedBox(width: 8),
               _toolbarKey('copy', () => _copySelection()),
@@ -338,12 +341,13 @@ class _State extends State<SSHTerminalRoute> {
             onTapDown: (_) => onTap(),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: isActive
-                  ? BoxDecoration(
-                      border: Border.all(color: ZagColours.currentAccent, width: 1.5),
-                      borderRadius: BorderRadius.circular(6),
-                    )
-                  : null,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isActive ? ZagColours.currentAccent : Colors.transparent,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
               child: Text(
                 label,
                 style: TextStyle(
@@ -434,9 +438,11 @@ class _State extends State<SSHTerminalRoute> {
   }
 
   Future<void> _reconnect() async {
+    _isReconnecting = true;
     await SSHService.instance.disconnect();
     _terminal.buffer.clear();
     _terminal.buffer.setCursor(0, 0);
     await _connect();
+    _isReconnecting = false;
   }
 }
