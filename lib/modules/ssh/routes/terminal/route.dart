@@ -257,23 +257,104 @@ class _State extends State<SSHTerminalRoute> {
   }
 
   Widget _body() {
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: GestureDetector(
+              onLongPressStart: (details) => _showContextMenu(details.globalPosition),
+              child: TerminalView(
+                _terminal,
+                controller: _terminalController,
+                autofocus: true,
+                backgroundOpacity: 1.0,
+                theme: _terminalTheme(),
+                textStyle: const TerminalStyle(
+                  fontSize: 14,
+                  fontFamily: 'monospace',
+                ),
+                keyboardType: TextInputType.text,
+                keyboardAppearance: Brightness.dark,
+              ),
+            ),
+          ),
+        ),
+        _keyboardToolbar(),
+      ],
+    );
+  }
+
+  Widget _keyboardToolbar() {
     return Container(
-      color: Colors.black,
-      child: GestureDetector(
-        onLongPressStart: (details) => _showContextMenu(details.globalPosition),
-        child: TerminalView(
-          _terminal,
-          controller: _terminalController,
-          autofocus: true,
-          backgroundOpacity: 1.0,
-          theme: _terminalTheme(),
-          textStyle: const TerminalStyle(
-            fontSize: 14,
-            fontFamily: 'monospace',
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(
+            children: [
+              _toolbarKey('esc', () => _sendEscape()),
+              _toolbarKey('tab', () => _sendTab()),
+              _toolbarKey('ctrl', () => _toggleCtrl(), isCtrl: true),
+              _toolbarKey('alt', () => _toggleAlt(), isAlt: true),
+              _toolbarKey('◀', () => _sendArrow('D')),
+              _toolbarKey('▲', () => _sendArrow('A')),
+              _toolbarKey('▼', () => _sendArrow('B')),
+              _toolbarKey('▶', () => _sendArrow('C')),
+              _toolbarKey('/', () => SSHService.instance.write('/')),
+              _toolbarKey('⌫', () => _sendBackspace()),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  bool _ctrlPressed = false;
+  bool _altPressed = false;
+
+  Widget _toolbarKey(String label, VoidCallback onTap, {bool isCtrl = false, bool isAlt = false}) {
+    final isActive = (isCtrl && _ctrlPressed) || (isAlt && _altPressed);
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? ZagColours.currentAccent : Theme.of(context).textTheme.bodyMedium?.color,
+            fontSize: 16,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _sendEscape() {
+    SSHService.instance.write('\x1b');
+  }
+
+  void _sendTab() {
+    SSHService.instance.write('\t');
+  }
+
+  void _toggleCtrl() {
+    setState(() => _ctrlPressed = !_ctrlPressed);
+  }
+
+  void _toggleAlt() {
+    setState(() => _altPressed = !_altPressed);
+  }
+
+  void _sendArrow(String direction) {
+    SSHService.instance.write('\x1b[$direction');
+  }
+
+  void _sendBackspace() {
+    SSHService.instance.write('\x7f');
   }
 
   void _showContextMenu(Offset position) {

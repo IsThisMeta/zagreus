@@ -122,6 +122,7 @@ class SSHService {
 
       _shell = await _client!.shell(
         pty: SSHPtyConfig(
+          type: 'xterm-256color',
           width: 80,
           height: 24,
         ),
