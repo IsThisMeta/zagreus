@@ -5,8 +5,12 @@ import 'package:zagreus/modules/search.dart';
 import 'package:zagreus/utils/profile_tools.dart';
 
 class SearchDialogs {
+  /// Shows download dialog with profile selector and download client options.
+  /// Set [isTorrent] to true to hide "Download to Device" option (Apple restriction).
   Future<Tuple2<bool, SearchDownloadType?>> downloadResult(
-      BuildContext context) async {
+    BuildContext context, {
+    bool isTorrent = false,
+  }) async {
     bool _flag = false;
     SearchDownloadType? _type;
 
@@ -93,12 +97,14 @@ class SearchDialogs {
                 text: SearchDownloadType.NZBGET.name,
                 onTap: () => _setValues(true, SearchDownloadType.NZBGET),
               ),
-            ZagDialog.tile(
-              icon: SearchDownloadType.FILESYSTEM.icon,
-              iconColor: ZagColours().byListIndex(2),
-              text: SearchDownloadType.FILESYSTEM.name,
-              onTap: () => _setValues(true, SearchDownloadType.FILESYSTEM),
-            ),
+            // Hide "Download to Device" for torrents (Apple restriction)
+            if (!isTorrent)
+              ZagDialog.tile(
+                icon: SearchDownloadType.FILESYSTEM.icon,
+                iconColor: ZagColours().byListIndex(2),
+                text: SearchDownloadType.FILESYSTEM.name,
+                onTap: () => _setValues(true, SearchDownloadType.FILESYSTEM),
+              ),
           ],
         ),
       ),

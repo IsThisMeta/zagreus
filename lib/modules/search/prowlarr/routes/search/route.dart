@@ -162,10 +162,7 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
           itemCount: results.length,
           itemBuilder: (context, index) {
             final item = results[index];
-            return ProwlarrResultTile(
-              item: item,
-              apiWrapper: widget.apiWrapper,
-            );
+            return ProwlarrResultTile(item: item);
           },
         );
       },

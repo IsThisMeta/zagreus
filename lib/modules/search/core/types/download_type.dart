@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/nzbget.dart';
 import 'package:zagreus/modules/sabnzbd.dart';
@@ -42,6 +43,177 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
         return _executeSABnzbd(context, data);
       case SearchDownloadType.FILESYSTEM:
         return _executeFileSystem(context, data);
+    }
+  }
+
+  /// Execute download for Prowlarr items (supports both usenet and torrent)
+  Future<void> executeProwlarr(BuildContext context, ProwlarrItem item) async {
+    final downloadUrl = item.downloadUrl;
+    if (downloadUrl == null || downloadUrl.isEmpty) {
+      showZagErrorSnackBar(
+        title: 'search.FailedToSend'.tr(),
+        error: 'No download URL available',
+      );
+      return;
+    }
+
+    // Get category from item (first category name or empty)
+    final category = item.categories?.isNotEmpty == true
+        ? item.categories!.first.name ?? ''
+        : '';
+
+    switch (this) {
+      case SearchDownloadType.NZBGET:
+        return _executeNZBGetProwlarr(context, downloadUrl, category);
+      case SearchDownloadType.SABNZBD:
+        return _executeSABnzbdProwlarr(context, downloadUrl, category);
+      case SearchDownloadType.FILESYSTEM:
+        return _executeFileSystemProwlarr(context, item);
+    }
+  }
+
+  Future<void> _executeNZBGetProwlarr(
+    BuildContext context,
+    String downloadUrl,
+    String itemCategory,
+  ) async {
+    NZBGetAPI api = NZBGetAPI.from(ZagProfile.current);
+
+    String? selectedCategory;
+    try {
+      final categories = await api.getCategories();
+
+      int autoSelectIndex = 0;
+      for (int i = 0; i < categories.length; i++) {
+        if (categories[i].name.toLowerCase() == itemCategory.toLowerCase() &&
+            categories[i].name.isNotEmpty) {
+          autoSelectIndex = i;
+          break;
+        }
+      }
+
+      selectedCategory = await _showNZBGetCategoryPicker(
+        context,
+        categories,
+        autoSelectIndex,
+      );
+
+      if (selectedCategory == null) return;
+    } catch (_) {
+      ZagLogger().warning('Failed to fetch NZBGet categories, using default');
+      selectedCategory = '';
+    }
+
+    await api
+        .uploadURL(downloadUrl, category: selectedCategory)
+        .then((_) => showZagSuccessSnackBar(
+              title: 'search.SentNZBData'.tr(),
+              message: 'search.SentTo'.tr(args: [SearchDownloadType.NZBGET.name]),
+              showButton: true,
+              buttonOnPressed: ZagModule.NZBGET.launch,
+            ))
+        .catchError((error, stack) {
+      ZagLogger().error('Failed to download data', error, stack);
+      return showZagErrorSnackBar(
+          title: 'search.FailedToSend'.tr(), error: error);
+    });
+  }
+
+  Future<void> _executeSABnzbdProwlarr(
+    BuildContext context,
+    String downloadUrl,
+    String itemCategory,
+  ) async {
+    SABnzbdAPI api = SABnzbdAPI.from(ZagProfile.current);
+
+    String? selectedCategory;
+    try {
+      final categories = await api.getCategories();
+
+      int autoSelectIndex = 0;
+      for (int i = 0; i < categories.length; i++) {
+        final catName = categories[i].category ?? '';
+        if (catName.toLowerCase() == itemCategory.toLowerCase() &&
+            catName.isNotEmpty &&
+            catName != 'Default') {
+          autoSelectIndex = i;
+          break;
+        }
+      }
+
+      selectedCategory = await _showSABnzbdCategoryPicker(
+        context,
+        categories,
+        autoSelectIndex,
+      );
+
+      if (selectedCategory == null) return;
+    } catch (_) {
+      ZagLogger().warning('Failed to fetch SABnzbd categories, using default');
+      selectedCategory = '';
+    }
+
+    await api
+        .uploadURL(downloadUrl, category: selectedCategory)
+        .then((_) => showZagSuccessSnackBar(
+              title: 'search.SentNZBData'.tr(),
+              message: 'search.SentTo'.tr(args: [SearchDownloadType.SABNZBD.name]),
+              showButton: true,
+              buttonOnPressed: ZagModule.SABNZBD.launch,
+            ))
+        .catchError((error, stack) {
+      ZagLogger().error('Failed to download data', error, stack);
+      return showZagErrorSnackBar(
+          title: 'search.FailedToSend'.tr(), error: error);
+    });
+  }
+
+  Future<void> _executeFileSystemProwlarr(
+    BuildContext context,
+    ProwlarrItem item,
+  ) async {
+    final downloadUrl = item.downloadUrl;
+    if (downloadUrl == null || downloadUrl.isEmpty) {
+      showZagErrorSnackBar(
+        title: 'search.FailedToDownloadNZB'.tr(),
+        error: 'No download URL',
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'search.Downloading'.tr(),
+      message: 'search.DownloadingNZBToDevice'.tr(),
+    );
+
+    final cleanTitle = (item.title ?? 'download')
+        .replaceAll(RegExp(r'[^0-9a-zA-Z. -]+'), '');
+
+    try {
+      final response = await Dio().get<List<int>>(
+        downloadUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.data != null) {
+        bool result = await ZagFileSystem().save(
+          context,
+          '$cleanTitle.nzb',
+          response.data!,
+        );
+        if (result) {
+          showZagSuccessSnackBar(
+            title: 'search.NZBSaved'.tr(),
+            message: 'search.NZBSavedMessage'.tr(),
+          );
+        }
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Error downloading NZB', error, stack);
+      showZagErrorSnackBar(
+        title: 'search.FailedToDownloadNZB'.tr(),
+        error: error,
+      );
     }
   }
 

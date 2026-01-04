@@ -3,15 +3,13 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/extensions/string/links.dart';
 import 'package:zagreus/extensions/string/string.dart';
-import 'package:zagreus/modules/search/prowlarr/core.dart';
+import 'package:zagreus/modules/search.dart';
 
 class ProwlarrResultTile extends StatefulWidget {
   final ProwlarrItem item;
-  final ProwlarrAPIWrapper apiWrapper;
 
   const ProwlarrResultTile({
     required this.item,
-    required this.apiWrapper,
     super.key,
   });
 
@@ -182,7 +180,7 @@ class _State extends State<ProwlarrResultTile> {
   }
 
   Future<void> _startDownload() async {
-    if (widget.item.guid == null || widget.item.indexerId == null) {
+    if (widget.item.downloadUrl == null || widget.item.downloadUrl!.isEmpty) {
       showZagInfoSnackBar(
         title: 'zagreus.Error'.tr(),
         message: 'search.MissingDownloadInformation'.tr(),
@@ -193,30 +191,25 @@ class _State extends State<ProwlarrResultTile> {
     setState(() => _downloadState = ZagLoadingState.ACTIVE);
 
     try {
-      final success = await widget.apiWrapper.downloadToClient(
-        guid: widget.item.guid!,
-        indexerId: widget.item.indexerId!,
+      // Show download dialog - hide "Download to Device" for torrents (Apple restriction)
+      final result = await SearchDialogs().downloadResult(
+        context,
+        isTorrent: _isTorrent,
       );
 
-      if (mounted) {
-        setState(() => _downloadState =
-            success ? ZagLoadingState.INACTIVE : ZagLoadingState.ERROR);
+      if (result.item1 && result.item2 != null) {
+        await result.item2!.executeProwlarr(context, widget.item);
+      }
 
-        showZagInfoSnackBar(
-          title: success
-              ? 'search.Success'.tr()
-              : 'zagreus.Error'.tr(),
-          message: success
-              ? 'search.DownloadSentToClient'.tr()
-              : 'search.FailedToSendDownload'.tr(),
-        );
+      if (mounted) {
+        setState(() => _downloadState = ZagLoadingState.INACTIVE);
       }
     } catch (e) {
       if (mounted) {
         setState(() => _downloadState = ZagLoadingState.ERROR);
-        showZagInfoSnackBar(
-          title: 'zagreus.Error'.tr(),
-          message: 'search.FailedToSendDownloadError'.tr(args: ['$e']),
+        showZagErrorSnackBar(
+          title: 'search.FailedToSend'.tr(),
+          error: e,
         );
       }
     }
