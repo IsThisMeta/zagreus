@@ -49,10 +49,21 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
           ZagHeader(text: 'ssh.LocalNetwork'.tr()),
           _localHostField(),
           _localSsidsField(),
-          ZagDivider(),
-          _saveButton(),
         ],
       ),
+      bottomNavigationBar: _bottomActionBar(),
+    );
+  }
+
+  Widget _bottomActionBar() {
+    return ZagBottomActionBar(
+      actions: [
+        ZagButton.text(
+          text: 'ssh.Save'.tr(),
+          icon: Icons.save_rounded,
+          onTap: _save,
+        ),
+      ],
     );
   }
 
@@ -233,17 +244,6 @@ class _State extends State<SSHAddConnectionRoute> with ZagScrollControllerMixin 
           setState(() => _localSsids = result.item2);
         }
       },
-    );
-  }
-
-  Widget _saveButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ZagButton.text(
-        text: 'ssh.Save'.tr(),
-        icon: Icons.save_rounded,
-        onTap: _save,
-      ),
     );
   }
 
