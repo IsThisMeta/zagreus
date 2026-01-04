@@ -571,8 +571,7 @@ class SeerrCommentAdapter extends TypeAdapter<SeerrComment> {
           typeId == other.typeId;
 }
 
-class SeerrDownloadStatusAdapter
-    extends TypeAdapter<SeerrDownloadStatus> {
+class SeerrDownloadStatusAdapter extends TypeAdapter<SeerrDownloadStatus> {
   @override
   final int typeId = 97;
 
@@ -891,8 +890,7 @@ Map<String, dynamic> _$SeerrPageInfoToJson(SeerrPageInfo instance) =>
       'page': instance.page,
     };
 
-SeerrRequest _$SeerrRequestFromJson(Map<String, dynamic> json) =>
-    SeerrRequest(
+SeerrRequest _$SeerrRequestFromJson(Map<String, dynamic> json) => SeerrRequest(
       id: (json['id'] as num).toInt(),
       status: (json['status'] as num).toInt(),
       createdAt: json['createdAt'] as String,
@@ -949,8 +947,7 @@ Map<String, dynamic> _$SeerrRequestToJson(SeerrRequest instance) {
   return val;
 }
 
-SeerrIssue _$SeerrIssueFromJson(Map<String, dynamic> json) =>
-    SeerrIssue(
+SeerrIssue _$SeerrIssueFromJson(Map<String, dynamic> json) => SeerrIssue(
       id: (json['id'] as num).toInt(),
       issueType: (json['issueType'] as num).toInt(),
       status: (json['status'] as num).toInt(),
@@ -958,8 +955,8 @@ SeerrIssue _$SeerrIssueFromJson(Map<String, dynamic> json) =>
       problemEpisode: (json['problemEpisode'] as num).toInt(),
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
-      createdBy: SeerrCreatedBy.fromJson(
-          json['createdBy'] as Map<String, dynamic>),
+      createdBy:
+          SeerrCreatedBy.fromJson(json['createdBy'] as Map<String, dynamic>),
       media: SeerrMedia.fromJson(json['media'] as Map<String, dynamic>),
       comments: (json['comments'] as List<dynamic>?)
           ?.map((e) => SeerrComment.fromJson(e as Map<String, dynamic>))
@@ -989,15 +986,12 @@ Map<String, dynamic> _$SeerrIssueToJson(SeerrIssue instance) {
   return val;
 }
 
-SeerrMedia _$SeerrMediaFromJson(Map<String, dynamic> json) =>
-    SeerrMedia(
+SeerrMedia _$SeerrMediaFromJson(Map<String, dynamic> json) => SeerrMedia(
       downloadStatus: (json['downloadStatus'] as List<dynamic>)
-          .map((e) =>
-              SeerrDownloadStatus.fromJson(e as Map<String, dynamic>))
+          .map((e) => SeerrDownloadStatus.fromJson(e as Map<String, dynamic>))
           .toList(),
       downloadStatus4k: (json['downloadStatus4k'] as List<dynamic>)
-          .map((e) =>
-              SeerrDownloadStatus.fromJson(e as Map<String, dynamic>))
+          .map((e) => SeerrDownloadStatus.fromJson(e as Map<String, dynamic>))
           .toList(),
       id: (json['id'] as num).toInt(),
       mediaType: json['mediaType'] as String,
@@ -1069,8 +1063,7 @@ Map<String, dynamic> _$SeerrMediaToJson(SeerrMedia instance) {
   return val;
 }
 
-SeerrMovie _$SeerrMovieFromJson(Map<String, dynamic> json) =>
-    SeerrMovie(
+SeerrMovie _$SeerrMovieFromJson(Map<String, dynamic> json) => SeerrMovie(
       id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       posterPath: json['posterPath'] as String?,
@@ -1096,8 +1089,7 @@ Map<String, dynamic> _$SeerrMovieToJson(SeerrMovie instance) {
   return val;
 }
 
-SeerrSeries _$SeerrSeriesFromJson(Map<String, dynamic> json) =>
-    SeerrSeries(
+SeerrSeries _$SeerrSeriesFromJson(Map<String, dynamic> json) => SeerrSeries(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       posterPath: json['posterPath'] as String?,
@@ -1123,8 +1115,7 @@ Map<String, dynamic> _$SeerrSeriesToJson(SeerrSeries instance) {
   return val;
 }
 
-SeerrUser _$SeerrUserFromJson(Map<String, dynamic> json) =>
-    SeerrUser(
+SeerrUser _$SeerrUserFromJson(Map<String, dynamic> json) => SeerrUser(
       id: (json['id'] as num).toInt(),
       email: json['email'] as String,
       plexUsername: json['plexUsername'] as String?,
@@ -1170,8 +1161,7 @@ Map<String, dynamic> _$SeerrCreatedByToJson(SeerrCreatedBy instance) =>
       'avatar': instance.avatar,
     };
 
-SeerrSeason _$SeerrSeasonFromJson(Map<String, dynamic> json) =>
-    SeerrSeason(
+SeerrSeason _$SeerrSeasonFromJson(Map<String, dynamic> json) => SeerrSeason(
       id: (json['id'] as num).toInt(),
       seasonNumber: (json['seasonNumber'] as num).toInt(),
       status: (json['status'] as num).toInt(),
@@ -1184,8 +1174,7 @@ Map<String, dynamic> _$SeerrSeasonToJson(SeerrSeason instance) =>
       'status': instance.status,
     };
 
-SeerrComment _$SeerrCommentFromJson(Map<String, dynamic> json) =>
-    SeerrComment(
+SeerrComment _$SeerrCommentFromJson(Map<String, dynamic> json) => SeerrComment(
       id: (json['id'] as num).toInt(),
       message: json['message'] as String,
       createdAt: json['createdAt'] as String,
@@ -1200,8 +1189,7 @@ Map<String, dynamic> _$SeerrCommentToJson(SeerrComment instance) =>
       'user': instance.user.toJson(),
     };
 
-SeerrDownloadStatus _$SeerrDownloadStatusFromJson(
-        Map<String, dynamic> json) =>
+SeerrDownloadStatus _$SeerrDownloadStatusFromJson(Map<String, dynamic> json) =>
     SeerrDownloadStatus(
       title: json['title'] as String,
       size: (json['size'] as num).toInt(),
@@ -1216,8 +1204,7 @@ Map<String, dynamic> _$SeerrDownloadStatusToJson(
       'status': instance.status,
     };
 
-SeerrServerConfig _$SeerrServerConfigFromJson(
-        Map<String, dynamic> json) =>
+SeerrServerConfig _$SeerrServerConfigFromJson(Map<String, dynamic> json) =>
     SeerrServerConfig(
       server: SeerrServer.fromJson(json['server'] as Map<String, dynamic>),
       profiles: (json['profiles'] as List<dynamic>)
@@ -1231,8 +1218,7 @@ SeerrServerConfig _$SeerrServerConfigFromJson(
           .toList(),
     );
 
-Map<String, dynamic> _$SeerrServerConfigToJson(
-        SeerrServerConfig instance) =>
+Map<String, dynamic> _$SeerrServerConfigToJson(SeerrServerConfig instance) =>
     <String, dynamic>{
       'server': instance.server.toJson(),
       'profiles': instance.profiles.map((e) => e.toJson()).toList(),
@@ -1240,8 +1226,7 @@ Map<String, dynamic> _$SeerrServerConfigToJson(
       'tags': instance.tags.map((e) => e.toJson()).toList(),
     };
 
-SeerrServer _$SeerrServerFromJson(Map<String, dynamic> json) =>
-    SeerrServer(
+SeerrServer _$SeerrServerFromJson(Map<String, dynamic> json) => SeerrServer(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       hostname: json['hostname'] as String,
@@ -1258,8 +1243,7 @@ Map<String, dynamic> _$SeerrServerToJson(SeerrServer instance) =>
       'isDefault': instance.isDefault,
     };
 
-SeerrProfile _$SeerrProfileFromJson(Map<String, dynamic> json) =>
-    SeerrProfile(
+SeerrProfile _$SeerrProfileFromJson(Map<String, dynamic> json) => SeerrProfile(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
     );
@@ -1276,8 +1260,7 @@ SeerrRootFolder _$SeerrRootFolderFromJson(Map<String, dynamic> json) =>
       path: json['path'] as String,
     );
 
-Map<String, dynamic> _$SeerrRootFolderToJson(
-        SeerrRootFolder instance) =>
+Map<String, dynamic> _$SeerrRootFolderToJson(SeerrRootFolder instance) =>
     <String, dynamic>{
       'id': instance.id,
       'path': instance.path,
@@ -1288,8 +1271,7 @@ SeerrTag _$SeerrTagFromJson(Map<String, dynamic> json) => SeerrTag(
       label: json['label'] as String,
     );
 
-Map<String, dynamic> _$SeerrTagToJson(SeerrTag instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$SeerrTagToJson(SeerrTag instance) => <String, dynamic>{
       'id': instance.id,
       'label': instance.label,
     };
@@ -1317,8 +1299,7 @@ Map<String, dynamic> _$SeerrApiStatusToJson(SeerrApiStatus instance) {
   return val;
 }
 
-SeerrMediaRequest _$SeerrMediaRequestFromJson(
-        Map<String, dynamic> json) =>
+SeerrMediaRequest _$SeerrMediaRequestFromJson(Map<String, dynamic> json) =>
     SeerrMediaRequest(
       serverId: (json['serverId'] as num?)?.toInt(),
       profileId: (json['profileId'] as num?)?.toInt(),
@@ -1328,8 +1309,7 @@ SeerrMediaRequest _$SeerrMediaRequestFromJson(
           .toList(),
     );
 
-Map<String, dynamic> _$SeerrMediaRequestToJson(
-    SeerrMediaRequest instance) {
+Map<String, dynamic> _$SeerrMediaRequestToJson(SeerrMediaRequest instance) {
   final val = <String, dynamic>{};
 
   void writeNotNull(String key, dynamic value) {
@@ -1345,8 +1325,7 @@ Map<String, dynamic> _$SeerrMediaRequestToJson(
   return val;
 }
 
-SeerrMessage _$SeerrMessageFromJson(Map<String, dynamic> json) =>
-    SeerrMessage(
+SeerrMessage _$SeerrMessageFromJson(Map<String, dynamic> json) => SeerrMessage(
       message: json['message'] as String,
     );
 

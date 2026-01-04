@@ -319,8 +319,7 @@ ZagProfile _$ZagProfileFromJson(Map<String, dynamic> json) => ZagProfile(
       seerrEnabled: json['seerrEnabled'] as bool?,
       seerrHost: json['seerrHost'] as String?,
       seerrKey: json['seerrKey'] as String?,
-      seerrHeaders:
-          (json['seerrHeaders'] as Map<String, dynamic>?)?.map(
+      seerrHeaders: (json['seerrHeaders'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(k, e as String),
       ),
       seerrLocalHost: json['seerrLocalHost'] as String?,

@@ -33,9 +33,12 @@ class NotificationsRoute extends StatefulWidget {
 class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  String _radarrStatus = '';
-  String _sonarrStatus = '';
-  String _lidarrStatus = '';
+  _WebhookStatus _radarrStatus =
+      const _WebhookStatus(_WebhookStatusType.idle);
+  _WebhookStatus _sonarrStatus =
+      const _WebhookStatus(_WebhookStatusType.idle);
+  _WebhookStatus _lidarrStatus =
+      const _WebhookStatus(_WebhookStatusType.idle);
   bool _notificationsAuthorized = false;
 
   @override
@@ -65,9 +68,15 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
       if (profile == null) {
         setState(() {
-          _radarrStatus = 'Not configured';
-          _sonarrStatus = 'Not configured';
-          _lidarrStatus = 'Not configured';
+          _radarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
+          _sonarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
+          _lidarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
         });
         return;
       }
@@ -78,9 +87,15 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       // Check if we have a valid auth method
       if (!isAnonymous && (!ZagSupabase.isSupported || user == null)) {
         setState(() {
-          _radarrStatus = 'Sign in or enable Single Device Mode';
-          _sonarrStatus = 'Sign in or enable Single Device Mode';
-          _lidarrStatus = 'Sign in or enable Single Device Mode';
+          _radarrStatus = const _WebhookStatus(
+            _WebhookStatusType.signInRequired,
+          );
+          _sonarrStatus = const _WebhookStatus(
+            _WebhookStatusType.signInRequired,
+          );
+          _lidarrStatus = const _WebhookStatus(
+            _WebhookStatusType.signInRequired,
+          );
         });
         return;
       }
@@ -93,7 +108,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           radarrHost.isNotEmpty &&
           profile.radarrKey.isNotEmpty) {
         setState(() {
-          _radarrStatus = 'Syncing...';
+          _radarrStatus = const _WebhookStatus(_WebhookStatusType.syncing);
         });
 
         try {
@@ -104,7 +119,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           final success = await RadarrWebhookManager.syncWebhook(api);
           setState(() {
-            _radarrStatus = 'SUCCESS';
+            _radarrStatus = const _WebhookStatus(_WebhookStatusType.success);
           });
         } catch (e) {
           setState(() {
@@ -113,12 +128,17 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             if (errorMsg.startsWith('Exception: ')) {
               errorMsg = errorMsg.substring(11);
             }
-            _radarrStatus = 'FAILED: $errorMsg';
+            _radarrStatus = _WebhookStatus(
+              _WebhookStatusType.failed,
+              message: errorMsg,
+            );
           });
         }
       } else {
         setState(() {
-          _radarrStatus = 'Not configured';
+          _radarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
         });
       }
 
@@ -128,7 +148,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           sonarrHost.isNotEmpty &&
           profile.sonarrKey.isNotEmpty) {
         setState(() {
-          _sonarrStatus = 'Syncing...';
+          _sonarrStatus = const _WebhookStatus(_WebhookStatusType.syncing);
         });
 
         try {
@@ -139,7 +159,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           final success = await SonarrWebhookManager.syncWebhook(api);
           setState(() {
-            _sonarrStatus = 'SUCCESS';
+            _sonarrStatus = const _WebhookStatus(_WebhookStatusType.success);
           });
         } catch (e) {
           setState(() {
@@ -148,12 +168,17 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             if (errorMsg.startsWith('Exception: ')) {
               errorMsg = errorMsg.substring(11);
             }
-            _sonarrStatus = 'FAILED: $errorMsg';
+            _sonarrStatus = _WebhookStatus(
+              _WebhookStatusType.failed,
+              message: errorMsg,
+            );
           });
         }
       } else {
         setState(() {
-          _sonarrStatus = 'Not configured';
+          _sonarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
         });
       }
 
@@ -163,7 +188,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           lidarrHost.isNotEmpty &&
           profile.lidarrKey.isNotEmpty) {
         setState(() {
-          _lidarrStatus = 'Syncing...';
+          _lidarrStatus = const _WebhookStatus(_WebhookStatusType.syncing);
         });
 
         try {
@@ -184,7 +209,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           final success = await LidarrWebhookManager.syncWebhook(client);
           setState(() {
-            _lidarrStatus = 'SUCCESS';
+            _lidarrStatus = const _WebhookStatus(_WebhookStatusType.success);
           });
         } catch (e) {
           setState(() {
@@ -193,21 +218,32 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             if (errorMsg.startsWith('Exception: ')) {
               errorMsg = errorMsg.substring(11);
             }
-            _lidarrStatus = 'FAILED: $errorMsg';
+            _lidarrStatus = _WebhookStatus(
+              _WebhookStatusType.failed,
+              message: errorMsg,
+            );
           });
         }
       } else {
         setState(() {
-          _lidarrStatus = 'Not configured';
+          _lidarrStatus = const _WebhookStatus(
+            _WebhookStatusType.notConfigured,
+          );
         });
       }
     } catch (e, stack) {
       ZagLogger().error('Failed to sync notification webhooks', e, stack);
       if (!mounted) return;
       setState(() {
-        if (_radarrStatus.isEmpty) _radarrStatus = 'Error syncing webhooks';
-        if (_sonarrStatus.isEmpty) _sonarrStatus = 'Error syncing webhooks';
-        if (_lidarrStatus.isEmpty) _lidarrStatus = 'Error syncing webhooks';
+        if (_radarrStatus.type == _WebhookStatusType.idle) {
+          _radarrStatus = const _WebhookStatus(_WebhookStatusType.error);
+        }
+        if (_sonarrStatus.type == _WebhookStatusType.idle) {
+          _sonarrStatus = const _WebhookStatus(_WebhookStatusType.error);
+        }
+        if (_lidarrStatus.type == _WebhookStatusType.idle) {
+          _lidarrStatus = const _WebhookStatus(_WebhookStatusType.error);
+        }
       });
     }
   }
@@ -228,7 +264,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           profile.radarrHost.isNotEmpty &&
           profile.radarrKey.isNotEmpty) {
         setState(() {
-          _radarrStatus = 'Removing webhook...';
+          _radarrStatus = const _WebhookStatus(_WebhookStatusType.removing);
         });
 
         try {
@@ -239,11 +275,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           await RadarrWebhookManager.removeWebhook(api);
           setState(() {
-            _radarrStatus = 'Webhook removed';
+            _radarrStatus = const _WebhookStatus(_WebhookStatusType.removed);
           });
         } catch (e) {
           setState(() {
-            _radarrStatus = 'Failed to remove webhook';
+            _radarrStatus =
+                const _WebhookStatus(_WebhookStatusType.removeFailed);
           });
         }
       }
@@ -253,7 +290,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           profile.sonarrHost.isNotEmpty &&
           profile.sonarrKey.isNotEmpty) {
         setState(() {
-          _sonarrStatus = 'Removing webhook...';
+          _sonarrStatus = const _WebhookStatus(_WebhookStatusType.removing);
         });
 
         try {
@@ -264,11 +301,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           await SonarrWebhookManager.removeWebhook(api);
           setState(() {
-            _sonarrStatus = 'Webhook removed';
+            _sonarrStatus = const _WebhookStatus(_WebhookStatusType.removed);
           });
         } catch (e) {
           setState(() {
-            _sonarrStatus = 'Failed to remove webhook';
+            _sonarrStatus =
+                const _WebhookStatus(_WebhookStatusType.removeFailed);
           });
         }
       }
@@ -278,7 +316,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           profile.lidarrHost.isNotEmpty &&
           profile.lidarrKey.isNotEmpty) {
         setState(() {
-          _lidarrStatus = 'Removing webhook...';
+          _lidarrStatus = const _WebhookStatus(_WebhookStatusType.removing);
         });
 
         try {
@@ -299,11 +337,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           );
           await LidarrWebhookManager.removeWebhook(client);
           setState(() {
-            _lidarrStatus = 'Webhook removed';
+            _lidarrStatus = const _WebhookStatus(_WebhookStatusType.removed);
           });
         } catch (e) {
           setState(() {
-            _lidarrStatus = 'Failed to remove webhook';
+            _lidarrStatus =
+                const _WebhookStatus(_WebhookStatusType.removeFailed);
           });
         }
       }
@@ -393,9 +432,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         _enableInAppToasts(),
         _multiDeviceSyncToggle(),
         ZagDivider(),
-        _statusBlock('Radarr Status', _radarrStatus),
-        _statusBlock('Sonarr Status', _sonarrStatus),
-        _statusBlock('Lidarr Status', _lidarrStatus),
+        _statusBlock('settings.RadarrStatus'.tr(), _radarrStatus),
+        _statusBlock('settings.SonarrStatus'.tr(), _sonarrStatus),
+        _statusBlock('settings.LidarrStatus'.tr(), _lidarrStatus),
         ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
           builder: (context, _) {
             if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) {
@@ -419,15 +458,18 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     );
   }
 
-  Widget _statusBlock(String title, String status) {
-    final isSuccess = status == 'SUCCESS';
-    final isFailed = status.startsWith('FAILED:');
-    final errorMessage = isFailed ? status.substring(8).trim() : '';
+  Widget _statusBlock(String title, _WebhookStatus status) {
+    final isSuccess = status.type == _WebhookStatusType.success;
+    final isFailed = status.type == _WebhookStatusType.failed ||
+        status.type == _WebhookStatusType.removeFailed ||
+        status.type == _WebhookStatusType.error;
+    final statusLabel = _statusLabel(status);
+    final errorMessage = status.message ?? statusLabel;
 
     return ZagBlock(
       title: title,
-      body: [],
-      trailing: status.isEmpty
+      body: statusLabel.isEmpty ? [] : [TextSpan(text: statusLabel)],
+      trailing: status.type == _WebhookStatusType.idle
           ? Icon(
               Icons.remove_circle_outline,
               color: ZagColours.grey,
@@ -459,7 +501,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   void _showErrorDialog(String title, String errorMessage) {
     ZagDialog.dialog(
       context: context,
-      title: '$title Error',
+      title: 'settings.NotificationStatusErrorTitle'.tr(args: [title]),
       content: [
         ZagDialog.textContent(
           text: errorMessage,
@@ -470,12 +512,39 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     );
   }
 
+  String _statusLabel(_WebhookStatus status) {
+    switch (status.type) {
+      case _WebhookStatusType.idle:
+        return '';
+      case _WebhookStatusType.notConfigured:
+        return 'settings.NotificationStatusNotConfigured'.tr();
+      case _WebhookStatusType.signInRequired:
+        return 'settings.NotificationStatusSignInRequired'.tr();
+      case _WebhookStatusType.syncing:
+        return 'settings.NotificationStatusSyncing'.tr();
+      case _WebhookStatusType.success:
+        return 'settings.NotificationStatusSuccess'.tr();
+      case _WebhookStatusType.failed:
+        return 'settings.NotificationStatusFailed'.tr();
+      case _WebhookStatusType.removing:
+        return 'settings.NotificationStatusRemoving'.tr();
+      case _WebhookStatusType.removed:
+        return 'settings.NotificationStatusRemoved'.tr();
+      case _WebhookStatusType.removeFailed:
+        return 'settings.NotificationStatusRemoveFailed'.tr();
+      case _WebhookStatusType.error:
+        return 'settings.NotificationStatusError'.tr();
+    }
+  }
+
   Widget _enableNotifications() {
     const db = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS;
 
     return ZagBlock(
-      title: 'Enable Notifications',
-      body: [TextSpan(text: 'Receive push notifications for media events')],
+      title: 'settings.EnableNotifications'.tr(),
+      body: [
+        TextSpan(text: 'settings.EnableNotificationsDescription'.tr()),
+      ],
       trailing: db.listenableBuilder(
         builder: (context, _) => ZagSwitch(
           value: db.read(),
@@ -492,8 +561,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               if (!granted) {
                 // If permissions denied, don't enable the toggle
                 showZagErrorSnackBar(
-                  title: 'Permission Denied',
-                  message: 'Please enable notifications in Settings',
+                  title: 'settings.NotificationPermissionDeniedTitle'.tr(),
+                  message: 'settings.NotificationPermissionDeniedMessage'.tr(),
                 );
                 return;
               }
@@ -541,12 +610,12 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     final isSignedIn = ZagSupabase.isSupported && user != null;
 
     return ZagBlock(
-      title: 'Multi-Device Sync',
+      title: 'settings.MultiDeviceSync'.tr(),
       body: [
         TextSpan(
           text: isSignedIn
-              ? 'Sync notifications across all your devices'
-              : 'Sign in to enable multi-device sync',
+              ? 'settings.MultiDeviceSyncDescriptionSignedIn'.tr()
+              : 'settings.MultiDeviceSyncDescriptionSignedOut'.tr(),
         ),
       ],
       trailing: db.listenableBuilder(
@@ -565,19 +634,19 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                   await ZagDialog.dialog(
                     context: context,
                     title: value
-                        ? 'Enable Multi-Device Sync?'
-                        : 'Disable Multi-Device Sync?',
+                        ? 'settings.EnableMultiDeviceSyncTitle'.tr()
+                        : 'settings.DisableMultiDeviceSyncTitle'.tr(),
                     content: [
                       ZagDialog.textContent(
                         text: value
-                            ? 'Notifications will sync across all devices with this account.'
-                            : 'Notifications will only work on this device.',
+                            ? 'settings.EnableMultiDeviceSyncMessage'.tr()
+                            : 'settings.DisableMultiDeviceSyncMessage'.tr(),
                       ),
                     ],
                     contentPadding: ZagDialog.textDialogContentPadding(),
                     buttons: [
                       ZagDialog.button(
-                        text: 'Continue',
+                        text: 'settings.ContinueAction'.tr(),
                         textColor: ZagColours.accentColor(context),
                         onPressed: () {
                           confirmed = true;
@@ -602,10 +671,11 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
                         if (success) {
                           showZagSuccessSnackBar(
-                            title: 'Success',
+                            title: 'settings.SuccessTitle'.tr(),
                             message: value
-                                ? 'Switched to multi-device sync'
-                                : 'Switched to single device mode',
+                                ? 'settings.MultiDeviceSyncEnabledMessage'.tr()
+                                : 'settings.MultiDeviceSyncDisabledMessage'
+                                    .tr(),
                           );
 
                           // Refresh webhook sync
@@ -617,8 +687,9 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                         // Revert on failure
                         db.update(!newAnonymousMode);
                         showZagErrorSnackBar(
-                          title: 'Error',
-                          message: 'Failed to update notification mode',
+                          title: 'settings.ErrorTitle'.tr(),
+                          message: 'settings.NotificationModeUpdateFailed'
+                              .tr(),
                         );
                       }
                     }
@@ -633,8 +704,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     const db = ZagreusDatabase.ENABLE_IN_APP_TOASTS;
 
     return ZagBlock(
-      title: 'Enable In-App Toasts',
-      body: [TextSpan(text: 'Show toast notifications in-app')],
+      title: 'settings.EnableInAppToasts'.tr(),
+      body: [TextSpan(text: 'settings.EnableInAppToastsDescription'.tr())],
       trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
         builder: (context, _) {
           final notificationsEnabled =
@@ -656,27 +727,59 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   Widget _radarrEventsButton() {
     return ZagBlock(
-      title: 'Radarr Events',
-      body: [TextSpan(text: 'Configure push and toast notification events')],
+      title: 'settings.RadarrEvents'.tr(),
+      body: [
+        TextSpan(text: 'settings.NotificationEventsDescription'.tr()),
+      ],
       trailing: Icon(
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
       onTap: () => _showCombinedEventsPage(
-        title: 'Radarr Events',
+        title: 'settings.RadarrEvents'.tr(),
         pushEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE),
-          _EventConfig('On Add', ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED),
-          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.RADARR_WEBHOOK_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.RADARR_WEBHOOK_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.RADARR_WEBHOOK_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnAdd',
+            ZagreusDatabase.RADARR_WEBHOOK_ON_MOVIE_ADDED,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnManualInteraction',
+            ZagreusDatabase.RADARR_WEBHOOK_ON_MANUAL_INTERACTION,
+          ),
         ],
         toastEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.RADARR_TOAST_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.RADARR_TOAST_ON_UPGRADE),
-          _EventConfig('On Add', ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED),
-          _EventConfig('On Manual Interaction', ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.RADARR_TOAST_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.RADARR_TOAST_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnAdd',
+            ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnManualInteraction',
+            ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION,
+          ),
         ],
       ),
     );
@@ -684,27 +787,59 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   Widget _sonarrEventsButton() {
     return ZagBlock(
-      title: 'Sonarr Events',
-      body: [TextSpan(text: 'Configure push and toast notification events')],
+      title: 'settings.SonarrEvents'.tr(),
+      body: [
+        TextSpan(text: 'settings.NotificationEventsDescription'.tr()),
+      ],
       trailing: Icon(
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
       onTap: () => _showCombinedEventsPage(
-        title: 'Sonarr Events',
+        title: 'settings.SonarrEvents'.tr(),
         pushEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE),
-          _EventConfig('On Series Added', ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD),
-          _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.SONARR_WEBHOOK_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.SONARR_WEBHOOK_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.SONARR_WEBHOOK_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnSeriesAdded',
+            ZagreusDatabase.SONARR_WEBHOOK_ON_SERIES_ADD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnManualInteraction',
+            ZagreusDatabase.SONARR_WEBHOOK_ON_MANUAL_INTERACTION,
+          ),
         ],
         toastEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.SONARR_TOAST_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.SONARR_TOAST_ON_UPGRADE),
-          _EventConfig('On Series Added', ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD),
-          _EventConfig('On Manual Interaction', ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.SONARR_TOAST_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.SONARR_TOAST_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnSeriesAdded',
+            ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnManualInteraction',
+            ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION,
+          ),
         ],
       ),
     );
@@ -712,25 +847,51 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
 
   Widget _lidarrEventsButton() {
     return ZagBlock(
-      title: 'Lidarr Events',
-      body: [TextSpan(text: 'Configure push and toast notification events')],
+      title: 'settings.LidarrEvents'.tr(),
+      body: [
+        TextSpan(text: 'settings.NotificationEventsDescription'.tr()),
+      ],
       trailing: Icon(
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
       onTap: () => _showCombinedEventsPage(
-        title: 'Lidarr Events',
+        title: 'settings.LidarrEvents'.tr(),
         pushEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.LIDARR_WEBHOOK_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.LIDARR_WEBHOOK_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.LIDARR_WEBHOOK_ON_UPGRADE),
-          _EventConfig('On Artist Added', ZagreusDatabase.LIDARR_WEBHOOK_ON_ARTIST_ADD),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnArtistAdded',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_ARTIST_ADD,
+          ),
         ],
         toastEvents: [
-          _EventConfig('On Grab', ZagreusDatabase.LIDARR_TOAST_ON_GRAB),
-          _EventConfig('On Import', ZagreusDatabase.LIDARR_TOAST_ON_DOWNLOAD),
-          _EventConfig('On Upgrade', ZagreusDatabase.LIDARR_TOAST_ON_UPGRADE),
-          _EventConfig('On Artist Added', ZagreusDatabase.LIDARR_TOAST_ON_ARTIST_ADD),
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.LIDARR_TOAST_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImport',
+            ZagreusDatabase.LIDARR_TOAST_ON_DOWNLOAD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnUpgrade',
+            ZagreusDatabase.LIDARR_TOAST_ON_UPGRADE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnArtistAdded',
+            ZagreusDatabase.LIDARR_TOAST_ON_ARTIST_ADD,
+          ),
         ],
       ),
     );
@@ -760,7 +921,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         Padding(
           padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
           child: Text(
-            'Seerr Webhook URL',
+            'settings.SeerrWebhookUrlTitle'.tr(),
             style: TextStyle(
               fontSize: ZagUI.FONT_SIZE_H2,
               fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -768,7 +929,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
-          title: 'Enable Seerr Notifications',
+          title: 'settings.EnableSeerrNotifications'.tr(),
           body: [],
           trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
             builder: (context, _) {
@@ -815,10 +976,10 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
-          title: 'Copy Webhook URL',
+          title: 'settings.CopyWebhookUrl'.tr(),
           body: [
             TextSpan(
-              text: 'Paste into Seerr webhook settings',
+              text: 'settings.SeerrWebhookPasteHint'.tr(),
             ),
           ],
           trailing: Icon(
@@ -831,8 +992,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               final deviceToken = await ZagSupabaseMessaging.instance.getToken();
               if (deviceToken == null) {
                 showZagErrorSnackBar(
-                  title: 'Error',
-                  message: 'Device token not available',
+                  title: 'settings.ErrorTitle'.tr(),
+                  message: 'settings.DeviceTokenUnavailableMessage'.tr(),
                 );
                 return;
               }
@@ -865,8 +1026,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/seerr/webhook/$webhookID';
                 await Clipboard.setData(ClipboardData(text: webhookUrl));
                 showZagInfoSnackBar(
-                  title: 'Copied',
-                  message: 'Webhook URL copied to clipboard',
+                  title: 'settings.CopiedTitle'.tr(),
+                  message: 'settings.WebhookUrlCopiedMessage'.tr(),
                 );
               } else {
                 throw Exception('Failed to get webhook ID: ${response.statusCode}');
@@ -874,8 +1035,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             } catch (e, stackTrace) {
               ZagLogger().error('Failed to copy Seerr webhook URL', e, stackTrace);
               showZagErrorSnackBar(
-                title: 'Error',
-                message: 'Failed to generate webhook URL',
+                title: 'settings.ErrorTitle'.tr(),
+                message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
               );
             }
           },
@@ -891,7 +1052,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         Padding(
           padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
           child: Text(
-            'Tautulli Webhook URL',
+            'settings.TautulliWebhookUrlTitle'.tr(),
             style: TextStyle(
               fontSize: ZagUI.FONT_SIZE_H2,
               fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -899,7 +1060,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
-          title: 'Enable Tautulli Notifications',
+          title: 'settings.EnableTautulliNotifications'.tr(),
           body: [],
           trailing: ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
             builder: (context, _) {
@@ -946,10 +1107,10 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           ),
         ),
         ZagBlock(
-          title: 'Copy Webhook URL',
+          title: 'settings.CopyWebhookUrl'.tr(),
           body: [
             TextSpan(
-              text: 'Paste into Tautulli notification agent settings',
+              text: 'settings.TautulliWebhookPasteHint'.tr(),
             ),
           ],
           trailing: Icon(
@@ -962,8 +1123,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               final deviceToken = await ZagSupabaseMessaging.instance.getToken();
               if (deviceToken == null) {
                 showZagErrorSnackBar(
-                  title: 'Error',
-                  message: 'Device token not available',
+                  title: 'settings.ErrorTitle'.tr(),
+                  message: 'settings.DeviceTokenUnavailableMessage'.tr(),
                 );
                 return;
               }
@@ -996,8 +1157,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
                 final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/tautulli/webhook/$webhookID';
                 await Clipboard.setData(ClipboardData(text: webhookUrl));
                 showZagInfoSnackBar(
-                  title: 'Copied',
-                  message: 'Webhook URL copied to clipboard',
+                  title: 'settings.CopiedTitle'.tr(),
+                  message: 'settings.WebhookUrlCopiedMessage'.tr(),
                 );
               } else {
                 throw Exception('Failed to get webhook ID: ${response.statusCode}');
@@ -1005,8 +1166,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             } catch (e, stackTrace) {
               ZagLogger().error('Failed to copy Tautulli webhook URL', e, stackTrace);
               showZagErrorSnackBar(
-                title: 'Error',
-                message: 'Failed to generate webhook URL',
+                title: 'settings.ErrorTitle'.tr(),
+                message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
               );
             }
           },
@@ -1016,12 +1177,32 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
   }
 }
 
+enum _WebhookStatusType {
+  idle,
+  notConfigured,
+  signInRequired,
+  syncing,
+  success,
+  failed,
+  removing,
+  removed,
+  removeFailed,
+  error,
+}
+
+class _WebhookStatus {
+  final _WebhookStatusType type;
+  final String? message;
+
+  const _WebhookStatus(this.type, {this.message});
+}
+
 /// Helper class to hold event configuration data
 class _EventConfig {
-  final String title;
+  final String titleKey;
   final ZagreusDatabase<bool> database;
 
-  _EventConfig(this.title, this.database);
+  _EventConfig(this.titleKey, this.database);
 }
 
 /// Combined events page showing both push and toast events with headers
@@ -1057,13 +1238,13 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
         controller: scrollController,
         children: [
           // Push Notifications Section
-          _buildSectionHeader('Push Notifications'),
+          _buildSectionHeader('settings.NotificationsPushSectionTitle'),
           for (final event in widget.pushEvents)
             _buildPushEventToggle(context, event),
           
           // In-App Toasts Section
           ZagDivider(),
-          _buildSectionHeader('In-App Toasts'),
+          _buildSectionHeader('settings.NotificationsToastsSectionTitle'),
           for (final event in widget.toastEvents)
             _buildToastEventToggle(context, event),
         ],
@@ -1071,11 +1252,11 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String titleKey) {
     return Padding(
       padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
       child: Text(
-        title,
+        titleKey.tr(),
         style: TextStyle(
           fontSize: ZagUI.FONT_SIZE_H2,
           fontWeight: ZagUI.FONT_WEIGHT_BOLD,
@@ -1086,7 +1267,7 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
 
   Widget _buildPushEventToggle(BuildContext context, _EventConfig event) {
     return ZagBlock(
-      title: event.title,
+      title: event.titleKey.tr(),
       body: [],
       trailing: event.database.listenableBuilder(
         builder: (context, _) => ZagSwitch(
@@ -1105,7 +1286,7 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
 
   Widget _buildToastEventToggle(BuildContext context, _EventConfig event) {
     return ZagBlock(
-      title: event.title,
+      title: event.titleKey.tr(),
       body: [],
       trailing: ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
         builder: (context, _) {

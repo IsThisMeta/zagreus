@@ -17,11 +17,13 @@ class RevenueCatService {
   static const String _apiKey = 'appl_rUDwskSqmGCotcUTmqthnGgYCFq';
   static const String _proEntitlementId = 'Pro';  // Monthly Pro
   static const String _proYearlyEntitlementId = 'Pro Yearly';  // Yearly Pro
+  static const String _proLifetimeEntitlementId = 'Pro Lifetime';  // Lifetime Pro
   static const String _megaEntitlementId = 'Mega';  // Mega entitlement for Z-Bot
   static const String _ultraEntitlementId = 'Ultra';  // Ultra entitlement for top-tier AI
   static const String _supremeEntitlementId = 'Supreme';  // Supreme entitlement for GPT-5-Pro
   static const String proMonthlyProductId = 'com.zagreus.pro.monthly.v2';
   static const String proYearlyProductId = 'com.zagreus.pro.yearly';
+  static const String proLifetimeProductId = 'com.zagreus.pro.lifetime';
   static const String megaMonthlyProductId = 'com.zagreus.mega.monthly';
   static const String megaYearlyProductId = 'com.zagreus.mega.yearly';
   static const String ultraMonthlyProductId = 'com.zagreus.ultra.monthly';
@@ -87,6 +89,10 @@ class RevenueCatService {
 
     print('🔍 RevenueCat: Checking entitlements...');
 
+    // Check Pro Lifetime entitlement first (takes priority)
+    final proLifetimeEntitlement = _customerInfo?.entitlements.all[_proLifetimeEntitlementId];
+    final isProLifetimeActive = proLifetimeEntitlement?.isActive ?? false;
+
     // Check Pro entitlements (monthly + yearly) and pick the one with the longer expiry
     final proMonthlyEntitlement = _customerInfo?.entitlements.all[_proEntitlementId];
     final proYearlyEntitlement = _customerInfo?.entitlements.all[_proYearlyEntitlementId];
@@ -126,7 +132,14 @@ class RevenueCatService {
     final isMegaActive = megaEntitlement?.isActive ?? false;
     final hasHigherTier = isSupremeActive || isUltraActive || isMegaActive;
 
-    if (activeProEntitlement != null) {
+    // Handle Pro Lifetime first (takes priority, no expiry)
+    if (isProLifetimeActive) {
+      final productId = proLifetimeEntitlement?.productIdentifier ?? proLifetimeProductId;
+      print('🎯 RevenueCat: Pro Lifetime active (product: $productId)');
+
+      // Apply lifetime subscription with far-future expiry
+      ZagreusPro.applyLifetimeSubscription(productId: productId);
+    } else if (activeProEntitlement != null) {
       final expirationDate = activeProEntitlement.expirationDate;
       if (expirationDate != null) {
         final expiry = DateTime.parse(expirationDate);
@@ -344,6 +357,7 @@ class RevenueCatService {
 
       ZagLogger().debug('🔍 Looking for Pro Monthly: "$_proEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Pro Yearly: "$_proYearlyEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proYearlyEntitlementId)}');
+      ZagLogger().debug('🔍 Looking for Pro Lifetime: "$_proLifetimeEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_proLifetimeEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Mega: "$_megaEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_megaEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Ultra: "$_ultraEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_ultraEntitlementId)}');
       ZagLogger().debug('🔍 Looking for Supreme: "$_supremeEntitlementId" - Found: ${customerInfo.entitlements.all.containsKey(_supremeEntitlementId)}');
@@ -394,6 +408,7 @@ class RevenueCatService {
   bool get isProActive =>
     (_customerInfo?.entitlements.all[_proEntitlementId]?.isActive ?? false) ||
     (_customerInfo?.entitlements.all[_proYearlyEntitlementId]?.isActive ?? false) ||
+    (_customerInfo?.entitlements.all[_proLifetimeEntitlementId]?.isActive ?? false) ||
     isMegaActive;
 
   bool get isAvailable => true; // RevenueCat handles availability internally
@@ -789,6 +804,70 @@ class RevenueCatService {
         return false;
       }
       print('❌ Purchase failed: $e');
+      showZagInfoSnackBar(
+        title: 'Purchase Failed',
+        message: 'Unable to complete purchase',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> purchaseProLifetime() async {
+    try {
+      // Get available packages
+      final offerings = await Purchases.getOfferings();
+
+      print('🔍 RevenueCat Offerings: ${offerings.all.keys}');
+
+      // Look for lifetime package in the default or pro offering
+      Package? lifetimePackage;
+
+      // Check current offering first
+      final packages = offerings.current?.availablePackages ?? [];
+      lifetimePackage = packages.firstWhereOrNull(
+        (pkg) => pkg.storeProduct.identifier == proLifetimeProductId ||
+                 pkg.identifier.toLowerCase().contains('lifetime') ||
+                 pkg.packageType == PackageType.lifetime,
+      );
+
+      // If not found in current, check all offerings
+      if (lifetimePackage == null) {
+        for (final entry in offerings.all.entries) {
+          final match = entry.value.availablePackages.firstWhereOrNull(
+            (pkg) => pkg.storeProduct.identifier == proLifetimeProductId ||
+                     pkg.identifier.toLowerCase().contains('lifetime') ||
+                     pkg.packageType == PackageType.lifetime,
+          );
+          if (match != null) {
+            lifetimePackage = match;
+            break;
+          }
+        }
+      }
+
+      if (lifetimePackage == null) {
+        print('❌ No lifetime package found in offerings');
+        return false;
+      }
+
+      print('📦 Purchasing Pro Lifetime package: ${lifetimePackage.identifier}');
+
+      // Make purchase
+      final result = await Purchases.purchasePackage(lifetimePackage);
+      _customerInfo = result.customerInfo;
+      _updateProStatus();
+
+      showZagInfoSnackBar(
+        title: 'Welcome to Zagreus Pro!',
+        message: 'Premium features are now unlocked forever.',
+      );
+      return true;
+    } catch (e) {
+      if (e is PurchasesErrorCode && e == PurchasesErrorCode.purchaseCancelledError) {
+        // User cancelled - don't show error
+        return false;
+      }
+      print('❌ Lifetime purchase failed: $e');
       showZagInfoSnackBar(
         title: 'Purchase Failed',
         message: 'Unable to complete purchase',

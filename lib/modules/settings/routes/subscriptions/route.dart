@@ -397,17 +397,47 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
             ),
           ),
+          // Show upgrade options for existing Pro subscribers (not lifetime)
           if (isPro &&
-              ZagreusPro.subscriptionType.toLowerCase().contains('month')) ...[
+              !isMega &&
+              !isUltra &&
+              !isSupreme &&
+              !ZagreusPro.subscriptionType.toLowerCase().contains('lifetime')) ...[
             const SizedBox(height: 12),
+            // Show yearly option for monthly subscribers
+            if (ZagreusPro.subscriptionType.toLowerCase().contains('month'))
+              ZagDialog.tile(
+                icon: Icons.autorenew_rounded,
+                iconColor: ZagColours.currentAccent,
+                text: 'settings.SubscriptionsSwitchToYearly'
+                    .tr(args: ['\$4.99/year']),
+                subtitle: RichText(
+                  text: TextSpan(
+                    text: 'settings.SubscriptionsLockInSavings'.tr(),
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.color
+                          ?.withOpacity(0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _purchasePro(false);
+                },
+              ),
+            // Show lifetime option for all non-lifetime subscribers
             ZagDialog.tile(
-              icon: Icons.autorenew_rounded,
+              icon: Icons.all_inclusive_rounded,
               iconColor: ZagColours.currentAccent,
-              text: 'settings.SubscriptionsSwitchToYearly'
-                  .tr(args: ['\$4.99/year']),
+              text: 'settings.SubscriptionsSwitchToLifetime'
+                  .tr(args: ['\$19.99']),
               subtitle: RichText(
                 text: TextSpan(
-                  text: 'settings.SubscriptionsLockInSavings'.tr(),
+                  text: 'settings.SubscriptionsLifetimeOneTime'.tr(),
                   style: TextStyle(
                     color: Theme.of(context)
                         .textTheme
@@ -420,7 +450,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                _purchasePro(false);
+                _purchaseProLifetime();
               },
             ),
           ],
@@ -469,6 +499,29 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
               onTap: () {
                 Navigator.of(context).pop();
                 _purchasePro(false);
+              },
+            ),
+            ZagDialog.tile(
+              icon: Icons.all_inclusive_rounded,
+              iconColor: ZagColours.currentAccent,
+              text: 'settings.SubscriptionsPlanLifetime'
+                  .tr(args: ['\$19.99']),
+              subtitle: RichText(
+                text: TextSpan(
+                  text: 'settings.SubscriptionsLifetimeOneTime'.tr(),
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.color
+                        ?.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _purchaseProLifetime();
               },
             ),
             const SizedBox(height: 16),
@@ -790,6 +843,9 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
   String _formatPlanName(String raw) {
     if (raw.isEmpty) return 'settings.SubscriptionsPlanNamePro'.tr();
     final lower = raw.toLowerCase();
+    if (lower.contains('lifetime')) {
+      return 'settings.SubscriptionsPlanNameLifetime'.tr();
+    }
     if (lower.contains('year')) {
       return 'settings.SubscriptionsPlanNameYearly'.tr();
     }
@@ -820,6 +876,29 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
     final bool success = isMonthly
         ? await iapService.purchaseMonthly()
         : await iapService.purchaseYearly();
+
+    if (success) {
+      setState(() {});
+    }
+  }
+
+  void _purchaseProLifetime() async {
+    final iapService = RevenueCatService();
+
+    if (!iapService.isAvailable) {
+      showZagInfoSnackBar(
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
+      );
+      return;
+    }
+
+    showZagInfoSnackBar(
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
+    );
+
+    final bool success = await iapService.purchaseProLifetime();
 
     if (success) {
       setState(() {});

@@ -6,8 +6,7 @@ part of 'types.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class SeerrRequestStatusAdapter
-    extends TypeAdapter<SeerrRequestStatus> {
+class SeerrRequestStatusAdapter extends TypeAdapter<SeerrRequestStatus> {
   @override
   final int typeId = 82;
 

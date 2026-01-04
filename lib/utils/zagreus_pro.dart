@@ -174,6 +174,21 @@ class ZagreusPro {
     setProBootModule();
   }
 
+  /// Apply lifetime subscription (no expiry date needed).
+  static void applyLifetimeSubscription({required String productId}) {
+    // Use a far-future date for lifetime (100 years from now)
+    final lifetimeExpiry = DateTime.now().toUtc().add(const Duration(days: 36500));
+    print('🔐 Pro: Applying lifetime subscription for product $productId');
+
+    ZagreusDatabase.ZAGREUS_PRO_ENABLED.update(true);
+    ZagreusDatabase.ZAGREUS_PRO_EXPIRY.update(lifetimeExpiry.toIso8601String());
+    ZagreusDatabase.ZAGREUS_PRO_SUBSCRIPTION_TYPE.update('lifetime');
+    ZagreusDatabase.LAST_SUBSCRIPTION_VERIFY
+        .update(DateTime.now().toUtc().toIso8601String());
+
+    setProBootModule();
+  }
+
 
   static void disable() {
     _disablePro();
@@ -232,6 +247,7 @@ class ZagreusPro {
 
   static String _subscriptionTypeFromProduct(String productId) {
     final lower = productId.toLowerCase();
+    if (lower.contains('lifetime')) return 'lifetime';
     if (lower.contains('year')) return 'yearly';
     if (lower.contains('month')) return 'monthly';
     return lower;
