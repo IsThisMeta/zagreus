@@ -36,21 +36,165 @@ class _State extends State<SABnzbdQueue>
     super.build(context);
     return ZagreusDatabase.SPEED_CUBE_ENABLED.listenableBuilder(
       builder: (context, _) {
-        final cubeEnabled =
-            ZagreusDatabase.SPEED_CUBE_ENABLED.read();
+        final cubeEnabled = ZagreusDatabase.SPEED_CUBE_ENABLED.read();
+        final state = context.watch<SABnzbdState>();
+
         return ZagScaffold(
           scaffoldKey: _scaffoldKey,
           body: _body,
-          floatingActionButton: context.watch<SABnzbdState>().error
+          floatingActionButton: state.error
               ? null
-              : SABnzbdQueueFAB(
-                  scrollController: SABnzbdNavigationBar.scrollControllers[0]),
+              : state.isMultiSelectMode
+                  ? _multiSelectFAB(context, state)
+                  : SABnzbdQueueFAB(
+                      scrollController:
+                          SABnzbdNavigationBar.scrollControllers[0]),
           floatingActionButtonLocation: cubeEnabled
               ? FloatingActionButtonLocation.startFloat
               : FloatingActionButtonLocation.endFloat,
         );
       },
     );
+  }
+
+  Widget _multiSelectFAB(BuildContext context, SABnzbdState state) {
+    return ZagFloatingActionButton(
+      icon: Icons.more_horiz_rounded,
+      label: '${state.selectedCount} selected',
+      onPressed: () => _showMultiSelectActions(context, state),
+    );
+  }
+
+  Future<void> _showMultiSelectActions(
+      BuildContext context, SABnzbdState state) async {
+    final selectedIds = state.selectedQueueIds.toList();
+    if (selectedIds.isEmpty) return;
+
+    final result = await SABnzbdDialogs.multiSelectActions(context);
+    if (!result[0]) return;
+
+    switch (result[1]) {
+      case 'category':
+        await _bulkSetCategory(context, state, selectedIds);
+        break;
+      case 'priority':
+        await _bulkSetPriority(context, state, selectedIds);
+        break;
+      case 'pause':
+        await _bulkPause(context, state, selectedIds);
+        break;
+      case 'resume':
+        await _bulkResume(context, state, selectedIds);
+        break;
+      case 'delete':
+        await _bulkDelete(context, state, selectedIds);
+        break;
+      case 'cancel':
+        state.exitMultiSelectMode();
+        break;
+    }
+  }
+
+  Future<void> _bulkSetCategory(
+      BuildContext context, SABnzbdState state, List<String> ids) async {
+    final api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+    final categories = await api.getCategories();
+    final result = await SABnzbdDialogs.changeCategory(context, categories);
+
+    if (result[0]) {
+      int successCount = 0;
+      for (final id in ids) {
+        try {
+          await api.setCategory(id, result[1]);
+          successCount++;
+        } catch (_) {}
+      }
+      showZagSuccessSnackBar(
+        title: 'Category Set',
+        message: '$successCount items updated',
+      );
+      state.exitMultiSelectMode();
+      _fetchWithoutMessage();
+    }
+  }
+
+  Future<void> _bulkSetPriority(
+      BuildContext context, SABnzbdState state, List<String> ids) async {
+    final result = await SABnzbdDialogs.changePriority(context);
+
+    if (result[0]) {
+      final api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+      int successCount = 0;
+      for (final id in ids) {
+        try {
+          await api.setJobPriority(id, result[1]);
+          successCount++;
+        } catch (_) {}
+      }
+      showZagSuccessSnackBar(
+        title: 'Priority Set',
+        message: '$successCount items updated',
+      );
+      state.exitMultiSelectMode();
+      _fetchWithoutMessage();
+    }
+  }
+
+  Future<void> _bulkPause(
+      BuildContext context, SABnzbdState state, List<String> ids) async {
+    final api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+    int successCount = 0;
+    for (final id in ids) {
+      try {
+        await api.pauseSingleJob(id);
+        successCount++;
+      } catch (_) {}
+    }
+    showZagSuccessSnackBar(
+      title: 'Jobs Paused',
+      message: '$successCount items paused',
+    );
+    state.exitMultiSelectMode();
+    _fetchWithoutMessage();
+  }
+
+  Future<void> _bulkResume(
+      BuildContext context, SABnzbdState state, List<String> ids) async {
+    final api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+    int successCount = 0;
+    for (final id in ids) {
+      try {
+        await api.resumeSingleJob(id);
+        successCount++;
+      } catch (_) {}
+    }
+    showZagSuccessSnackBar(
+      title: 'Jobs Resumed',
+      message: '$successCount items resumed',
+    );
+    state.exitMultiSelectMode();
+    _fetchWithoutMessage();
+  }
+
+  Future<void> _bulkDelete(
+      BuildContext context, SABnzbdState state, List<String> ids) async {
+    final confirm = await SABnzbdDialogs.deleteJob(context);
+    if (!confirm[0]) return;
+
+    final api = SABnzbdAPI.from(ZagProfile.forModule('sabnzbd'));
+    int successCount = 0;
+    for (final id in ids) {
+      try {
+        await api.deleteJob(id);
+        successCount++;
+      } catch (_) {}
+    }
+    showZagSuccessSnackBar(
+      title: 'Jobs Deleted',
+      message: '$successCount items deleted',
+    );
+    state.exitMultiSelectMode();
+    _fetchWithoutMessage();
   }
 
   @override

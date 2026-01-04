@@ -21,6 +21,7 @@ class DownloadClientButton extends StatelessWidget {
 
   bool get _shouldShow {
     final profile = ZagProfile.current;
-    return profile.sabnzbdEnabled || profile.nzbgetEnabled;
+    // Only show if multiple download clients are configured
+    return profile.sabnzbdEnabled && profile.nzbgetEnabled;
   }
 }

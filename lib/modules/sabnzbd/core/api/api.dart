@@ -432,11 +432,12 @@ class SABnzbdAPI {
     }
   }
 
-  Future<bool> uploadURL(String url) async {
+  Future<bool> uploadURL(String url, {String category = ''}) async {
     try {
       Response response = await _dio.get('', queryParameters: {
         'mode': 'addurl',
         'name': url,
+        if (category.isNotEmpty) 'cat': category,
       });
       return response.data['status'] != null && response.data['status'];
     } on DioException catch (error, stack) {

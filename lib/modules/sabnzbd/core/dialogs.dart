@@ -668,6 +668,43 @@ class SABnzbdDialogs {
     return [_flag];
   }
 
+  static Future<List<dynamic>> multiSelectActions(BuildContext context) async {
+    List<List<dynamic>> _options = [
+      ['Set Category', Icons.category_rounded, 'category'],
+      ['Set Priority', Icons.low_priority_rounded, 'priority'],
+      ['Pause Jobs', Icons.pause_rounded, 'pause'],
+      ['Resume Jobs', Icons.play_arrow_rounded, 'resume'],
+      ['Delete Jobs', Icons.delete_rounded, 'delete'],
+      ['Cancel Selection', Icons.close_rounded, 'cancel'],
+    ];
+    bool _flag = false;
+    String _value = '';
+
+    void _setValues(bool flag, String value) {
+      _flag = flag;
+      _value = value;
+      Navigator.of(context).pop();
+    }
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'Bulk Actions',
+      content: List.generate(
+        _options.length,
+        (index) => ZagDialog.tile(
+          text: _options[index][0],
+          icon: _options[index][1],
+          iconColor: index == _options.length - 1
+              ? ZagColours.grey
+              : ZagColours().byListIndex(index),
+          onTap: () => _setValues(true, _options[index][2]),
+        ),
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+    return [_flag, _value];
+  }
+
   static Future<List<dynamic>> defaultPage(BuildContext context) async {
     bool _flag = false;
     int _index = 0;

@@ -6,7 +6,51 @@ class SABnzbdState extends ZagModuleState {
   }
 
   @override
-  void reset() {}
+  void reset() {
+    _selectedQueueIds.clear();
+    _isMultiSelectMode = false;
+  }
+
+  // Multi-select state
+  final Set<String> _selectedQueueIds = {};
+  Set<String> get selectedQueueIds => _selectedQueueIds;
+
+  bool _isMultiSelectMode = false;
+  bool get isMultiSelectMode => _isMultiSelectMode;
+
+  void enterMultiSelectMode(String initialId) {
+    _isMultiSelectMode = true;
+    _selectedQueueIds.add(initialId);
+    notifyListeners();
+  }
+
+  void exitMultiSelectMode() {
+    _isMultiSelectMode = false;
+    _selectedQueueIds.clear();
+    notifyListeners();
+  }
+
+  void toggleSelection(String id) {
+    if (_selectedQueueIds.contains(id)) {
+      _selectedQueueIds.remove(id);
+      // Auto-exit multi-select if nothing selected
+      if (_selectedQueueIds.isEmpty) {
+        _isMultiSelectMode = false;
+      }
+    } else {
+      _selectedQueueIds.add(id);
+    }
+    notifyListeners();
+  }
+
+  void selectAll(List<String> ids) {
+    _selectedQueueIds.addAll(ids);
+    notifyListeners();
+  }
+
+  bool isSelected(String id) => _selectedQueueIds.contains(id);
+
+  int get selectedCount => _selectedQueueIds.length;
 
   bool _error = false;
   bool get error => _error;

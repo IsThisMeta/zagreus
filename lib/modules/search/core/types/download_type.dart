@@ -133,8 +133,40 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
   Future<void> _executeSABnzbd(
       BuildContext context, NewznabResultData data) async {
     SABnzbdAPI api = SABnzbdAPI.from(ZagProfile.current);
+
+    // Fetch categories and show picker
+    String? selectedCategory;
+    try {
+      final categories = await api.getCategories();
+
+      // Find auto-match based on search result category (case-insensitive)
+      int autoSelectIndex = 0;
+      for (int i = 0; i < categories.length; i++) {
+        final catName = categories[i].category ?? '';
+        if (catName.toLowerCase() == data.category.toLowerCase() &&
+            catName.isNotEmpty &&
+            catName != 'Default') {
+          autoSelectIndex = i;
+          break;
+        }
+      }
+
+      // Show category picker dialog
+      selectedCategory = await _showSABnzbdCategoryPicker(
+        context,
+        categories,
+        autoSelectIndex,
+      );
+
+      // User cancelled
+      if (selectedCategory == null) return;
+    } catch (_) {
+      ZagLogger().warning('Failed to fetch SABnzbd categories, using default');
+      selectedCategory = '';
+    }
+
     await api
-        .uploadURL(data.linkDownload)
+        .uploadURL(data.linkDownload, category: selectedCategory)
         .then((_) => showZagSuccessSnackBar(
               title: 'search.SentNZBData'.tr(),
               message:
@@ -147,6 +179,45 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
       return showZagErrorSnackBar(
           title: 'search.FailedToSend'.tr(), error: error);
     });
+  }
+
+  Future<String?> _showSABnzbdCategoryPicker(
+    BuildContext context,
+    List<SABnzbdCategoryData> categories,
+    int initialSelection,
+  ) async {
+    String? result;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'sabnzbd.SelectCategory'.tr(),
+      customContent: ZagDialog.content(
+        children: [
+          for (int i = 0; i < categories.length; i++)
+            ZagDialog.tile(
+              icon: i == initialSelection
+                  ? Icons.check_circle_rounded
+                  : (categories[i].category == 'Default'
+                      ? Icons.category_outlined
+                      : Icons.folder_rounded),
+              iconColor: i == initialSelection
+                  ? ZagColours.currentAccent
+                  : ZagColours.grey,
+              text: categories[i].category ?? 'sabnzbd.CategoryDefault'.tr(),
+              onTap: () {
+                // SABnzbd uses '*' for default category in API
+                result = categories[i].category == 'Default'
+                    ? '*'
+                    : categories[i].category;
+                Navigator.of(context).pop();
+              },
+            ),
+        ],
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+
+    return result;
   }
 
   Future<void> _executeFileSystem(

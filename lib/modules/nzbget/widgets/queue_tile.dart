@@ -25,6 +25,10 @@ class NZBGetQueueTile extends StatefulWidget {
 class _State extends State<NZBGetQueueTile> {
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<NZBGetState>();
+    final isMultiSelect = state.isMultiSelectMode;
+    final isSelected = state.isSelected(widget.data.id);
+
     Color progressColor = widget.data.paused
         ? (Theme.of(context).brightness == Brightness.dark
             ? Colors.white
@@ -40,8 +44,27 @@ class _State extends State<NZBGetQueueTile> {
         percent: min(1.0, max(0, widget.data.percentageDone / 100)),
         progressColor: progressColor,
       ),
-      trailing: ZagReorderableListViewDragger(index: widget.index),
-      onTap: _handlePopup,
+      leading: isMultiSelect
+          ? ZagIconButton(
+              icon: isSelected
+                  ? Icons.check_circle_rounded
+                  : Icons.circle_outlined,
+              color: isSelected ? ZagColours.currentAccent : ZagColours.grey,
+              onPressed: () => state.toggleSelection(widget.data.id),
+            )
+          : null,
+      trailing: isMultiSelect
+          ? null
+          : ZagReorderableListViewDragger(index: widget.index),
+      onTap: isMultiSelect
+          ? () => state.toggleSelection(widget.data.id)
+          : _handlePopup,
+      onLongPress: isMultiSelect
+          ? null
+          : () => state.enterMultiSelectMode(widget.data.id),
+      backgroundColor: isSelected
+          ? ZagColours.currentAccent.withValues(alpha: 0.15)
+          : null,
     );
   }
 

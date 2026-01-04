@@ -783,6 +783,7 @@
     "sabnzbd.Repair": "Repair",
     "sabnzbd.RepairUnpack": "Repair/Unpack",
     "sabnzbd.RepairUnpackDelete": "Repair/Unpack/Delete",
+    "sabnzbd.SelectCategory": "Select Category",
     "sabnzbd.Size": "Size",
     "sabnzbd.ShutdownPC": "Shutdown PC",
     "sabnzbd.ShutdownSABnzbd": "Shutdown SABnzbd",
