@@ -60,7 +60,6 @@ class _State extends State<NZBGetQueue>
   Widget _multiSelectFAB(BuildContext context, NZBGetState state) {
     return ZagFloatingActionButton(
       icon: Icons.more_horiz_rounded,
-      label: '${state.selectedCount} selected',
       onPressed: () => _showMultiSelectActions(context, state),
     );
   }
