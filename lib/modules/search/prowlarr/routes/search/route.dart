@@ -700,7 +700,7 @@ class _ProwlarrFilterSheetContentState
               child: OutlinedButton(
                 onPressed: _clearAll,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
+                  foregroundColor: ZagColours.textColor(context),
                   side: BorderSide(color: Colors.grey[600]!),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -708,7 +708,7 @@ class _ProwlarrFilterSheetContentState
                   ),
                 ),
                 child: Text(
-                  'search.ClearFiltersCaps'.tr(),
+                  'search.ClearFilters'.tr(),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

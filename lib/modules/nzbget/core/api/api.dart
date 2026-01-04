@@ -516,7 +516,7 @@ class NZBGetAPI {
     }
   }
 
-  Future<bool> uploadURL(String url) async {
+  Future<bool> uploadURL(String url, {String category = ''}) async {
     try {
       Response response = await _dio.post(
         '',
@@ -525,7 +525,7 @@ class NZBGetAPI {
           params: [
             '', //NZBFileName
             url, //Content
-            '', //Category
+            category, //Category
             0, //Priority
             false, //AddToTop
             false, //AddPaused

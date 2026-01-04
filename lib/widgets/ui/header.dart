@@ -41,13 +41,12 @@ class ZagHeader extends StatelessWidget {
   }
 
   Widget _subtitle(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
     return Padding(
       child: Text(
         subtitle!,
         style: TextStyle(
           fontSize: ZagUI.FONT_SIZE_H4,
-          color: isLight ? Colors.black87 : ZagColours.grey,
+          color: ZagColours.subtitleColor(context),
           fontWeight: FontWeight.w300,
         ),
       ),

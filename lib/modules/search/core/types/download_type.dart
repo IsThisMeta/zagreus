@@ -48,8 +48,38 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
   Future<void> _executeNZBGet(
       BuildContext context, NewznabResultData data) async {
     NZBGetAPI api = NZBGetAPI.from(ZagProfile.current);
+
+    // Fetch categories and show picker
+    String? selectedCategory;
+    try {
+      final categories = await api.getCategories();
+
+      // Find auto-match based on search result category (case-insensitive)
+      int autoSelectIndex = 0;
+      for (int i = 0; i < categories.length; i++) {
+        if (categories[i].name.toLowerCase() == data.category.toLowerCase() &&
+            categories[i].name.isNotEmpty) {
+          autoSelectIndex = i;
+          break;
+        }
+      }
+
+      // Show category picker dialog
+      selectedCategory = await _showNZBGetCategoryPicker(
+        context,
+        categories,
+        autoSelectIndex,
+      );
+
+      // User cancelled
+      if (selectedCategory == null) return;
+    } catch (_) {
+      ZagLogger().warning('Failed to fetch NZBGet categories, using default');
+      selectedCategory = '';
+    }
+
     await api
-        .uploadURL(data.linkDownload)
+        .uploadURL(data.linkDownload, category: selectedCategory)
         .then((_) => showZagSuccessSnackBar(
               title: 'search.SentNZBData'.tr(),
               message:
@@ -62,6 +92,42 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
       return showZagErrorSnackBar(
           title: 'search.FailedToSend'.tr(), error: error);
     });
+  }
+
+  Future<String?> _showNZBGetCategoryPicker(
+    BuildContext context,
+    List<NZBGetCategoryData> categories,
+    int initialSelection,
+  ) async {
+    String? result;
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'nzbget.SelectCategory'.tr(),
+      customContent: ZagDialog.content(
+        children: [
+          for (int i = 0; i < categories.length; i++)
+            ZagDialog.tile(
+              icon: i == initialSelection
+                  ? Icons.check_circle_rounded
+                  : (i == 0 ? Icons.category_outlined : Icons.folder_rounded),
+              iconColor: i == initialSelection
+                  ? ZagColours.currentAccent
+                  : ZagColours.grey,
+              text: categories[i].name.isEmpty
+                  ? 'nzbget.DefaultCategory'.tr()
+                  : categories[i].name,
+              onTap: () {
+                result = categories[i].name;
+                Navigator.of(context).pop();
+              },
+            ),
+        ],
+      ),
+      contentPadding: ZagDialog.listDialogContentPadding(),
+    );
+
+    return result;
   }
 
   Future<void> _executeSABnzbd(

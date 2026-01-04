@@ -788,6 +788,8 @@
     "sabnzbd.ShutdownSABnzbd": "Shutdown SABnzbd",
     "sabnzbd.StandbyPC": "Standby PC",
     "sabnzbd.Stop": "Stop",
+    "nzbget.SelectCategory": "Select Category",
+    "nzbget.DefaultCategory": "Default",
     "search.AddIndexer": "Add Indexer",
     "search.AddProwlarr": "Add Prowlarr",
     "search.Age": "Age",

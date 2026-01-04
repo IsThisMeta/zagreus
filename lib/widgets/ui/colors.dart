@@ -155,6 +155,12 @@ class ZagColours {
     bool isLight = Theme.of(context).brightness == Brightness.light;
     return isLight ? Colors.black : white;
   }
+
+  /// Get theme-aware subtitle/secondary text color
+  static Color subtitleColor(BuildContext context) {
+    bool isLight = Theme.of(context).brightness == Brightness.light;
+    return isLight ? Colors.black87 : grey;
+  }
 }
 
 extension ZagColor on Color {
