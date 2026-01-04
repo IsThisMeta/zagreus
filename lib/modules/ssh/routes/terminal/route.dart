@@ -262,21 +262,18 @@ class _State extends State<SSHTerminalRoute> {
         Expanded(
           child: Container(
             color: Colors.black,
-            child: GestureDetector(
-              onLongPressStart: (details) => _showContextMenu(details.globalPosition),
-              child: TerminalView(
-                _terminal,
-                controller: _terminalController,
-                autofocus: true,
-                backgroundOpacity: 1.0,
-                theme: _terminalTheme(),
-                textStyle: const TerminalStyle(
-                  fontSize: 14,
-                  fontFamily: 'monospace',
-                ),
-                keyboardType: TextInputType.text,
-                keyboardAppearance: Brightness.dark,
+            child: TerminalView(
+              _terminal,
+              controller: _terminalController,
+              autofocus: true,
+              backgroundOpacity: 1.0,
+              theme: _terminalTheme(),
+              textStyle: const TerminalStyle(
+                fontSize: 14,
+                fontFamily: 'monospace',
               ),
+              keyboardType: TextInputType.text,
+              keyboardAppearance: Brightness.dark,
             ),
           ),
         ),
@@ -305,11 +302,25 @@ class _State extends State<SSHTerminalRoute> {
               _toolbarKey('▶', () => _sendArrow('C')),
               _toolbarKey('/', () => SSHService.instance.write('/')),
               _toolbarKey('⌫', () => _sendBackspace()),
+              const SizedBox(width: 8),
+              _toolbarKey('copy', () => _copySelection()),
+              _toolbarKey('paste', () => _pasteFromClipboard()),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _copySelection() {
+    final selectedText = _terminalController.selection != null
+        ? _terminal.buffer.getText(_terminalController.selection!)
+        : null;
+    if (selectedText != null && selectedText.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: selectedText));
+      _terminalController.clearSelection();
+      showZagSuccessSnackBar(title: 'ssh.Copy'.tr(), message: null);
+    }
   }
 
   bool _ctrlPressed = false;
@@ -355,73 +366,6 @@ class _State extends State<SSHTerminalRoute> {
 
   void _sendBackspace() {
     SSHService.instance.write('\x7f');
-  }
-
-  void _showContextMenu(Offset position) {
-    final selectedText = _terminalController.selection != null
-        ? _terminal.buffer.getText(_terminalController.selection!)
-        : null;
-    final hasSelection = selectedText != null && selectedText.isNotEmpty;
-
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
-      items: [
-        if (hasSelection)
-          PopupMenuItem<String>(
-            value: 'copy',
-            child: Row(
-              children: [
-                const Icon(Icons.copy_rounded, size: 20),
-                const SizedBox(width: 12),
-                Text('ssh.Copy'.tr()),
-              ],
-            ),
-          ),
-        PopupMenuItem<String>(
-          value: 'paste',
-          child: Row(
-            children: [
-              const Icon(Icons.paste_rounded, size: 20),
-              const SizedBox(width: 12),
-              Text('ssh.Paste'.tr()),
-            ],
-          ),
-        ),
-        if (hasSelection)
-          PopupMenuItem<String>(
-            value: 'clear_selection',
-            child: Row(
-              children: [
-                const Icon(Icons.deselect_rounded, size: 20),
-                const SizedBox(width: 12),
-                Text('ssh.ClearSelection'.tr()),
-              ],
-            ),
-          ),
-      ],
-    ).then((value) {
-      if (value == null) return;
-      switch (value) {
-        case 'copy':
-          if (selectedText != null) {
-            Clipboard.setData(ClipboardData(text: selectedText));
-            _terminalController.clearSelection();
-          }
-          break;
-        case 'paste':
-          _pasteFromClipboard();
-          break;
-        case 'clear_selection':
-          _terminalController.clearSelection();
-          break;
-      }
-    });
   }
 
   Future<void> _pasteFromClipboard() async {

@@ -59,5 +59,8 @@
     "ssh.Testing": "Testing...",
     "ssh.Trust": "Trust",
     "ssh.Username": "Username",
-    "ssh.UsernameHint": "root"
+    "ssh.UsernameHint": "root",
+    "ssh.Copy": "Copy",
+    "ssh.Paste": "Paste",
+    "ssh.ClearSelection": "Clear Selection"
 }
