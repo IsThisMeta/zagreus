@@ -6827,31 +6827,6 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // In library badge
-                            if (item['inLibrary'] as bool)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'discover.InLibrary'.tr(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 12),
                             // Title
                             Text(
                               item['title'] as String,
@@ -6862,7 +6837,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            // Rating and watching
+                            // Rating, watching, and in library badge
                             Row(
                               children: [
                                 Icon(
@@ -6890,6 +6865,27 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                     fontSize: 16,
                                   ),
                                 ),
+                                // In library badge
+                                if (item['inLibrary'] as bool) ...[
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      'discover.InLibrary'.tr(),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ],
