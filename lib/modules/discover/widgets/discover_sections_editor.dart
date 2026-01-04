@@ -218,6 +218,8 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
         return 'Unraid';
       case 'search':
         return 'Search';
+      case 'ssh':
+        return 'SSH';
       default:
         return service;
     }
@@ -249,6 +251,7 @@ class DiscoverSectionsEditorState extends State<DiscoverSectionsEditor> {
     'nzbget',
     'unraid',
     'search',
+    'ssh',
   ];
 
 

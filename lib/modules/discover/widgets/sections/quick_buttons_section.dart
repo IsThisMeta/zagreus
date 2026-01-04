@@ -9,6 +9,7 @@ import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/seerr/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
 import 'package:zagreus/modules/search/core/state.dart';
+import 'package:zagreus/modules/ssh/core/state.dart';
 import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/vendor.dart';
 
@@ -154,6 +155,15 @@ class QuickButtonsSection extends StatelessWidget {
         module: ZagModule.SEARCH,
         color: ZagModule.SEARCH.color,
         onTap: () => ZagModule.SEARCH.launch(restore: false),
+      ));
+    }
+
+    // SSH
+    if (enabledButtons.contains('ssh') && context.read<SSHState>().enabled) {
+      services.add(_QuickButtonService(
+        module: ZagModule.SSH,
+        color: ZagModule.SSH.color,
+        onTap: () => ZagModule.SSH.launch(restore: false),
       ));
     }
 

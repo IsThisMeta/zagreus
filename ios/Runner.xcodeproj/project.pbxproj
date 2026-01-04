@@ -131,6 +131,94 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		83107D602F0B292100A2ED46 /* Runner/de.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/de.lproj;
+			sourceTree = "<group>";
+		};
+		83107D632F0B292100A2ED46 /* Runner/el.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/el.lproj;
+			sourceTree = "<group>";
+		};
+		83107D662F0B292100A2ED46 /* Runner/en.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/en.lproj;
+			sourceTree = "<group>";
+		};
+		83107D692F0B292100A2ED46 /* Runner/es.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/es.lproj;
+			sourceTree = "<group>";
+		};
+		83107D6C2F0B292100A2ED46 /* Runner/fr.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/fr.lproj;
+			sourceTree = "<group>";
+		};
+		83107D6F2F0B292100A2ED46 /* Runner/nl.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/nl.lproj;
+			sourceTree = "<group>";
+		};
+		83107D722F0B292100A2ED46 /* Runner/tr.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Runner/tr.lproj;
+			sourceTree = "<group>";
+		};
+		83107D752F0B292100A2ED46 /* Runner/zh-Hans.lproj */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Runner/zh-Hans.lproj";
+			sourceTree = "<group>";
+		};
 		838FD35D2EAC9C32008D550F /* UpcomingWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -209,6 +297,14 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				83107D602F0B292100A2ED46 /* Runner/de.lproj */,
+				83107D632F0B292100A2ED46 /* Runner/el.lproj */,
+				83107D662F0B292100A2ED46 /* Runner/en.lproj */,
+				83107D692F0B292100A2ED46 /* Runner/es.lproj */,
+				83107D6C2F0B292100A2ED46 /* Runner/fr.lproj */,
+				83107D6F2F0B292100A2ED46 /* Runner/nl.lproj */,
+				83107D722F0B292100A2ED46 /* Runner/tr.lproj */,
+				83107D752F0B292100A2ED46 /* Runner/zh-Hans.lproj */,
 				838FD53E2EAEB023008D550F /* LocalNetworkMonitor.swift */,
 				838FD3722EAC9C86008D550F /* UpcomingWidgetExtension.entitlements */,
 				8395246E2E75483800E8FC1F /* Products.storekit */,
@@ -359,6 +455,16 @@
 				83E2E7292E8F84E700366ABF /* PBXTargetDependency */,
 				838FD36A2EAC9C33008D550F /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				83107D602F0B292100A2ED46 /* Runner/de.lproj */,
+				83107D632F0B292100A2ED46 /* Runner/el.lproj */,
+				83107D662F0B292100A2ED46 /* Runner/en.lproj */,
+				83107D692F0B292100A2ED46 /* Runner/es.lproj */,
+				83107D6C2F0B292100A2ED46 /* Runner/fr.lproj */,
+				83107D6F2F0B292100A2ED46 /* Runner/nl.lproj */,
+				83107D722F0B292100A2ED46 /* Runner/tr.lproj */,
+				83107D752F0B292100A2ED46 /* Runner/zh-Hans.lproj */,
+			);
 			name = Runner;
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
@@ -398,6 +504,13 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				el,
+				es,
+				fr,
+				nl,
+				tr,
+				"zh-Hans",
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
