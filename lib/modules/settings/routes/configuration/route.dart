@@ -84,17 +84,13 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
         ),
         ZagBlock(
           title: 'settings.Appearance'.tr(),
-          body: const [
-            TextSpan(text: 'Adjust theme and color preferences'),
-          ],
+          body: [TextSpan(text: 'settings.AppearanceDescription'.tr())],
           trailing: const ZagIconButton(icon: Icons.palette_rounded),
           onTap: SettingsRoutes.CONFIGURATION_APPEARANCE.go,
         ),
         ZagBlock(
-          title: 'Navigation',
-          body: const [
-            TextSpan(text: 'Configure navigation settings'),
-          ],
+          title: 'settings.Navigation'.tr(),
+          body: [TextSpan(text: 'settings.NavigationDescription'.tr())],
           trailing: const ZagIconButton(icon: Icons.navigation_rounded),
           onTap: SettingsRoutes.CONFIGURATION_NAVIGATION.go,
         ),
@@ -162,7 +158,7 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
       body: [
         TextSpan(
           text: isLocked
-            ? 'Requires Zagreus Pro'
+            ? 'settings.ZagreusProRequiredTitle'.tr()
             : 'settings.ConfigureModule'.tr(args: [module.title])
         )
       ],
@@ -178,18 +174,13 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
   void _showProPurchaseDialog(BuildContext context) {
     ZagDialog.dialog(
       context: context,
-      title: 'Zagreus Pro',
+      title: 'settings.SubscriptionsZagreusProTitle'.tr(),
       customContent: ZagDialog.content(
         children: [
           Padding(
             padding: ZagDialog.textDialogContentPadding(),
             child: Text(
-              'Zagreus Pro unlocks Dashboard with limited Z-Bot access.\n\n'
-              '• Beautiful movie & TV discovery\n'
-              '• Trending & popular content\n'
-              '• Recommended based on your library\n'
-              '• Missing movies from collections\n\n'
-              'Choose a plan:',
+              'settings.ProPurchaseDialogBody'.tr(),
               style: TextStyle(
                 fontSize: ZagUI.FONT_SIZE_H2,
                 color: ZagColours.textColor(context),
@@ -199,7 +190,9 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ZagDialog.tile(
             icon: Icons.calendar_month_rounded,
             iconColor: ZagColours.currentAccent,
-            text: 'Monthly • \$0.99/month',
+            text: 'settings.SubscriptionsPlanMonthly'.tr(
+              args: ['\$0.99/month'],
+            ),
             onTap: () {
               Navigator.of(context).pop();
               _mockPurchase(true);
@@ -208,7 +201,9 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
           ZagDialog.tile(
             icon: Icons.star_rounded,
             iconColor: ZagColours.currentAccent,
-            text: 'Yearly • \$4.99/year',
+            text: 'settings.SubscriptionsPlanYearly'.tr(
+              args: ['\$4.99/year'],
+            ),
             onTap: () {
               Navigator.of(context).pop();
               _mockPurchase(false);
@@ -235,8 +230,8 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
       //   );
       // } else {
       showZagInfoSnackBar(
-        title: 'Unavailable',
-        message: 'In-app purchases are not available',
+        title: 'settings.SubscriptionsUnavailableTitle'.tr(),
+        message: 'settings.SubscriptionsUnavailableMessage'.tr(),
       );
       // }
       return;
@@ -244,8 +239,8 @@ class _State extends State<ConfigurationRoute> with ZagScrollControllerMixin {
     
     // Attempt real purchase
     showZagInfoSnackBar(
-      title: 'Processing',
-      message: 'Connecting to App Store...',
+      title: 'settings.SubscriptionsProcessingTitle'.tr(),
+      message: 'settings.SubscriptionsProcessingMessage'.tr(),
     );
     
     final bool success = isMonthly 

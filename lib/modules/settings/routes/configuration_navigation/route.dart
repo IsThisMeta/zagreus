@@ -26,7 +26,7 @@ class _State extends State<ConfigurationNavigationRoute>
   Widget _appBar() {
     return ZagAppBar(
       scrollControllers: [scrollController],
-      title: 'Navigation',
+      title: 'settings.Navigation'.tr(),
     );
   }
 
@@ -47,10 +47,10 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.NAVIGATION_DISABLE_HORIZONTAL_SWIPE;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Swipe Between Tabs',
-        body: const [
+        title: 'settings.SwipeBetweenTabs'.tr(),
+        body: [
           TextSpan(
-            text: 'Allow horizontal swiping between tabs',
+            text: 'settings.SwipeBetweenTabsDescription'.tr(),
           ),
         ],
         trailing: ZagSwitch(
@@ -67,15 +67,17 @@ class _State extends State<ConfigurationNavigationRoute>
       builder: (context, _) {
         final isPro = ZagreusPro.isEnabled;
         return ZagBlock(
-          title: 'Speed Cube',
-          body: const [
-            TextSpan(text: 'Show floating action cube'),
+          title: 'settings.SpeedCube'.tr(),
+          body: [
+            TextSpan(text: 'settings.SpeedCubeDescription'.tr()),
           ],
           trailing: ZagSwitch(
             value: db.read(),
             onChanged: isPro ? db.update : null,
           ),
-          onTap: isPro ? null : () => _showSpeedCubeProUpgradeToast(),
+          onTap: isPro
+              ? null
+              : () => _showProUpgradeToast('settings.SpeedCube'.tr()),
         );
       },
     );
@@ -87,17 +89,19 @@ class _State extends State<ConfigurationNavigationRoute>
       builder: (context, _) {
         final isPro = ZagreusPro.isEnabled;
         return ZagBlock(
-          title: 'Queue Drawer',
-          body: const [
+          title: 'settings.QueueDrawer'.tr(),
+          body: [
             TextSpan(
-              text: 'Access queues from the right screen edge',
+              text: 'settings.QueueDrawerDescription'.tr(),
             ),
           ],
           trailing: ZagSwitch(
             value: isPro && db.read(),
             onChanged: isPro ? db.update : null,
           ),
-          onTap: isPro ? null : () => _showProUpgradeToast(),
+          onTap: isPro
+              ? null
+              : () => _showProUpgradeToast('settings.QueueDrawer'.tr()),
         );
       },
     );
@@ -108,10 +112,10 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.DISCOVER_SHOW_MODULES_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Modules Tab',
-        body: const [
+        title: 'settings.ShowModulesTab'.tr(),
+        body: [
           TextSpan(
-            text: 'Shows modules tab in dashboard',
+            text: 'settings.ShowModulesTabDescription'.tr(),
           ),
         ],
         trailing: ZagSwitch(
@@ -138,10 +142,10 @@ class _State extends State<ConfigurationNavigationRoute>
     const db = ZagreusDatabase.SHOW_CALENDAR_TAB;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Show Calendar Tab',
-        body: const [
+        title: 'settings.ShowCalendarTab'.tr(),
+        body: [
           TextSpan(
-            text: 'Shows calendar tab in dashboard',
+            text: 'settings.ShowCalendarTabDescription'.tr(),
           ),
         ],
         trailing: ZagSwitch(
@@ -152,17 +156,12 @@ class _State extends State<ConfigurationNavigationRoute>
     );
   }
 
-  void _showProUpgradeToast() {
+  void _showProUpgradeToast(String featureName) {
     showZagInfoSnackBar(
-      title: 'Zagreus Pro required',
-      message: 'Upgrade to Zagreus Pro to use Queue Drawer.',
-    );
-  }
-
-  void _showSpeedCubeProUpgradeToast() {
-    showZagInfoSnackBar(
-      title: 'Zagreus Pro required',
-      message: 'Upgrade to Zagreus Pro to use Speed Cube.',
+      title: 'settings.ZagreusProRequiredTitle'.tr(),
+      message: 'settings.ZagreusProRequiredMessage'.tr(
+        args: [featureName],
+      ),
     );
   }
 }

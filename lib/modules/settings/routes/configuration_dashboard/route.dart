@@ -27,7 +27,7 @@ class _State extends State<ConfigurationDashboardRoute>
 
   Widget _appBar() {
     return ZagAppBar(
-      title: 'Dashboard',
+      title: 'zagreus.Dashboard'.tr(),
       scrollControllers: [scrollController],
     );
   }
@@ -47,15 +47,15 @@ class _State extends State<ConfigurationDashboardRoute>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ZagHeader(text: 'Search'),
+        ZagHeader(text: 'settings.Search'.tr()),
         DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.listenableBuilder(
           builder: (context, _) {
             final enabled = DashboardDatabase.SEARCH_SHOW_LIBRARY_BADGES.read();
             return ZagBlock(
-              title: 'Show Library Badges',
+              title: 'settings.ShowLibraryBadges'.tr(),
               body: [
                 TextSpan(
-                  text: 'Show badges indicating which libraries contain the search result',
+                  text: 'settings.ShowLibraryBadgesDescription'.tr(),
                 ),
               ],
               trailing: ZagSwitch(

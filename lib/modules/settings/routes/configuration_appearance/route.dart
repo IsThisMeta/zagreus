@@ -59,12 +59,12 @@ class _State extends State<ConfigurationAppearanceRoute>
         return Column(
           children: [
             ZagBlock(
-              title: 'Follow System Theme',
+              title: 'settings.FollowSystemTheme'.tr(),
               body: [
                 TextSpan(
                   text: isFollowingSystem
-                      ? 'Following system preference'
-                      : 'Manual theme control',
+                      ? 'settings.FollowingSystemPreference'.tr()
+                      : 'settings.ManualThemeControl'.tr(),
                 ),
               ],
               trailing: ZagSwitch(
@@ -78,12 +78,12 @@ class _State extends State<ConfigurationAppearanceRoute>
             ),
             if (!isFollowingSystem)
               ZagBlock(
-                title: 'Theme Mode',
+                title: 'settings.ThemeMode'.tr(),
                 body: [
                   TextSpan(
                     text: currentMode == 'light'
-                        ? 'Light theme enabled'
-                        : 'Dark theme enabled',
+                        ? 'settings.LightThemeEnabled'.tr()
+                        : 'settings.DarkThemeEnabled'.tr(),
                   ),
                 ],
                 trailing: ZagSwitch(
@@ -125,9 +125,9 @@ class _State extends State<ConfigurationAppearanceRoute>
     const db = ZagreusDatabase.THEME_USE_LUNASEA_COLORS;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Use Original Colors',
-        body: const [
-          TextSpan(text: 'Enable legacy teal color scheme'),
+        title: 'settings.UseOriginalColors'.tr(),
+        body: [
+          TextSpan(text: 'settings.UseOriginalColorsDescription'.tr()),
         ],
         trailing: ZagSwitch(
           value: db.read(),
@@ -136,8 +136,8 @@ class _State extends State<ConfigurationAppearanceRoute>
             ZagTheme().initialize();
             ZagState.reset(context);
             showZagSnackBar(
-              title: 'Theme Changed',
-              message: 'Restart the app to fully apply color changes',
+              title: 'settings.ThemeChanged'.tr(),
+              message: 'settings.ThemeRestartRequired'.tr(),
               type: ZagSnackbarType.INFO,
             );
           },
@@ -190,9 +190,9 @@ class _State extends State<ConfigurationAppearanceRoute>
     const db = ZagreusDatabase.THEME_LIGHT_BORDER;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Light Theme Borders',
-        body: const [
-          TextSpan(text: 'Add subtle borders to cards in light theme'),
+        title: 'settings.LightThemeBorders'.tr(),
+        body: [
+          TextSpan(text: 'settings.LightThemeBordersDescription'.tr()),
         ],
         trailing: ZagSwitch(
           value: db.read(),
@@ -206,9 +206,9 @@ class _State extends State<ConfigurationAppearanceRoute>
     const db = ZagreusDatabase.APPEARANCE_HIDE_RATINGS;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Ratings',
-        body: const [
-          TextSpan(text: 'Hide all rating badges'),
+        title: 'settings.HideRatings'.tr(),
+        body: [
+          TextSpan(text: 'settings.HideRatingsDescription'.tr()),
         ],
         trailing: ZagSwitch(
           value: db.read(),
@@ -222,9 +222,9 @@ class _State extends State<ConfigurationAppearanceRoute>
     const db = ZagreusDatabase.APPEARANCE_HIDE_STREAMING_PROVIDERS;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Hide Streaming Providers',
-        body: const [
-          TextSpan(text: 'Hide streaming and buy/rent providers'),
+        title: 'settings.HideStreamingProviders'.tr(),
+        body: [
+          TextSpan(text: 'settings.HideStreamingProvidersDescription'.tr()),
         ],
         trailing: ZagSwitch(
           value: db.read(),

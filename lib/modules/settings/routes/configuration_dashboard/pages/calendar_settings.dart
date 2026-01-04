@@ -166,8 +166,10 @@ class _State extends State<ConfigurationDashboardCalendarRoute>
     const _db = DashboardDatabase.CALENDAR_INCLUDE_UNMONITORED_SONARR;
     return _db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Include Unmonitored',
-        body: const [TextSpan(text: 'Show unmonitored shows in the calendar')],
+        title: 'settings.IncludeUnmonitored'.tr(),
+        body: [
+          TextSpan(text: 'settings.IncludeUnmonitoredDescription'.tr()),
+        ],
         trailing: ZagSwitch(
           value: _db.read(),
           onChanged: _db.update,

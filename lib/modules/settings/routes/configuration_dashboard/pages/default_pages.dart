@@ -107,7 +107,7 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
         }
         return ZagBlock(
           title: 'zagreus.Home'.tr(),
-          body: [TextSpan(text: current.label)],
+          body: [TextSpan(text: current.labelKey.tr())],
           trailing: ZagIconButton(icon: current.icon),
           onTap: () async {
             final selection = await _selectDiscoverDefaultTab(options);
@@ -131,7 +131,7 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
       content: [
         for (int index = 0; index < options.length; index++)
           ZagDialog.tile(
-            text: options[index].label,
+            text: options[index].labelKey.tr(),
             icon: options[index].icon,
             iconColor: ZagColours().byListIndex(index),
             onTap: () {
@@ -152,7 +152,7 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
       options.add(
         const _DiscoverTabOption(
           key: 'modules',
-          label: 'Modules',
+          labelKey: 'settings.DashboardTabModules',
           icon: Icons.workspaces_rounded,
         ),
       );
@@ -160,23 +160,23 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
     options.addAll([
       const _DiscoverTabOption(
         key: 'movies',
-        label: 'Movies',
+        labelKey: 'settings.DashboardTabMovies',
         icon: Icons.movie_rounded,
       ),
       const _DiscoverTabOption(
         key: 'shows',
-        label: 'Shows',
+        labelKey: 'settings.DashboardTabShows',
         icon: Icons.tv_rounded,
       ),
       if (showCalendar)
         const _DiscoverTabOption(
           key: 'calendar',
-          label: 'Calendar',
+          labelKey: 'settings.DashboardTabCalendar',
           icon: Icons.calendar_today_rounded,
         ),
       const _DiscoverTabOption(
         key: 'server',
-        label: 'Server',
+        labelKey: 'settings.DashboardTabServer',
         icon: Icons.dns_rounded,
       ),
     ]);
@@ -186,12 +186,12 @@ class _State extends State<ConfigurationDashboardDefaultPagesRoute>
 
 class _DiscoverTabOption {
   final String key;
-  final String label;
+  final String labelKey;
   final IconData icon;
 
   const _DiscoverTabOption({
     required this.key,
-    required this.label,
+    required this.labelKey,
     required this.icon,
   });
 }

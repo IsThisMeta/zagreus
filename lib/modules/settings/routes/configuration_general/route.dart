@@ -101,29 +101,28 @@ class _State extends State<ConfigurationGeneralRoute>
 
         VoidCallback? onTap;
         if (!isPro) {
-          onTap = () => _showProUpgradeToast('Lock Settings');
+          onTap = () => _showProUpgradeToast('settings.LockSettings'.tr());
         } else if (!supabaseAvailable) {
           onTap = () => showZagInfoSnackBar(
-                title: 'Unavailable',
-                message: 'Settings lock is not supported on this platform.',
+                title: 'settings.SettingsLockUnavailableTitle'.tr(),
+                message: 'settings.SettingsLockUnavailableMessage'.tr(),
               );
         } else if (!isSignedIn) {
           onTap = () {
             showZagInfoSnackBar(
-              title: 'Sign in required',
-              message:
-                  'Sign in to your Zagreus account to enable Lock Settings.',
+              title: 'settings.SignInRequiredTitle'.tr(),
+              message: 'settings.SignInRequiredMessage'.tr(
+                args: ['settings.LockSettings'.tr()],
+              ),
             );
             SettingsRoutes.ACCOUNT.go();
           };
         }
 
         return ZagBlock(
-          title: 'Lock Settings',
-          body: const [
-            TextSpan(
-              text: 'Protect settings with your Zagreus password',
-            ),
+          title: 'settings.LockSettings'.tr(),
+          body: [
+            TextSpan(text: 'settings.LockSettingsDescription'.tr()),
           ],
           trailing: ZagSwitch(
             value: enabled,
@@ -158,30 +157,28 @@ class _State extends State<ConfigurationGeneralRoute>
 
         VoidCallback? onTap;
         if (!isPro) {
-          onTap = () => _showProUpgradeToast('Face ID unlock');
+          onTap = () => _showProUpgradeToast('settings.FaceIdUnlock'.tr());
         } else if (!lockEnabled) {
           onTap = () => showZagInfoSnackBar(
-                title: 'Enable Lock Settings',
-                message:
-                    'Turn on Lock Settings before enabling Face ID unlock.',
+                title: 'settings.EnableLockSettingsTitle'.tr(),
+                message: 'settings.EnableLockSettingsMessage'.tr(),
               );
         } else if (!isSignedIn) {
           onTap = () {
             showZagInfoSnackBar(
-              title: 'Sign in required',
-              message:
-                  'Sign in to your Zagreus account to enable Face ID unlock.',
+              title: 'settings.SignInRequiredTitle'.tr(),
+              message: 'settings.SignInRequiredMessage'.tr(
+                args: ['settings.FaceIdUnlock'.tr()],
+              ),
             );
             SettingsRoutes.ACCOUNT.go();
           };
         }
 
         return ZagBlock(
-          title: 'Use FaceID',
-          body: const [
-            TextSpan(
-              text: 'Unlock settings with FaceID',
-            ),
+          title: 'settings.UseFaceId'.tr(),
+          body: [
+            TextSpan(text: 'settings.UseFaceIdDescription'.tr()),
           ],
           trailing: ZagSwitch(
             value: biometricEnabled && lockEnabled,
@@ -199,7 +196,7 @@ class _State extends State<ConfigurationGeneralRoute>
     final isSignedIn = supabaseAvailable && auth.isSignedIn;
 
     final widgets = <Widget>[
-      ZagHeader(text: 'Security'),
+      ZagHeader(text: 'settings.Security'.tr()),
       _settingsLockToggle(
         supabaseAvailable: supabaseAvailable,
         isSignedIn: isSignedIn,
@@ -297,7 +294,11 @@ class _State extends State<ConfigurationGeneralRoute>
                   }
                 : null,
           ),
-          onTap: isPro ? null : () => _showProUpgradeToast('Local Switching'),
+          onTap: isPro
+              ? null
+              : () => _showProUpgradeToast(
+                    'settings.AdvancedLocalSwitching'.tr(),
+                  ),
         );
       },
     );
@@ -307,11 +308,9 @@ class _State extends State<ConfigurationGeneralRoute>
     const db = ZagreusDatabase.NETWORKING_SLOW_SERVER_MODE;
     return db.listenableBuilder(
       builder: (context, _) => ZagBlock(
-        title: 'Slow Server Mode',
-        body: const [
-          TextSpan(
-            text: 'Use much longer API timeouts',
-          ),
+        title: 'settings.SlowServerMode'.tr(),
+        body: [
+          TextSpan(text: 'settings.SlowServerModeDescription'.tr()),
         ],
         trailing: ZagSwitch(
           value: db.read(),
@@ -361,8 +360,10 @@ class _State extends State<ConfigurationGeneralRoute>
 
   void _showProUpgradeToast(String featureName) {
     showZagInfoSnackBar(
-      title: 'Zagreus Pro required',
-      message: 'Upgrade to Zagreus Pro to use $featureName.',
+      title: 'settings.ZagreusProRequiredTitle'.tr(),
+      message: 'settings.ZagreusProRequiredMessage'.tr(
+        args: [featureName],
+      ),
     );
   }
 
@@ -403,7 +404,7 @@ class _State extends State<ConfigurationGeneralRoute>
   String _getLanguageName(String localeCode) {
     switch (localeCode) {
       case '':
-        return 'Follow System';
+        return 'settings.FollowSystem'.tr();
       case 'en':
         return 'English';
       case 'de':
@@ -421,7 +422,7 @@ class _State extends State<ConfigurationGeneralRoute>
       case 'zh_Hans':
         return '简体中文';
       default:
-        return 'Follow System';
+        return 'settings.FollowSystem'.tr();
     }
   }
 
@@ -436,7 +437,7 @@ class _State extends State<ConfigurationGeneralRoute>
     }
 
     final languages = [
-      ('', 'Follow System'),
+      ('', 'settings.FollowSystem'.tr()),
       ('en', 'English'),
       ('de', 'Deutsch'),
       ('fr', 'Français'),
@@ -449,7 +450,7 @@ class _State extends State<ConfigurationGeneralRoute>
 
     await ZagDialog.dialog(
       context: context,
-      title: 'Select Language',
+      title: 'settings.SelectLanguage'.tr(),
       content: languages.map((lang) {
         final isSelected = lang.$1 == current;
         return ZagDialog.tile(
