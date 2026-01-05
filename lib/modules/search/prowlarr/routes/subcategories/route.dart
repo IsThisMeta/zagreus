@@ -64,7 +64,11 @@ class _State extends State<ProwlarrSubcategoriesPage>
         ZagBlock(
           title: 'search.AllSubcategories'.tr(),
           body: [
-            TextSpan(text: widget.parentCategory.name ?? 'zagreus.Unknown'.tr()),
+            TextSpan(
+              text: 'search.SearchAllCategory'.tr(
+                args: [widget.parentCategory.name ?? 'zagreus.Unknown'.tr()],
+              ),
+            ),
           ],
           trailing: ZagIconButton(
             icon: widget.parentCategory.icon,
@@ -75,15 +79,13 @@ class _State extends State<ProwlarrSubcategoriesPage>
         ZagDivider(),
         ...List.generate(subcategories.length, (index) {
           final subcategory = subcategories[index];
-          final parentName = widget.parentCategory.name ?? 'zagreus.Unknown'.tr();
-          final subcatName = subcategory.name ?? 'zagreus.Unknown'.tr();
           return ZagBlock(
-            title: subcatName,
-            body: [
-              TextSpan(text: '$parentName > $subcatName'),
-            ],
+            title: subcategory.name ?? 'zagreus.Unknown'.tr(),
+            body: subcategory.description != null
+                ? [TextSpan(text: subcategory.description!)]
+                : null,
             trailing: ZagIconButton(
-              icon: widget.parentCategory.icon,
+              icon: subcategory.icon,
               color: ZagColours().byListIndex(index + 1),
             ),
             onTap: () => _navigateToSearch(categoryId: subcategory.id),

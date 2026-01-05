@@ -166,7 +166,17 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
 
         return ZagBlock(
           title: category.name ?? 'zagreus.Unknown'.tr(),
-          body: [TextSpan(text: category.subcategoriesTitleList)],
+          body: category.description != null
+              ? [TextSpan(text: category.description!)]
+              : hasSubcategories
+                  ? [
+                      TextSpan(
+                        text: 'search.SubcategoryCount'.tr(
+                          args: [category.subCategories!.length.toString()],
+                        ),
+                      )
+                    ]
+                  : null,
           trailing: ZagIconButton(
             icon: category.icon,
             color: ZagColours().byListIndex(index),
