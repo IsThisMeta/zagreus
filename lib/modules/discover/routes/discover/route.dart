@@ -1064,36 +1064,23 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
         page: 1,
       );
 
-      // Precache first hero image BEFORE showing carousel (so it's instant)
-      if (mounted && quickMovieItems.isNotEmpty) {
-        final firstBackdrop = quickMovieItems[0]['backdrop'] as String?;
-        if (firstBackdrop != null && firstBackdrop.isNotEmpty) {
-          try {
-            await precacheImage(CachedNetworkImageProvider(firstBackdrop), context);
-            _precachedHeroBackdrops.add(firstBackdrop);
-          } catch (_) {
-            // Ignore precache errors - image will load normally
-          }
-        }
-      }
-
-      // Now show the carousel (first image already cached)
+      // Show carousel immediately after TMDB data arrives
       if (mounted) {
         setState(() {
           _trendingMovies = quickMovieItems.take(20).toList();
           _trendingTVShows = quickTvItems.take(20).toList();
         });
 
-        // Start auto-scroll now that first image is ready (only on first load)
+        // Start auto-scroll now that data is ready (only on first load)
         if (!_autoScrollStarted) {
           _autoScrollStarted = true;
           _startAutoScroll();
         }
 
-        // Precache remaining images in background (non-blocking)
+        // Precache hero images in background (non-blocking)
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          // Skip index 0 for movies - already cached above
+          _precacheHeroImage(_currentMovieHeroIndex, isMovie: true);
           _precacheHeroImage(_currentMovieHeroIndex + 1, isMovie: true);
           _precacheHeroImage(_currentTVHeroIndex, isMovie: false);
           _precacheHeroImage(_currentTVHeroIndex + 1, isMovie: false);
