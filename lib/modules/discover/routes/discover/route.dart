@@ -6773,116 +6773,120 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                       }
                     }
                   },
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Backdrop image - no fade for smooth carousel transitions
-                      CachedNetworkImage(
-                        imageUrl: item['backdrop'] as String,
-                        fit: BoxFit.cover,
-                        fadeInDuration: Duration.zero,
-                        fadeOutDuration: Duration.zero,
-                        placeholder: (context, url) => const SizedBox.shrink(),
-                        errorWidget: (context, url, error) {
-                          return Container(
-                            color: Colors.grey.shade800,
-                            child: Center(
-                              child: Icon(
-                                Icons.movie_rounded,
-                                size: 60,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      // Gradient overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.7),
-                            ],
-                            stops: const [0.5, 1.0],
+                  child: CachedNetworkImage(
+                    imageUrl: item['backdrop'] as String,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 150),
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey.shade900,
+                    ),
+                    errorWidget: (context, url, error) {
+                      return Container(
+                        color: Colors.grey.shade800,
+                        child: Center(
+                          child: Icon(
+                            Icons.movie_rounded,
+                            size: 60,
+                            color: Colors.grey.shade600,
                           ),
                         ),
-                      ),
-                      // Content
-                      Positioned(
-                        bottom: 40,
-                        left: 24,
-                        right: 24,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Text(
-                              item['title'] as String,
-                              style: TextStyle(
-                                fontSize: _heroTitleFontSize,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                      );
+                    },
+                    imageBuilder: (context, imageProvider) {
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Backdrop image
+                          Image(image: imageProvider, fit: BoxFit.cover),
+                          // Gradient overlay
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.7),
+                                ],
+                                stops: const [0.5, 1.0],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            // Rating, watching, and in library badge
-                            Row(
+                          ),
+                          // Content
+                          Positioned(
+                            bottom: 40,
+                            left: 24,
+                            right: 24,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 4),
+                                // Title
                                 Text(
-                                  (item['rating'] as num) > 0
-                                      ? (item['rating'] as num)
-                                          .toStringAsFixed(1)
-                                      : 'discover.NotAvailableShort'.tr(),
+                                  item['title'] as String,
                                   style: TextStyle(
+                                    fontSize: _heroTitleFontSize,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    fontSize: 16,
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                Text(
-                                  'discover.WatchingNow'
-                                      .tr(args: [item['watchingNow'].toString()]),
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                // In library badge
-                                if (item['inLibrary'] as bool) ...[
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
+                                const SizedBox(height: 8),
+                                // Rating, watching, and in library badge
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.yellow,
+                                      size: 16,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      'discover.InLibrary'.tr(),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      (item['rating'] as num) > 0
+                                          ? (item['rating'] as num)
+                                              .toStringAsFixed(1)
+                                          : 'discover.NotAvailableShort'.tr(),
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 16),
+                                    Text(
+                                      'discover.WatchingNow'
+                                          .tr(args: [item['watchingNow'].toString()]),
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    // In library badge
+                                    if (item['inLibrary'] as bool) ...[
+                                      const SizedBox(width: 12),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          'discover.InLibrary'.tr(),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 );
               },
