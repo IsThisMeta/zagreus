@@ -7,6 +7,7 @@ library prowlarr;
 import 'package:dio/dio.dart';
 import 'package:zagreus/api/prowlarr/models.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
+import 'package:zagreus/system/logger.dart';
 
 /// The core class to handle all connections to Prowlarr.
 /// Provides search functionality, category management, and download capabilities.
@@ -59,6 +60,24 @@ class ProwlarrAPI {
         connectTimeout: Duration(seconds: useSlowMode ? 300 : 60),
         receiveTimeout: Duration(seconds: useSlowMode ? 300 : 60),
         sendTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+      ),
+    );
+
+    // Add verbose logging interceptor
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          _logRequest(options);
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          _logResponse(response);
+          handler.next(response);
+        },
+        onError: (DioException e, handler) {
+          _logError(e);
+          handler.next(e);
+        },
       ),
     );
 
@@ -155,5 +174,104 @@ class ProwlarrAPI {
     } catch (e) {
       return false;
     }
+  }
+
+  /// Log outgoing request details
+  static void _logRequest(RequestOptions options) {
+    final uri = options.uri;
+    final method = options.method;
+    final msg = StringBuffer('Prowlarr request: $method $uri');
+
+    // Log headers (excluding sensitive API key)
+    final headers = Map<String, dynamic>.from(options.headers);
+    headers.remove('X-Api-Key');
+    if (headers.isNotEmpty) {
+      msg.write(' headers=$headers');
+    }
+
+    // Log timeouts
+    msg.write(' connectTimeout=${options.connectTimeout?.inSeconds}s');
+    msg.write(' receiveTimeout=${options.receiveTimeout?.inSeconds}s');
+
+    ZagLogger().debug(msg.toString());
+  }
+
+  /// Log successful response details
+  static void _logResponse(Response response) {
+    final status = response.statusCode;
+    final uri = response.requestOptions.uri;
+    final method = response.requestOptions.method;
+
+    final msg = StringBuffer('Prowlarr response: $method $uri');
+    msg.write(' status=$status');
+
+    // Log response size if available
+    final data = response.data;
+    if (data is List) {
+      msg.write(' items=${data.length}');
+    } else if (data is Map) {
+      msg.write(' keys=${data.keys.length}');
+    }
+
+    ZagLogger().debug(msg.toString());
+  }
+
+  /// Log error details with verbose information
+  static void _logError(DioException e) {
+    final status = e.response?.statusCode;
+    final reason = e.response?.statusMessage;
+    final uri = e.requestOptions.uri;
+    final method = e.requestOptions.method;
+    final errorType = e.type.name;
+
+    final msg = StringBuffer('Prowlarr request failed: $method $uri');
+    msg.write(' type=$errorType');
+    if (status != null) msg.write(' status=$status');
+    if (reason?.isNotEmpty ?? false) msg.write(' reason=$reason');
+    if (e.message?.isNotEmpty ?? false) msg.write(' message=${e.message}');
+
+    // Add connection-specific error details
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        msg.write(' (connection timed out after ${e.requestOptions.connectTimeout?.inSeconds}s)');
+        break;
+      case DioExceptionType.receiveTimeout:
+        msg.write(' (receive timed out after ${e.requestOptions.receiveTimeout?.inSeconds}s)');
+        break;
+      case DioExceptionType.sendTimeout:
+        msg.write(' (send timed out after ${e.requestOptions.sendTimeout?.inSeconds}s)');
+        break;
+      case DioExceptionType.connectionError:
+        msg.write(' (could not connect to server - check host URL and network)');
+        break;
+      case DioExceptionType.badCertificate:
+        msg.write(' (SSL certificate error - server certificate invalid)');
+        break;
+      case DioExceptionType.badResponse:
+        msg.write(' (server returned unexpected response)');
+        break;
+      case DioExceptionType.cancel:
+        msg.write(' (request was cancelled)');
+        break;
+      case DioExceptionType.unknown:
+        if (e.error != null) msg.write(' innerError=${e.error}');
+        break;
+    }
+
+    ZagLogger().error(msg.toString(), e, e.stackTrace);
+
+    // Log response body for additional context
+    final data = e.response?.data;
+    if (data != null) {
+      final preview = _safeDataPreview(data);
+      ZagLogger().debug('Prowlarr error response body: $preview');
+    }
+  }
+
+  /// Safely preview response data with truncation
+  static String _safeDataPreview(dynamic data, {int limit = 500}) {
+    final text = data.toString();
+    if (text.length <= limit) return text;
+    return '${text.substring(0, limit)}...';
   }
 }
