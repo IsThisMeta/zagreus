@@ -12262,12 +12262,20 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: Container(
+              child: SizedBox(
                 width: _posterWidth,
-                height: _posterHeight,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: _posterWidth,
+                      height: _posterHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
