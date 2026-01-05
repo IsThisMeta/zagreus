@@ -42,4 +42,17 @@ class ProwlarrCategory {
     if (categoryId >= 7000 && categoryId <= 7999) return Icons.book_rounded;
     return Icons.category_rounded;
   }
+
+  /// Returns a color based on the Newznab category ID ranges
+  Color get iconColor {
+    final categoryId = id ?? 0;
+    if (categoryId >= 1000 && categoryId <= 1999) return const Color(0xFF5C6BC0); // Console - Blue
+    if (categoryId >= 2000 && categoryId <= 2999) return const Color(0xFF26A69A); // Movies - Teal
+    if (categoryId >= 3000 && categoryId <= 3999) return const Color(0xFFEF5350); // Audio - Red
+    if (categoryId >= 4000 && categoryId <= 4999) return const Color(0xFFFF9800); // PC - Orange
+    if (categoryId >= 5000 && categoryId <= 5999) return const Color(0xFFAB47BC); // TV - Purple
+    if (categoryId >= 6000 && categoryId <= 6999) return const Color(0xFF78909C); // XXX - Grey
+    if (categoryId >= 7000 && categoryId <= 7999) return const Color(0xFF29B6F6); // Books - Light Blue
+    return const Color(0xFF26A69A); // Other - Teal
+  }
 }

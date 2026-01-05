@@ -28,7 +28,11 @@ class _SearchResultTileState extends State<SearchResultTile> {
         _subtitle1(),
         _subtitle2(),
       ],
-      collapsedTrailing: _trailing(),
+      collapsedTrailing: Icon(
+        widget.data.categoryIcon,
+        color: widget.data.categoryIconColor,
+        size: 20,
+      ),
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),
@@ -128,15 +132,6 @@ class _SearchResultTileState extends State<SearchResultTile> {
           onTap: widget.data.linkComments.openLink,
         ),
     ];
-  }
-
-  Widget _trailing() {
-    return ZagIconButton(
-      icon: Icons.download_rounded,
-      color: ZagColours.accent,
-      onPressed: _sendToClient,
-      loadingState: _downloadState,
-    );
   }
 
   Future<void> _sendToClient() async {

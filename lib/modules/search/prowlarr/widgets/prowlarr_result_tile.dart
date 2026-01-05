@@ -28,19 +28,20 @@ class _State extends State<ProwlarrResultTile> {
         _subtitle1(),
         _subtitle2(),
       ],
-      collapsedTrailing: _trailing(),
+      collapsedTrailing: _categoryIcon(),
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),
     );
   }
 
-  Widget _trailing() {
-    return ZagIconButton(
-      icon: Icons.download_rounded,
-      color: ZagColours.accent,
-      onPressed: _startDownload,
-      loadingState: _downloadState,
+  Widget? _categoryIcon() {
+    final categories = widget.item.categories;
+    if (categories == null || categories.isEmpty) return null;
+    return Icon(
+      categories.first.icon,
+      color: categories.first.iconColor,
+      size: 20,
     );
   }
 
