@@ -93,18 +93,6 @@ class _SearchResultTileState extends State<SearchResultTile> {
           title: 'search.Grabs'.tr(),
           body: '${widget.data.grabs}',
         ),
-      if (SearchDatabase.SHOW_LINKS.read())
-        ZagTableContent(title: '', body: ''),
-      if (SearchDatabase.SHOW_LINKS.read())
-        ZagTableContent(
-            title: 'search.Comments'.tr(),
-            body: widget.data.linkComments,
-            bodyIsUrl: true),
-      if (SearchDatabase.SHOW_LINKS.read())
-        ZagTableContent(
-            title: 'search.Download'.tr(),
-            body: widget.data.linkDownload,
-            bodyIsUrl: true),
     ];
   }
 
