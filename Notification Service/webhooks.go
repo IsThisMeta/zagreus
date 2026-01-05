@@ -1015,6 +1015,11 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 	userName := stringFromInterface(webhookData["user"])
 	mediaTitle := stringFromInterface(webhookData["title"])
 	serverName := stringFromInterface(webhookData["server_name"])
+	customTitle := stringFromInterface(webhookData["notification_title"])
+	customBody := stringFromInterface(webhookData["message"])
+	if customBody == "" {
+		customBody = stringFromInterface(webhookData["body"])
+	}
 
 	var title, body string
 	metadata := map[string]string{
@@ -1150,6 +1155,13 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		log.Printf("Unknown Tautulli action: %s", action)
 		c.JSON(200, gin.H{"success": true, "message": "Action not handled: " + action})
 		return
+	}
+
+	if customTitle != "" {
+		title = customTitle
+	}
+	if customBody != "" {
+		body = customBody
 	}
 
 	// Build notification params
