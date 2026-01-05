@@ -17,7 +17,6 @@ class SearchCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ZagBlock(
       title: category.name ?? 'zagreus.Unknown'.tr(),
-      body: [TextSpan(text: category.subcategoriesTitleList)],
       trailing: ZagIconButton(
         icon: category.icon,
         color: ZagColours().byListIndex(index),

@@ -112,7 +112,7 @@ const double _userListExtraPadding = 32.0;
 // Base padding - actual padding is computed dynamically in _sectionPadding()
 const double _heroTitleFontSize = 26;
 const double _posterAspectRatio = 2 / 3;
-const int _discoverPreviewLimit = 10;
+const int _discoverPreviewLimit = 20;
 const int _discoverFullPageLimit = 60;
 const double _recentlyDownloadedEpisodeThumbWidth = 100;
 const double _recentlyDownloadedEpisodeThumbHeight = 53;
@@ -1521,8 +1521,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (mounted) {
         setState(() {
-          _popularMovies =
-              movies.take(10).toList(); // Limit to 10 for the section
+          _popularMovies = movies;
         });
         print('🎬 Set ${_popularMovies.length} popular movies in state');
       }
@@ -1554,8 +1553,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (mounted) {
         setState(() {
-          _recentlyReleasedMovies =
-              movies.take(10).toList(); // Limit to 10 for the section
+          _recentlyReleasedMovies = movies;
         });
         print(
             '🎬 Set ${_recentlyReleasedMovies.length} recently released movies in state');
@@ -1877,8 +1875,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (mounted) {
         setState(() {
-          _popularTVShows =
-              shows.take(10).toList(); // Limit to 10 for the section
+          _popularTVShows = shows;
         });
         print('📺 Set ${_popularTVShows.length} popular TV shows in state');
       }
@@ -1932,8 +1929,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (mounted) {
         setState(() {
-          _trendingNewTVShows =
-              shows.take(10).toList(); // Limit to 10 for the section
+          _trendingNewTVShows = shows;
         });
         print(
             '🆕 Set ${_trendingNewTVShows.length} trending new TV shows in state');
@@ -2075,7 +2071,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
 
       if (mounted) {
         setState(() {
-          _mostAnticipatedMovies = movies.take(12).toList();
+          _mostAnticipatedMovies = movies.take(10).toList();
         });
         print(
             '🎯 Set ${_mostAnticipatedMovies.length} most anticipated movies in state');

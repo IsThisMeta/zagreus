@@ -63,13 +63,6 @@ class _State extends State<ProwlarrSubcategoriesPage>
         // "All" option to search entire parent category
         ZagBlock(
           title: 'search.AllSubcategories'.tr(),
-          body: [
-            TextSpan(
-              text: 'search.SearchAllCategory'.tr(
-                args: [widget.parentCategory.name ?? 'zagreus.Unknown'.tr()],
-              ),
-            ),
-          ],
           trailing: ZagIconButton(
             icon: widget.parentCategory.icon,
             color: ZagColours().byListIndex(0),
@@ -81,9 +74,6 @@ class _State extends State<ProwlarrSubcategoriesPage>
           final subcategory = subcategories[index];
           return ZagBlock(
             title: subcategory.name ?? 'zagreus.Unknown'.tr(),
-            body: subcategory.description != null
-                ? [TextSpan(text: subcategory.description!)]
-                : null,
             trailing: ZagIconButton(
               icon: subcategory.icon,
               color: ZagColours().byListIndex(index + 1),

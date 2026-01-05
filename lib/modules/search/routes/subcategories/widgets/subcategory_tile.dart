@@ -19,14 +19,6 @@ class SearchSubcategoryTile extends StatelessWidget {
         NewznabSubcategoryData subcategory = category!.subcategories[index];
         return ZagBlock(
           title: subcategory.name ?? 'zagreus.Unknown'.tr(),
-          body: [
-            TextSpan(
-              text: [
-                category.name ?? 'zagreus.Unknown'.tr(),
-                subcategory.name ?? 'zagreus.Unknown'.tr(),
-              ].join(' > '),
-            )
-          ],
           trailing: ZagIconButton(
             icon: category.icon,
             color: ZagColours().byListIndex(index + 1),

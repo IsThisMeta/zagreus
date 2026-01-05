@@ -297,9 +297,9 @@ class TMDBApi {
     String? region,
   }) async {
     try {
-      // Fetch multiple pages to create a richer list (approx 100 items)
+      // Fetch 1 page (20 items) since we only display 10
       List<Map<String, dynamic>> allShows = [];
-      const int maxPages = 5;
+      const int maxPages = 1;
 
       for (int p = 1; p <= maxPages; p++) {
         // Using discover endpoint to get new shows (first_air_date recent)
