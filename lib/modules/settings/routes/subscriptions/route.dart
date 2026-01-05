@@ -456,7 +456,7 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
           ],
           if (!isPro || isMega || isUltra || isSupreme) ...[
             ZagDialog.tile(
-              icon: Icons.stars_rounded,
+              icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.currentAccent,
               text: 'settings.SubscriptionsPlanYearly'
                   .tr(args: ['\$4.99/year']),
