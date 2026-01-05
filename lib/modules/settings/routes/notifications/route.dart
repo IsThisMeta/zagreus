@@ -21,6 +21,7 @@ import 'package:zagreus/modules/lidarr/core/webhook_manager.dart';
 import 'package:zagreus/modules/prowlarr/core/webhook_manager.dart';
 import 'package:zagreus/system/webhooks.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zagreus/modules/settings/core/banners.dart';
 
 class NotificationsRoute extends StatefulWidget {
   const NotificationsRoute({
@@ -499,6 +500,7 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     return ZagListView(
       controller: scrollController,
       children: [
+        SettingsBanners.NOTIFICATIONS_MODULE_SUPPORT.banner(),
         ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
           builder: (context, _) {
             // Only show banner if notifications are enabled but not authorized
@@ -1083,70 +1085,83 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             },
           ),
         ),
-        ZagBlock(
-          title: 'settings.CopyWebhookUrl'.tr(),
-          body: [
-            TextSpan(
-              text: 'settings.SeerrWebhookPasteHint'.tr(),
-            ),
-          ],
-          trailing: Icon(
-            Icons.copy_rounded,
-            color: ZagColours.accentColor(context),
-          ),
-          onTap: () async {
-            try {
-              // Get or create webhook ID (same system as Radarr/Sonarr)
-              final deviceToken = await ZagSupabaseMessaging.instance.getToken();
-              if (deviceToken == null) {
-                showZagErrorSnackBar(
-                  title: 'settings.ErrorTitle'.tr(),
-                  message: 'settings.DeviceTokenUnavailableMessage'.tr(),
+        ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+          builder: (context, _) {
+            final globalEnabled = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+            return ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.listenableBuilder(
+              builder: (context, _) {
+                final seerrEnabled = ZagreusDatabase.SEERR_NOTIFICATIONS_ENABLED.read();
+                final canCopy = globalEnabled && seerrEnabled;
+                return ZagBlock(
+                  title: 'settings.CopyWebhookUrl'.tr(),
+                  body: [
+                    TextSpan(
+                      text: 'settings.SeerrWebhookPasteHint'.tr(),
+                    ),
+                  ],
+                  trailing: Icon(
+                    Icons.copy_rounded,
+                    color: canCopy ? ZagColours.accentColor(context) : ZagColours.grey,
+                  ),
+                  onTap: canCopy
+                      ? () async {
+                          try {
+                            // Get or create webhook ID (same system as Radarr/Sonarr)
+                            final deviceToken = await ZagSupabaseMessaging.instance.getToken();
+                            if (deviceToken == null) {
+                              showZagErrorSnackBar(
+                                title: 'settings.ErrorTitle'.tr(),
+                                message: 'settings.DeviceTokenUnavailableMessage'.tr(),
+                              );
+                              return;
+                            }
+
+                            // Check if we're in anonymous mode
+                            final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+                            final user = ZagSupabase.client.auth.currentUser;
+                            final userID = (!isAnonymous && user != null) ? user.id : null;
+
+                            // Call backend to get/create webhook ID
+                            final response = await http.post(
+                              Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
+                              headers: {'Content-Type': 'application/json'},
+                              body: json.encode({
+                                'user_id': userID,
+                                'device_token': deviceToken,
+                                'device_type': 'ios',
+                                'anonymous': isAnonymous,
+                              }),
+                            );
+
+                            if (response.statusCode == 200) {
+                              final data = json.decode(response.body);
+                              final webhookID = data['webhook_id'] as String?;
+
+                              if (webhookID == null) {
+                                throw Exception('No webhook ID returned');
+                              }
+
+                              final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/seerr/webhook/$webhookID';
+                              await Clipboard.setData(ClipboardData(text: webhookUrl));
+                              showZagInfoSnackBar(
+                                title: 'settings.CopiedTitle'.tr(),
+                                message: 'settings.WebhookUrlCopiedMessage'.tr(),
+                              );
+                            } else {
+                              throw Exception('Failed to get webhook ID: ${response.statusCode}');
+                            }
+                          } catch (e, stackTrace) {
+                            ZagLogger().error('Failed to copy Seerr webhook URL', e, stackTrace);
+                            showZagErrorSnackBar(
+                              title: 'settings.ErrorTitle'.tr(),
+                              message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
+                            );
+                          }
+                        }
+                      : null,
                 );
-                return;
-              }
-
-              // Check if we're in anonymous mode
-              final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
-              final user = ZagSupabase.client.auth.currentUser;
-              final userID = (!isAnonymous && user != null) ? user.id : null;
-
-              // Call backend to get/create webhook ID
-              final response = await http.post(
-                Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
-                headers: {'Content-Type': 'application/json'},
-                body: json.encode({
-                  'user_id': userID,
-                  'device_token': deviceToken,
-                  'device_type': 'ios',
-                  'anonymous': isAnonymous,
-                }),
-              );
-
-              if (response.statusCode == 200) {
-                final data = json.decode(response.body);
-                final webhookID = data['webhook_id'] as String?;
-
-                if (webhookID == null) {
-                  throw Exception('No webhook ID returned');
-                }
-
-                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/seerr/webhook/$webhookID';
-                await Clipboard.setData(ClipboardData(text: webhookUrl));
-                showZagInfoSnackBar(
-                  title: 'settings.CopiedTitle'.tr(),
-                  message: 'settings.WebhookUrlCopiedMessage'.tr(),
-                );
-              } else {
-                throw Exception('Failed to get webhook ID: ${response.statusCode}');
-              }
-            } catch (e, stackTrace) {
-              ZagLogger().error('Failed to copy Seerr webhook URL', e, stackTrace);
-              showZagErrorSnackBar(
-                title: 'settings.ErrorTitle'.tr(),
-                message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
-              );
-            }
+              },
+            );
           },
         ),
       ],
@@ -1199,70 +1214,83 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             },
           ),
         ),
-        ZagBlock(
-          title: 'settings.CopyWebhookUrl'.tr(),
-          body: [
-            TextSpan(
-              text: 'settings.TautulliWebhookPasteHint'.tr(),
-            ),
-          ],
-          trailing: Icon(
-            Icons.copy_rounded,
-            color: ZagColours.accentColor(context),
-          ),
-          onTap: () async {
-            try {
-              // Get or create webhook ID (same system as other services)
-              final deviceToken = await ZagSupabaseMessaging.instance.getToken();
-              if (deviceToken == null) {
-                showZagErrorSnackBar(
-                  title: 'settings.ErrorTitle'.tr(),
-                  message: 'settings.DeviceTokenUnavailableMessage'.tr(),
+        ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.listenableBuilder(
+          builder: (context, _) {
+            final globalEnabled = ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read();
+            return ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.listenableBuilder(
+              builder: (context, _) {
+                final tautulliEnabled = ZagreusDatabase.TAUTULLI_NOTIFICATIONS_ENABLED.read();
+                final canCopy = globalEnabled && tautulliEnabled;
+                return ZagBlock(
+                  title: 'settings.CopyWebhookUrl'.tr(),
+                  body: [
+                    TextSpan(
+                      text: 'settings.TautulliWebhookPasteHint'.tr(),
+                    ),
+                  ],
+                  trailing: Icon(
+                    Icons.copy_rounded,
+                    color: canCopy ? ZagColours.accentColor(context) : ZagColours.grey,
+                  ),
+                  onTap: canCopy
+                      ? () async {
+                          try {
+                            // Get or create webhook ID (same system as other services)
+                            final deviceToken = await ZagSupabaseMessaging.instance.getToken();
+                            if (deviceToken == null) {
+                              showZagErrorSnackBar(
+                                title: 'settings.ErrorTitle'.tr(),
+                                message: 'settings.DeviceTokenUnavailableMessage'.tr(),
+                              );
+                              return;
+                            }
+
+                            // Check if we're in anonymous mode
+                            final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
+                            final user = ZagSupabase.client.auth.currentUser;
+                            final userID = (!isAnonymous && user != null) ? user.id : null;
+
+                            // Call backend to get/create webhook ID
+                            final response = await http.post(
+                              Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
+                              headers: {'Content-Type': 'application/json'},
+                              body: json.encode({
+                                'user_id': userID,
+                                'device_token': deviceToken,
+                                'device_type': 'ios',
+                                'anonymous': isAnonymous,
+                              }),
+                            );
+
+                            if (response.statusCode == 200) {
+                              final data = json.decode(response.body);
+                              final webhookID = data['webhook_id'] as String?;
+
+                              if (webhookID == null) {
+                                throw Exception('No webhook ID returned');
+                              }
+
+                              final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/tautulli/webhook/$webhookID';
+                              await Clipboard.setData(ClipboardData(text: webhookUrl));
+                              showZagInfoSnackBar(
+                                title: 'settings.CopiedTitle'.tr(),
+                                message: 'settings.WebhookUrlCopiedMessage'.tr(),
+                              );
+                            } else {
+                              throw Exception('Failed to get webhook ID: ${response.statusCode}');
+                            }
+                          } catch (e, stackTrace) {
+                            ZagLogger().error('Failed to copy Tautulli webhook URL', e, stackTrace);
+                            showZagErrorSnackBar(
+                              title: 'settings.ErrorTitle'.tr(),
+                              message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
+                            );
+                          }
+                        }
+                      : null,
                 );
-                return;
-              }
-
-              // Check if we're in anonymous mode
-              final isAnonymous = ZagreusDatabase.NOTIFICATION_ANONYMOUS_MODE.read();
-              final user = ZagSupabase.client.auth.currentUser;
-              final userID = (!isAnonymous && user != null) ? user.id : null;
-
-              // Call backend to get/create webhook ID
-              final response = await http.post(
-                Uri.parse('https://zagreus-notifications.fly.dev/v1/auth/register'),
-                headers: {'Content-Type': 'application/json'},
-                body: json.encode({
-                  'user_id': userID,
-                  'device_token': deviceToken,
-                  'device_type': 'ios',
-                  'anonymous': isAnonymous,
-                }),
-              );
-
-              if (response.statusCode == 200) {
-                final data = json.decode(response.body);
-                final webhookID = data['webhook_id'] as String?;
-
-                if (webhookID == null) {
-                  throw Exception('No webhook ID returned');
-                }
-
-                final webhookUrl = 'https://zagreus-notifications.fly.dev/v1/tautulli/webhook/$webhookID';
-                await Clipboard.setData(ClipboardData(text: webhookUrl));
-                showZagInfoSnackBar(
-                  title: 'settings.CopiedTitle'.tr(),
-                  message: 'settings.WebhookUrlCopiedMessage'.tr(),
-                );
-              } else {
-                throw Exception('Failed to get webhook ID: ${response.statusCode}');
-              }
-            } catch (e, stackTrace) {
-              ZagLogger().error('Failed to copy Tautulli webhook URL', e, stackTrace);
-              showZagErrorSnackBar(
-                title: 'settings.ErrorTitle'.tr(),
-                message: 'settings.WebhookUrlGenerationFailedMessage'.tr(),
-              );
-            }
+              },
+            );
           },
         ),
       ],

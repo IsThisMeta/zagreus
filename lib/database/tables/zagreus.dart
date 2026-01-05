@@ -96,9 +96,9 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   PROWLARR_WEBHOOK_ON_HEALTH_ISSUE<bool>(true),
   PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE<bool>(false),
   // Seerr notifications
-  SEERR_NOTIFICATIONS_ENABLED<bool>(true),
+  SEERR_NOTIFICATIONS_ENABLED<bool>(false),
   // Tautulli notifications
-  TAUTULLI_NOTIFICATIONS_ENABLED<bool>(true),
+  TAUTULLI_NOTIFICATIONS_ENABLED<bool>(false),
   // Notification prompt (one-time)
   SHOULD_SHOW_NOTIFICATION_PROMPT<bool>(false),
   HAS_SHOWN_NOTIFICATION_PROMPT<bool>(false),
