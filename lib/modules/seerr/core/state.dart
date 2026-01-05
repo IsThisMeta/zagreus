@@ -196,11 +196,9 @@ class SeerrState extends ZagModuleState {
             continue;
           }
 
-          // Check if media details are missing
+          // Check if media details are missing and fetch them
           if ((request.media.mediaType == 'movie' && request.media.movie == null) ||
               (request.media.mediaType == 'tv' && request.media.series == null)) {
-            ZagLogger().debug('Media details missing for request ${request.id}, fetching from TMDB ID ${request.media.tmdbId}');
-
             // Fetch media details
             if (request.media.mediaType == 'movie') {
               try {
@@ -257,7 +255,7 @@ class SeerrState extends ZagModuleState {
                 enrichedRequests.add(enrichedRequest);
                 continue;
               } catch (e) {
-                ZagLogger().error('Failed to fetch movie details for TMDB ID ${request.media.tmdbId}', e, StackTrace.current);
+                ZagLogger().warning('Could not enrich request - movie TMDB ID ${request.media.tmdbId} may have been removed from TMDB');
               }
             } else if (request.media.mediaType == 'tv') {
               try {
@@ -314,12 +312,12 @@ class SeerrState extends ZagModuleState {
                 enrichedRequests.add(enrichedRequest);
                 continue;
               } catch (e) {
-                ZagLogger().error('Failed to fetch series details for TMDB ID ${request.media.tmdbId}', e, StackTrace.current);
+                ZagLogger().warning('Could not enrich request - series TMDB ID ${request.media.tmdbId} may have been removed from TMDB');
               }
             }
           }
         } catch (e) {
-          ZagLogger().error('Error enriching request ${request.id}', e, StackTrace.current);
+          ZagLogger().warning('Error enriching request ${request.id} - media may have been removed from TMDB');
         }
         // Add original request if enrichment failed or wasn't needed
         enrichedRequests.add(request);
@@ -411,11 +409,9 @@ class SeerrState extends ZagModuleState {
             continue;
           }
 
-          // Check if media details are missing
+          // Check if media details are missing and fetch them
           if ((issue.media.mediaType == 'movie' && issue.media.movie == null) ||
               (issue.media.mediaType == 'tv' && issue.media.series == null)) {
-            ZagLogger().debug('Media details missing for issue ${issue.id}, fetching from TMDB ID ${issue.media.tmdbId}');
-
             // Fetch media details
             if (issue.media.mediaType == 'movie') {
               try {
@@ -465,7 +461,7 @@ class SeerrState extends ZagModuleState {
                 enrichedIssues.add(enrichedIssue);
                 continue;
               } catch (e) {
-                ZagLogger().error('Failed to fetch movie details for TMDB ID ${issue.media.tmdbId}', e, StackTrace.current);
+                ZagLogger().warning('Could not enrich issue - movie TMDB ID ${issue.media.tmdbId} may have been removed from TMDB');
               }
             } else if (issue.media.mediaType == 'tv') {
               try {
@@ -515,12 +511,12 @@ class SeerrState extends ZagModuleState {
                 enrichedIssues.add(enrichedIssue);
                 continue;
               } catch (e) {
-                ZagLogger().error('Failed to fetch series details for TMDB ID ${issue.media.tmdbId}', e, StackTrace.current);
+                ZagLogger().warning('Could not enrich issue - series TMDB ID ${issue.media.tmdbId} may have been removed from TMDB');
               }
             }
           }
         } catch (e) {
-          ZagLogger().error('Error enriching issue ${issue.id}', e, StackTrace.current);
+          ZagLogger().warning('Error enriching issue ${issue.id} - media may have been removed from TMDB');
         }
         // Add original issue if enrichment failed or wasn't needed
         enrichedIssues.add(issue);

@@ -37,6 +37,7 @@ class DiscoverMoviesSectionData {
   final bool hasRecentlyDownloaded;
   final bool isRecentlyDownloadedLoading;
   final Widget Function() recentlyDownloadedSection;
+  final Widget Function() recentlyDownloadedLoadingSection;
   final Widget Function() recommendedMoviesSection;
   final Widget Function() missingMoviesSection;
   final Widget Function() downloadingSoonSection;
@@ -57,6 +58,7 @@ class DiscoverMoviesSectionData {
     required this.hasRecentlyDownloaded,
     required this.isRecentlyDownloadedLoading,
     required this.recentlyDownloadedSection,
+    required this.recentlyDownloadedLoadingSection,
     required this.recommendedMoviesSection,
     required this.missingMoviesSection,
     required this.downloadingSoonSection,
@@ -138,8 +140,7 @@ List<Widget> buildMovieSections(DiscoverMoviesSectionData data) {
   final sectionBuilders = <String, Widget Function()>{
     'recently_downloaded': () {
       if (data.isRecentlyDownloadedLoading) {
-        // Show loading placeholder while fetching
-        return const SizedBox.shrink();
+        return data.recentlyDownloadedLoadingSection();
       }
       return data.hasRecentlyDownloaded
           ? data.recentlyDownloadedSection()

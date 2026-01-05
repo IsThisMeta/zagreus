@@ -2926,6 +2926,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
             hasRecentlyDownloaded: _recentlyDownloaded.isNotEmpty,
             isRecentlyDownloadedLoading: _isRecentlyDownloadedLoading,
             recentlyDownloadedSection: _recentlyDownloadedSection,
+            recentlyDownloadedLoadingSection: _recentlyDownloadedLoadingSection,
             recommendedMoviesSection: _recommendedMoviesSection,
             missingMoviesSection: _missingMoviesSection,
             downloadingSoonSection: _downloadingSoonSection,
@@ -12233,6 +12234,48 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
               ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _recentlyDownloadedLoadingSection() {
+    return RecentlyDownloadedMoviesSection(
+      header: _sectionTitleRow(
+        context: context,
+        leadingIcon: ZagIcons.RADARR,
+        leadingIconColor: const Color(0xFFFEC333),
+        moduleLabel: 'discover.RadarrLabel'.tr(),
+        moduleLabelColor: const Color(0xFFFEC333),
+        title: _discoverSectionTitle('recently_downloaded'),
+        titleStyle: TextStyle(
+          fontSize: _moduleSectionTitleFontSize,
+          fontWeight: FontWeight.w600,
+        ),
+        trailingIcon: Icons.chevron_right_rounded,
+        trailingColor: Colors.grey,
+        trailingSize: 24,
+        showArrow: true,
+      ),
+      list: SizedBox(
+        height: _posterListHeight,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: 5,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Container(
+                width: _posterWidth,
+                height: _posterHeight,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
