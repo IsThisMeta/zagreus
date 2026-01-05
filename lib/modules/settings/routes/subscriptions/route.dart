@@ -458,29 +458,6 @@ class _State extends State<SubscriptionsRoute> with ZagScrollControllerMixin {
             ZagDialog.tile(
               icon: Icons.rocket_launch_rounded,
               iconColor: ZagColours.currentAccent,
-              text: 'settings.SubscriptionsPlanMonthly'
-                  .tr(args: ['\$0.99/month']),
-              subtitle: RichText(
-                text: TextSpan(
-                  text: 'settings.SubscriptionsTrialThreeMonths'.tr(),
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color
-                        ?.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _purchasePro(true);
-              },
-            ),
-            ZagDialog.tile(
-              icon: Icons.stars_rounded,
-              iconColor: ZagColours.currentAccent,
               text: 'settings.SubscriptionsPlanYearly'
                   .tr(args: ['\$4.99/year']),
               subtitle: RichText(
