@@ -495,6 +495,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
   List<Map<String, dynamic>> _trendingMovies = [];
   List<Map<String, dynamic>> _trendingTVShows = [];
   Timer? _autoScrollTimer;
+  bool _autoScrollStarted = false;
   final Set<String> _precachedHeroBackdrops = {};
   final Map<String, ScrollController> _sectionScrollControllers = {};
 
@@ -595,7 +596,7 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
     _loadDownloadingSoon();
     // Don't load popular movies or people here - will do it in didChangeDependencies
     _loadMockTrendingData();
-    _startAutoScroll();
+    // Auto-scroll is started after first hero image loads in _loadTrendingData()
     final profileKey = ZagreusDatabase.ENABLED_PROFILE.read();
     final radarrInstance =
         ZagInstanceContext().getActiveInstance('radarr') ?? profileKey;
@@ -1082,6 +1083,12 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
           _trendingMovies = quickMovieItems.take(20).toList();
           _trendingTVShows = quickTvItems.take(20).toList();
         });
+
+        // Start auto-scroll now that first image is ready (only on first load)
+        if (!_autoScrollStarted) {
+          _autoScrollStarted = true;
+          _startAutoScroll();
+        }
 
         // Precache remaining images in background (non-blocking)
         WidgetsBinding.instance.addPostFrameCallback((_) {
