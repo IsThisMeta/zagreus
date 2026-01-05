@@ -1004,6 +1004,10 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		// Try event_type as fallback
 		action = stringFromInterface(webhookData["event_type"])
 	}
+	if action == "" {
+		// Try event as fallback (Tautulli sometimes uses this)
+		action = stringFromInterface(webhookData["event"])
+	}
 
 	log.Printf("Received Tautulli webhook: %s for webhook %s (%d devices)", action, webhookID, len(deviceTokens))
 
