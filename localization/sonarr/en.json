@@ -117,6 +117,8 @@
   "sonarr.Monitoring": "Monitoring",
   "sonarr.MonitoredDescription": "Download monitored episodes in this series",
   "sonarr.More": "More",
+  "sonarr.MoveFiles": "Move Files",
+  "sonarr.MoveFilesDescription": "Would you like to move the files?",
   "sonarr.ParentDirectory": "Parent Directory",
   "sonarr.Name": "Name",
   "sonarr.NoEpisodesFound": "No Episodes Found",

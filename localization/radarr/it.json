@@ -54,6 +54,8 @@
     "radarr.MonitoredDescription": "Monitora per nuove versioni",
     "radarr.More": "Di più",
     "radarr.Move": "Sposta",
+    "radarr.MoveFiles": "Sposta file",
+    "radarr.MoveFilesDescription": "Vuoi spostare i file?",
     "radarr.MoveFull": "Sposta i file",
     "radarr.Movie": "Film",
     "radarr.MovieFileDeleted": "File film eliminato",

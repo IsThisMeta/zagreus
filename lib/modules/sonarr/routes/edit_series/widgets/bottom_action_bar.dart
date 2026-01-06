@@ -47,6 +47,7 @@ class SonarrEditSeriesActionBar extends StatelessWidget {
         bool result = await SonarrAPIController().updateSeries(
           context: context,
           series: series,
+          moveFiles: state.moveFiles,
         );
 
         // Update Bazarr language profile if changed

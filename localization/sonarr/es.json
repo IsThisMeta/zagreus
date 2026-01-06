@@ -37,6 +37,8 @@
     "sonarr.MonitorEpisode": "Monitorear episodio",
     "sonarr.Monitor": "Monitorear",
     "sonarr.More": "Más",
+    "sonarr.MoveFiles": "Mover archivos",
+    "sonarr.MoveFilesDescription": "¿Desea mover los archivos?",
     "sonarr.ParentDirectory": "Directorio principal",
     "sonarr.Name": "Nombre",
     "sonarr.Other": "Otro",

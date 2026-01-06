@@ -125,6 +125,8 @@ class _State extends State<SeriesEditRoute>
           SonarrSeriesEditLanguageProfileTile(profiles: languageProfiles),
         const SonarrSeriesEditSeriesTypeTile(),
         const SonarrSeriesEditSeriesPathTile(),
+        if (context.watch<SonarrSeriesEditState>().seriesPathChanged)
+          const SonarrSeriesEditMoveFilesTile(),
         const SonarrSeriesEditTagsTile(),
         SonarrSeriesEditBazarrLanguageProfileTile(seriesId: series.id!),
       ],

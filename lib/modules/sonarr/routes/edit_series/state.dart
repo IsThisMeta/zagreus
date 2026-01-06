@@ -46,14 +46,29 @@ class SonarrSeriesEditState extends ChangeNotifier {
   }
 
   String _seriesPath = '';
+  String _originalSeriesPath = '';
   String get seriesPath => _seriesPath;
   set seriesPath(String seriesPath) {
     _seriesPath = seriesPath;
+    if (!seriesPathChanged) {
+      _moveFiles = false;
+    }
     notifyListeners();
   }
 
   void initializeSeriesPath() {
     _seriesPath = series!.path ?? '';
+    _originalSeriesPath = _seriesPath;
+    _moveFiles = false;
+  }
+
+  bool get seriesPathChanged => _seriesPath != _originalSeriesPath;
+
+  bool _moveFiles = false;
+  bool get moveFiles => _moveFiles;
+  set moveFiles(bool moveFiles) {
+    _moveFiles = seriesPathChanged ? moveFiles : false;
+    notifyListeners();
   }
 
   SonarrSeriesType? _seriesType;

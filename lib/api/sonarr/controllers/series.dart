@@ -83,9 +83,11 @@ class SonarrControllerSeries {
   /// Update an existing series.
   Future<SonarrSeries> update({
     required SonarrSeries series,
+    bool moveFiles = false,
   }) async =>
       _commandUpdateSeries(
         _client,
         series: series,
+        moveFiles: moveFiles,
       );
 }
