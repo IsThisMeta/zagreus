@@ -1595,6 +1595,60 @@ func handleWebhookWithPayload(c *gin.Context) {
 			title = "Artist Deleted"
 			body = fmt.Sprintf("%s has been removed from your library", artistName)
 
+		case "AlbumDelete":
+			title = "Album Deleted"
+			if albumTitle != "" {
+				body = fmt.Sprintf("%s - %s has been removed from your library", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Album by %s has been removed from your library", artistName)
+			}
+
+		case "HealthIssue":
+			title = "Lidarr Health Issue"
+			if healthCheck, ok := genericWebhook["healthCheck"].(map[string]interface{}); ok {
+				message := stringFromInterface(healthCheck["message"])
+				if message != "" {
+					body = message
+				} else {
+					body = "A health issue was detected"
+				}
+			} else {
+				body = "A health issue was detected"
+			}
+
+		case "HealthRestored":
+			title = "Lidarr Health Restored"
+			if healthCheck, ok := genericWebhook["healthCheck"].(map[string]interface{}); ok {
+				message := stringFromInterface(healthCheck["message"])
+				if message != "" {
+					body = message
+				} else {
+					body = "Health issue has been resolved"
+				}
+			} else {
+				body = "Health issue has been resolved"
+			}
+
+		case "ApplicationUpdate":
+			title = "Lidarr Update"
+			body = "A new version of Lidarr is available"
+
+		case "DownloadFailure":
+			title = "Download Failed"
+			if albumTitle != "" {
+				body = fmt.Sprintf("Failed to download %s - %s", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Failed to download album by %s", artistName)
+			}
+
+		case "ImportFailure":
+			title = "Import Failed"
+			if albumTitle != "" {
+				body = fmt.Sprintf("Failed to import %s - %s", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Failed to import album by %s", artistName)
+			}
+
 		default:
 			log.Printf("Unknown Lidarr event type: %s", eventType)
 			c.JSON(200, gin.H{"success": true, "message": "Event type not handled: " + eventType})

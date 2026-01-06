@@ -972,8 +972,44 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
             ZagreusDatabase.LIDARR_WEBHOOK_ON_UPGRADE,
           ),
           _EventConfig(
+            'settings.NotificationEventOnRename',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_RENAME,
+          ),
+          _EventConfig(
             'settings.NotificationEventOnArtistAdded',
             ZagreusDatabase.LIDARR_WEBHOOK_ON_ARTIST_ADD,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnArtistDeleted',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_ARTIST_DELETE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnAlbumDeleted',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_ALBUM_DELETE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthIssue',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_HEALTH_ISSUE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventIncludeHealthWarnings',
+            ZagreusDatabase.LIDARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthRestored',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_HEALTH_RESTORED,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnApplicationUpdate',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_APPLICATION_UPDATE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnDownloadFailure',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_DOWNLOAD_FAILURE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnImportFailure',
+            ZagreusDatabase.LIDARR_WEBHOOK_ON_IMPORT_FAILURE,
           ),
         ],
         toastEvents: [
@@ -1292,6 +1328,16 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
               },
             );
           },
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            'settings.TautulliEnrichmentHint'.tr(),
+            style: TextStyle(
+              fontSize: 12,
+              color: ZagColours.grey,
+            ),
+          ),
         ),
       ],
     );
