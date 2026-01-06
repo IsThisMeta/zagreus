@@ -10,7 +10,7 @@ class DownloadClientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_shouldShow) {
+    if (_shouldShow(context)) {
       return ZagIconButton.appBar(
         icon: ZagIcons.DOWNLOAD,
         onPressed: DownloadClientSheet().show,
@@ -19,8 +19,21 @@ class DownloadClientButton extends StatelessWidget {
     return const SizedBox();
   }
 
-  bool get _shouldShow {
+  bool _shouldShow(BuildContext context) {
     final profile = ZagProfile.current;
-    return profile.sabnzbdEnabled || profile.nzbgetEnabled;
+    // Don't show if no download clients are enabled
+    if (!profile.sabnzbdEnabled && !profile.nzbgetEnabled) {
+      return false;
+    }
+
+    // Don't show if we're already inside a download module or settings
+    final routeName = ModalRoute.of(context)?.settings.name ?? '';
+    if (routeName.startsWith('sabnzbd:') ||
+        routeName.startsWith('nzbget:') ||
+        routeName.startsWith('settings:')) {
+      return false;
+    }
+
+    return true;
   }
 }
