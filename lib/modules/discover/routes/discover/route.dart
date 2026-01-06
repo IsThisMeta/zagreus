@@ -6831,55 +6831,59 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                 ),
                                 const SizedBox(height: 8),
                                 // Rating, watching, and in library badge
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.star,
-                                      color: Colors.yellow,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      (item['rating'] as num) > 0
-                                          ? (item['rating'] as num)
-                                              .toStringAsFixed(1)
-                                          : 'discover.NotAvailableShort'.tr(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
+                                // Fixed height prevents layout shift when badge appears
+                                SizedBox(
+                                  height: 24,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.star,
+                                        color: Colors.yellow,
+                                        size: 16,
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Text(
-                                      'discover.WatchingNow'
-                                          .tr(args: [item['watchingNow'].toString()]),
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
-                                        fontSize: 16,
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        (item['rating'] as num) > 0
+                                            ? (item['rating'] as num)
+                                                .toStringAsFixed(1)
+                                            : 'discover.NotAvailableShort'.tr(),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
                                       ),
-                                    ),
-                                    // In library badge
-                                    if (item['inLibrary'] as bool) ...[
-                                      const SizedBox(width: 12),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        'discover.WatchingNow'
+                                            .tr(args: [item['watchingNow'].toString()]),
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 16,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          'discover.InLibrary'.tr(),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
+                                      ),
+                                      // In library badge
+                                      if (item['inLibrary'] as bool) ...[
+                                        const SizedBox(width: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            'discover.InLibrary'.tr(),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
