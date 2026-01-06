@@ -59,12 +59,22 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   int? _tautulliTranscodeCount;
   int? _tautulliBandwidth;
 
+  late final SeerrState _seerrState;
+
   @override
   void initState() {
     super.initState();
+    _seerrState = context.read<SeerrState>();
+    _seerrState.addListener(_syncSeerrState);
     _seerrRequestFilter =
         UIPreferencesDatabase.SEERR_REQUEST_FILTER.read() as String;
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _seerrState.removeListener(_syncSeerrState);
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -232,10 +242,9 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   Future<void> _loadSeerrRequests() async {
     if (!mounted) return;
 
-    final seerrState = context.read<SeerrState>();
-    final isConfigured = seerrState.enabled &&
-        seerrState.host.isNotEmpty &&
-        seerrState.apiKey.isNotEmpty;
+    final isConfigured = _seerrState.enabled &&
+        _seerrState.host.isNotEmpty &&
+        _seerrState.apiKey.isNotEmpty;
 
     if (!isConfigured) {
       if (!mounted) return;
@@ -257,26 +266,11 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     try {
       // Fetch requests using the saved filter preference
       // Note: Client-side filtering is applied in _buildSeerrSectionWithFilter
-      seerrState.requestsFilter = _seerrRequestFilter;
-      await seerrState.fetchRequests();
-      final requests = seerrState.requests ?? [];
-      final sorted = List<SeerrRequest>.from(requests)
-        ..sort(
-          (a, b) {
-            final aDate = DateTime.tryParse(a.createdAt) ??
-                DateTime.fromMillisecondsSinceEpoch(0);
-            final bDate = DateTime.tryParse(b.createdAt) ??
-                DateTime.fromMillisecondsSinceEpoch(0);
-            return bDate.compareTo(aDate);
-          },
-        );
+      _seerrState.requestsFilter = _seerrRequestFilter;
+      await _seerrState.fetchRequests();
 
       if (!mounted) return;
-      setState(() {
-        _seerrRequests = sorted;
-        _seerrLoading = false;
-        _seerrError = seerrState.requestsError;
-      });
+      _syncSeerrState();
     } catch (e) {
       ZagLogger().warning('Failed to fetch Seerr requests: $e');
       if (!mounted) return;
@@ -293,6 +287,32 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       _seerrLoading ||
       _seerrError != null ||
       _seerrRequests.isNotEmpty;
+
+  void _syncSeerrState() {
+    if (!mounted) return;
+
+    final isConfigured = _seerrState.enabled &&
+        _seerrState.host.isNotEmpty &&
+        _seerrState.apiKey.isNotEmpty;
+    final requests = _seerrState.requests ?? const <SeerrRequest>[];
+    final sorted = List<SeerrRequest>.from(requests)
+      ..sort(
+        (a, b) {
+          final aDate = DateTime.tryParse(a.createdAt) ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bDate = DateTime.tryParse(b.createdAt) ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bDate.compareTo(aDate);
+        },
+      );
+
+    setState(() {
+      _seerrEnabled = isConfigured;
+      _seerrLoading = _seerrState.requestsLoading;
+      _seerrError = _seerrState.requestsError;
+      _seerrRequests = sorted;
+    });
+  }
 
   Future<void> _loadTautulliStreams() async {
     if (!mounted) return;
