@@ -8,6 +8,7 @@ class ZagListViewBuilder extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final ScrollPhysics physics;
   final ScrollController controller;
+  final double? cacheExtent;
 
   const ZagListViewBuilder({
     Key? key,
@@ -17,6 +18,7 @@ class ZagListViewBuilder extends StatelessWidget {
     required this.controller,
     this.padding,
     this.physics = const AlwaysScrollableScrollPhysics(),
+    this.cacheExtent,
   }) : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class ZagListViewBuilder extends StatelessWidget {
         itemCount: itemCount,
         itemBuilder: itemBuilder,
         itemExtent: itemExtent,
+        cacheExtent: cacheExtent,
       ),
     );
   }

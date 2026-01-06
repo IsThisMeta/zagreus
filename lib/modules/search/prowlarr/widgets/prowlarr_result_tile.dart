@@ -28,7 +28,8 @@ class _State extends State<ProwlarrResultTile> {
         _subtitle1(),
         _subtitle2(),
       ],
-      collapsedTrailing: _categoryIcon(),
+      posterUrl: widget.item.posterUrl,
+      posterPlaceholderIcon: _categoryPlaceholderIcon,
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),
@@ -217,6 +218,12 @@ class _State extends State<ProwlarrResultTile> {
   }
 
   // Helper getters
+  IconData? get _categoryPlaceholderIcon {
+    final categories = widget.item.categories;
+    if (categories == null || categories.isEmpty) return ZagIcons.VIDEO_CAM;
+    return categories.first.icon;
+  }
+
   bool get _isTorrent =>
       widget.item.protocol?.toLowerCase() == 'torrent' ||
       widget.item.seeders != null;

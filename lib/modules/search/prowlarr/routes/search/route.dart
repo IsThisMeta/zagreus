@@ -162,6 +162,8 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
         return ZagListViewBuilder(
           controller: scrollController,
           itemCount: results.length,
+          // Only build items actually visible on screen
+          cacheExtent: 0,
           itemBuilder: (context, index) {
             final item = results[index];
             return ProwlarrResultTile(item: item);

@@ -13,6 +13,11 @@ class ZagExpandableListTile extends StatefulWidget {
   final List<ZagButton>? expandedTableButtons;
   final bool initialExpanded;
 
+  // Poster support
+  final String? posterUrl;
+  final Map? posterHeaders;
+  final IconData? posterPlaceholderIcon;
+
   /// Create a [ZagExpandableListTile] which is a list tile that expands into a table-style card.
   ///
   /// If [expandedWidget] is supplied, that widget is used as the body within the expanded card.
@@ -29,6 +34,9 @@ class ZagExpandableListTile extends StatefulWidget {
     this.expandedTableButtons,
     this.backgroundColor,
     this.initialExpanded = false,
+    this.posterUrl,
+    this.posterHeaders,
+    this.posterPlaceholderIcon,
   }) : super(key: key);
 
   @override
@@ -78,6 +86,9 @@ class _State extends State<ZagExpandableListTile> {
       onLongPress: widget.onLongPress,
       trailing: widget.collapsedTrailing,
       leading: widget.collapsedLeading,
+      posterUrl: widget.posterUrl,
+      posterHeaders: widget.posterHeaders,
+      posterPlaceholderIcon: widget.posterPlaceholderIcon,
       // color: widget.backgroundColor,
     );
   }

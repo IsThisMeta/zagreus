@@ -488,7 +488,7 @@
   "settings.SubscriptionsSharingTimeDays": "{} days",
   "settings.SubscriptionsSharingTimeHours": "{} hours",
   "settings.SubscriptionsSharingTimeSoon": "soon",
-  "settings.AdvancedLocalSwitching": "Advanced Local Switching",
+  "settings.AdvancedLocalSwitching": "Network Switching",
   "settings.AdvancedLocalSwitchingDescription": "Automatically switch to local network",
   "settings.ConnectionStatus": "Connection Status",
   "settings.ConnectionStatusLocal": "Local connection • {}",
