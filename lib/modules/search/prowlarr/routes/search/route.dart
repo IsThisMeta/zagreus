@@ -101,7 +101,6 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
         onSubmitted: _performSearch,
       ),
       actions: [
-        const DownloadClientButton(),
         Consumer<ProwlarrState>(
           builder: (context, state, _) {
             if (state.searchResults.isEmpty) {

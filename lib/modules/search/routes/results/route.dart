@@ -71,7 +71,6 @@ class _State extends State<ResultsRoute> with ZagScrollControllerMixin {
     return ZagAppBar(
       title: title!,
       actions: [
-        const DownloadClientButton(),
         ZagIconButton(
           icon: Icons.search_rounded,
           onPressed: () => SearchRoutes.SEARCH.go(),
