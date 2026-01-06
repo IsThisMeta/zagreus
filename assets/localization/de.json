@@ -1829,6 +1829,8 @@
     "sonarr.Name": "Name",
     "sonarr.NoSeasonsFound": "Keine Staffeln gefunden",
     "sonarr.More": "Mehr",
+    "sonarr.MoveFiles": "Dateien verschieben",
+    "sonarr.MoveFilesDescription": "Möchten Sie die Dateien verschieben?",
     "sonarr.ParentDirectory": "Übergeordnetes Verzeichnis",
     "sonarr.OneSeason": "1 Staffel",
     "sonarr.Searching": "Sucht {}",

@@ -60,19 +60,13 @@ class SonarrSeriesEditSeriesPathTile extends StatelessWidget {
           builder: (context, setState) {
             return Padding(
               padding: const EdgeInsets.only(top: 12.0),
-              child: Row(
-                children: [
-                  Checkbox(
-                    value: moveFiles,
-                    onChanged: (value) {
-                      setState(() => moveFiles = value ?? false);
-                    },
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() => moveFiles = !moveFiles);
-                      },
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => moveFiles = !moveFiles);
+                },
+                child: Row(
+                  children: [
+                    Expanded(
                       child: Text(
                         'sonarr.MoveFiles'.tr(),
                         style: TextStyle(
@@ -80,8 +74,14 @@ class SonarrSeriesEditSeriesPathTile extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Checkbox(
+                      value: moveFiles,
+                      onChanged: (value) {
+                        setState(() => moveFiles = value ?? false);
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           },

@@ -1336,6 +1336,8 @@
     "sonarr.Leechers": "Leechers",
     "sonarr.Messages": "Berichten",
     "sonarr.More": "Meer",
+    "sonarr.MoveFiles": "Bestanden verplaatsen",
+    "sonarr.MoveFilesDescription": "Wilt u de bestanden verplaatsen?",
     "sonarr.ParentDirectory": "Bovenliggende map",
     "sonarr.Other": "Anders",
     "sonarr.Overview": "Overzicht",
