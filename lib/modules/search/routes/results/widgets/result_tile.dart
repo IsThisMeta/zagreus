@@ -22,14 +22,15 @@ class _SearchResultTileState extends State<SearchResultTile> {
 
   @override
   Widget build(BuildContext context) {
+    final showPosters = SearchDatabase.SHOW_POSTERS.read();
     return ZagExpandableListTile(
       title: widget.data.title,
       collapsedSubtitles: [
         _subtitle1(),
         _subtitle2(),
       ],
-      posterUrl: widget.data.posterUrl,
-      posterPlaceholderIcon: widget.data.categoryIcon,
+      posterUrl: showPosters ? widget.data.posterUrl : null,
+      posterPlaceholderIcon: showPosters ? widget.data.categoryIcon : null,
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),

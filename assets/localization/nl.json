@@ -673,6 +673,8 @@
     "search.SentTo": "Verzonden naar {}",
     "search.ShowLinks": "Links tonen",
     "search.ShowLinksDescription": "Download- en commentaarlinks tonen",
+    "search.ShowPosters": "Posters tonen",
+    "search.ShowPostersDescription": "Posterafbeeldingen tonen in zoekresultaten",
     "search.Size": "Grootte",
     "search.SizeGB": "{}GB",
     "search.SortAgeNewest": "Leeftijd (nieuwste)",

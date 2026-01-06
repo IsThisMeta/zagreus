@@ -25,5 +25,7 @@
     "search.AllSubcategories": "Tutte Le Sottocategorie",
     "search.Age": "Età",
     "search.ProwlarrAPIKey": "Chiave API Prowlarr",
-    "search.ProwlarrURL": "URL Prowlarr"
+    "search.ProwlarrURL": "URL Prowlarr",
+    "search.ShowPosters": "Mostra poster",
+    "search.ShowPostersDescription": "Mostra immagini poster nei risultati di ricerca"
 }

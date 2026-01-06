@@ -64,9 +64,11 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
 
     switch (this) {
       case SearchDownloadType.NZBGET:
-        return _executeNZBGetProwlarr(context, downloadUrl, category);
+        return _executeNZBGetProwlarr(context, downloadUrl, category,
+            posterUrl: item.posterUrl);
       case SearchDownloadType.SABNZBD:
-        return _executeSABnzbdProwlarr(context, downloadUrl, category);
+        return _executeSABnzbdProwlarr(context, downloadUrl, category,
+            posterUrl: item.posterUrl);
       case SearchDownloadType.FILESYSTEM:
         return _executeFileSystemProwlarr(context, item);
     }
@@ -75,8 +77,9 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
   Future<void> _executeNZBGetProwlarr(
     BuildContext context,
     String downloadUrl,
-    String itemCategory,
-  ) async {
+    String itemCategory, {
+    String? posterUrl,
+  }) async {
     NZBGetAPI api = NZBGetAPI.from(ZagProfile.current);
 
     String? selectedCategory;
@@ -111,6 +114,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
               message: 'search.SentTo'.tr(args: [SearchDownloadType.NZBGET.name]),
               showButton: true,
               buttonOnPressed: ZagModule.NZBGET.launch,
+              posterUrl: posterUrl,
             ))
         .catchError((error, stack) {
       ZagLogger().error('Failed to download data', error, stack);
@@ -122,8 +126,9 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
   Future<void> _executeSABnzbdProwlarr(
     BuildContext context,
     String downloadUrl,
-    String itemCategory,
-  ) async {
+    String itemCategory, {
+    String? posterUrl,
+  }) async {
     SABnzbdAPI api = SABnzbdAPI.from(ZagProfile.current);
 
     String? selectedCategory;
@@ -160,6 +165,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
               message: 'search.SentTo'.tr(args: [SearchDownloadType.SABNZBD.name]),
               showButton: true,
               buttonOnPressed: ZagModule.SABNZBD.launch,
+              posterUrl: posterUrl,
             ))
         .catchError((error, stack) {
       ZagLogger().error('Failed to download data', error, stack);
@@ -184,6 +190,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
     showZagInfoSnackBar(
       title: 'search.Downloading'.tr(),
       message: 'search.DownloadingNZBToDevice'.tr(),
+      posterUrl: item.posterUrl,
     );
 
     final cleanTitle = (item.title ?? 'search.DefaultDownloadName'.tr())
@@ -205,6 +212,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
           showZagSuccessSnackBar(
             title: 'search.NZBSaved'.tr(),
             message: 'search.NZBSavedMessage'.tr(),
+            posterUrl: item.posterUrl,
           );
         }
       }
@@ -258,6 +266,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
                   'search.SentTo'.tr(args: [SearchDownloadType.NZBGET.name]),
               showButton: true,
               buttonOnPressed: ZagModule.NZBGET.launch,
+              posterUrl: data.posterUrl,
             ))
         .catchError((error, stack) {
       ZagLogger().error('Failed to download data', error, stack);
@@ -345,6 +354,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
                   'search.SentTo'.tr(args: [SearchDownloadType.SABNZBD.name]),
               showButton: true,
               buttonOnPressed: ZagModule.SABNZBD.launch,
+              posterUrl: data.posterUrl,
             ))
         .catchError((error, stack) {
       ZagLogger().error('Failed to download data', error, stack);
@@ -397,6 +407,7 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
     showZagInfoSnackBar(
       title: 'search.Downloading'.tr(),
       message: 'search.DownloadingNZBToDevice'.tr(),
+      posterUrl: data.posterUrl,
     );
     String cleanTitle = data.title.replaceAll(RegExp(r'[^0-9a-zA-Z. -]+'), '');
     try {
@@ -413,7 +424,8 @@ extension SearchDownloadTypeExtension on SearchDownloadType {
         if (result)
           showZagSuccessSnackBar(
               title: 'search.NZBSaved'.tr(),
-              message: 'search.NZBSavedMessage'.tr());
+              message: 'search.NZBSavedMessage'.tr(),
+              posterUrl: data.posterUrl);
       });
     } catch (error, stack) {
       ZagLogger().error('Error downloading NZB', error, stack);

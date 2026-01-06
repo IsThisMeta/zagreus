@@ -22,14 +22,15 @@ class _State extends State<ProwlarrResultTile> {
 
   @override
   Widget build(BuildContext context) {
+    final showPosters = SearchDatabase.SHOW_POSTERS.read();
     return ZagExpandableListTile(
       title: widget.item.title ?? 'zagreus.Unknown'.tr(),
       collapsedSubtitles: [
         _subtitle1(),
         _subtitle2(),
       ],
-      posterUrl: widget.item.posterUrl,
-      posterPlaceholderIcon: _categoryPlaceholderIcon,
+      posterUrl: showPosters ? widget.item.posterUrl : null,
+      posterPlaceholderIcon: showPosters ? _categoryPlaceholderIcon : null,
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),

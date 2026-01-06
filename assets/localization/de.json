@@ -905,6 +905,8 @@
     "search.SentTo": "An {} gesendet",
     "search.ShowLinks": "Links anzeigen",
     "search.ShowLinksDescription": "Download- und Kommentar-Links anzeigen",
+    "search.ShowPosters": "Poster anzeigen",
+    "search.ShowPostersDescription": "Posterbilder in Suchergebnissen anzeigen",
     "search.Size": "Größe",
     "search.SizeGB": "{}GB",
     "search.SortAgeNewest": "Alter (Neueste)",

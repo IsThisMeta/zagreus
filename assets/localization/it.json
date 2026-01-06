@@ -192,6 +192,8 @@
     "search.Age": "Età",
     "search.ProwlarrAPIKey": "Chiave API Prowlarr",
     "search.ProwlarrURL": "URL Prowlarr",
+    "search.ShowPosters": "Mostra poster",
+    "search.ShowPostersDescription": "Mostra immagini poster nei risultati di ricerca",
     "seerr.Audio": "Audio",
     "seerr.OneRequest": "1 richiesta",
     "seerr.Open": "Aprire",

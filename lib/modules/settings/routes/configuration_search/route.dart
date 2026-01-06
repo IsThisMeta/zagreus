@@ -105,6 +105,7 @@ class _State extends State<ConfigurationSearchRoute>
       ZagDivider(),
       _hideAdultCategories(),
       _showLinks(),
+      _showPosters(),
     ];
   }
 
@@ -128,6 +129,20 @@ class _State extends State<ConfigurationSearchRoute>
       builder: (context, _) => ZagBlock(
         title: 'search.ShowLinks'.tr(),
         body: [TextSpan(text: 'search.ShowLinksDescription'.tr())],
+        trailing: ZagSwitch(
+          value: _db.read(),
+          onChanged: _db.update,
+        ),
+      ),
+    );
+  }
+
+  Widget _showPosters() {
+    const _db = SearchDatabase.SHOW_POSTERS;
+    return _db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'search.ShowPosters'.tr(),
+        body: [TextSpan(text: 'search.ShowPostersDescription'.tr())],
         trailing: ZagSwitch(
           value: _db.read(),
           onChanged: _db.update,

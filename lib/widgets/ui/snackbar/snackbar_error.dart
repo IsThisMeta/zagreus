@@ -7,6 +7,7 @@ Future<void> showZagErrorSnackBar({
   bool showButton = false,
   String buttonText = 'view',
   Function? buttonOnPressed,
+  String? posterUrl,
 }) async =>
     showZagSnackBar(
       title: title,
@@ -25,4 +26,5 @@ Future<void> showZagErrorSnackBar({
           buttonOnPressed();
         }
       },
+      posterUrl: posterUrl,
     );

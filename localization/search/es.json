@@ -24,6 +24,9 @@
     "search.DeleteIndexer": "Borrar un indexador",
     "search.HideAdultCategoriesDescription": "Ocultar el contenido para adultos",
     "search.ShowLinks": "Mostrar los enlaces",
+    "search.ShowLinksDescription": "Mostrar los enlaces de la descarga y los comentarios",
+    "search.ShowPosters": "Mostrar pósters",
+    "search.ShowPostersDescription": "Mostrar imágenes de pósters en los resultados",
     "search.EditIndexer": "Editar un indexador",
     "search.IndexerDeleted": "Indexador borrado",
     "search.NoIndexersFound": "No se han encontrado indexadores",
@@ -31,7 +34,6 @@
     "search.FailedToAddIndexer": "Error al añadir el indexador",
     "search.AddIndexer": "Añadir un indexador",
     "search.IndexerNotFound": "No se encuentra el indexador",
-    "search.ShowLinksDescription": "Mostrar los enlaces de la descarga y los comentarios",
     "search.IndexerAPIKey": "Clave dela API de indexación",
     "search.IndexerAdded": "Indexador añadido",
     "search.IndexerAPIHost": "Indexador del Host de la API"

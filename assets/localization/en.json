@@ -908,6 +908,8 @@
     "search.SentTo": "Sent to {}",
     "search.ShowLinks": "Show Links",
     "search.ShowLinksDescription": "Show Download and Comments Links",
+    "search.ShowPosters": "Show Posters",
+    "search.ShowPostersDescription": "Show poster images in search results",
     "search.Size": "Size",
     "search.SizeGB": "{}GB",
     "search.SortAgeNewest": "Age (Newest)",

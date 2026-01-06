@@ -46,6 +46,7 @@ Future<void> showZagSnackBar({
   bool showButton = false,
   String buttonText = 'view',
   Function? buttonOnPressed,
+  String? posterUrl,
 }) async {
   // Check if in-app toasts are enabled
   if (!ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) {
@@ -92,13 +93,27 @@ Future<void> showZagSnackBar({
       ),
       shouldIconPulse: false,
       icon: Padding(
-        child: ZagIconButton(
-          icon: type.icon,
-          color: type.color,
-        ),
         padding: const EdgeInsets.only(
           left: ZagUI.DEFAULT_MARGIN_SIZE / 2,
         ),
+        child: posterUrl != null && posterUrl.isNotEmpty
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.network(
+                  posterUrl,
+                  width: 36,
+                  height: 54,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => ZagIconButton(
+                    icon: type.icon,
+                    color: type.color,
+                  ),
+                ),
+              )
+            : ZagIconButton(
+                icon: type.icon,
+                color: type.color,
+              ),
       ),
       primaryAction: showButton
           ? TextButton(
