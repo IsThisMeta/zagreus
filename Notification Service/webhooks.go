@@ -1021,6 +1021,24 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		customBody = stringFromInterface(webhookData["body"])
 	}
 
+	// Extract media IDs for poster lookup
+	mediaType := stringFromInterface(webhookData["media_type"])
+	tmdbID := intFromInterface(webhookData["themoviedb_id"])
+	tvdbID := intFromInterface(webhookData["thetvdb_id"])
+	imdbID := stringFromInterface(webhookData["imdb_id"])
+
+	// Look up poster from TMDB
+	var posterURL string
+	if mediaType == "movie" && (tmdbID > 0 || imdbID != "") {
+		if url, _, err := getMoviePosterURL(tmdbID, imdbID); err == nil {
+			posterURL = url
+		}
+	} else if (mediaType == "episode" || mediaType == "show" || mediaType == "season") && (tmdbID > 0 || tvdbID > 0 || imdbID != "") {
+		if url, _, err := getTVPosterURL(tmdbID, tvdbID, imdbID); err == nil {
+			posterURL = url
+		}
+	}
+
 	var title, body string
 	metadata := map[string]string{
 		"event_type":   action,
@@ -1031,6 +1049,15 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 	}
 	if mediaTitle != "" {
 		metadata["title"] = mediaTitle
+	}
+	if tmdbID > 0 {
+		metadata["tmdb_id"] = strconv.Itoa(tmdbID)
+	}
+	if tvdbID > 0 {
+		metadata["tvdb_id"] = strconv.Itoa(tvdbID)
+	}
+	if imdbID != "" {
+		metadata["imdb_id"] = imdbID
 	}
 
 	// Normalize action to lowercase for case-insensitive matching
@@ -1164,10 +1191,11 @@ func handleTautulliWebhookWithID(c *gin.Context) {
 		body = customBody
 	}
 
-	// Build notification params
+	// Build notification params with poster if available
 	var params *NotificationParams
-	if len(metadata) > 0 {
+	if posterURL != "" || len(metadata) > 0 {
 		params = &NotificationParams{
+			ImageURL: posterURL,
 			Metadata: metadata,
 		}
 	}
@@ -1582,6 +1610,23 @@ func handleWebhookWithPayload(c *gin.Context) {
 		mediaTitle := stringFromInterface(genericWebhook["title"])
 		serverName := stringFromInterface(genericWebhook["server_name"])
 
+		// Extract media IDs for poster lookup
+		mediaType := stringFromInterface(genericWebhook["media_type"])
+		tmdbID := intFromInterface(genericWebhook["themoviedb_id"])
+		tvdbID := intFromInterface(genericWebhook["thetvdb_id"])
+		imdbID := stringFromInterface(genericWebhook["imdb_id"])
+
+		// Look up poster from TMDB
+		if mediaType == "movie" && (tmdbID > 0 || imdbID != "") {
+			if url, _, err := getMoviePosterURL(tmdbID, imdbID); err == nil {
+				posterURL = url
+			}
+		} else if (mediaType == "episode" || mediaType == "show" || mediaType == "season") && (tmdbID > 0 || tvdbID > 0 || imdbID != "") {
+			if url, _, err := getTVPosterURL(tmdbID, tvdbID, imdbID); err == nil {
+				posterURL = url
+			}
+		}
+
 		metadata["event_type"] = action
 		metadata["content_type"] = "plex"
 		if userName != "" {
@@ -1589,6 +1634,15 @@ func handleWebhookWithPayload(c *gin.Context) {
 		}
 		if mediaTitle != "" {
 			metadata["title"] = mediaTitle
+		}
+		if tmdbID > 0 {
+			metadata["tmdb_id"] = strconv.Itoa(tmdbID)
+		}
+		if tvdbID > 0 {
+			metadata["tvdb_id"] = strconv.Itoa(tvdbID)
+		}
+		if imdbID != "" {
+			metadata["imdb_id"] = imdbID
 		}
 
 		// Normalize action to lowercase for case-insensitive matching
