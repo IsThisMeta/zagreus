@@ -180,8 +180,9 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
 
           final radarrIssues = await radarrAPI.healthCheck.get();
           allIssues.addAll(radarrIssues.map((issue) => _ServerIssue(
-                message: issue.message ?? 'Unknown issue',
-                serviceType: 'Radarr',
+                message:
+                    issue.message ?? 'discover.ServerIssuesUnknownIssue'.tr(),
+                serviceType: 'discover.RadarrLabel'.tr(),
                 icon: ZagIcons.RADARR,
                 color: const Color(0xFFFFCB3D),
               )));
@@ -202,8 +203,9 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
           );
           final sonarrIssues = await sonarrAPI.healthCheck.get();
           allIssues.addAll(sonarrIssues.map((issue) => _ServerIssue(
-                message: issue.message ?? 'Unknown issue',
-                serviceType: 'Sonarr',
+                message:
+                    issue.message ?? 'discover.ServerIssuesUnknownIssue'.tr(),
+                serviceType: 'discover.SonarrLabel'.tr(),
                 icon: ZagIcons.SONARR,
                 color: const Color(0xFF3FC6F4),
               )));
@@ -561,7 +563,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load server data',
+              'discover.ServerTabLoadFailedTitle'.tr(),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -587,12 +589,12 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
             ),
             const SizedBox(height: 16),
             Text(
-              'No disk space data available',
+              'discover.ServerTabNoDiskSpaceTitle'.tr(),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Enable Radarr or Sonarr to view disk spaces',
+              'discover.ServerTabNoDiskSpaceMessage'.tr(),
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
@@ -654,7 +656,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
             ),
             child: ZagButton(
               type: ZagButtonType.TEXT,
-              text: 'Edit Sections',
+              text: 'discover.EditSections'.tr(),
               icon: Icons.tune_rounded,
               color: ZagColours.currentAccent,
               onTap: _openServerSectionsEditor,
@@ -676,7 +678,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
         child: Text(
-          'Server Issues',
+          'discover.ServerSectionServerIssues'.tr(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -688,9 +690,9 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: ZagBlock(
-            title: 'All Systems Operational',
-            body: const [
-              TextSpan(text: 'No server issues detected.'),
+            title: 'discover.ServerIssuesAllSystemsOperationalTitle'.tr(),
+            body: [
+              TextSpan(text: 'discover.ServerIssuesNoIssuesMessage'.tr()),
             ],
             trailing:
                 const Icon(Icons.check_circle_outline, color: Colors.green),
@@ -718,7 +720,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         child: Row(
           children: [
             Text(
-              'Seerr Requests',
+              'discover.ServerSectionSeerrRequests'.tr(),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -742,11 +744,10 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'Enable Seerr',
-            body: const [
+            title: 'discover.SeerrEnableTitle'.tr(),
+            body: [
               TextSpan(
-                text:
-                    'Turn on Seerr in Settings to see requests and manage approvals here.',
+                text: 'discover.SeerrEnableMessage'.tr(),
               ),
             ],
             trailing: const Icon(Icons.settings_rounded),
@@ -757,10 +758,10 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'Unable to load requests',
-            body: const [
+            title: 'discover.SeerrLoadFailedTitle'.tr(),
+            body: [
               TextSpan(
-                text: 'Tap to retry. We could not reach Seerr.',
+                text: 'discover.SeerrLoadFailedMessage'.tr(),
               ),
             ],
             trailing: const Icon(Icons.refresh_rounded),
@@ -772,8 +773,8 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
             title: _getEmptyStateTitle(),
-            body: const [
-              TextSpan(text: 'All caught up for now.'),
+            body: [
+              TextSpan(text: 'discover.SeerrEmptyMessage'.tr()),
             ],
             trailing: const Icon(Icons.inbox_outlined),
             onTap: () => ZagModule.SEERR.launch(),
@@ -796,30 +797,30 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
   String _getEmptyStateTitle() {
     switch (_seerrRequestFilter) {
       case 'pending':
-        return 'No pending requests';
+        return 'discover.SeerrNoPendingRequests'.tr();
       case 'approved':
-        return 'No approved requests';
+        return 'discover.SeerrNoApprovedRequests'.tr();
       case 'declined':
-        return 'No declined requests';
+        return 'discover.SeerrNoDeclinedRequests'.tr();
       case 'available':
-        return 'No available content';
+        return 'discover.SeerrNoAvailableContent'.tr();
       case 'processing':
-        return 'Nothing processing';
+        return 'discover.SeerrNothingProcessing'.tr();
       case 'unavailable':
-        return 'No unavailable requests';
+        return 'discover.SeerrNoUnavailableRequests'.tr();
       default:
-        return 'No requests found';
+        return 'discover.SeerrNoRequestsFound'.tr();
     }
   }
 
   Widget _buildFilterSelector() {
-    const filterOptions = {
-      'pending': 'Pending',
-      'approved': 'Approved',
-      'declined': 'Declined',
-      'available': 'Available',
-      'processing': 'Processing',
-      'unavailable': 'Unavailable',
+    final filterOptions = {
+      'pending': 'seerr.Pending'.tr(),
+      'approved': 'seerr.Approved'.tr(),
+      'declined': 'seerr.Declined'.tr(),
+      'available': 'seerr.Available'.tr(),
+      'processing': 'seerr.Processing'.tr(),
+      'unavailable': 'seerr.Unavailable'.tr(),
     };
 
     return Container(
@@ -878,7 +879,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         child: Row(
           children: [
             Text(
-              'Tautulli Streams',
+              'discover.ServerSectionTautulliStreams'.tr(),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -903,11 +904,10 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'Enable Tautulli',
-            body: const [
+            title: 'discover.TautulliEnableTitle'.tr(),
+            body: [
               TextSpan(
-                text:
-                    'Turn on Tautulli in Settings to see active streams here.',
+                text: 'discover.TautulliEnableMessage'.tr(),
               ),
             ],
             trailing: const Icon(Icons.settings_rounded),
@@ -918,10 +918,10 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ZagBlock(
-            title: 'Unable to load streams',
-            body: const [
+            title: 'discover.TautulliLoadFailedTitle'.tr(),
+            body: [
               TextSpan(
-                text: 'Tap to retry. We could not reach Tautulli.',
+                text: 'discover.TautulliLoadFailedMessage'.tr(),
               ),
             ],
             trailing: const Icon(Icons.refresh_rounded),
@@ -932,9 +932,9 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: ZagBlock(
-            title: 'No Active Streams',
-            body: const [
-              TextSpan(text: 'Nobody is currently watching anything.'),
+            title: 'discover.TautulliNoActiveStreamsTitle'.tr(),
+            body: [
+              TextSpan(text: 'discover.TautulliNoActiveStreamsMessage'.tr()),
             ],
             trailing: const Icon(Icons.play_circle_outline_rounded),
             onTap: () => ZagModule.TAUTULLI.launch(),
@@ -957,18 +957,29 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
     final parts = <String>[];
 
     if (_tautulliDirectPlayCount != null && _tautulliDirectPlayCount! > 0) {
-      parts.add('$_tautulliDirectPlayCount Direct Play');
+      final label = _tautulliDirectPlayCount == 1
+          ? 'tautulli.DirectPlay'.tr()
+          : 'tautulli.DirectPlays'.tr();
+      parts.add('$_tautulliDirectPlayCount $label');
     }
     if (_tautulliDirectStreamCount != null && _tautulliDirectStreamCount! > 0) {
-      parts.add('$_tautulliDirectStreamCount Direct Stream');
+      final label = _tautulliDirectStreamCount == 1
+          ? 'tautulli.DirectStream'.tr()
+          : 'tautulli.DirectStreams'.tr();
+      parts.add('$_tautulliDirectStreamCount $label');
     }
     if (_tautulliTranscodeCount != null && _tautulliTranscodeCount! > 0) {
-      parts.add('$_tautulliTranscodeCount Transcode');
+      final label = _tautulliTranscodeCount == 1
+          ? 'tautulli.Transcode'.tr()
+          : 'tautulli.Transcodes'.tr();
+      parts.add('$_tautulliTranscodeCount $label');
     }
 
     final summaryText = parts.isEmpty ? '' : parts.join(' • ');
     final bandwidthText = _tautulliBandwidth != null
-        ? '${(_tautulliBandwidth! / 1000).toStringAsFixed(1)} Mbps'
+        ? 'discover.TautulliBandwidthMbps'.tr(
+            args: [(_tautulliBandwidth! / 1000).toStringAsFixed(1)],
+          )
         : '';
 
     return Container(
@@ -1021,7 +1032,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
         child: Text(
-          'Disk Spaces',
+          'discover.ServerSectionDiskSpaces'.tr(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -1120,7 +1131,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         child: Row(
           children: [
             Text(
-              'Download History',
+              'discover.ServerSectionDownloadHistory'.tr(),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

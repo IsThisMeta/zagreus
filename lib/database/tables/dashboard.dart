@@ -7,7 +7,7 @@ import 'package:zagreus/vendor.dart';
 enum DashboardDatabase<T> with ZagTableMixin<T> {
   NAVIGATION_INDEX<int>(0),
   CALENDAR_STARTING_DAY<CalendarStartingDay>(CalendarStartingDay.MONDAY),
-  CALENDAR_STARTING_SIZE<CalendarStartingSize>(CalendarStartingSize.TWO_WEEKS),
+  CALENDAR_STARTING_SIZE<CalendarStartingSize>(CalendarStartingSize.ONE_WEEK),
   CALENDAR_STARTING_TYPE<CalendarStartingType>(CalendarStartingType.CALENDAR),
   CALENDAR_ENABLE_LIDARR<bool>(true),
   CALENDAR_ENABLE_RADARR<bool>(true),
@@ -57,7 +57,7 @@ enum DashboardDatabase<T> with ZagTableMixin<T> {
         result = CalendarStartingDay.MONDAY.fromKey(value.toString());
         break;
       case DashboardDatabase.CALENDAR_STARTING_SIZE:
-        result = CalendarStartingSize.TWO_WEEKS.fromKey(value.toString());
+        result = CalendarStartingSize.ONE_WEEK.fromKey(value.toString());
         break;
       case DashboardDatabase.CALENDAR_STARTING_TYPE:
         result = CalendarStartingType.CALENDAR.fromKey(value.toString());

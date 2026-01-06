@@ -33,14 +33,14 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     'tautulli_streams',
   ];
 
-  static const Map<String, String> _sectionNames = {
-    'server_issues': 'Server Issues',
-    'seerr_requests': 'Seerr Requests',
-    'tautulli_streams': 'Tautulli Streams',
-    'disk_space': 'Disk Space',
-    'download_history': 'Download History',
-    'lidarr_recent': 'Recently Downloaded Albums',
-    'readarr_recent': 'Recently Downloaded Books',
+  static const Map<String, String> _sectionNameKeys = {
+    'server_issues': 'discover.ServerSectionServerIssues',
+    'seerr_requests': 'discover.ServerSectionSeerrRequests',
+    'tautulli_streams': 'discover.ServerSectionTautulliStreams',
+    'disk_space': 'discover.ServerSectionDiskSpace',
+    'download_history': 'discover.ServerSectionDownloadHistory',
+    'lidarr_recent': 'discover.ServerSectionRecentlyDownloadedAlbums',
+    'readarr_recent': 'discover.ServerSectionRecentlyDownloadedBooks',
   };
 
   late List<String> _sections;
@@ -69,8 +69,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
     setState(() => _hasChanges = false);
     widget.onHasChangesChanged?.call(_hasChanges);
     showZagInfoSnackBar(
-      title: 'Section Order Saved',
-      message: 'Server sections have been reordered',
+      title: 'discover.ServerSectionsSavedTitle'.tr(),
+      message: 'discover.ServerSectionsSavedMessage'.tr(),
     );
   }
 
@@ -109,7 +109,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
                   },
                   itemBuilder: (context, index) {
                     final section = _sections[index];
-                    final name = _sectionNames[section] ?? section;
+                    final nameKey = _sectionNameKeys[section];
+                    final name = nameKey != null ? nameKey.tr() : section;
                     final theme = Theme.of(context);
 
                     return Container(
@@ -144,7 +145,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.delete_outline_rounded),
-                              tooltip: 'Remove Section',
+                              tooltip: 'discover.ServerSectionsRemoveSection'.tr(),
                               onPressed: () => _removeSection(section),
                             ),
                             ReorderableDragStartListener(
@@ -170,8 +171,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
             children: [
               ZagButton.text(
                 text: _availableSections().isEmpty
-                    ? 'All Sections Added'
-                    : 'Add Section',
+                    ? 'discover.ServerSectionsAllAdded'.tr()
+                    : 'discover.ServerSectionsAddSection'.tr(),
                 icon: _availableSections().isEmpty ? null : Icons.add_rounded,
                 color: ZagColours.currentAccent,
                 onTap: _availableSections().isEmpty
@@ -180,7 +181,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
               ),
               const SizedBox(height: 8),
               ZagButton.text(
-                text: 'Reset to Defaults',
+                text: 'discover.ServerSectionsResetDefaults'.tr(),
                 icon: Icons.restart_alt_rounded,
                 color: ZagColours.currentAccent,
                 onTap: resetToDefaults,
@@ -208,7 +209,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
             ),
             const SizedBox(height: 12),
             Text(
-              'No server sections are currently shown.',
+              'discover.ServerSectionsEmptyTitle'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
@@ -219,7 +220,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Use the button below to add sections back.',
+              'discover.ServerSectionsEmptyMessage'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
@@ -265,7 +266,7 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
             children: [
               const SizedBox(height: 12),
               Text(
-                'Add Section',
+                'discover.ServerSectionsAddSection'.tr(),
                 style: Theme.of(sheetContext)
                     .textTheme
                     .titleMedium
@@ -280,7 +281,8 @@ class ServerSectionsEditorState extends State<ServerSectionsEditor> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                   itemBuilder: (context, index) {
                     final section = available[index];
-                    final name = _sectionNames[section] ?? section;
+                    final nameKey = _sectionNameKeys[section];
+                    final name = nameKey != null ? nameKey.tr() : section;
                     return ListTile(
                       leading: Icon(
                         _getSectionIcon(section),
@@ -384,7 +386,7 @@ Future<bool?> showServerSectionsEditorSheet(BuildContext context) {
                       child: Row(
                         children: [
                           Text(
-                            'Server Sections',
+                            'discover.ServerSectionsTitle'.tr(),
                             style: Theme.of(sheetContext)
                                 .textTheme
                                 .titleMedium
@@ -393,7 +395,7 @@ Future<bool?> showServerSectionsEditorSheet(BuildContext context) {
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.save_rounded),
-                            tooltip: 'Save Order',
+                            tooltip: 'discover.ServerSectionsSaveOrder'.tr(),
                             color: hasChanges
                                 ? ZagColours.currentAccent
                                 : Colors.grey,
