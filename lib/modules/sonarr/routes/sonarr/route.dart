@@ -51,7 +51,6 @@ class _State extends State<SonarrRoute> {
       scaffoldKey: _scaffoldKey,
       module: ZagModule.SONARR,
       drawer: _drawer(),
-      endDrawer: ZagGlobalCubeManager.instance.getEndDrawer(),
       appBar: _appBar(),
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body(),

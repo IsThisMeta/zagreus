@@ -64,7 +64,6 @@ class _State extends State<LidarrRoute> {
       module: ZagModule.LIDARR,
       body: _body(),
       drawer: _drawer(),
-      endDrawer: ZagGlobalCubeManager.instance.getEndDrawer(),
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       onProfileChange: (_) {

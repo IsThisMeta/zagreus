@@ -15,7 +15,6 @@ export 'ui/controllers.dart';
 export 'ui/dialog.dart';
 export 'ui/divider.dart';
 export 'ui/drawer.dart';
-export 'ui/downloads_drawer.dart';
 export 'ui/floating_action_button.dart';
 export 'ui/global_cube_overlay.dart';
 export 'ui/grid_view.dart';

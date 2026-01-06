@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/system/platform.dart';
-import 'package:zagreus/widgets/ui/global_cube_overlay.dart';
 
 class ZagScaffold extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -66,33 +65,6 @@ class ZagScaffold extends StatelessWidget {
       builder: (context, _) {
         onProfileChange?.call(context);
 
-        final routeName = ModalRoute.of(context)?.settings.name ?? '';
-        final isSettingsRoute =
-            routeName.startsWith('${ZagModule.SETTINGS.key}:');
-        final isDownloadsModule = routeName.startsWith('${ZagModule.SABNZBD.key}:') ||
-            routeName.startsWith('${ZagModule.NZBGET.key}:');
-        final isExternalModulesRoute =
-            routeName.startsWith('${ZagModule.EXTERNAL_MODULES.key}:');
-        // Disable global end drawer on main module pages to prevent swipe conflicts
-        final isExcludedHomeRoute = <String>{
-          '${ZagModule.RADARR.key}:HOME',
-          '${ZagModule.SONARR.key}:HOME',
-          '${ZagModule.LIDARR.key}:HOME',
-          '${ZagModule.DASHBOARD.key}:HOME',
-          '${ZagModule.DISCOVER.key}:HOME',
-        }.contains(routeName);
-
-        // Auto-add downloads drawer if not explicitly provided and not in Settings/Downloads/Excluded Home modules
-        final shouldAttachGlobalEndDrawer =
-            !isSettingsRoute &&
-            !isDownloadsModule &&
-            !isExternalModulesRoute &&
-            !isExcludedHomeRoute &&
-            endDrawer == null;
-        final globalEndDrawer = shouldAttachGlobalEndDrawer
-            ? ZagGlobalCubeManager.instance.getEndDrawer()
-            : null;
-        final effectiveEndDrawer = endDrawer ?? globalEndDrawer;
         final effectiveEndDrawerDragWidth = endDrawerEnableOpenDragGesture ?? 25.0;
 
         final isLandscape =
@@ -104,9 +76,9 @@ class ZagScaffold extends StatelessWidget {
           appBar: effectiveAppBar,
           body: body,
           drawer: drawer,
-          endDrawer: effectiveEndDrawer,
-          endDrawerEnableOpenDragGesture: effectiveEndDrawer != null,
-          drawerEdgeDragWidth: effectiveEndDrawer != null ? effectiveEndDrawerDragWidth : null,
+          endDrawer: endDrawer,
+          endDrawerEnableOpenDragGesture: endDrawer != null,
+          drawerEdgeDragWidth: endDrawer != null ? effectiveEndDrawerDragWidth : null,
           bottomNavigationBar: bottomNavigationBar,
           floatingActionButton: floatingActionButton,
           floatingActionButtonLocation: floatingActionButtonLocation,

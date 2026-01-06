@@ -35,7 +35,7 @@ class _State extends State<ConfigurationNavigationRoute>
       controller: scrollController,
       children: [
         _horizontalSwipeToggle(),
-        _downloadsDrawer(),
+        _downloadsButton(),
         _calendarTabToggle(),
         _legacyModulesTabToggle(),
         _speedCube(),
@@ -83,16 +83,16 @@ class _State extends State<ConfigurationNavigationRoute>
     );
   }
 
-  Widget _downloadsDrawer() {
-    const db = ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED;
+  Widget _downloadsButton() {
+    const db = ZagreusDatabase.DOWNLOADS_BUTTON_ENABLED;
     return db.listenableBuilder(
       builder: (context, _) {
         final isPro = ZagreusPro.isEnabled;
         return ZagBlock(
-          title: 'settings.QueueDrawer'.tr(),
+          title: 'settings.QueueButton'.tr(),
           body: [
             TextSpan(
-              text: 'settings.QueueDrawerDescription'.tr(),
+              text: 'settings.QueueButtonDescription'.tr(),
             ),
           ],
           trailing: ZagSwitch(
@@ -101,7 +101,7 @@ class _State extends State<ConfigurationNavigationRoute>
           ),
           onTap: isPro
               ? null
-              : () => _showProUpgradeToast('settings.QueueDrawer'.tr()),
+              : () => _showProUpgradeToast('settings.QueueButton'.tr()),
         );
       },
     );

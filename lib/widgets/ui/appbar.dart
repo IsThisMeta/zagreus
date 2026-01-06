@@ -5,6 +5,7 @@ import 'package:zagreus/database/models/profile.dart';
 import 'package:zagreus/extensions/scroll_controller.dart';
 import 'package:zagreus/router/router.dart';
 import 'package:zagreus/utils/profile_tools.dart';
+import 'package:zagreus/widgets/sheets/download_client/button.dart';
 
 enum _AppBarType {
   DEFAULT,
@@ -21,6 +22,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
   final PreferredSizeWidget? bottom;
   final bool hideLeading;
   final bool useDrawer;
+  final bool showDownloadButton;
   final Widget? child;
   final double? height;
   final List<String?>? profiles;
@@ -48,6 +50,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.pageController,
     this.scrollControllers,
     this.hideLeading = false,
+    this.showDownloadButton = false,
     this.backgroundColor,
     this.onProfileSelected,
   });
@@ -65,6 +68,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     PreferredSizeWidget? bottom,
     bool useDrawer = false,
     bool hideLeading = false,
+    bool? showDownloadButton,
     PageController? pageController,
     Color? backgroundColor,
     List<ScrollController>? scrollControllers,
@@ -80,6 +84,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
       pageController: pageController,
       scrollControllers: scrollControllers,
       hideLeading: hideLeading,
+      showDownloadButton: showDownloadButton ?? ZagreusDatabase.DOWNLOADS_BUTTON_ENABLED.read(),
       backgroundColor: backgroundColor,
       type: _AppBarType.DEFAULT,
     );
@@ -123,6 +128,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     required List<String> profiles,
     bool useDrawer = true,
     bool hideLeading = false,
+    bool? showDownloadButton,
     List<Widget>? actions,
     PageController? pageController,
     List<ScrollController>? scrollControllers,
@@ -133,12 +139,14 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
     if (pageController != null)
       assert(scrollControllers != null,
           'if pageController is defined, scrollControllers should as well.');
+    final effectiveShowDownloadButton = showDownloadButton ?? ZagreusDatabase.DOWNLOADS_BUTTON_ENABLED.read();
     if (profiles.length < 2)
       return ZagAppBar._internal(
         title: title,
         actions: actions,
         useDrawer: useDrawer,
         hideLeading: hideLeading,
+        showDownloadButton: effectiveShowDownloadButton,
         bottom: bottom,
         pageController: pageController,
         scrollControllers: scrollControllers,
@@ -152,6 +160,7 @@ class ZagAppBar extends StatefulWidget implements PreferredSizeWidget {
       bottom: bottom,
       useDrawer: useDrawer,
       hideLeading: hideLeading,
+      showDownloadButton: effectiveShowDownloadButton,
       pageController: pageController,
       scrollControllers: scrollControllers,
       backgroundColor: backgroundColor,
@@ -250,11 +259,19 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _default(BuildContext context) {
+    // Build effective actions with optional download button
+    List<Widget> effectiveActions = [];
+    if (widget.showDownloadButton) {
+      effectiveActions.add(const DownloadClientButton());
+    }
+    if (widget.actions != null && widget.actions!.isNotEmpty) {
+      effectiveActions.addAll(widget.actions!);
+    }
     // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
-    final effectiveActions = (widget.actions == null || widget.actions!.isEmpty)
-        ? const [SizedBox.shrink()]
-        : widget.actions;
-    
+    if (effectiveActions.isEmpty) {
+      effectiveActions.add(const SizedBox.shrink());
+    }
+
     return AppBar(
       backgroundColor: widget.backgroundColor,
       title: Text(
@@ -286,11 +303,19 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _dropdown(BuildContext context) {
+    // Build effective actions with optional download button
+    List<Widget> effectiveActions = [];
+    if (widget.showDownloadButton) {
+      effectiveActions.add(const DownloadClientButton());
+    }
+    if (widget.actions != null && widget.actions!.isNotEmpty) {
+      effectiveActions.addAll(widget.actions!);
+    }
     // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
-    final effectiveActions = (widget.actions == null || widget.actions!.isEmpty)
-        ? const [SizedBox.shrink()]
-        : widget.actions;
-    
+    if (effectiveActions.isEmpty) {
+      effectiveActions.add(const SizedBox.shrink());
+    }
+
     return AppBar(
       backgroundColor: widget.backgroundColor,
       automaticallyImplyLeading: !(widget.hideLeading),

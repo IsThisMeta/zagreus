@@ -57,7 +57,6 @@ class _State extends State<RadarrRoute> {
       scaffoldKey: _scaffoldKey,
       module: ZagModule.RADARR,
       drawer: _drawer(),
-      endDrawer: ZagGlobalCubeManager.instance.getEndDrawer(),
       appBar: _appBar() as PreferredSizeWidget?,
       bottomNavigationBar: _bottomNavigationBar(),
       body: _body(),
@@ -136,23 +135,6 @@ class _State extends State<RadarrRoute> {
     );
   }
 
-  List<Widget> _buildQueueDrawerAction() {
-    if (!ZagreusDatabase.DOWNLOADS_DRAWER_ENABLED.read()) return [];
-    return [
-      IconButton(
-        icon: const Icon(Icons.live_tv_rounded),
-        tooltip: 'Queue',
-        onPressed: _openQueueDrawer,
-      ),
-    ];
-  }
-
-  void _openQueueDrawer() {
-    final scaffoldState = _scaffoldKey.currentState;
-    if (scaffoldState?.hasEndDrawer ?? false) {
-      scaffoldState?.openEndDrawer();
-    }
-  }
 
   Widget _body() {
     return Selector<RadarrState, Tuple2<bool, bool>>(
