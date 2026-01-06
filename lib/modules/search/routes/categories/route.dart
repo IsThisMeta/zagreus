@@ -26,15 +26,18 @@ class _State extends State<CategoriesRoute>
 
   @override
   Widget build(BuildContext context) {
+    final isSingleIndexerMode = context.read<SearchState>().isSingleIndexerMode;
     return ZagScaffold(
       scaffoldKey: _scaffoldKey,
-      appBar: _appBar() as PreferredSizeWidget?,
+      appBar: _appBar(isSingleIndexerMode) as PreferredSizeWidget?,
+      drawer: isSingleIndexerMode ? ZagDrawer(page: ZagModule.SEARCH.key) : null,
       body: _body(),
     );
   }
 
-  Widget _appBar() {
+  Widget _appBar(bool useDrawer) {
     return ZagAppBar(
+      useDrawer: useDrawer,
       title: context.read<SearchState>().indexer.displayName,
       scrollControllers: [scrollController],
       actions: <Widget>[

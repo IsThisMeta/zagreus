@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/search.dart';
+import 'package:zagreus/modules/search/prowlarr/routes/prowlarr_home.dart';
 import 'package:zagreus/router/routes/search.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
 import 'package:zagreus/database/models/indexer.dart';
@@ -61,6 +62,32 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
         module: ZagModule.SEARCH.title,
       );
     }
+
+    // If only one indexer is available, go directly to it
+    if (availableIndexers.length == 1) {
+      final singleIndexer = availableIndexers.first;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final searchState = context.read<SearchState>();
+        searchState.isSingleIndexerMode = true;
+        if (singleIndexer.isProwlarr) {
+          // Prowlarr search requires Pro - should already be filtered but check just in case
+          if (ZagreusPro.isEnabled) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => ProwlarrHomePage(indexer: singleIndexer),
+              ),
+            );
+          }
+        } else {
+          searchState.indexer = singleIndexer;
+          SearchRoutes.CATEGORIES.go();
+        }
+      });
+      // Return empty container while navigation happens
+      return const SizedBox.shrink();
+    }
+
     return ZagListView(
       controller: scrollController,
       children: _buildList(availableIndexers),

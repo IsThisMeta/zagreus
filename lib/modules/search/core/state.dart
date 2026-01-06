@@ -20,6 +20,14 @@ class SearchState extends ZagModuleState {
     notifyListeners();
   }
 
+  /// When true, indicates the indexer list was skipped (only one indexer available).
+  /// Used to show a drawer instead of a back button in subsequent routes.
+  bool _isSingleIndexerMode = false;
+  bool get isSingleIndexerMode => _isSingleIndexerMode;
+  set isSingleIndexerMode(bool value) {
+    _isSingleIndexerMode = value;
+  }
+
   Future<List<NewznabCategoryData>>? _categories;
   Future<List<NewznabCategoryData>>? get categories => _categories;
   void fetchCategories() {

@@ -11,6 +11,7 @@ class NewznabResultData {
   String linkInfo;
   String date;
   int? grabs;
+  String? posterUrl;
 
   NewznabResultData({
     required this.title,
@@ -21,6 +22,7 @@ class NewznabResultData {
     this.linkInfo = '',
     required this.date,
     this.grabs,
+    this.posterUrl,
   });
 
   DateTime? get dateObject {

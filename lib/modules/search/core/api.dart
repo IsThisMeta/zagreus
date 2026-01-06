@@ -89,12 +89,16 @@ class NewznabAPI {
       int? size = int.tryParse(
           item.getElement('enclosure')?.getAttribute('length') ?? 'nosize');
 
-      // Parse grabs from newznab:attr elements
+      // Parse newznab:attr elements for grabs and coverurl
       int? grabs;
+      String? posterUrl;
       for (final attr in item.findAllElements('newznab:attr')) {
-        if (attr.getAttribute('name') == 'grabs') {
-          grabs = int.tryParse(attr.getAttribute('value') ?? '');
-          break;
+        final name = attr.getAttribute('name');
+        final value = attr.getAttribute('value');
+        if (name == 'grabs') {
+          grabs = int.tryParse(value ?? '');
+        } else if (name == 'coverurl' && value != null && value.isNotEmpty) {
+          posterUrl = value;
         }
       }
 
@@ -111,6 +115,7 @@ class NewznabAPI {
         linkInfo: linkInfo,
         date: item.getElement('pubDate')?.innerText ?? 'search.UnknownDate'.tr(),
         grabs: grabs,
+        posterUrl: posterUrl,
       );
       results.add(data);
     });

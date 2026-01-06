@@ -28,11 +28,8 @@ class _SearchResultTileState extends State<SearchResultTile> {
         _subtitle1(),
         _subtitle2(),
       ],
-      collapsedTrailing: Icon(
-        widget.data.categoryIcon,
-        color: widget.data.categoryIconColor,
-        size: 20,
-      ),
+      posterUrl: widget.data.posterUrl,
+      posterPlaceholderIcon: widget.data.categoryIcon,
       expandedHighlightedNodes: _highlightedNodes(),
       expandedTableContent: _tableContent(),
       expandedTableButtons: _tableButtons(),
