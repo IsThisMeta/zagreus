@@ -117,8 +117,6 @@ class _State extends State<MovieEditRoute>
         const RadarrMoviesEditMinimumAvailabilityTile(),
         RadarrMoviesEditQualityProfileTile(profiles: profiles),
         const RadarrMoviesEditPathTile(),
-        if (context.watch<RadarrMoviesEditState>().pathChanged)
-          const RadarrMoviesEditMoveFilesTile(),
         const RadarrMoviesEditTagsTile(),
         RadarrMoviesEditBazarrLanguageProfileTile(radarrId: movie.id!),
       ],

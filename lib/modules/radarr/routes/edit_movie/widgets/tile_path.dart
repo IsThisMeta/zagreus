@@ -15,16 +15,83 @@ class RadarrMoviesEditPathTile extends StatelessWidget {
         title: 'radarr.MoviePath'.tr(),
         body: [TextSpan(text: path)],
         trailing: const ZagIconButton.arrow(),
-        onTap: () async {
-          Tuple2<bool, String> _values = await ZagDialogs().editText(
-            context,
-            'radarr.MoviePath'.tr(),
-            prefill: path,
-          );
-          if (_values.item1)
-            context.read<RadarrMoviesEditState>().path = _values.item2;
-        },
+        onTap: () async => _onTap(context, path),
       ),
     );
+  }
+
+  Future<void> _onTap(BuildContext context, String currentPath) async {
+    final state = context.read<RadarrMoviesEditState>();
+    final originalPath = currentPath;
+
+    bool confirmed = false;
+    final formKey = GlobalKey<FormState>();
+    final textController = TextEditingController()..text = originalPath;
+    bool moveFiles = state.moveFiles;
+
+    void setValues(bool flag) {
+      if (formKey.currentState?.validate() ?? false) {
+        confirmed = flag;
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'radarr.MoviePath'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'Save',
+          onPressed: () => setValues(true),
+        ),
+      ],
+      content: [
+        Form(
+          key: formKey,
+          child: ZagDialog.textFormInput(
+            controller: textController,
+            title: 'radarr.MoviePath'.tr(),
+            onSubmitted: (_) => setValues(true),
+            validator: (_) => null,
+          ),
+        ),
+        StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: moveFiles,
+                    onChanged: (value) {
+                      setState(() => moveFiles = value ?? false);
+                    },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => moveFiles = !moveFiles);
+                      },
+                      child: Text(
+                        'radarr.MoveFiles'.tr(),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+      contentPadding: ZagDialog.inputDialogContentPadding(),
+    );
+
+    if (confirmed) {
+      state.path = textController.text;
+      state.moveFiles = moveFiles;
+    }
   }
 }

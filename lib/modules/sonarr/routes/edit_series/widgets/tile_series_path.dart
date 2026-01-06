@@ -22,12 +22,77 @@ class SonarrSeriesEditSeriesPathTile extends StatelessWidget {
   }
 
   Future<void> _onTap(BuildContext context) async {
-    Tuple2<bool, String> _values = await ZagDialogs().editText(
-      context,
-      'sonarr.SeriesPath'.tr(),
-      prefill: context.read<SonarrSeriesEditState>().seriesPath,
+    final state = context.read<SonarrSeriesEditState>();
+    final originalPath = state.seriesPath;
+
+    bool confirmed = false;
+    final formKey = GlobalKey<FormState>();
+    final textController = TextEditingController()..text = originalPath;
+    bool moveFiles = state.moveFiles;
+
+    void setValues(bool flag) {
+      if (formKey.currentState?.validate() ?? false) {
+        confirmed = flag;
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'sonarr.SeriesPath'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'Save',
+          onPressed: () => setValues(true),
+        ),
+      ],
+      content: [
+        Form(
+          key: formKey,
+          child: ZagDialog.textFormInput(
+            controller: textController,
+            title: 'sonarr.SeriesPath'.tr(),
+            onSubmitted: (_) => setValues(true),
+            validator: (_) => null,
+          ),
+        ),
+        StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: moveFiles,
+                    onChanged: (value) {
+                      setState(() => moveFiles = value ?? false);
+                    },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => moveFiles = !moveFiles);
+                      },
+                      child: Text(
+                        'sonarr.MoveFiles'.tr(),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+      contentPadding: ZagDialog.inputDialogContentPadding(),
     );
-    if (_values.item1)
-      context.read<SonarrSeriesEditState>().seriesPath = _values.item2;
+
+    if (confirmed) {
+      state.seriesPath = textController.text;
+      state.moveFiles = moveFiles;
+    }
   }
 }
