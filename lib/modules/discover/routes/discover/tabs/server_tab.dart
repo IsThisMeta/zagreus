@@ -1040,12 +1040,6 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
                 ? ZagColours.secondary
                 : ZagColours.secondaryLight,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white10
-                  : Colors.black12,
-              width: 1,
-            ),
           ),
           padding: const EdgeInsets.all(16),
           child: Column(
