@@ -259,13 +259,13 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _default(BuildContext context) {
-    // Build effective actions with optional download button
+    // Build effective actions with optional download button (rightmost)
     List<Widget> effectiveActions = [];
-    if (widget.showDownloadButton) {
-      effectiveActions.add(const DownloadClientButton());
-    }
     if (widget.actions != null && widget.actions!.isNotEmpty) {
       effectiveActions.addAll(widget.actions!);
+    }
+    if (widget.showDownloadButton) {
+      effectiveActions.add(const DownloadClientButton());
     }
     // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
     if (effectiveActions.isEmpty) {
@@ -303,13 +303,13 @@ class _State extends State<ZagAppBar> {
   }
 
   Widget _dropdown(BuildContext context) {
-    // Build effective actions with optional download button
+    // Build effective actions with optional download button (rightmost)
     List<Widget> effectiveActions = [];
-    if (widget.showDownloadButton) {
-      effectiveActions.add(const DownloadClientButton());
-    }
     if (widget.actions != null && widget.actions!.isNotEmpty) {
       effectiveActions.addAll(widget.actions!);
+    }
+    if (widget.showDownloadButton) {
+      effectiveActions.add(const DownloadClientButton());
     }
     // Use placeholder if no actions to prevent Flutter from auto-inserting end drawer icon
     if (effectiveActions.isEmpty) {

@@ -43,6 +43,24 @@ class _State extends State<ConfigurationNavigationRoute>
     );
   }
 
+  Widget _downloadsButton() {
+    const db = ZagreusDatabase.DOWNLOADS_BUTTON_ENABLED;
+    return db.listenableBuilder(
+      builder: (context, _) => ZagBlock(
+        title: 'settings.QueueButton'.tr(),
+        body: [
+          TextSpan(
+            text: 'settings.QueueButtonDescription'.tr(),
+          ),
+        ],
+        trailing: ZagSwitch(
+          value: db.read(),
+          onChanged: db.update,
+        ),
+      ),
+    );
+  }
+
   Widget _horizontalSwipeToggle() {
     const db = ZagreusDatabase.NAVIGATION_DISABLE_HORIZONTAL_SWIPE;
     return db.listenableBuilder(
@@ -78,30 +96,6 @@ class _State extends State<ConfigurationNavigationRoute>
           onTap: isPro
               ? null
               : () => _showProUpgradeToast('settings.SpeedCube'.tr()),
-        );
-      },
-    );
-  }
-
-  Widget _downloadsButton() {
-    const db = ZagreusDatabase.DOWNLOADS_BUTTON_ENABLED;
-    return db.listenableBuilder(
-      builder: (context, _) {
-        final isPro = ZagreusPro.isEnabled;
-        return ZagBlock(
-          title: 'settings.QueueButton'.tr(),
-          body: [
-            TextSpan(
-              text: 'settings.QueueButtonDescription'.tr(),
-            ),
-          ],
-          trailing: ZagSwitch(
-            value: isPro && db.read(),
-            onChanged: isPro ? db.update : null,
-          ),
-          onTap: isPro
-              ? null
-              : () => _showProUpgradeToast('settings.QueueButton'.tr()),
         );
       },
     );
