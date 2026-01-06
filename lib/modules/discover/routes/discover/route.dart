@@ -6861,27 +6861,34 @@ class _State extends State<DiscoverHomeRoute> with ZagScrollControllerMixin {
                                           fontSize: 16,
                                         ),
                                       ),
-                                      // In library badge
-                                      if (item['inLibrary'] as bool) ...[
-                                        const SizedBox(width: 12),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            'discover.InLibrary'.tr(),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
+                                      // In library badge - fades in to prevent flicker
+                                      AnimatedOpacity(
+                                        opacity: (item['inLibrary'] == true) ? 1.0 : 0.0,
+                                        duration: const Duration(milliseconds: 200),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(width: 12),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                'discover.InLibrary'.tr(),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ],
                                   ),
                                 ),
