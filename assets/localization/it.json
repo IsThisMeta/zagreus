@@ -215,6 +215,7 @@
     "seerr.NoUsersFound": "Nessun utente trovato",
     "seerr.UnknownUser": "Utente sconosciuto",
     "seerr.Video": "Video",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Account": "Account",
     "settings.AccountDeleted": "Account eliminato",
     "settings.AccountDeletedMessage": "Account Zagreus eliminato",

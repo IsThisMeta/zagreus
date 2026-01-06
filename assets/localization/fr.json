@@ -470,6 +470,7 @@
     "seerr.Processing": "En traitement",
     "seerr.Requested": "Demandé",
     "seerr.RequestedBy": "Demandé par {}",
+    "seerr.LoadingTitle": "Loading...",
     "settings.MustBeValueBetween": "Doit être une valeur entre {} et {}",
     "settings.UsernameValidation": "Nom d'utilisateur requis",
     "settings.Username": "Nom d'utilisateur",

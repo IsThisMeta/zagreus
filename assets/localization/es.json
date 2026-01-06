@@ -617,6 +617,7 @@
     "seerr.Declined": "Rechazado",
     "seerr.PartiallyAvailable": "Parcialmente disponible",
     "seerr.Pending": "Pendiente",
+    "seerr.LoadingTitle": "Loading...",
     "settings.BroadcastAddressHint1": "Esta es la dirección de transmisión de su red local",
     "settings.AccountHelp": "Cuenta Zagreus",
     "settings.AddHeader": "Añadir cabecera",

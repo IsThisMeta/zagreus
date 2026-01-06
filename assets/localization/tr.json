@@ -238,6 +238,7 @@
     "seerr.Video": "Video",
     "seerr.Open": "Açık",
     "seerr.Declined": "Reddedildi",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Account": "Hesap",
     "settings.HostHint1": "Bu, hizmet için web grafiksel kullanıcı arayüzüne eriştiğiniz URL'dir",
     "settings.MustBeValueBetween": "{} ile {} arasında bir değer olmalıdır",

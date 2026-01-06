@@ -159,6 +159,7 @@
     "seerr.Users": "Användare",
     "seerr.UnknownUser": "Okänd användare",
     "seerr.NoUsersFound": "Inga användare hittades",
+    "seerr.LoadingTitle": "Loading...",
     "settings.BackupConfigurationHint1": "Alla backups krypteras innan de exporteras",
     "settings.BackupConfiguration": "Backup Konfiguration",
     "settings.AddProfile": "Lägg Till Profil",

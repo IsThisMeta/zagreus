@@ -101,6 +101,7 @@
     "seerr.NoRequests": "Нет запросов",
     "seerr.OneRequest": "1 запрос",
     "seerr.SomeRequests": "{} запросов",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Username": "Имя пользователя",
     "settings.System": "Система",
     "settings.SignOut": "Выйти",

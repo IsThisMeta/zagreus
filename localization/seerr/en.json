@@ -97,5 +97,6 @@
   "seerr.UnableToResolveIssue": "Unable to resolve issue",
   "seerr.UnknownUser": "Unknown User",
   "seerr.Users": "Users",
-  "seerr.Video": "Video"
+  "seerr.Video": "Video",
+  "seerr.LoadingTitle": "Loading..."
 }

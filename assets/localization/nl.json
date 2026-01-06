@@ -675,6 +675,7 @@
     "seerr.RequestedBy": "Aangevraagd door {}",
     "seerr.Subtitle": "Ondertitel",
     "seerr.Video": "Video",
+    "seerr.LoadingTitle": "Loading...",
     "settings.AddModuleFailed": "Module Toevoegen Gefaald",
     "settings.AccountDescription": "Uw Zagreus Account",
     "settings.AccountHelp": "Zagreus Account",

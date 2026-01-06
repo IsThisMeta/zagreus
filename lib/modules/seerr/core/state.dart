@@ -41,6 +41,7 @@ class SeerrState extends ZagModuleState {
     _requests = null;
     _issues = null;
     _users = null;
+    _requestEnrichments.clear();
     // Reinitialize
     resetProfile();
     if (_enabled) {
@@ -165,6 +166,7 @@ class SeerrState extends ZagModuleState {
   }
 
   int _requestsFetchToken = 0;
+  final Set<int> _requestEnrichments = <int>{};
   List<SeerrRequest>? _requests;
   List<SeerrRequest>? get requests => _requests;
 
@@ -195,12 +197,6 @@ class SeerrState extends ZagModuleState {
       _requestsLoading = false;
       notifyListeners();
 
-      final needsEnrichment = response.results.any(_shouldEnrichRequestMedia);
-      if (needsEnrichment) {
-        unawaited(_enrichRequests(response.results, fetchToken));
-      } else {
-        _logRequestDebug();
-      }
     } catch (e, stackTrace) {
       if (fetchToken != _requestsFetchToken) return;
       if (e is DioException) {
@@ -222,6 +218,26 @@ class SeerrState extends ZagModuleState {
       return request.media.series == null;
     }
     return false;
+  }
+
+  SeerrRequest? _findRequestById(int requestId) {
+    final requests = _requests;
+    if (requests == null) return null;
+    for (final request in requests) {
+      if (request.id == requestId) return request;
+    }
+    return null;
+  }
+
+  void enrichRequestMedia(int requestId) {
+    if (!isConfigured || _api == null) return;
+
+    final request = _findRequestById(requestId);
+    if (request == null || !_shouldEnrichRequestMedia(request)) return;
+    if (request.media.tmdbId == 0) return;
+    if (!_requestEnrichments.add(requestId)) return;
+
+    unawaited(_enrichRequestMedia(request, _requestsFetchToken));
   }
 
   SeerrMedia _copySeerrMedia(
@@ -281,85 +297,48 @@ class SeerrState extends ZagModuleState {
     );
   }
 
-  Future<void> _enrichRequests(
-    List<SeerrRequest> requests,
+  Future<void> _enrichRequestMedia(
+    SeerrRequest request,
     int fetchToken,
   ) async {
-    if (_api == null || requests.isEmpty) return;
+    try {
+      if (_api == null) return;
+      final tmdbId = request.media.tmdbId;
+      if (tmdbId == 0) return;
 
-    final api = _api!;
-    final client = Dio();
-    final movieCache = <int, SeerrMovie>{};
-    final seriesCache = <int, SeerrSeries>{};
-    final enrichedRequests = List<SeerrRequest>.from(requests);
+      final api = _api!;
+      final client = Dio();
+      SeerrMedia? enrichedMedia;
 
-    for (var i = 0; i < requests.length; i++) {
+      if (request.media.mediaType == 'movie') {
+        final movie = await GetSeerrMovie(api, client)(movieId: tmdbId);
+        enrichedMedia = _copySeerrMedia(request.media, movie: movie);
+      } else if (request.media.mediaType == 'tv') {
+        final series = await GetSeerrSeries(api, client)(seriesId: tmdbId);
+        enrichedMedia = _copySeerrMedia(request.media, series: series);
+      }
+
+      if (enrichedMedia == null) return;
       if (fetchToken != _requestsFetchToken) return;
-      final request = requests[i];
-      if (!_shouldEnrichRequestMedia(request)) {
-        continue;
-      }
 
-      try {
-        if (request.media.tmdbId == 0) {
-          ZagLogger()
-              .debug('Skipping enrichment for request ${request.id} - no valid TMDB ID');
-          continue;
-        }
+      final requests = _requests;
+      if (requests == null) return;
+      final index = requests.indexWhere((item) => item.id == request.id);
+      if (index == -1) return;
 
-        if (request.media.mediaType == 'movie') {
-          final tmdbId = request.media.tmdbId;
-          final movie =
-              movieCache[tmdbId] ?? await GetSeerrMovie(api, client)(movieId: tmdbId);
-          movieCache[tmdbId] = movie;
-          final enrichedMedia = _copySeerrMedia(
-            request.media,
-            movie: movie,
-          );
-          enrichedRequests[i] = _copySeerrRequest(request, enrichedMedia);
-        } else if (request.media.mediaType == 'tv') {
-          final tmdbId = request.media.tmdbId;
-          final series = seriesCache[tmdbId] ??
-              await GetSeerrSeries(api, client)(seriesId: tmdbId);
-          seriesCache[tmdbId] = series;
-          final enrichedMedia = _copySeerrMedia(
-            request.media,
-            series: series,
-          );
-          enrichedRequests[i] = _copySeerrRequest(request, enrichedMedia);
-        }
-      } catch (e) {
-        ZagLogger().warning(
-          'Could not enrich request - TMDB ID ${request.media.tmdbId} may have been removed from TMDB',
-        );
-      }
-    }
-
-    if (fetchToken != _requestsFetchToken) return;
-
-    _requests = enrichedRequests;
-    notifyListeners();
-    _logRequestDebug();
-  }
-
-  void _logRequestDebug() {
-    if (_requests == null || _requests!.isEmpty) return;
-    final firstRequest = _requests!.first;
-    ZagLogger().debug('Seerr Request Debug:');
-    ZagLogger().debug('  Request ID: ${firstRequest.id}');
-    ZagLogger().debug('  Media Type: ${firstRequest.media.mediaType}');
-    ZagLogger().debug('  TMDB ID: ${firstRequest.media.tmdbId}');
-    ZagLogger().debug(
-        '  Movie object: ${firstRequest.media.movie != null ? "present" : "NULL"}');
-    ZagLogger().debug(
-        '  Series object: ${firstRequest.media.series != null ? "present" : "NULL"}');
-    if (firstRequest.media.movie != null) {
-      ZagLogger().debug('  Movie title: ${firstRequest.media.movie!.title}');
-      ZagLogger().debug('  Movie poster: ${firstRequest.media.movie!.posterPath}');
-    }
-    if (firstRequest.media.series != null) {
-      ZagLogger().debug('  Series name: ${firstRequest.media.series!.name}');
-      ZagLogger().debug('  Series poster: ${firstRequest.media.series!.posterPath}');
+      final updatedRequests = List<SeerrRequest>.from(requests);
+      final currentRequest = updatedRequests[index];
+      if (!_shouldEnrichRequestMedia(currentRequest)) return;
+      updatedRequests[index] =
+          _copySeerrRequest(currentRequest, enrichedMedia);
+      _requests = updatedRequests;
+      notifyListeners();
+    } catch (e) {
+      ZagLogger().warning(
+        'Could not enrich request - TMDB ID ${request.media.tmdbId} may have been removed from TMDB',
+      );
+    } finally {
+      _requestEnrichments.remove(request.id);
     }
   }
 

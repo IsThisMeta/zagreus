@@ -980,6 +980,7 @@
     "seerr.UnknownUser": "Unknown User",
     "seerr.Users": "Users",
     "seerr.Video": "Video",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Account": "Account",
     "settings.AccountDeleted": "Account Deleted",
     "settings.AccountDeletedMessage": "Deleted your Zagreus account",

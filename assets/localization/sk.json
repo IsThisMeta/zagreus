@@ -112,6 +112,7 @@
     "seerr.Available": "Dostupné",
     "seerr.NoUsersFound": "Žiadni nájdení používatelia",
     "seerr.UnknownUser": "Neznámy používateľ",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Account": "Účet",
     "settings.AccountDeleted": "Účet zmazaný",
     "settings.AccountDescription": "Váš účet Zagreus",

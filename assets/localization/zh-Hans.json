@@ -254,6 +254,7 @@
     "seerr.Subtitle": "字幕",
     "seerr.Video": "视频",
     "seerr.NoIssues": "没有问题",
+    "seerr.LoadingTitle": "Loading...",
     "settings.AccountDescription": "账户描述",
     "settings.AccountHelp": "账户帮助",
     "settings.AddModule": "添加模块",

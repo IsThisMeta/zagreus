@@ -256,6 +256,7 @@
     "seerr.UnknownUser": "Άγνωστος χρήστης",
     "seerr.Users": "Χρήστες",
     "seerr.Video": "Βίντεο",
+    "seerr.LoadingTitle": "Loading...",
     "settings.AccountDeleted": "Ο λογαριασμός διαγράφηκε",
     "settings.AccountDescription": "Ο Zagreus λογαριασμός σου",
     "settings.AccountDeletedMessage": "Ο λογαριασμός Zagreus διαγράφηκε",

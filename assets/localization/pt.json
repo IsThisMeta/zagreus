@@ -142,6 +142,7 @@
     "seerr.SomeRequests": "{} Pedidos",
     "seerr.UnknownUser": "Usuário Desconhecido",
     "seerr.Users": "Usuários",
+    "seerr.LoadingTitle": "Loading...",
     "settings.ClearConfigurationHint1": "Tem a certeza que quer limpar a sua configuração?",
     "settings.ClearConfiguration": "Limpar Configuração",
     "settings.BroadcastAddressValidation": "Endereço de Difusão Inválido",

@@ -146,6 +146,7 @@
     "radarr.Wanted": "Volgudes",
     "radarr.Weight": "Mida",
     "radarr.Year": "Any",
+    "seerr.LoadingTitle": "Loading...",
     "settings.LanguageProfileRequiredMessage": "Connectat, però cal afegir un perfil d'idioma a {}.",
     "sonarr.More": "Més",
     "sonarr.ParentDirectory": "Directori principal"

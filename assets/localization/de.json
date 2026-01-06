@@ -900,6 +900,7 @@
     "seerr.Processing": "Verarbeitung",
     "seerr.Requested": "Angefragt",
     "seerr.RequestedBy": "Angefragt von {}",
+    "seerr.LoadingTitle": "Loading...",
     "settings.Account": "Konto",
     "settings.AccountDeleted": "Konto gelöscht",
     "settings.AccountDeletedMessage": "Zagreus Konto gelöscht",

@@ -238,6 +238,7 @@
     "seerr.Video": "Videó",
     "seerr.NoRequests": "Nincsenek kérések",
     "seerr.OneRequest": "1 kérés",
+    "seerr.LoadingTitle": "Loading...",
     "settings.ApiKeyRequiredMessage": "API-kulcs szükséges a {} való csatlakozáshoz",
     "settings.MustBeValueBetween": "Az értéknek {} és {} között kell lennie",
     "settings.UsernameValidation": "Felhasználónév kötelező",

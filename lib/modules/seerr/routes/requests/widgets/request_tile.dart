@@ -24,6 +24,27 @@ class SeerrRequestTile extends StatefulWidget {
 
 class _State extends State<SeerrRequestTile> {
   @override
+  void initState() {
+    super.initState();
+    _enqueueEnrichment();
+  }
+
+  @override
+  void didUpdateWidget(covariant SeerrRequestTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.request.id != widget.request.id) {
+      _enqueueEnrichment();
+    }
+  }
+
+  void _enqueueEnrichment() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<SeerrState>().enrichRequestMedia(widget.request.id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return _buildBlockTile();
   }

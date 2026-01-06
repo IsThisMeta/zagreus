@@ -135,13 +135,11 @@ extension SeerrMediaExtension on SeerrMedia {
   /// Get title from media (movie or series)
   String getTitle() {
     if (mediaType == 'movie') {
-      return movie?.title ??
-          'seerr.TmdbId'.tr(args: [tmdbId.toString()]);
+      return movie?.title ?? 'seerr.LoadingTitle'.tr();
     } else if (mediaType == 'tv') {
-      return series?.name ??
-          'seerr.TmdbId'.tr(args: [tmdbId.toString()]);
+      return series?.name ?? 'seerr.LoadingTitle'.tr();
     }
-    return 'seerr.TmdbId'.tr(args: [tmdbId.toString()]);
+    return 'seerr.LoadingTitle'.tr();
   }
 
   /// Get year from media (movie or series)

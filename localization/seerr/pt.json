@@ -1,10 +1,11 @@
 {
-    "seerr.NoRequestsFound": "Nenhum Pedido Encontrado",
-    "seerr.Requests": "Pedidos",
-    "seerr.NoUsersFound": "Nenhum Usuário Encontrado",
-    "seerr.NoRequests": "Sem Pedidos",
-    "seerr.OneRequest": "1 Pedido",
-    "seerr.SomeRequests": "{} Pedidos",
-    "seerr.UnknownUser": "Usuário Desconhecido",
-    "seerr.Users": "Usuários"
+  "seerr.NoRequestsFound": "Nenhum Pedido Encontrado",
+  "seerr.Requests": "Pedidos",
+  "seerr.NoUsersFound": "Nenhum Usuário Encontrado",
+  "seerr.NoRequests": "Sem Pedidos",
+  "seerr.OneRequest": "1 Pedido",
+  "seerr.SomeRequests": "{} Pedidos",
+  "seerr.UnknownUser": "Usuário Desconhecido",
+  "seerr.Users": "Usuários",
+  "seerr.LoadingTitle": "Loading..."
 }
