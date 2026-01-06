@@ -350,6 +350,8 @@ class _State extends State<ConfigurationGeneralRoute>
           final result = await SettingsDialogs().selectBootModule();
           if (result.item1) {
             BIOSDatabase.BOOT_MODULE.update(result.item2!);
+            // Also save as user preference so it persists through subscription changes
+            ZagreusDatabase.USER_BOOT_MODULE.update(result.item2!.key);
           }
         },
       ),

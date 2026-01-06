@@ -249,9 +249,14 @@ class ZagSupabaseMessaging {
   /// This listens on the message stream where the application must be open and in the foreground.
   StreamSubscription<RemoteMessage> registerOnMessageListener() {
     return onMessage.listen((message) {
-      if (!ZagreusDatabase.ENABLE_IN_APP_NOTIFICATIONS.read()) return;
+      if (!ZagreusDatabase.ENABLE_IN_APP_TOASTS.read()) return;
 
-      ZagModule? module = ZagModule.fromKey(message.data['module']);
+      String? moduleKey = message.data['module'] as String?;
+      String? eventType = message.data['event_type'] as String?;
+      ZagModule? module = ZagModule.fromKey(moduleKey);
+
+      // Check module-specific toast settings
+      if (!_shouldShowToast(moduleKey, eventType)) return;
 
       // Show a cleaner toast notification
       showZagInfoSnackBar(
@@ -264,6 +269,92 @@ class ZagSupabaseMessaging {
             : null,
       );
     });
+  }
+
+  /// Check if toast should be shown based on module and event type settings
+  bool _shouldShowToast(String? moduleKey, String? eventType) {
+    if (moduleKey == null || eventType == null) return true; // Show unknown notifications
+
+    switch (moduleKey) {
+      case 'radarr':
+        if (!ZagreusDatabase.RADARR_TOAST_ENABLED.read()) return false;
+        return _checkRadarrToastEvent(eventType);
+      case 'sonarr':
+        if (!ZagreusDatabase.SONARR_TOAST_ENABLED.read()) return false;
+        return _checkSonarrToastEvent(eventType);
+      case 'lidarr':
+        if (!ZagreusDatabase.LIDARR_TOAST_ENABLED.read()) return false;
+        return _checkLidarrToastEvent(eventType);
+      case 'prowlarr':
+        if (!ZagreusDatabase.PROWLARR_TOAST_ENABLED.read()) return false;
+        return _checkProwlarrToastEvent(eventType);
+      default:
+        return true; // Show toasts for modules without specific settings
+    }
+  }
+
+  bool _checkRadarrToastEvent(String eventType) {
+    switch (eventType) {
+      case 'Grab':
+        return ZagreusDatabase.RADARR_TOAST_ON_GRAB.read();
+      case 'Download':
+        return ZagreusDatabase.RADARR_TOAST_ON_DOWNLOAD.read();
+      case 'Upgrade':
+        return ZagreusDatabase.RADARR_TOAST_ON_UPGRADE.read();
+      case 'MovieAdded':
+        return ZagreusDatabase.RADARR_TOAST_ON_MOVIE_ADDED.read();
+      case 'ManualInteractionRequired':
+        return ZagreusDatabase.RADARR_TOAST_ON_MANUAL_INTERACTION.read();
+      default:
+        return true;
+    }
+  }
+
+  bool _checkSonarrToastEvent(String eventType) {
+    switch (eventType) {
+      case 'Grab':
+        return ZagreusDatabase.SONARR_TOAST_ON_GRAB.read();
+      case 'Download':
+        return ZagreusDatabase.SONARR_TOAST_ON_DOWNLOAD.read();
+      case 'Upgrade':
+        return ZagreusDatabase.SONARR_TOAST_ON_UPGRADE.read();
+      case 'SeriesAdd':
+        return ZagreusDatabase.SONARR_TOAST_ON_SERIES_ADD.read();
+      case 'ManualInteractionRequired':
+        return ZagreusDatabase.SONARR_TOAST_ON_MANUAL_INTERACTION.read();
+      default:
+        return true;
+    }
+  }
+
+  bool _checkLidarrToastEvent(String eventType) {
+    switch (eventType) {
+      case 'Grab':
+        return ZagreusDatabase.LIDARR_TOAST_ON_GRAB.read();
+      case 'Download':
+        return ZagreusDatabase.LIDARR_TOAST_ON_DOWNLOAD.read();
+      case 'Upgrade':
+        return ZagreusDatabase.LIDARR_TOAST_ON_UPGRADE.read();
+      case 'ArtistAdded':
+        return ZagreusDatabase.LIDARR_TOAST_ON_ARTIST_ADD.read();
+      default:
+        return true;
+    }
+  }
+
+  bool _checkProwlarrToastEvent(String eventType) {
+    switch (eventType) {
+      case 'Grab':
+        return ZagreusDatabase.PROWLARR_TOAST_ON_GRAB.read();
+      case 'HealthIssue':
+        return ZagreusDatabase.PROWLARR_TOAST_ON_HEALTH_ISSUE.read();
+      case 'HealthRestored':
+        return ZagreusDatabase.PROWLARR_TOAST_ON_HEALTH_RESTORED.read();
+      case 'ApplicationUpdate':
+        return ZagreusDatabase.PROWLARR_TOAST_ON_APPLICATION_UPDATE.read();
+      default:
+        return true;
+    }
   }
 
   /// Returns a [StreamSubscription] that will handle messages/notifications that are opened while Zagreus is running in the background.

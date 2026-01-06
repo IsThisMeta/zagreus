@@ -1050,16 +1050,54 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
         Icons.chevron_right_rounded,
         color: ZagColours.grey,
       ),
-      onTap: () => _showProwlarrEventsPage(),
-    );
-  }
-
-  void _showProwlarrEventsPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => _ProwlarrEventsPage(
-          onSync: _syncWebhooksInBackground,
-        ),
+      onTap: () => _showCombinedEventsPage(
+        title: 'settings.ProwlarrEvents'.tr(),
+        globalPushToggle: ZagreusDatabase.PROWLARR_PUSH_ENABLED,
+        globalToastToggle: ZagreusDatabase.PROWLARR_TOAST_ENABLED,
+        pushEvents: [
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventIncludeManualGrabs',
+            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_MANUAL_GRABS,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthIssue',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_ISSUE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventIncludeHealthWarnings',
+            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthRestored',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_RESTORED,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnApplicationUpdate',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE,
+          ),
+        ],
+        toastEvents: [
+          _EventConfig(
+            'settings.NotificationEventOnGrab',
+            ZagreusDatabase.PROWLARR_TOAST_ON_GRAB,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthIssue',
+            ZagreusDatabase.PROWLARR_TOAST_ON_HEALTH_ISSUE,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnHealthRestored',
+            ZagreusDatabase.PROWLARR_TOAST_ON_HEALTH_RESTORED,
+          ),
+          _EventConfig(
+            'settings.NotificationEventOnApplicationUpdate',
+            ZagreusDatabase.PROWLARR_TOAST_ON_APPLICATION_UPDATE,
+          ),
+        ],
       ),
     );
   }
@@ -1418,24 +1456,28 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
       body: ZagListView(
         controller: scrollController,
         children: [
-          // Push Notifications Section
-          _buildSectionHeader('settings.NotificationsPushSectionTitle'),
+          // Global Toggles Section
+          _buildSectionHeader('settings.GlobalToggles'),
           _buildGlobalToggle(
             'settings.EnableAllPushEvents',
             widget.globalPushToggle,
             isPush: true,
           ),
+          _buildGlobalToggle(
+            'settings.EnableAllToastEvents',
+            widget.globalToastToggle,
+            isPush: false,
+          ),
+          ZagDivider(),
+
+          // Push Notifications Section
+          _buildSectionHeader('settings.NotificationsPushSectionTitle'),
           for (final event in widget.pushEvents)
             _buildPushEventToggle(context, event),
 
           // In-App Toasts Section
           ZagDivider(),
           _buildSectionHeader('settings.NotificationsToastsSectionTitle'),
-          _buildGlobalToggle(
-            'settings.EnableAllToastEvents',
-            widget.globalToastToggle,
-            isPush: false,
-          ),
           for (final event in widget.toastEvents)
             _buildToastEventToggle(context, event),
         ],
@@ -1524,119 +1566,6 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
               ),
             );
           },
-        );
-      },
-    );
-  }
-}
-
-/// Prowlarr events page (push notifications only, no toasts since it's not media)
-class _ProwlarrEventsPage extends StatefulWidget {
-  final VoidCallback? onSync;
-
-  const _ProwlarrEventsPage({this.onSync});
-
-  @override
-  State<_ProwlarrEventsPage> createState() => _ProwlarrEventsPageState();
-}
-
-class _ProwlarrEventsPageState extends State<_ProwlarrEventsPage> with ZagScrollControllerMixin {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return ZagScaffold(
-      scaffoldKey: _scaffoldKey,
-      appBar: ZagAppBar(
-        title: 'settings.ProwlarrEvents'.tr(),
-        scrollControllers: [scrollController],
-      ),
-      body: ZagListView(
-        controller: scrollController,
-        children: [
-          _buildSectionHeader('settings.NotificationsPushSectionTitle'),
-          _buildGlobalToggle(),
-          _buildEventToggle(
-            'settings.NotificationEventOnGrab',
-            ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB,
-          ),
-          _buildEventToggle(
-            'settings.NotificationEventIncludeManualGrabs',
-            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_MANUAL_GRABS,
-          ),
-          _buildEventToggle(
-            'settings.NotificationEventOnHealthIssue',
-            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_ISSUE,
-          ),
-          _buildEventToggle(
-            'settings.NotificationEventIncludeHealthWarnings',
-            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS,
-          ),
-          _buildEventToggle(
-            'settings.NotificationEventOnHealthRestored',
-            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_RESTORED,
-          ),
-          _buildEventToggle(
-            'settings.NotificationEventOnApplicationUpdate',
-            ZagreusDatabase.PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String titleKey) {
-    return Padding(
-      padding: EdgeInsets.all(ZagUI.DEFAULT_MARGIN_SIZE),
-      child: Text(
-        titleKey.tr(),
-        style: TextStyle(
-          fontSize: ZagUI.FONT_SIZE_H2,
-          fontWeight: ZagUI.FONT_WEIGHT_BOLD,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlobalToggle() {
-    return ZagBlock(
-      title: 'settings.EnableAllPushEvents'.tr(),
-      body: [],
-      trailing: ZagreusDatabase.PROWLARR_PUSH_ENABLED.listenableBuilder(
-        builder: (context, _) => ZagSwitch(
-          value: ZagreusDatabase.PROWLARR_PUSH_ENABLED.read(),
-          onChanged: (value) async {
-            ZagreusDatabase.PROWLARR_PUSH_ENABLED.update(value);
-            if (widget.onSync != null) {
-              widget.onSync!();
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventToggle(String titleKey, ZagreusDatabase<bool> database) {
-    return ZagreusDatabase.PROWLARR_PUSH_ENABLED.listenableBuilder(
-      builder: (context, _) {
-        final globalEnabled = ZagreusDatabase.PROWLARR_PUSH_ENABLED.read();
-        return ZagBlock(
-          title: titleKey.tr(),
-          body: [],
-          disabled: !globalEnabled,
-          trailing: database.listenableBuilder(
-            builder: (context, _) => ZagSwitch(
-              value: database.read(),
-              onChanged: globalEnabled
-                  ? (value) async {
-                      database.update(value);
-                      if (widget.onSync != null) {
-                        widget.onSync!();
-                      }
-                    }
-                  : null,
-            ),
-          ),
         );
       },
     );

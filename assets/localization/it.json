@@ -836,6 +836,7 @@
     "settings.TautulliEnrichmentHint": "Per i poster in Tautulli, includi questi campi nel tuo webhook JSON: media_type, themoviedb_id, thetvdb_id, imdb_id",
     "settings.NotificationsPushSectionTitle": "Notifiche push",
     "settings.NotificationsToastsSectionTitle": "Toast in-app",
+    "settings.GlobalToggles": "Interruttori globali",
     "settings.EnableAllPushEvents": "Abilita tutti gli eventi push",
     "settings.EnableAllToastEvents": "Abilita tutti gli eventi toast",
     "settings.ReviewDemo": "Demo di revisione",
