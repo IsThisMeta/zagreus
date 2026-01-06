@@ -1573,6 +1573,8 @@
     "settings.TautulliEnrichmentHint": "Für Poster in Tautulli fügen Sie diese Felder in Ihr Webhook-JSON ein: media_type, themoviedb_id, thetvdb_id, imdb_id",
     "settings.NotificationsPushSectionTitle": "Push-Benachrichtigungen",
     "settings.NotificationsToastsSectionTitle": "In-App-Toasts",
+    "settings.EnableAllPushEvents": "Alle Push-Ereignisse aktivieren",
+    "settings.EnableAllToastEvents": "Alle Toast-Ereignisse aktivieren",
     "sonarr.AddSeries": "Serie hinzufügen",
     "sonarr.AddToExclusionList": "Zur Ignorierliste hinzufügen",
     "sonarr.AllSeasons": "Alle Staffeln",

@@ -69,18 +69,27 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   NOTIFICATION_WEBHOOK_ID<String>(''),
   NOTIFICATION_WEBHOOK_SIGNATURE<String>(''),
   NOTIFICATION_ANONYMOUS_MODE<bool>(true),
+  // Radarr global toggles
+  RADARR_PUSH_ENABLED<bool>(true),
+  RADARR_TOAST_ENABLED<bool>(true),
   // Radarr webhook events
   RADARR_WEBHOOK_ON_GRAB<bool>(true),
   RADARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
   RADARR_WEBHOOK_ON_UPGRADE<bool>(true),
   RADARR_WEBHOOK_ON_MOVIE_ADDED<bool>(true),
   RADARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Sonarr global toggles
+  SONARR_PUSH_ENABLED<bool>(true),
+  SONARR_TOAST_ENABLED<bool>(true),
   // Sonarr webhook events
   SONARR_WEBHOOK_ON_GRAB<bool>(true),
   SONARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
   SONARR_WEBHOOK_ON_UPGRADE<bool>(true),
   SONARR_WEBHOOK_ON_SERIES_ADD<bool>(true),
   SONARR_WEBHOOK_ON_MANUAL_INTERACTION<bool>(true),
+  // Lidarr global toggles
+  LIDARR_PUSH_ENABLED<bool>(true),
+  LIDARR_TOAST_ENABLED<bool>(true),
   // Lidarr webhook events
   LIDARR_WEBHOOK_ON_GRAB<bool>(true),
   LIDARR_WEBHOOK_ON_DOWNLOAD<bool>(true),
@@ -100,6 +109,8 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   LIDARR_TOAST_ON_DOWNLOAD<bool>(true),
   LIDARR_TOAST_ON_UPGRADE<bool>(true),
   LIDARR_TOAST_ON_ARTIST_ADD<bool>(true),
+  // Prowlarr global toggle
+  PROWLARR_PUSH_ENABLED<bool>(true),
   // Prowlarr webhook events
   PROWLARR_WEBHOOK_ON_GRAB<bool>(true),
   PROWLARR_WEBHOOK_ON_HEALTH_ISSUE<bool>(true),

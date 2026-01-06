@@ -838,6 +838,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ),
       onTap: () => _showCombinedEventsPage(
         title: 'settings.RadarrEvents'.tr(),
+        globalPushToggle: ZagreusDatabase.RADARR_PUSH_ENABLED,
+        globalToastToggle: ZagreusDatabase.RADARR_TOAST_ENABLED,
         pushEvents: [
           _EventConfig(
             'settings.NotificationEventOnGrab',
@@ -898,6 +900,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ),
       onTap: () => _showCombinedEventsPage(
         title: 'settings.SonarrEvents'.tr(),
+        globalPushToggle: ZagreusDatabase.SONARR_PUSH_ENABLED,
+        globalToastToggle: ZagreusDatabase.SONARR_TOAST_ENABLED,
         pushEvents: [
           _EventConfig(
             'settings.NotificationEventOnGrab',
@@ -958,6 +962,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
       ),
       onTap: () => _showCombinedEventsPage(
         title: 'settings.LidarrEvents'.tr(),
+        globalPushToggle: ZagreusDatabase.LIDARR_PUSH_ENABLED,
+        globalToastToggle: ZagreusDatabase.LIDARR_TOAST_ENABLED,
         pushEvents: [
           _EventConfig(
             'settings.NotificationEventOnGrab',
@@ -1062,6 +1068,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
     required String title,
     required List<_EventConfig> pushEvents,
     required List<_EventConfig> toastEvents,
+    required ZagreusDatabase<bool> globalPushToggle,
+    required ZagreusDatabase<bool> globalToastToggle,
   }) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -1069,6 +1077,8 @@ class _State extends State<NotificationsRoute> with ZagScrollControllerMixin {
           title: title,
           pushEvents: pushEvents,
           toastEvents: toastEvents,
+          globalPushToggle: globalPushToggle,
+          globalToastToggle: globalToastToggle,
           onSync: _syncWebhooksInBackground,
         ),
       ),
@@ -1377,12 +1387,16 @@ class _CombinedEventsPage extends StatefulWidget {
   final String title;
   final List<_EventConfig> pushEvents;
   final List<_EventConfig> toastEvents;
+  final ZagreusDatabase<bool> globalPushToggle;
+  final ZagreusDatabase<bool> globalToastToggle;
   final VoidCallback? onSync;
 
   const _CombinedEventsPage({
     required this.title,
     required this.pushEvents,
     required this.toastEvents,
+    required this.globalPushToggle,
+    required this.globalToastToggle,
     this.onSync,
   });
 
@@ -1406,12 +1420,22 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
         children: [
           // Push Notifications Section
           _buildSectionHeader('settings.NotificationsPushSectionTitle'),
+          _buildGlobalToggle(
+            'settings.EnableAllPushEvents',
+            widget.globalPushToggle,
+            isPush: true,
+          ),
           for (final event in widget.pushEvents)
             _buildPushEventToggle(context, event),
 
           // In-App Toasts Section
           ZagDivider(),
           _buildSectionHeader('settings.NotificationsToastsSectionTitle'),
+          _buildGlobalToggle(
+            'settings.EnableAllToastEvents',
+            widget.globalToastToggle,
+            isPush: false,
+          ),
           for (final event in widget.toastEvents)
             _buildToastEventToggle(context, event),
         ],
@@ -1432,17 +1456,16 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
     );
   }
 
-  Widget _buildPushEventToggle(BuildContext context, _EventConfig event) {
+  Widget _buildGlobalToggle(String titleKey, ZagreusDatabase<bool> database, {required bool isPush}) {
     return ZagBlock(
-      title: event.titleKey.tr(),
+      title: titleKey.tr(),
       body: [],
-      trailing: event.database.listenableBuilder(
+      trailing: database.listenableBuilder(
         builder: (context, _) => ZagSwitch(
-          value: event.database.read(),
+          value: database.read(),
           onChanged: (value) async {
-            event.database.update(value);
-            // Trigger webhook sync after changing push notification settings
-            if (widget.onSync != null) {
+            database.update(value);
+            if (isPush && widget.onSync != null) {
               widget.onSync!();
             }
           },
@@ -1451,25 +1474,58 @@ class _CombinedEventsPageState extends State<_CombinedEventsPage> with ZagScroll
     );
   }
 
-  Widget _buildToastEventToggle(BuildContext context, _EventConfig event) {
-    return ZagBlock(
-      title: event.titleKey.tr(),
-      body: [],
-      trailing: ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
-        builder: (context, _) {
-          final toastsEnabled = ZagreusDatabase.ENABLE_IN_APP_TOASTS.read();
-          return event.database.listenableBuilder(
+  Widget _buildPushEventToggle(BuildContext context, _EventConfig event) {
+    return widget.globalPushToggle.listenableBuilder(
+      builder: (context, _) {
+        final globalEnabled = widget.globalPushToggle.read();
+        return ZagBlock(
+          title: event.titleKey.tr(),
+          body: [],
+          disabled: !globalEnabled,
+          trailing: event.database.listenableBuilder(
             builder: (context, _) => ZagSwitch(
               value: event.database.read(),
-              onChanged: toastsEnabled
-                  ? (value) {
+              onChanged: globalEnabled
+                  ? (value) async {
                       event.database.update(value);
+                      if (widget.onSync != null) {
+                        widget.onSync!();
+                      }
                     }
-                  : null, // Disabled when toasts are off
+                  : null,
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildToastEventToggle(BuildContext context, _EventConfig event) {
+    return widget.globalToastToggle.listenableBuilder(
+      builder: (context, _) {
+        final globalToastEnabled = widget.globalToastToggle.read();
+        return ZagreusDatabase.ENABLE_IN_APP_TOASTS.listenableBuilder(
+          builder: (context, _) {
+            final toastsEnabled = ZagreusDatabase.ENABLE_IN_APP_TOASTS.read();
+            final canToggle = globalToastEnabled && toastsEnabled;
+            return ZagBlock(
+              title: event.titleKey.tr(),
+              body: [],
+              disabled: !globalToastEnabled,
+              trailing: event.database.listenableBuilder(
+                builder: (context, _) => ZagSwitch(
+                  value: event.database.read(),
+                  onChanged: canToggle
+                      ? (value) {
+                          event.database.update(value);
+                        }
+                      : null,
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -1499,6 +1555,7 @@ class _ProwlarrEventsPageState extends State<_ProwlarrEventsPage> with ZagScroll
         controller: scrollController,
         children: [
           _buildSectionHeader('settings.NotificationsPushSectionTitle'),
+          _buildGlobalToggle(),
           _buildEventToggle(
             'settings.NotificationEventOnGrab',
             ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB,
@@ -1541,21 +1598,47 @@ class _ProwlarrEventsPageState extends State<_ProwlarrEventsPage> with ZagScroll
     );
   }
 
-  Widget _buildEventToggle(String titleKey, ZagreusDatabase<bool> database) {
+  Widget _buildGlobalToggle() {
     return ZagBlock(
-      title: titleKey.tr(),
+      title: 'settings.EnableAllPushEvents'.tr(),
       body: [],
-      trailing: database.listenableBuilder(
+      trailing: ZagreusDatabase.PROWLARR_PUSH_ENABLED.listenableBuilder(
         builder: (context, _) => ZagSwitch(
-          value: database.read(),
+          value: ZagreusDatabase.PROWLARR_PUSH_ENABLED.read(),
           onChanged: (value) async {
-            database.update(value);
+            ZagreusDatabase.PROWLARR_PUSH_ENABLED.update(value);
             if (widget.onSync != null) {
               widget.onSync!();
             }
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildEventToggle(String titleKey, ZagreusDatabase<bool> database) {
+    return ZagreusDatabase.PROWLARR_PUSH_ENABLED.listenableBuilder(
+      builder: (context, _) {
+        final globalEnabled = ZagreusDatabase.PROWLARR_PUSH_ENABLED.read();
+        return ZagBlock(
+          title: titleKey.tr(),
+          body: [],
+          disabled: !globalEnabled,
+          trailing: database.listenableBuilder(
+            builder: (context, _) => ZagSwitch(
+              value: database.read(),
+              onChanged: globalEnabled
+                  ? (value) async {
+                      database.update(value);
+                      if (widget.onSync != null) {
+                        widget.onSync!();
+                      }
+                    }
+                  : null,
+            ),
+          ),
+        );
+      },
     );
   }
 }
