@@ -489,7 +489,7 @@
   "settings.SubscriptionsSharingTimeHours": "{} hours",
   "settings.SubscriptionsSharingTimeSoon": "soon",
   "settings.AdvancedLocalSwitching": "Advanced Local Switching",
-  "settings.AdvancedLocalSwitchingDescription": "Automatically switch to local hosts when connected to trusted Wi-Fi networks.",
+  "settings.AdvancedLocalSwitchingDescription": "Automatically switch to local network",
   "settings.ConnectionStatus": "Connection Status",
   "settings.ConnectionStatusLocal": "Local connection • {}",
   "settings.ConnectionStatusRemote": "Remote connection • {}",

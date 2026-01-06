@@ -686,14 +686,11 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
       ),
       if (_serverIssues.isEmpty)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: ZagBlock(
             title: 'All Systems Operational',
             body: const [
-              TextSpan(
-                text:
-                    'No server issues detected. All services are running smoothly.',
-              ),
+              TextSpan(text: 'No server issues detected.'),
             ],
             trailing:
                 const Icon(Icons.check_circle_outline, color: Colors.green),
@@ -933,7 +930,7 @@ class _DiscoverServerTabState extends State<DiscoverServerTab>
         )
       else if (_tautulliStreams.isEmpty)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: ZagBlock(
             title: 'No Active Streams',
             body: const [
