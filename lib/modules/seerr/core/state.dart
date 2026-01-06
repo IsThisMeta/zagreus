@@ -42,6 +42,7 @@ class SeerrState extends ZagModuleState {
     _issues = null;
     _users = null;
     _requestEnrichments.clear();
+    _issueEnrichments.clear();
     // Reinitialize
     resetProfile();
     if (_enabled) {
@@ -361,6 +362,8 @@ class SeerrState extends ZagModuleState {
     fetchIssues();
   }
 
+  int _issuesFetchToken = 0;
+  final Set<int> _issueEnrichments = <int>{};
   List<SeerrIssue>? _issues;
   List<SeerrIssue>? get issues => _issues;
 
@@ -373,6 +376,7 @@ class SeerrState extends ZagModuleState {
   Future<void> fetchIssues() async {
     if (!isConfigured || _api == null) return;
 
+    final fetchToken = ++_issuesFetchToken;
     _issuesLoading = true;
     _issuesError = null;
     notifyListeners();
@@ -383,142 +387,111 @@ class SeerrState extends ZagModuleState {
         sort: 'added',
       );
 
-      // Enrich issues with media details if missing
-      final enrichedIssues = <SeerrIssue>[];
-      for (final issue in response.results) {
-        try {
-          // Skip enrichment if no valid TMDB ID
-          if (issue.media.tmdbId == 0) {
-            ZagLogger().debug('Skipping enrichment for issue ${issue.id} - no valid TMDB ID');
-            enrichedIssues.add(issue);
-            continue;
-          }
+      if (fetchToken != _issuesFetchToken) return;
 
-          // Check if media details are missing and fetch them
-          if ((issue.media.mediaType == 'movie' && issue.media.movie == null) ||
-              (issue.media.mediaType == 'tv' && issue.media.series == null)) {
-            // Fetch media details
-            if (issue.media.mediaType == 'movie') {
-              try {
-                final movie = await GetSeerrMovie(_api!, Dio())(movieId: issue.media.tmdbId);
-                // Create a new media object with the movie details
-                final enrichedMedia = SeerrMedia(
-                  downloadStatus: issue.media.downloadStatus,
-                  downloadStatus4k: issue.media.downloadStatus4k,
-                  id: issue.media.id,
-                  mediaType: issue.media.mediaType,
-                  tmdbId: issue.media.tmdbId,
-                  tvdbId: issue.media.tvdbId,
-                  imdbId: issue.media.imdbId,
-                  status: issue.media.status,
-                  status4k: issue.media.status4k,
-                  createdAt: issue.media.createdAt,
-                  updatedAt: issue.media.updatedAt,
-                  lastSeasonChange: issue.media.lastSeasonChange,
-                  mediaAddedAt: issue.media.mediaAddedAt,
-                  serviceId: issue.media.serviceId,
-                  serviceId4k: issue.media.serviceId4k,
-                  externalServiceId: issue.media.externalServiceId,
-                  externalServiceId4k: issue.media.externalServiceId4k,
-                  externalServiceSlug: issue.media.externalServiceSlug,
-                  externalServiceSlug4k: issue.media.externalServiceSlug4k,
-                  ratingKey: issue.media.ratingKey,
-                  ratingKey4k: issue.media.ratingKey4k,
-                  jellyfinMediaId: issue.media.jellyfinMediaId,
-                  jellyfinMediaId4k: issue.media.jellyfinMediaId4k,
-                  serviceUrl: issue.media.serviceUrl,
-                  movie: movie,
-                  series: issue.media.series,
-                );
-                // Create enriched issue
-                final enrichedIssue = SeerrIssue(
-                  id: issue.id,
-                  issueType: issue.issueType,
-                  status: issue.status,
-                  problemSeason: issue.problemSeason,
-                  problemEpisode: issue.problemEpisode,
-                  createdAt: issue.createdAt,
-                  updatedAt: issue.updatedAt,
-                  createdBy: issue.createdBy,
-                  media: enrichedMedia,
-                  comments: issue.comments,
-                );
-                enrichedIssues.add(enrichedIssue);
-                continue;
-              } catch (e) {
-                ZagLogger().warning('Could not enrich issue - movie TMDB ID ${issue.media.tmdbId} may have been removed from TMDB');
-              }
-            } else if (issue.media.mediaType == 'tv') {
-              try {
-                final series = await GetSeerrSeries(_api!, Dio())(seriesId: issue.media.tmdbId);
-                // Create a new media object with the series details
-                final enrichedMedia = SeerrMedia(
-                  downloadStatus: issue.media.downloadStatus,
-                  downloadStatus4k: issue.media.downloadStatus4k,
-                  id: issue.media.id,
-                  mediaType: issue.media.mediaType,
-                  tmdbId: issue.media.tmdbId,
-                  tvdbId: issue.media.tvdbId,
-                  imdbId: issue.media.imdbId,
-                  status: issue.media.status,
-                  status4k: issue.media.status4k,
-                  createdAt: issue.media.createdAt,
-                  updatedAt: issue.media.updatedAt,
-                  lastSeasonChange: issue.media.lastSeasonChange,
-                  mediaAddedAt: issue.media.mediaAddedAt,
-                  serviceId: issue.media.serviceId,
-                  serviceId4k: issue.media.serviceId4k,
-                  externalServiceId: issue.media.externalServiceId,
-                  externalServiceId4k: issue.media.externalServiceId4k,
-                  externalServiceSlug: issue.media.externalServiceSlug,
-                  externalServiceSlug4k: issue.media.externalServiceSlug4k,
-                  ratingKey: issue.media.ratingKey,
-                  ratingKey4k: issue.media.ratingKey4k,
-                  jellyfinMediaId: issue.media.jellyfinMediaId,
-                  jellyfinMediaId4k: issue.media.jellyfinMediaId4k,
-                  serviceUrl: issue.media.serviceUrl,
-                  movie: issue.media.movie,
-                  series: series,
-                );
-                // Create enriched issue
-                final enrichedIssue = SeerrIssue(
-                  id: issue.id,
-                  issueType: issue.issueType,
-                  status: issue.status,
-                  problemSeason: issue.problemSeason,
-                  problemEpisode: issue.problemEpisode,
-                  createdAt: issue.createdAt,
-                  updatedAt: issue.updatedAt,
-                  createdBy: issue.createdBy,
-                  media: enrichedMedia,
-                  comments: issue.comments,
-                );
-                enrichedIssues.add(enrichedIssue);
-                continue;
-              } catch (e) {
-                ZagLogger().warning('Could not enrich issue - series TMDB ID ${issue.media.tmdbId} may have been removed from TMDB');
-              }
-            }
-          }
-        } catch (e) {
-          ZagLogger().warning('Error enriching issue ${issue.id} - media may have been removed from TMDB');
-        }
-        // Add original issue if enrichment failed or wasn't needed
-        enrichedIssues.add(issue);
-      }
-
-      _issues = enrichedIssues;
+      _issues = response.results;
       _issuesError = null;
+      _issuesLoading = false;
+      notifyListeners();
     } catch (e, stackTrace) {
+      if (fetchToken != _issuesFetchToken) return;
       if (e is DioException) {
         _logDioError('getIssues', e);
       } else {
         ZagLogger().error('Failed to fetch Seerr issues', e, stackTrace);
       }
       _issuesError = e.toString();
-    } finally {
       _issuesLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _shouldEnrichIssueMedia(SeerrIssue issue) {
+    if (issue.media.mediaType == 'movie') {
+      return issue.media.movie == null;
+    }
+    if (issue.media.mediaType == 'tv') {
+      return issue.media.series == null;
+    }
+    return false;
+  }
+
+  SeerrIssue? _findIssueById(int issueId) {
+    final issues = _issues;
+    if (issues == null) return null;
+    for (final issue in issues) {
+      if (issue.id == issueId) return issue;
+    }
+    return null;
+  }
+
+  void enrichIssueMedia(int issueId) {
+    if (!isConfigured || _api == null) return;
+
+    final issue = _findIssueById(issueId);
+    if (issue == null || !_shouldEnrichIssueMedia(issue)) return;
+    if (issue.media.tmdbId == 0) return;
+    if (!_issueEnrichments.add(issueId)) return;
+
+    unawaited(_enrichIssueMedia(issue, _issuesFetchToken));
+  }
+
+  SeerrIssue _copySeerrIssue(SeerrIssue issue, SeerrMedia media) {
+    return SeerrIssue(
+      id: issue.id,
+      issueType: issue.issueType,
+      status: issue.status,
+      problemSeason: issue.problemSeason,
+      problemEpisode: issue.problemEpisode,
+      createdAt: issue.createdAt,
+      updatedAt: issue.updatedAt,
+      createdBy: issue.createdBy,
+      media: media,
+      comments: issue.comments,
+    );
+  }
+
+  Future<void> _enrichIssueMedia(
+    SeerrIssue issue,
+    int fetchToken,
+  ) async {
+    try {
+      if (_api == null) return;
+      final tmdbId = issue.media.tmdbId;
+      if (tmdbId == 0) return;
+
+      final api = _api!;
+      final client = Dio();
+      SeerrMedia? enrichedMedia;
+
+      if (issue.media.mediaType == 'movie') {
+        final movie = await GetSeerrMovie(api, client)(movieId: tmdbId);
+        enrichedMedia = _copySeerrMedia(issue.media, movie: movie);
+      } else if (issue.media.mediaType == 'tv') {
+        final series = await GetSeerrSeries(api, client)(seriesId: tmdbId);
+        enrichedMedia = _copySeerrMedia(issue.media, series: series);
+      }
+
+      if (enrichedMedia == null) return;
+      if (fetchToken != _issuesFetchToken) return;
+
+      final issues = _issues;
+      if (issues == null) return;
+      final index = issues.indexWhere((item) => item.id == issue.id);
+      if (index == -1) return;
+
+      final updatedIssues = List<SeerrIssue>.from(issues);
+      final currentIssue = updatedIssues[index];
+      if (!_shouldEnrichIssueMedia(currentIssue)) return;
+      updatedIssues[index] = _copySeerrIssue(currentIssue, enrichedMedia);
+      _issues = updatedIssues;
+      notifyListeners();
+    } catch (e) {
+      ZagLogger().warning(
+        'Could not enrich issue - TMDB ID ${issue.media.tmdbId} may have been removed from TMDB',
+      );
+    } finally {
+      _issueEnrichments.remove(issue.id);
     }
   }
 

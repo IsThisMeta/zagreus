@@ -24,6 +24,27 @@ class SeerrIssueTile extends StatefulWidget {
 
 class _State extends State<SeerrIssueTile> {
   @override
+  void initState() {
+    super.initState();
+    _enqueueEnrichment();
+  }
+
+  @override
+  void didUpdateWidget(covariant SeerrIssueTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.issue.id != widget.issue.id) {
+      _enqueueEnrichment();
+    }
+  }
+
+  void _enqueueEnrichment() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<SeerrState>().enrichIssueMedia(widget.issue.id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return _buildBlockTile();
   }
