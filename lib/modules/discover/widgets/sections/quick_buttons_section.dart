@@ -8,19 +8,20 @@ import 'package:zagreus/modules/sonarr/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/seerr/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
-import 'package:zagreus/modules/search/core/state.dart';
 import 'package:zagreus/modules/ssh/core/state.dart';
 import 'package:zagreus/widgets/ui.dart';
 import 'package:zagreus/vendor.dart';
 
 /// Data class for a quick button service
 class _QuickButtonService {
+  final String key;
   final ZagModule module;
   final Color color;
   final VoidCallback onTap;
   final String? labelOverride;
 
   const _QuickButtonService({
+    required this.key,
     required this.module,
     required this.color,
     required this.onTap,
@@ -31,15 +32,41 @@ class _QuickButtonService {
 }
 
 /// A horizontal wrap of quick access buttons to navigate to configured services.
-/// Displays buttons for all enabled services like Radarr, Sonarr, Lidarr, etc.
-class QuickButtonsSection extends StatelessWidget {
+/// Supports long press + drag to reorder buttons.
+class QuickButtonsSection extends StatefulWidget {
   const QuickButtonsSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final services = _getEnabledServices(context);
+  State<QuickButtonsSection> createState() => _QuickButtonsSectionState();
+}
 
-    if (services.isEmpty) {
+class _QuickButtonsSectionState extends State<QuickButtonsSection> {
+  List<_QuickButtonService> _services = [];
+  int? _targetIndex;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _services = _getEnabledServices(context);
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+
+    setState(() {
+      final item = _services.removeAt(oldIndex);
+      _services.insert(newIndex, item);
+    });
+
+    // Save the new order to database
+    final newOrder = _services.map((s) => s.key).toList();
+    ZagreusDatabase.DISCOVER_QUICK_BUTTONS.update(newOrder);
+    HapticFeedback.mediumImpact();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_services.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -48,123 +75,169 @@ class QuickButtonsSection extends StatelessWidget {
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: services.map((service) => _QuickButton(service: service)).toList(),
+        children: List.generate(_services.length, (index) {
+          final service = _services[index];
+          final isTarget = _targetIndex == index;
+
+          return DragTarget<int>(
+            onWillAcceptWithDetails: (details) {
+              if (details.data != index) {
+                setState(() => _targetIndex = index);
+                return true;
+              }
+              return false;
+            },
+            onLeave: (_) {
+              setState(() => _targetIndex = null);
+            },
+            onAcceptWithDetails: (details) {
+              _onReorder(details.data, index);
+              setState(() => _targetIndex = null);
+            },
+            builder: (context, candidateData, rejectedData) {
+              return LongPressDraggable<int>(
+                data: index,
+                delay: const Duration(milliseconds: 200),
+                hapticFeedbackOnStart: true,
+                onDragStarted: () {
+                  HapticFeedback.mediumImpact();
+                },
+                onDragEnd: (_) {
+                  setState(() => _targetIndex = null);
+                },
+                feedback: Material(
+                  color: Colors.transparent,
+                  child: Transform.scale(
+                    scale: 1.05,
+                    child: Opacity(
+                      opacity: 0.9,
+                      child: _QuickButton(service: service),
+                    ),
+                  ),
+                ),
+                childWhenDragging: Opacity(
+                  opacity: 0.3,
+                  child: _QuickButton(service: service),
+                ),
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 150),
+                  scale: isTarget ? 1.05 : 1.0,
+                  child: _QuickButton(service: service),
+                ),
+              );
+            },
+          );
+        }),
       ),
     );
   }
 
   List<_QuickButtonService> _getEnabledServices(BuildContext context) {
-    final services = <_QuickButtonService>[];
     final profile = ZagProfile.current;
 
-    // Get the list of enabled quick buttons from settings (empty by default)
+    // Get the ordered list of enabled quick buttons from settings
     final enabledButtons = List<String>.from(
       ZagreusDatabase.DISCOVER_QUICK_BUTTONS.read(),
     );
 
-    // If no buttons are enabled, return empty list
     if (enabledButtons.isEmpty) {
-      return services;
+      return [];
     }
 
-    // Radarr - only show if enabled in quick buttons AND configured in app
-    if (enabledButtons.contains('radarr') && context.read<RadarrState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.RADARR,
-        color: ZagColours.radarr,
-        onTap: () => ZagModule.RADARR.launch(restore: false),
-      ));
-    }
+    // Map of service key to its configuration
+    final serviceConfigs = <String, _QuickButtonService Function()>{
+      'radarr': () => _QuickButtonService(
+            key: 'radarr',
+            module: ZagModule.RADARR,
+            color: ZagColours.radarr,
+            onTap: () => ZagModule.RADARR.launch(restore: false),
+          ),
+      'sonarr': () => _QuickButtonService(
+            key: 'sonarr',
+            module: ZagModule.SONARR,
+            color: ZagColours.sonarr,
+            onTap: () => ZagModule.SONARR.launch(restore: false),
+          ),
+      'lidarr': () => _QuickButtonService(
+            key: 'lidarr',
+            module: ZagModule.LIDARR,
+            color: ZagColours.lidarr,
+            onTap: () => ZagModule.LIDARR.launch(restore: false),
+          ),
+      'readarr': () => _QuickButtonService(
+            key: 'readarr',
+            module: ZagModule.READARR,
+            color: ZagColours.readarr,
+            onTap: () => ZagModule.READARR.launch(restore: false),
+          ),
+      'seerr': () => _QuickButtonService(
+            key: 'seerr',
+            module: ZagModule.SEERR,
+            color: ZagColours.seerr,
+            onTap: () => ZagModule.SEERR.launch(restore: false),
+            labelOverride: 'Seerr',
+          ),
+      'tautulli': () => _QuickButtonService(
+            key: 'tautulli',
+            module: ZagModule.TAUTULLI,
+            color: ZagColours.tautulli,
+            onTap: () => ZagModule.TAUTULLI.launch(restore: false),
+          ),
+      'sabnzbd': () => _QuickButtonService(
+            key: 'sabnzbd',
+            module: ZagModule.SABNZBD,
+            color: ZagColours.sabnzbd,
+            onTap: () => ZagModule.SABNZBD.launch(restore: false),
+          ),
+      'nzbget': () => _QuickButtonService(
+            key: 'nzbget',
+            module: ZagModule.NZBGET,
+            color: ZagColours.nzbget,
+            onTap: () => ZagModule.NZBGET.launch(restore: false),
+          ),
+      'unraid': () => _QuickButtonService(
+            key: 'unraid',
+            module: ZagModule.UNRAID,
+            color: ZagColours.unraid,
+            onTap: () => ZagModule.UNRAID.launch(restore: false),
+          ),
+      'search': () => _QuickButtonService(
+            key: 'search',
+            module: ZagModule.SEARCH,
+            color: ZagModule.SEARCH.color,
+            onTap: () => ZagModule.SEARCH.launch(restore: false),
+          ),
+      'ssh': () => _QuickButtonService(
+            key: 'ssh',
+            module: ZagModule.SSH,
+            color: ZagModule.SSH.color,
+            onTap: () => ZagModule.SSH.launch(restore: false),
+          ),
+    };
 
-    // Sonarr
-    if (enabledButtons.contains('sonarr') && context.read<SonarrState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.SONARR,
-        color: ZagColours.sonarr,
-        onTap: () => ZagModule.SONARR.launch(restore: false),
-      ));
-    }
+    // Map of service key to enabled check
+    final serviceEnabledChecks = <String, bool>{
+      'radarr': context.read<RadarrState>().enabled,
+      'sonarr': context.read<SonarrState>().enabled,
+      'lidarr': profile.lidarrEnabled,
+      'readarr': profile.readarrEnabled,
+      'seerr': context.read<SeerrState>().enabled,
+      'tautulli': context.read<TautulliState>().enabled,
+      'sabnzbd': profile.sabnzbdEnabled,
+      'nzbget': profile.nzbgetEnabled,
+      'unraid': context.read<UnraidState>().enabled,
+      'search': ZagModule.SEARCH.isEnabled,
+      'ssh': context.read<SSHState>().enabled,
+    };
 
-    // Lidarr
-    if (enabledButtons.contains('lidarr') && profile.lidarrEnabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.LIDARR,
-        color: ZagColours.lidarr,
-        onTap: () => ZagModule.LIDARR.launch(restore: false),
-      ));
-    }
-
-    // Readarr
-    if (enabledButtons.contains('readarr') && profile.readarrEnabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.READARR,
-        color: ZagColours.readarr,
-        onTap: () => ZagModule.READARR.launch(restore: false),
-      ));
-    }
-
-    // Seerr (displayed as "Seerr")
-    if (enabledButtons.contains('seerr') && context.read<SeerrState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.SEERR,
-        color: ZagColours.seerr,
-        onTap: () => ZagModule.SEERR.launch(restore: false),
-        labelOverride: 'Seerr',
-      ));
-    }
-
-    // Tautulli
-    if (enabledButtons.contains('tautulli') && context.read<TautulliState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.TAUTULLI,
-        color: ZagColours.tautulli,
-        onTap: () => ZagModule.TAUTULLI.launch(restore: false),
-      ));
-    }
-
-    // SABnzbd
-    if (enabledButtons.contains('sabnzbd') && profile.sabnzbdEnabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.SABNZBD,
-        color: ZagColours.sabnzbd,
-        onTap: () => ZagModule.SABNZBD.launch(restore: false),
-      ));
-    }
-
-    // NZBget
-    if (enabledButtons.contains('nzbget') && profile.nzbgetEnabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.NZBGET,
-        color: ZagColours.nzbget,
-        onTap: () => ZagModule.NZBGET.launch(restore: false),
-      ));
-    }
-
-    // Unraid
-    if (enabledButtons.contains('unraid') && context.read<UnraidState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.UNRAID,
-        color: ZagColours.unraid,
-        onTap: () => ZagModule.UNRAID.launch(restore: false),
-      ));
-    }
-
-    // Search
-    if (enabledButtons.contains('search') && ZagModule.SEARCH.isEnabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.SEARCH,
-        color: ZagModule.SEARCH.color,
-        onTap: () => ZagModule.SEARCH.launch(restore: false),
-      ));
-    }
-
-    // SSH
-    if (enabledButtons.contains('ssh') && context.read<SSHState>().enabled) {
-      services.add(_QuickButtonService(
-        module: ZagModule.SSH,
-        color: ZagModule.SSH.color,
-        onTap: () => ZagModule.SSH.launch(restore: false),
-      ));
+    // Build services list respecting the stored order
+    final services = <_QuickButtonService>[];
+    for (final key in enabledButtons) {
+      final isEnabled = serviceEnabledChecks[key] ?? false;
+      final config = serviceConfigs[key];
+      if (isEnabled && config != null) {
+        services.add(config());
+      }
     }
 
     return services;
