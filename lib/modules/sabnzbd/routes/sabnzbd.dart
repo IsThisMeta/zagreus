@@ -9,10 +9,12 @@ import 'package:zagreus/system/filesystem/filesystem.dart';
 
 class SABnzbdRoute extends StatefulWidget {
   final bool showDrawer;
+  final bool showDownloadButton;
 
   const SABnzbdRoute({
     Key? key,
     this.showDrawer = true,
+    this.showDownloadButton = true,
   }) : super(key: key);
 
   @override
@@ -119,6 +121,7 @@ class _State extends State<SABnzbdRoute> {
       title: title,
       useDrawer: widget.showDrawer,
       hideLeading: !widget.showDrawer,
+      showDownloadButton: widget.showDownloadButton,
       profiles: profiles,
       actions: actions,
       pageController: _pageController,

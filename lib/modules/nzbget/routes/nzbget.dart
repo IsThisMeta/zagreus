@@ -10,10 +10,12 @@ import 'package:zagreus/system/filesystem/filesystem.dart';
 
 class NZBGetRoute extends StatefulWidget {
   final bool showDrawer;
+  final bool showDownloadButton;
 
   const NZBGetRoute({
     Key? key,
     this.showDrawer = true,
+    this.showDownloadButton = true,
   }) : super(key: key);
 
   @override
@@ -121,6 +123,7 @@ class _State extends State<NZBGetRoute> {
       title: title,
       useDrawer: widget.showDrawer,
       hideLeading: !widget.showDrawer,
+      showDownloadButton: widget.showDownloadButton,
       profiles: profiles,
       actions: actions,
       pageController: _pageController,

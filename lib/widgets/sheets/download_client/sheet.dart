@@ -35,10 +35,10 @@ class DownloadClientSheet extends ZagBottomModalSheet {
     if (module != null) {
       return showModal(builder: (context) {
         if (module == ZagModule.SABNZBD) {
-          return const SABnzbdRoute(showDrawer: false);
+          return const SABnzbdRoute(showDrawer: false, showDownloadButton: false);
         }
         if (module == ZagModule.NZBGET) {
-          return const NZBGetRoute(showDrawer: false);
+          return const NZBGetRoute(showDrawer: false, showDownloadButton: false);
         }
         return InvalidRoutePage();
       });
