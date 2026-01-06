@@ -20,6 +20,7 @@ class ZagDrawerHeader extends StatelessWidget {
             backgroundColor: Colors.transparent,
             hideLeading: true,
             useDrawer: false,
+            showDownloadButton: false,
             title: visibleProfiles.length == 1
                 ? 'Zagreus'
                 : ZagreusDatabase.ENABLED_PROFILE.read(),
