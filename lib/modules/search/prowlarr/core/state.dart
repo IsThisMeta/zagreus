@@ -37,6 +37,7 @@ class ProwlarrFilterConfig {
   final int minGrabs;
   final int maxGrabs;
   final ProwlarrProtocolFilter protocol;
+  final String searchQuery;
 
   // Max values for sliders
   static const double maxSizeValue = 30.0; // 30GB+
@@ -49,6 +50,7 @@ class ProwlarrFilterConfig {
     this.minGrabs = 0,
     this.maxGrabs = maxGrabsValue,
     this.protocol = ProwlarrProtocolFilter.all,
+    this.searchQuery = '',
   });
 
   ProwlarrFilterConfig copyWith({
@@ -58,6 +60,7 @@ class ProwlarrFilterConfig {
     int? minGrabs,
     int? maxGrabs,
     ProwlarrProtocolFilter? protocol,
+    String? searchQuery,
   }) {
     return ProwlarrFilterConfig(
       selectedIndexers: selectedIndexers ?? this.selectedIndexers,
@@ -66,6 +69,7 @@ class ProwlarrFilterConfig {
       minGrabs: minGrabs ?? this.minGrabs,
       maxGrabs: maxGrabs ?? this.maxGrabs,
       protocol: protocol ?? this.protocol,
+      searchQuery: searchQuery ?? this.searchQuery,
     );
   }
 
@@ -75,7 +79,8 @@ class ProwlarrFilterConfig {
       selectedIndexers.isNotEmpty ||
       minSizeGB > 0 ||
       minGrabs > 0 ||
-      protocol != ProwlarrProtocolFilter.all;
+      protocol != ProwlarrProtocolFilter.all ||
+      searchQuery.isNotEmpty;
 
   int get activeFilterCount {
     int count = 0;
@@ -83,6 +88,7 @@ class ProwlarrFilterConfig {
     if (minSizeGB > 0) count++;
     if (minGrabs > 0) count++;
     if (protocol != ProwlarrProtocolFilter.all) count++;
+    if (searchQuery.isNotEmpty) count++;
     return count;
   }
 }
@@ -160,6 +166,15 @@ class ProwlarrState extends ChangeNotifier {
   /// Get filtered and sorted search results
   List<ProwlarrItem> get filteredAndSortedResults {
     var results = List<ProwlarrItem>.from(_searchResults);
+
+    // Apply search query filter (case-insensitive title search)
+    if (_filterConfig.searchQuery.isNotEmpty) {
+      final query = _filterConfig.searchQuery.toLowerCase();
+      results = results
+          .where((item) =>
+              item.title?.toLowerCase().contains(query) ?? false)
+          .toList();
+    }
 
     // Apply indexer filter
     if (_filterConfig.selectedIndexers.isNotEmpty) {

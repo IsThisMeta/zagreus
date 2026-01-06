@@ -65,6 +65,7 @@
     "search.Protocol": "Protocol",
     "search.Results": "Resultaten",
     "search.Search": "Zoeken",
+    "search.SearchResults": "Zoek in resultaten",
     "search.SearchAllCategory": "Zoek in {}",
     "search.Seeders": "Seeders",
     "search.SelectedCount": "{} geselecteerd",

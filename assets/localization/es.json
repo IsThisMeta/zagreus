@@ -568,6 +568,7 @@
     "search.NoCategoriesFound": "Categorias no encontradas",
     "search.NoResultsFound": "Resultados no encontrados",
     "search.Search": "Búsqueda",
+    "search.SearchResults": "Buscar en resultados",
     "search.SentNZBData": "Data NZB enviada",
     "search.SentTo": "Enviada a {}",
     "search.Size": "Tamaño",

@@ -342,12 +342,14 @@ class _ProwlarrFilterSheetContentState
   late ProwlarrProtocolFilter _protocol;
   late double _maxSizeGB;
   late int _maxGrabs;
+  late String _searchQuery;
 
   @override
   void initState() {
     super.initState();
     final config = widget.state.filterConfig;
     _selectedIndexers = Set.from(config.selectedIndexers);
+    _searchQuery = config.searchQuery;
 
     // Get dynamic max values from search results
     _maxSizeGB = widget.state.maxSizeInResults;
@@ -378,6 +380,7 @@ class _ProwlarrFilterSheetContentState
         minGrabs: _grabsRange.start.toInt(),
         maxGrabs: _grabsRange.end.toInt(),
         protocol: _protocol,
+        searchQuery: _searchQuery,
       ),
     );
   }
@@ -388,8 +391,50 @@ class _ProwlarrFilterSheetContentState
       _sizeRange = RangeValues(0, _maxSizeGB);
       _grabsRange = RangeValues(0, _maxGrabs.toDouble());
       _protocol = ProwlarrProtocolFilter.all;
+      _searchQuery = '';
     });
     _updateFilters();
+  }
+
+  Future<void> _showSearchDialog() async {
+    final textController = TextEditingController(text: _searchQuery);
+    final formKey = GlobalKey<FormState>();
+    bool confirmed = false;
+
+    void submit() {
+      confirmed = true;
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    await ZagDialog.dialog(
+      context: context,
+      title: 'search.SearchResults'.tr(),
+      buttons: [
+        ZagDialog.button(
+          text: 'zagreus.Ok'.tr(),
+          onPressed: submit,
+        ),
+      ],
+      content: [
+        Form(
+          key: formKey,
+          child: ZagDialog.textFormInput(
+            controller: textController,
+            title: 'search.SearchResults'.tr(),
+            onSubmitted: (_) => submit(),
+            validator: (_) => null,
+          ),
+        ),
+      ],
+      contentPadding: ZagDialog.inputDialogContentPadding(),
+    );
+
+    if (confirmed) {
+      setState(() {
+        _searchQuery = textController.text;
+      });
+      _updateFilters();
+    }
   }
 
   String _formatSizeLabel(double value, {bool isMax = false}) {
@@ -694,7 +739,7 @@ class _ProwlarrFilterSheetContentState
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -713,6 +758,57 @@ class _ProwlarrFilterSheetContentState
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _showSearchDialog,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: ZagColours.textColor(context),
+                  side: BorderSide(color: Colors.grey[600]!),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'search.SearchResults'.tr(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    if (_searchQuery.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _searchQuery,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),

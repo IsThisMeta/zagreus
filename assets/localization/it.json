@@ -172,6 +172,7 @@
     "search.SentTo": "Invia a {}",
     "search.SentNZBData": "Dati NZB inviati",
     "search.Search": "Cerca",
+    "search.SearchResults": "Cerca nei risultati",
     "search.ConfigureSearchAndProwlarr": "Configura ricerca e Prowlarr",
     "search.Results": "Risultati",
     "search.NoSubcategoriesFound": "Nessuna sottocategoria trovata",
