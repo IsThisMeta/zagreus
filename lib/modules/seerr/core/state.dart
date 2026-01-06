@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -163,6 +164,7 @@ class SeerrState extends ZagModuleState {
     fetchRequests();
   }
 
+  int _requestsFetchToken = 0;
   List<SeerrRequest>? _requests;
   List<SeerrRequest>? get requests => _requests;
 
@@ -175,6 +177,7 @@ class SeerrState extends ZagModuleState {
   Future<void> fetchRequests() async {
     if (!isConfigured || _api == null) return;
 
+    final fetchToken = ++_requestsFetchToken;
     _requestsLoading = true;
     _requestsError = null;
     notifyListeners();
@@ -185,175 +188,178 @@ class SeerrState extends ZagModuleState {
         sort: _requestsSort,
       );
 
-      // Enrich requests with media details if missing
-      final enrichedRequests = <SeerrRequest>[];
-      for (final request in response.results) {
-        try {
-          // Skip enrichment if no valid TMDB ID
-          if (request.media.tmdbId == 0) {
-            ZagLogger().debug('Skipping enrichment for request ${request.id} - no valid TMDB ID');
-            enrichedRequests.add(request);
-            continue;
-          }
+      if (fetchToken != _requestsFetchToken) return;
 
-          // Check if media details are missing and fetch them
-          if ((request.media.mediaType == 'movie' && request.media.movie == null) ||
-              (request.media.mediaType == 'tv' && request.media.series == null)) {
-            // Fetch media details
-            if (request.media.mediaType == 'movie') {
-              try {
-                final movie = await GetSeerrMovie(_api!, Dio())(movieId: request.media.tmdbId);
-                // Create a new media object with the movie details
-                final enrichedMedia = SeerrMedia(
-                  downloadStatus: request.media.downloadStatus,
-                  downloadStatus4k: request.media.downloadStatus4k,
-                  id: request.media.id,
-                  mediaType: request.media.mediaType,
-                  tmdbId: request.media.tmdbId,
-                  tvdbId: request.media.tvdbId,
-                  imdbId: request.media.imdbId,
-                  status: request.media.status,
-                  status4k: request.media.status4k,
-                  createdAt: request.media.createdAt,
-                  updatedAt: request.media.updatedAt,
-                  lastSeasonChange: request.media.lastSeasonChange,
-                  mediaAddedAt: request.media.mediaAddedAt,
-                  serviceId: request.media.serviceId,
-                  serviceId4k: request.media.serviceId4k,
-                  externalServiceId: request.media.externalServiceId,
-                  externalServiceId4k: request.media.externalServiceId4k,
-                  externalServiceSlug: request.media.externalServiceSlug,
-                  externalServiceSlug4k: request.media.externalServiceSlug4k,
-                  ratingKey: request.media.ratingKey,
-                  ratingKey4k: request.media.ratingKey4k,
-                  jellyfinMediaId: request.media.jellyfinMediaId,
-                  jellyfinMediaId4k: request.media.jellyfinMediaId4k,
-                  serviceUrl: request.media.serviceUrl,
-                  movie: movie,
-                  series: request.media.series,
-                );
-                // Create enriched request
-                final enrichedRequest = SeerrRequest(
-                  id: request.id,
-                  status: request.status,
-                  createdAt: request.createdAt,
-                  updatedAt: request.updatedAt,
-                  type: request.type,
-                  is4k: request.is4k,
-                  serverId: request.serverId,
-                  profileId: request.profileId,
-                  rootFolder: request.rootFolder,
-                  languageProfileId: request.languageProfileId,
-                  tags: request.tags,
-                  isAutoRequest: request.isAutoRequest,
-                  media: enrichedMedia,
-                  seasons: request.seasons,
-                  modifiedBy: request.modifiedBy,
-                  requestedBy: request.requestedBy,
-                  seasonCount: request.seasonCount,
-                );
-                enrichedRequests.add(enrichedRequest);
-                continue;
-              } catch (e) {
-                ZagLogger().warning('Could not enrich request - movie TMDB ID ${request.media.tmdbId} may have been removed from TMDB');
-              }
-            } else if (request.media.mediaType == 'tv') {
-              try {
-                final series = await GetSeerrSeries(_api!, Dio())(seriesId: request.media.tmdbId);
-                // Create a new media object with the series details
-                final enrichedMedia = SeerrMedia(
-                  downloadStatus: request.media.downloadStatus,
-                  downloadStatus4k: request.media.downloadStatus4k,
-                  id: request.media.id,
-                  mediaType: request.media.mediaType,
-                  tmdbId: request.media.tmdbId,
-                  tvdbId: request.media.tvdbId,
-                  imdbId: request.media.imdbId,
-                  status: request.media.status,
-                  status4k: request.media.status4k,
-                  createdAt: request.media.createdAt,
-                  updatedAt: request.media.updatedAt,
-                  lastSeasonChange: request.media.lastSeasonChange,
-                  mediaAddedAt: request.media.mediaAddedAt,
-                  serviceId: request.media.serviceId,
-                  serviceId4k: request.media.serviceId4k,
-                  externalServiceId: request.media.externalServiceId,
-                  externalServiceId4k: request.media.externalServiceId4k,
-                  externalServiceSlug: request.media.externalServiceSlug,
-                  externalServiceSlug4k: request.media.externalServiceSlug4k,
-                  ratingKey: request.media.ratingKey,
-                  ratingKey4k: request.media.ratingKey4k,
-                  jellyfinMediaId: request.media.jellyfinMediaId,
-                  jellyfinMediaId4k: request.media.jellyfinMediaId4k,
-                  serviceUrl: request.media.serviceUrl,
-                  movie: request.media.movie,
-                  series: series,
-                );
-                // Create enriched request
-                final enrichedRequest = SeerrRequest(
-                  id: request.id,
-                  status: request.status,
-                  createdAt: request.createdAt,
-                  updatedAt: request.updatedAt,
-                  type: request.type,
-                  is4k: request.is4k,
-                  serverId: request.serverId,
-                  profileId: request.profileId,
-                  rootFolder: request.rootFolder,
-                  languageProfileId: request.languageProfileId,
-                  tags: request.tags,
-                  isAutoRequest: request.isAutoRequest,
-                  media: enrichedMedia,
-                  seasons: request.seasons,
-                  modifiedBy: request.modifiedBy,
-                  requestedBy: request.requestedBy,
-                  seasonCount: request.seasonCount,
-                );
-                enrichedRequests.add(enrichedRequest);
-                continue;
-              } catch (e) {
-                ZagLogger().warning('Could not enrich request - series TMDB ID ${request.media.tmdbId} may have been removed from TMDB');
-              }
-            }
-          }
-        } catch (e) {
-          ZagLogger().warning('Error enriching request ${request.id} - media may have been removed from TMDB');
-        }
-        // Add original request if enrichment failed or wasn't needed
-        enrichedRequests.add(request);
-      }
-
-      _requests = enrichedRequests;
+      _requests = response.results;
       _requestsError = null;
+      _requestsLoading = false;
+      notifyListeners();
 
-      // Debug logging
-      if (_requests != null && _requests!.isNotEmpty) {
-        final firstRequest = _requests!.first;
-        ZagLogger().debug('Seerr Request Debug:');
-        ZagLogger().debug('  Request ID: ${firstRequest.id}');
-        ZagLogger().debug('  Media Type: ${firstRequest.media.mediaType}');
-        ZagLogger().debug('  TMDB ID: ${firstRequest.media.tmdbId}');
-        ZagLogger().debug('  Movie object: ${firstRequest.media.movie != null ? "present" : "NULL"}');
-        ZagLogger().debug('  Series object: ${firstRequest.media.series != null ? "present" : "NULL"}');
-        if (firstRequest.media.movie != null) {
-          ZagLogger().debug('  Movie title: ${firstRequest.media.movie!.title}');
-          ZagLogger().debug('  Movie poster: ${firstRequest.media.movie!.posterPath}');
-        }
-        if (firstRequest.media.series != null) {
-          ZagLogger().debug('  Series name: ${firstRequest.media.series!.name}');
-          ZagLogger().debug('  Series poster: ${firstRequest.media.series!.posterPath}');
-        }
+      final needsEnrichment = response.results.any(_shouldEnrichRequestMedia);
+      if (needsEnrichment) {
+        unawaited(_enrichRequests(response.results, fetchToken));
+      } else {
+        _logRequestDebug();
       }
     } catch (e, stackTrace) {
+      if (fetchToken != _requestsFetchToken) return;
       if (e is DioException) {
         _logDioError('getRequests', e);
       } else {
         ZagLogger().error('Failed to fetch Seerr requests', e, stackTrace);
       }
       _requestsError = e.toString();
-    } finally {
       _requestsLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _shouldEnrichRequestMedia(SeerrRequest request) {
+    if (request.media.mediaType == 'movie') {
+      return request.media.movie == null;
+    }
+    if (request.media.mediaType == 'tv') {
+      return request.media.series == null;
+    }
+    return false;
+  }
+
+  SeerrMedia _copySeerrMedia(
+    SeerrMedia media, {
+    SeerrMovie? movie,
+    SeerrSeries? series,
+  }) {
+    return SeerrMedia(
+      downloadStatus: media.downloadStatus,
+      downloadStatus4k: media.downloadStatus4k,
+      id: media.id,
+      mediaType: media.mediaType,
+      tmdbId: media.tmdbId,
+      tvdbId: media.tvdbId,
+      imdbId: media.imdbId,
+      status: media.status,
+      status4k: media.status4k,
+      createdAt: media.createdAt,
+      updatedAt: media.updatedAt,
+      lastSeasonChange: media.lastSeasonChange,
+      mediaAddedAt: media.mediaAddedAt,
+      serviceId: media.serviceId,
+      serviceId4k: media.serviceId4k,
+      externalServiceId: media.externalServiceId,
+      externalServiceId4k: media.externalServiceId4k,
+      externalServiceSlug: media.externalServiceSlug,
+      externalServiceSlug4k: media.externalServiceSlug4k,
+      ratingKey: media.ratingKey,
+      ratingKey4k: media.ratingKey4k,
+      jellyfinMediaId: media.jellyfinMediaId,
+      jellyfinMediaId4k: media.jellyfinMediaId4k,
+      serviceUrl: media.serviceUrl,
+      movie: movie ?? media.movie,
+      series: series ?? media.series,
+    );
+  }
+
+  SeerrRequest _copySeerrRequest(SeerrRequest request, SeerrMedia media) {
+    return SeerrRequest(
+      id: request.id,
+      status: request.status,
+      createdAt: request.createdAt,
+      updatedAt: request.updatedAt,
+      type: request.type,
+      is4k: request.is4k,
+      serverId: request.serverId,
+      profileId: request.profileId,
+      rootFolder: request.rootFolder,
+      languageProfileId: request.languageProfileId,
+      tags: request.tags,
+      isAutoRequest: request.isAutoRequest,
+      media: media,
+      seasons: request.seasons,
+      modifiedBy: request.modifiedBy,
+      requestedBy: request.requestedBy,
+      seasonCount: request.seasonCount,
+    );
+  }
+
+  Future<void> _enrichRequests(
+    List<SeerrRequest> requests,
+    int fetchToken,
+  ) async {
+    if (_api == null || requests.isEmpty) return;
+
+    final api = _api!;
+    final client = Dio();
+    final movieCache = <int, SeerrMovie>{};
+    final seriesCache = <int, SeerrSeries>{};
+    final enrichedRequests = List<SeerrRequest>.from(requests);
+
+    for (var i = 0; i < requests.length; i++) {
+      if (fetchToken != _requestsFetchToken) return;
+      final request = requests[i];
+      if (!_shouldEnrichRequestMedia(request)) {
+        continue;
+      }
+
+      try {
+        if (request.media.tmdbId == 0) {
+          ZagLogger()
+              .debug('Skipping enrichment for request ${request.id} - no valid TMDB ID');
+          continue;
+        }
+
+        if (request.media.mediaType == 'movie') {
+          final tmdbId = request.media.tmdbId;
+          final movie =
+              movieCache[tmdbId] ?? await GetSeerrMovie(api, client)(movieId: tmdbId);
+          movieCache[tmdbId] = movie;
+          final enrichedMedia = _copySeerrMedia(
+            request.media,
+            movie: movie,
+          );
+          enrichedRequests[i] = _copySeerrRequest(request, enrichedMedia);
+        } else if (request.media.mediaType == 'tv') {
+          final tmdbId = request.media.tmdbId;
+          final series = seriesCache[tmdbId] ??
+              await GetSeerrSeries(api, client)(seriesId: tmdbId);
+          seriesCache[tmdbId] = series;
+          final enrichedMedia = _copySeerrMedia(
+            request.media,
+            series: series,
+          );
+          enrichedRequests[i] = _copySeerrRequest(request, enrichedMedia);
+        }
+      } catch (e) {
+        ZagLogger().warning(
+          'Could not enrich request - TMDB ID ${request.media.tmdbId} may have been removed from TMDB',
+        );
+      }
+    }
+
+    if (fetchToken != _requestsFetchToken) return;
+
+    _requests = enrichedRequests;
+    notifyListeners();
+    _logRequestDebug();
+  }
+
+  void _logRequestDebug() {
+    if (_requests == null || _requests!.isEmpty) return;
+    final firstRequest = _requests!.first;
+    ZagLogger().debug('Seerr Request Debug:');
+    ZagLogger().debug('  Request ID: ${firstRequest.id}');
+    ZagLogger().debug('  Media Type: ${firstRequest.media.mediaType}');
+    ZagLogger().debug('  TMDB ID: ${firstRequest.media.tmdbId}');
+    ZagLogger().debug(
+        '  Movie object: ${firstRequest.media.movie != null ? "present" : "NULL"}');
+    ZagLogger().debug(
+        '  Series object: ${firstRequest.media.series != null ? "present" : "NULL"}');
+    if (firstRequest.media.movie != null) {
+      ZagLogger().debug('  Movie title: ${firstRequest.media.movie!.title}');
+      ZagLogger().debug('  Movie poster: ${firstRequest.media.movie!.posterPath}');
+    }
+    if (firstRequest.media.series != null) {
+      ZagLogger().debug('  Series name: ${firstRequest.media.series!.name}');
+      ZagLogger().debug('  Series poster: ${firstRequest.media.series!.posterPath}');
     }
   }
 
