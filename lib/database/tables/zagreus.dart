@@ -94,7 +94,10 @@ enum ZagreusDatabase<T> with ZagTableMixin<T> {
   // Prowlarr webhook events
   PROWLARR_WEBHOOK_ON_GRAB<bool>(true),
   PROWLARR_WEBHOOK_ON_HEALTH_ISSUE<bool>(true),
+  PROWLARR_WEBHOOK_ON_HEALTH_RESTORED<bool>(true),
   PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE<bool>(false),
+  PROWLARR_WEBHOOK_INCLUDE_MANUAL_GRABS<bool>(true),
+  PROWLARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS<bool>(false),
   // Seerr notifications
   SEERR_NOTIFICATIONS_ENABLED<bool>(false),
   // Tautulli notifications

@@ -1453,17 +1453,50 @@ func handleWebhookWithPayload(c *gin.Context) {
 	} else if genericWebhook["artist"] != nil {
 		// Lidarr event (has artist field)
 		artistName := "Unknown Artist"
+		var artistImages []interface{}
 		if artist, ok := genericWebhook["artist"].(map[string]interface{}); ok {
 			if name := stringFromInterface(artist["name"]); name != "" {
 				artistName = name
+			}
+			if images, ok := artist["images"].([]interface{}); ok {
+				artistImages = images
 			}
 		}
 
 		// Extract album info if present
 		albumTitle := ""
+		var albumImages []interface{}
 		if albums, ok := genericWebhook["albums"].([]interface{}); ok && len(albums) > 0 {
 			if album, ok := albums[0].(map[string]interface{}); ok {
 				albumTitle = stringFromInterface(album["title"])
+				if images, ok := album["images"].([]interface{}); ok {
+					albumImages = images
+				}
+			}
+		}
+
+		// Try to get cover image - prefer album cover, fall back to artist image
+		for _, img := range albumImages {
+			if imgMap, ok := img.(map[string]interface{}); ok {
+				if coverType, ok := imgMap["coverType"].(string); ok && coverType == "cover" {
+					if remoteURL, ok := imgMap["remoteUrl"].(string); ok && remoteURL != "" {
+						posterURL = remoteURL
+						break
+					}
+				}
+			}
+		}
+		// Fall back to artist poster if no album cover
+		if posterURL == "" {
+			for _, img := range artistImages {
+				if imgMap, ok := img.(map[string]interface{}); ok {
+					if coverType, ok := imgMap["coverType"].(string); ok && coverType == "poster" {
+						if remoteURL, ok := imgMap["remoteUrl"].(string); ok && remoteURL != "" {
+							posterURL = remoteURL
+							break
+						}
+					}
+				}
 			}
 		}
 
@@ -1489,11 +1522,33 @@ func handleWebhookWithPayload(c *gin.Context) {
 			}
 
 		case "Download":
-			title = "Album Downloaded"
-			if albumTitle != "" {
-				body = fmt.Sprintf("%s - %s is ready to listen", artistName, albumTitle)
+			// Check if this is an upgrade
+			isUpgrade := false
+			if upgrade, ok := genericWebhook["isUpgrade"].(bool); ok {
+				isUpgrade = upgrade
+			}
+			if isUpgrade {
+				title = "Album Upgraded"
+				if albumTitle != "" {
+					body = fmt.Sprintf("%s - %s has been upgraded", artistName, albumTitle)
+				} else {
+					body = fmt.Sprintf("Album by %s has been upgraded", artistName)
+				}
 			} else {
-				body = fmt.Sprintf("Album by %s is ready to listen", artistName)
+				title = "Album Downloaded"
+				if albumTitle != "" {
+					body = fmt.Sprintf("%s - %s is ready to listen", artistName, albumTitle)
+				} else {
+					body = fmt.Sprintf("Album by %s is ready to listen", artistName)
+				}
+			}
+
+		case "Upgrade":
+			title = "Album Upgraded"
+			if albumTitle != "" {
+				body = fmt.Sprintf("%s - %s has been upgraded", artistName, albumTitle)
+			} else {
+				body = fmt.Sprintf("Album by %s has been upgraded", artistName)
 			}
 
 		case "Rename":
@@ -1715,6 +1770,19 @@ func handleWebhookWithPayload(c *gin.Context) {
 				}
 			} else {
 				body = "A health issue was detected"
+			}
+
+		case "HealthRestored":
+			title = "Prowlarr Health Restored"
+			if healthCheck, ok := genericWebhook["healthCheck"].(map[string]interface{}); ok {
+				message := stringFromInterface(healthCheck["message"])
+				if message != "" {
+					body = message
+				} else {
+					body = "Health issue has been resolved"
+				}
+			} else {
+				body = "Health issue has been resolved"
 			}
 
 		case "ApplicationUpdate":

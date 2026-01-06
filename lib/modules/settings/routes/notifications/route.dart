@@ -1458,8 +1458,20 @@ class _ProwlarrEventsPageState extends State<_ProwlarrEventsPage> with ZagScroll
             ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB,
           ),
           _buildEventToggle(
+            'settings.NotificationEventIncludeManualGrabs',
+            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_MANUAL_GRABS,
+          ),
+          _buildEventToggle(
             'settings.NotificationEventOnHealthIssue',
             ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_ISSUE,
+          ),
+          _buildEventToggle(
+            'settings.NotificationEventIncludeHealthWarnings',
+            ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS,
+          ),
+          _buildEventToggle(
+            'settings.NotificationEventOnHealthRestored',
+            ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_RESTORED,
           ),
           _buildEventToggle(
             'settings.NotificationEventOnApplicationUpdate',

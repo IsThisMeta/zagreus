@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:zagreus/api/radarr/radarr.dart';
+
 import 'package:zagreus/core.dart';
 import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
@@ -39,10 +39,20 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   int _totalPages = 1;
   final Map<String, Map<String, dynamic>?> _ratingsCache = {};
 
+  // Radarr multi-add settings
+  int? _radarrQualityProfileId;
+  String? _radarrQualityProfileName;
+  String? _radarrRootFolder;
+  bool _radarrSearchForMissing = true;
+
+  // Multi-select mode
+  bool _isMultiSelectMode = false;
+  Set<int> _selectedMovieIndices = {};
+
   @override
   void initState() {
     super.initState();
-    // _loadSavedSettings(); // Not needed for simple movie list
+    _loadSavedSettings();
 
     final cached =
         DiscoverSessionCache().get('TraktMostAnticipatedMoviesRoute');
@@ -90,6 +100,16 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     super.dispose();
   }
 
+  void _loadSavedSettings() {
+    _radarrQualityProfileId =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.read();
+    _radarrQualityProfileName =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.read();
+    _radarrRootFolder = ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.read();
+    _radarrSearchForMissing =
+        ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING.read();
+  }
+
   void _onScroll() {
     if (!scrollController.hasClients || _isLoadingMore || !_hasMorePages) {
       return;
@@ -107,6 +127,8 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       setState(() {
         _isLoading = true;
         _error = null;
+        _selectedMovieIndices.clear();
+        _isMultiSelectMode = false;
       });
     } else {
       _error = null;
@@ -199,10 +221,75 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
   }
 
   PreferredSizeWidget _appBar() {
+    if (_isMultiSelectMode) {
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = false;
+              _selectedMovieIndices.clear();
+            });
+          },
+        ),
+        title: Text('${_selectedMovieIndices.length} selected'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            onPressed: _showRadarrConfig,
+            tooltip: 'Radarr Settings',
+          ),
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: 'Select All',
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _selectedMovieIndices.isEmpty
+                ? null
+                : _addSelectedMoviesToRadarr,
+            tooltip: 'Add Selected',
+          ),
+        ],
+      );
+    }
+
     return ZagAppBar(
       title: 'discover.section.most_anticipated_movies'.tr(),
-      actions: [],
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.checklist),
+          onPressed: () {
+            setState(() {
+              _isMultiSelectMode = true;
+            });
+          },
+          tooltip: 'Multi-Select',
+        ),
+      ],
     );
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedMovieIndices.length == _movies.length) {
+        _selectedMovieIndices.clear();
+      } else {
+        _selectedMovieIndices =
+            Set.from(List.generate(_movies.length, (i) => i));
+      }
+    });
+  }
+
+  void _toggleSelection(int index) {
+    setState(() {
+      if (_selectedMovieIndices.contains(index)) {
+        _selectedMovieIndices.remove(index);
+      } else {
+        _selectedMovieIndices.add(index);
+      }
+    });
   }
 
   Widget _body() {
@@ -300,13 +387,13 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
               ),
             );
           }
-          return _movieTile(_movies[index]);
+          return _movieTile(_movies[index], index);
         },
       ),
     );
   }
 
-  Widget _movieTile(Map<String, dynamic> movie) {
+  Widget _movieTile(Map<String, dynamic> movie, int index) {
     final bool inLibrary = movie['inLibrary'] ?? false;
     final double rating = (movie['rating'] ?? 0.0).toDouble();
     final String title = movie['title'] ?? 'Unknown';
@@ -316,13 +403,16 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
         : '';
     final showTitles = _showTitles;
     final titlesBeneath = showTitles;
+    final isSelected = _selectedMovieIndices.contains(index);
 
     return GestureDetector(
-      onTap: () => _handleMovieTap(movie),
-      onLongPress: () => _showMoviePreview(movie),
+      onTap: () => _isMultiSelectMode
+          ? _toggleSelection(index)
+          : _handleMovieTap(movie),
+      onLongPress: _isMultiSelectMode ? null : () => _showMoviePreview(movie),
       child: titlesBeneath
-          ? _buildTileWithTitleBeneath(movie, inLibrary, rating, title)
-          : _buildTileWithOverlayTitle(movie, inLibrary, rating, title),
+          ? _buildTileWithTitleBeneath(movie, inLibrary, rating, title, isSelected)
+          : _buildTileWithOverlayTitle(movie, inLibrary, rating, title, isSelected),
     );
   }
 
@@ -331,6 +421,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     bool inLibrary,
     double rating,
     String title,
+    bool isSelected,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -348,7 +439,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                 children: [
                   _buildPoster(movie),
                   // Library indicator dot - top right
-                  if (inLibrary)
+                  if (inLibrary && !_isMultiSelectMode)
                     Positioned(
                       top: 10,
                       right: 10,
@@ -366,6 +457,33 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  // Selection indicator
+                  if (_isMultiSelectMode)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected
+                              ? Colors.blue
+                              : Colors.white.withOpacity(0.5),
+                          border: Border.all(
+                            color: isSelected ? Colors.blue : Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              )
+                            : null,
                       ),
                     ),
                   // Rating badge - top left
@@ -414,6 +532,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     bool inLibrary,
     double rating,
     String title,
+    bool isSelected,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -443,7 +562,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                 ),
               ),
             // Library indicator dot - top right
-            if (inLibrary)
+            if (inLibrary && !_isMultiSelectMode)
               Positioned(
                 top: 10,
                 right: 10,
@@ -461,6 +580,33 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
                       ),
                     ],
                   ),
+                ),
+              ),
+            // Selection indicator
+            if (_isMultiSelectMode)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? Colors.blue
+                        : Colors.white.withOpacity(0.5),
+                    border: Border.all(
+                      color: isSelected ? Colors.blue : Colors.white,
+                      width: 2,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 20,
+                        )
+                      : null,
                 ),
               ),
             // Rating badge - top left
@@ -811,11 +957,6 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
   }
 
-  // Radarr quick add settings
-  int? _radarrQualityProfileId;
-  String? _radarrQualityProfileName;
-  String? _radarrRootFolder;
-
   /// Show movie preview with Add button on long press (for non-library items)
   /// or Radarr actions dialog for items already in library
   Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
@@ -910,5 +1051,218 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
     });
     ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(id);
     ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(name);
+  }
+
+  void _showRadarrConfig() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Radarr Batch Add Settings',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.hd),
+                title: const Text('Quality Profile'),
+                subtitle: Text(_radarrQualityProfileName ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final profiles =
+                      await radarrState.api!.qualityProfile.getAll();
+
+                  if (!mounted) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: profiles.length,
+                      itemBuilder: (context, index) {
+                        final profile = profiles[index];
+                        return ListTile(
+                          title: Text(profile.name ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrQualityProfileId = profile.id;
+                              _radarrQualityProfileName = profile.name;
+                            });
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID
+                                .update(profile.id);
+                            ZagreusDatabase
+                                .Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME
+                                .update(profile.name);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder),
+                title: const Text('Root Folder'),
+                subtitle: Text(_radarrRootFolder ?? 'Not selected'),
+                onTap: () async {
+                  final radarrState = context.read<RadarrState>();
+                  final folders = await radarrState.rootFolders;
+
+                  if (!mounted || folders == null) return;
+
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView.builder(
+                      itemCount: folders.length,
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        return ListTile(
+                          title: Text(folder.path ?? 'Unknown'),
+                          onTap: () {
+                            setModalState(() {
+                              _radarrRootFolder = folder.path;
+                            });
+                            ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER
+                                .update(folder.path);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Search for Missing'),
+                value: _radarrSearchForMissing,
+                onChanged: (value) {
+                  setModalState(() {
+                    _radarrSearchForMissing = value;
+                  });
+                  ZagreusDatabase.Z_ASSISTANT_RADARR_SEARCH_FOR_MISSING
+                      .update(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addSelectedMoviesToRadarr() async {
+    if (_radarrQualityProfileId == null || _radarrRootFolder == null) {
+      showZagSnackBar(
+        title: 'Configuration Required',
+        message: 'Please select both Quality Profile and Root Folder',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final radarrState = context.read<RadarrState>();
+    if (!radarrState.enabled || radarrState.api == null) {
+      showZagSnackBar(
+        title: 'Radarr Not Available',
+        message: 'Radarr is not enabled or configured',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final profiles = await radarrState.qualityProfiles;
+    final folders = await radarrState.rootFolders;
+
+    if (profiles == null || folders == null) {
+      showZagSnackBar(
+        title: 'Configuration Error',
+        message: 'Could not fetch Radarr configuration',
+        type: ZagSnackbarType.ERROR,
+      );
+      return;
+    }
+
+    final selectedProfile = profiles.firstWhere(
+      (p) => p.id == _radarrQualityProfileId,
+      orElse: () => profiles.first,
+    );
+    final selectedFolder = folders.firstWhere(
+      (f) => f.path == _radarrRootFolder,
+      orElse: () => folders.first,
+    );
+
+    final selectedMovies =
+        _selectedMovieIndices.map((i) => _movies[i]).toList();
+
+    showZagSnackBar(
+      title: 'Adding Movies',
+      message: 'Adding ${selectedMovies.length} movies to Radarr...',
+      type: ZagSnackbarType.INFO,
+    );
+
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final movie in selectedMovies) {
+      try {
+        final tmdbId = movie['tmdbId'] as int?;
+        if (tmdbId == null) {
+          failCount++;
+          continue;
+        }
+
+        final lookupResults = await radarrState.api!.movieLookup.get(
+          term: "tmdb:$tmdbId",
+        );
+
+        if (lookupResults.isEmpty) {
+          failCount++;
+          continue;
+        }
+
+        final radarrMovie = lookupResults.first;
+
+        if (radarrMovie.id != null && radarrMovie.id! > 0) {
+          failCount++;
+          continue;
+        }
+
+        await radarrState.api!.movie.create(
+          movie: radarrMovie,
+          rootFolder: selectedFolder,
+          monitored: true,
+          minimumAvailability: RadarrAvailability.ANNOUNCED,
+          qualityProfile: selectedProfile,
+          searchForMovie: _radarrSearchForMissing,
+        );
+
+        successCount++;
+      } catch (e) {
+        failCount++;
+        ZagLogger().warning('Failed to add movie ${movie['title']}: $e');
+      }
+    }
+
+    showZagSnackBar(
+      title: 'Batch Add Complete',
+      message: 'Added $successCount movies. $failCount failed.',
+      type: successCount > 0 ? ZagSnackbarType.SUCCESS : ZagSnackbarType.ERROR,
+    );
+
+    setState(() {
+      _isMultiSelectMode = false;
+      _selectedMovieIndices.clear();
+    });
+
+    _loadAnticipatedMovies();
   }
 }

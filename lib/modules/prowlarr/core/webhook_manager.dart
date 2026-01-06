@@ -84,9 +84,10 @@ class ProwlarrWebhookManager {
         'tags': [],
         'onGrab': ZagreusDatabase.PROWLARR_WEBHOOK_ON_GRAB.read(),
         'onHealthIssue': ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_ISSUE.read(),
-        'includeHealthWarnings': false,
+        'onHealthRestored': ZagreusDatabase.PROWLARR_WEBHOOK_ON_HEALTH_RESTORED.read(),
         'onApplicationUpdate': ZagreusDatabase.PROWLARR_WEBHOOK_ON_APPLICATION_UPDATE.read(),
-        'includeManualGrabs': true,
+        'includeManualGrabs': ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_MANUAL_GRABS.read(),
+        'includeHealthWarnings': ZagreusDatabase.PROWLARR_WEBHOOK_INCLUDE_HEALTH_WARNINGS.read(),
       };
 
       if (existingId != null) {
