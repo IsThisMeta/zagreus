@@ -38,12 +38,18 @@ class ProwlarrAPIWrapper {
   }
 
   /// Perform search with error handling
-  Future<List<dynamic>> search(String query, {int? categoryId}) async {
+  Future<List<dynamic>> search(
+    String query, {
+    int? categoryId,
+  }) async {
     if (api == null) {
       throw Exception(initError ?? 'Prowlarr API not initialized');
     }
     try {
-      return await api!.performSearch(query, categoryId: categoryId);
+      return await api!.performSearch(
+        query,
+        categoryId: categoryId,
+      );
     } catch (e) {
       throw Exception('Search failed: $e');
     }

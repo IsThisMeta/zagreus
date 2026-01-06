@@ -50,12 +50,23 @@ class _State extends State<CategoriesRoute>
   }
 
   Widget _body() {
+    final categoriesFuture = context.watch<SearchState>().categories;
+    
+    // If categories future is null, the indexer might not be properly configured
+    if (categoriesFuture == null) {
+      return ZagMessage.error(
+        onTap: () {
+          context.read<SearchState>().fetchCategories();
+        },
+      );
+    }
+    
     return ZagRefreshIndicator(
       context: context,
       key: _refreshKey,
       onRefresh: loadCallback,
       child: FutureBuilder(
-        future: context.watch<SearchState>().categories,
+        future: categoriesFuture,
         builder: (context, AsyncSnapshot<List<NewznabCategoryData>> snapshot) {
           if (snapshot.hasError) {
             ZagLogger().error(
@@ -63,7 +74,9 @@ class _State extends State<CategoriesRoute>
               snapshot.error,
               snapshot.stackTrace,
             );
-            return ZagMessage.error(onTap: _refreshKey.currentState!.show);
+            return ZagMessage.error(onTap: () {
+              context.read<SearchState>().fetchCategories();
+            });
           }
           if (snapshot.connectionState == ConnectionState.done &&
               snapshot.hasData) return _list(snapshot.data!);

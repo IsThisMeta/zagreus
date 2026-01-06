@@ -75,7 +75,10 @@ class _State extends State<SearchRoute> with ZagScrollControllerMixin {
           if (ZagreusPro.isEnabled) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (_) => ProwlarrHomePage(indexer: singleIndexer),
+                builder: (_) => ProwlarrHomePage(
+                  indexer: singleIndexer,
+                  showDrawer: true,
+                ),
               ),
             );
           }

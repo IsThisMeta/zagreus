@@ -109,21 +109,27 @@ class ProwlarrAPI {
     }
   }
 
+  /// Default limit for search results
+  /// Note: Prowlarr's limit parameter is known to not work server-side
+  static const int defaultLimit = 4000;
+
   /// Perform a search across all configured indexers
   ///
   /// Parameters:
   /// - `query`: The search query string
   /// - `categoryId`: Optional category ID to filter results
+  /// - `limit`: Maximum number of results (default: 100)
   ///
   /// Returns a list of [ProwlarrItem] search results
   Future<List<ProwlarrItem>> performSearch(
     String query, {
     int? categoryId,
+    int limit = defaultLimit,
   }) async {
     try {
       Map<String, dynamic> queryParams = {
         'type': 'search',
-        'limit': 4000,
+        'limit': limit,
         'query': query,
       };
 

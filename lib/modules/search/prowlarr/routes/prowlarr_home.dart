@@ -13,10 +13,12 @@ export 'search/route.dart';
 /// Prowlarr home page - main search interface
 class ProwlarrHomePage extends StatefulWidget {
   final ZagIndexer indexer;
+  final bool showDrawer;
 
   const ProwlarrHomePage({
     super.key,
     required this.indexer,
+    this.showDrawer = false,
   });
 
   @override
@@ -64,16 +66,14 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
   Widget build(BuildContext context) {
     // Check if user has Pro access
     if (!ZagreusPro.isEnabled) {
-      return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          title: Text(widget.indexer.displayName),
+      return ZagScaffold(
+        scaffoldKey: _scaffoldKey,
+        appBar: ZagAppBar(
+          useDrawer: widget.showDrawer,
+          title: widget.indexer.displayName,
+          scrollControllers: [scrollController],
         ),
+        drawer: widget.showDrawer ? ZagDrawer(page: ZagModule.SEARCH.key) : null,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -104,18 +104,15 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
 
     return ChangeNotifierProvider<ProwlarrState>.value(
       value: _state,
-      child: Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          title: Text(widget.indexer.displayName),
+      child: ZagScaffold(
+        scaffoldKey: _scaffoldKey,
+        appBar: ZagAppBar(
+          useDrawer: widget.showDrawer,
+          title: widget.indexer.displayName,
+          scrollControllers: [scrollController],
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search_rounded),
+            ZagIconButton(
+              icon: Icons.search_rounded,
               onPressed: () {
                 // Clear any previously selected category for global search
                 _state.setSelectedCategory(null);
@@ -131,6 +128,7 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
             ),
           ],
         ),
+        drawer: widget.showDrawer ? ZagDrawer(page: ZagModule.SEARCH.key) : null,
         body: SafeArea(
           child: Consumer<ProwlarrState>(
             builder: (context, state, child) {
