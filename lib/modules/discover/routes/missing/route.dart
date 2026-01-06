@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/system/platform.dart';
 
@@ -279,6 +281,7 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
 
     return GestureDetector(
       onTap: () => _isMultiSelectMode ? _toggleSelection(index) : _navigateToMovie(movie),
+      onLongPress: _isMultiSelectMode ? null : () => _showMovieActions(movie),
       child: titlesBeneath
           ? _buildTileWithTitleBeneath(movie, isSelected)
           : _buildTileWithOverlayTitle(movie, isSelected),
@@ -544,5 +547,24 @@ class _State extends State<DiscoverMissingRoute> with ZagScrollControllerMixin {
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
     }
     return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+  }
+
+  Future<void> _showMovieActions(RadarrMovie movie) async {
+    if (!mounted || movie.id == null || movie.id == 0) return;
+    try {
+      HapticFeedback.lightImpact();
+      final result = await RadarrDialogs().movieSettings(context, movie);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, movie);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to open Radarr actions for ${movie.title}', error, stack);
+      showZagSnackBar(
+        title: movie.title ?? 'Radarr',
+        message: 'Could not load movie actions.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 }

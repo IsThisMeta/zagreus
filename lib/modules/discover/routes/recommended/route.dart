@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
@@ -380,6 +381,7 @@ class _State extends State<DiscoverRecommendedRoute>
     return GestureDetector(
       onTap: () =>
           _isMultiSelectMode ? _toggleSelection(index) : _handleMovieTap(movie),
+      onLongPress: _isMultiSelectMode ? null : () => _showMoviePreview(movie),
       child: titlesBeneath
           ? _buildTileWithTitleBeneath(movie, isSelected, titleFontSize)
           : _buildTileWithOverlayTitle(movie, isSelected, titleFontSize),
@@ -868,5 +870,89 @@ class _State extends State<DiscoverRecommendedRoute>
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
     }
     return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+  }
+
+  Future<void> _showMoviePreview(RadarrMovie movie) async {
+    // If already in library, show manage dialog
+    if (movie.id != null && movie.id! > 0) {
+      await _showRadarrMovieActions(movie);
+      return;
+    }
+
+    final title = movie.title ?? 'Movie';
+    final overview = movie.overview ?? 'No overview available.';
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      title,
+      overview,
+      onAdd: () {
+        if (movie.tmdbId == null) {
+          showZagSnackBar(
+            title: title,
+            message: 'Missing TMDB identifier.',
+            type: ZagSnackbarType.ERROR,
+          );
+          return;
+        }
+        RadarrRoutes.ADD_MOVIE_DETAILS.go(
+          extra: movie,
+          queryParams: {'isDiscovery': 'true'},
+        );
+      },
+      alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
+    );
+  }
+
+  Future<void> _showRadarrMovieActions(RadarrMovie movie) async {
+    if (!mounted || movie.id == null || movie.id == 0) return;
+    try {
+      HapticFeedback.lightImpact();
+      final result = await RadarrDialogs().movieSettings(context, movie);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, movie);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to open Radarr actions for ${movie.title}', error, stack);
+      showZagSnackBar(
+        title: movie.title ?? 'Radarr',
+        message: 'Could not load movie actions.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<List<String>> _getRadarrRootFolders() async {
+    final radarrState = context.read<RadarrState>();
+    final folders = await radarrState.rootFolders;
+    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+  }
+
+  Future<List<({int id, String name})>> _getRadarrQualityProfiles() async {
+    final radarrState = context.read<RadarrState>();
+    final profiles = await radarrState.api!.qualityProfile.getAll();
+    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+  }
+
+  void _onRadarrRootFolderChanged(String path) {
+    setState(() => _radarrRootFolder = path);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(path);
+  }
+
+  void _onRadarrQualityProfileChanged(int id, String name) {
+    setState(() {
+      _radarrQualityProfileId = id;
+      _radarrQualityProfileName = name;
+    });
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(id);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(name);
   }
 }

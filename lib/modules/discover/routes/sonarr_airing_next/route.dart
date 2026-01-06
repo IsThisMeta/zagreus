@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/sonarr/sonarr.dart';
 import 'package:zagreus/modules/sonarr.dart';
+import 'package:zagreus/modules/sonarr/core/dialogs.dart';
 import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
 
@@ -366,6 +368,12 @@ class _State extends State<SonarrAiringNextRoute>
                 );
               }
             },
+            onLongPress: () {
+              final seriesId = episode['seriesId'];
+              if (seriesId is int) {
+                _showSeriesActions(seriesId, episode['seriesTitle'] as String?);
+              }
+            },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -475,5 +483,31 @@ class _State extends State<SonarrAiringNextRoute>
         ),
       ),
     );
+  }
+
+  Future<void> _showSeriesActions(int seriesId, String? seriesTitle) async {
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) return;
+
+    try {
+      SonarrSeries? series;
+      if (sonarrState.series != null) {
+        final cached = await sonarrState.series!;
+        series = cached[seriesId];
+      }
+      if (series == null) {
+        series = await sonarrState.api!.series.get(seriesId: seriesId, includeSeasonImages: true);
+      }
+      if (series == null) return;
+
+      HapticFeedback.lightImpact();
+      final result = await SonarrDialogs().seriesSettings(context, series);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, series);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to open Sonarr actions for $seriesTitle', error, stack);
+    }
   }
 }

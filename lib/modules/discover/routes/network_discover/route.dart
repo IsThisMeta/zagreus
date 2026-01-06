@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/modules/discover/core/tmdb_api.dart';
@@ -399,6 +400,7 @@ class _State extends State<NetworkDiscoverRoute> with ZagScrollControllerMixin {
 
     return GestureDetector(
       onTap: () => _handleShowTap(show),
+      onLongPress: () => _showTVShowPreview(show),
       child: showTitleBeneath
           ? _buildTileWithTitleBeneath(show, inLibrary)
           : _buildTileWithOverlayTitle(show, inLibrary),
@@ -767,5 +769,139 @@ class _State extends State<NetworkDiscoverRoute> with ZagScrollControllerMixin {
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
     }
     return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+  }
+
+  int? _sonarrQualityProfileId;
+  String? _sonarrQualityProfileName;
+  String? _sonarrRootFolder;
+  String? _sonarrSeriesType;
+
+  Future<void> _showTVShowPreview(Map<String, dynamic> show) async {
+    final bool inLibrary = show['inLibrary'] ?? false;
+    final tmdbId = show['tmdbId'] as int?;
+    final tvdbId = show['tvdbId'] as int?;
+
+    if (tmdbId == null) return;
+
+    if (inLibrary) {
+      final sonarrState = context.read<SonarrState>();
+      if (sonarrState.enabled && sonarrState.series != null) {
+        final seriesMap = await sonarrState.series!;
+        SonarrSeries? matchedSeries;
+        for (final series in seriesMap.values) {
+          if (tvdbId != null && series.tvdbId == tvdbId) {
+            matchedSeries = series;
+            break;
+          }
+        }
+        if (matchedSeries != null && matchedSeries.id != null) {
+          await _showSonarrSeriesActions(seriesId: matchedSeries.id!, seriesTitle: matchedSeries.title);
+          return;
+        }
+      }
+      return;
+    }
+
+    final title = show['title'] as String? ?? 'TV Show';
+    final overview = show['overview'] as String? ?? 'No overview available.';
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      title,
+      overview,
+      onAdd: () => _openSeriesInSonarr(tmdbId: tmdbId, title: title),
+      alignLeft: true,
+      rootFolderValue: _sonarrRootFolder,
+      qualityProfileValue: _sonarrQualityProfileName,
+      seriesTypeValue: _sonarrSeriesTypeLabelFromValue(_sonarrSeriesType),
+      getRootFolders: _getSonarrRootFolders,
+      getQualityProfiles: _getSonarrQualityProfiles,
+      seriesTypes: _getSonarrSeriesTypes(),
+      onRootFolderChanged: _onSonarrRootFolderChanged,
+      onQualityProfileChanged: _onSonarrQualityProfileChanged,
+      onSeriesTypeChanged: _onSonarrSeriesTypeChanged,
+    );
+  }
+
+  Future<void> _showSonarrSeriesActions({required int seriesId, String? seriesTitle}) async {
+    final sonarrState = context.read<SonarrState>();
+    if (!sonarrState.enabled || sonarrState.api == null) return;
+
+    try {
+      SonarrSeries? series;
+      if (sonarrState.series != null) {
+        final cached = await sonarrState.series!;
+        series = cached[seriesId];
+      }
+      if (series == null) {
+        series = await sonarrState.api!.series.get(seriesId: seriesId, includeSeasonImages: true);
+      }
+      if (series == null) return;
+
+      HapticFeedback.lightImpact();
+      final result = await SonarrDialogs().seriesSettings(context, series);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, series);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to open Sonarr actions', error, stack);
+    }
+  }
+
+  Future<List<String>> _getSonarrRootFolders() async {
+    final sonarrState = context.read<SonarrState>();
+    final folders = await sonarrState.rootFolders;
+    return folders?.map((f) => f.path ?? '').where((p) => p.isNotEmpty).toList() ?? [];
+  }
+
+  Future<List<({int id, String name})>> _getSonarrQualityProfiles() async {
+    final sonarrState = context.read<SonarrState>();
+    final profiles = await sonarrState.api!.profile.getQualityProfiles();
+    return profiles.map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown')).toList();
+  }
+
+  void _onSonarrRootFolderChanged(String path) {
+    setState(() => _sonarrRootFolder = path);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_ROOT_FOLDER.update(path);
+  }
+
+  void _onSonarrQualityProfileChanged(int id, String name) {
+    setState(() { _sonarrQualityProfileId = id; _sonarrQualityProfileName = name; });
+    ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_ID.update(id);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_QUALITY_PROFILE_NAME.update(name);
+  }
+
+  void _onSonarrSeriesTypeChanged(String label) {
+    final value = _sonarrSeriesTypeValueFromLabel(label);
+    setState(() => _sonarrSeriesType = value);
+    ZagreusDatabase.Z_ASSISTANT_SONARR_SERIES_TYPE.update(value);
+  }
+
+  String _sonarrSeriesTypeLabel(SonarrSeriesType type) {
+    switch (type) {
+      case SonarrSeriesType.STANDARD: return 'Standard';
+      case SonarrSeriesType.DAILY: return 'Daily';
+      case SonarrSeriesType.ANIME: return 'Anime';
+    }
+  }
+
+  String _sonarrSeriesTypeLabelFromValue(String? value) {
+    final SonarrSeriesType type;
+    if (value == 'daily') { type = SonarrSeriesType.DAILY; }
+    else if (value == 'anime') { type = SonarrSeriesType.ANIME; }
+    else { type = SonarrSeriesType.STANDARD; }
+    return _sonarrSeriesTypeLabel(type);
+  }
+
+  String _sonarrSeriesTypeValueFromLabel(String label) {
+    if (label == 'Daily') return 'daily';
+    if (label == 'Anime') return 'anime';
+    return 'standard';
+  }
+
+  List<String> _getSonarrSeriesTypes() {
+    return SonarrSeriesType.values.map(_sonarrSeriesTypeLabel).toList();
   }
 }

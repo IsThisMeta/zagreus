@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:zagreus/core.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/modules/radarr.dart';
+import 'package:zagreus/modules/radarr/core/dialogs.dart';
 import 'package:zagreus/router/routes/radarr.dart';
 import 'package:zagreus/modules/discover/core/session_cache.dart';
 import 'package:zagreus/system/platform.dart';
@@ -364,6 +366,7 @@ class _MovieGridItem extends StatelessWidget {
           },
         );
       },
+      onLongPress: movie.id != null ? () => _showMovieActions(context, movie) : null,
       child: titlesBeneath
           ? _buildTileWithTitleBeneath(context)
           : _buildTileWithOverlayTitle(context),
@@ -551,5 +554,23 @@ class _MovieGridItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showMovieActions(BuildContext context, RadarrMovie movie) async {
+    if (movie.id == null || movie.id == 0) return;
+    try {
+      HapticFeedback.lightImpact();
+      final result = await RadarrDialogs().movieSettings(context, movie);
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, movie);
+      }
+    } catch (error, stack) {
+      ZagLogger().error('Failed to open Radarr actions for ${movie.title}', error, stack);
+      showZagSnackBar(
+        title: movie.title ?? 'Radarr',
+        message: 'Could not load movie actions.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
   }
 }

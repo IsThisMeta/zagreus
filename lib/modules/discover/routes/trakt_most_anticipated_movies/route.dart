@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:zagreus/api/radarr/radarr.dart';
 import 'package:zagreus/core.dart';
@@ -318,6 +319,7 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
 
     return GestureDetector(
       onTap: () => _handleMovieTap(movie),
+      onLongPress: () => _showMoviePreview(movie),
       child: titlesBeneath
           ? _buildTileWithTitleBeneath(movie, inLibrary, rating, title)
           : _buildTileWithOverlayTitle(movie, inLibrary, rating, title),
@@ -807,5 +809,106 @@ class _State extends State<TraktMostAnticipatedMoviesRoute>
       return ZagreusDatabase.DISCOVER_IPAD_COLUMNS_PER_ROW.read() ?? 4;
     }
     return ZagreusDatabase.DISCOVER_COLUMNS_PER_ROW.read() ?? 3;
+  }
+
+  // Radarr quick add settings
+  int? _radarrQualityProfileId;
+  String? _radarrQualityProfileName;
+  String? _radarrRootFolder;
+
+  /// Show movie preview with Add button on long press (for non-library items)
+  /// or Radarr actions dialog for items already in library
+  Future<void> _showMoviePreview(Map<String, dynamic> movie) async {
+    final bool inLibrary = movie['inLibrary'] ?? false;
+    final tmdbId = movie['tmdbId'] as int?;
+
+    if (tmdbId == null) return;
+
+    // If in library, show manage dialog instead
+    if (inLibrary) {
+      final radarrState = context.read<RadarrState>();
+      if (radarrState.enabled && radarrState.movies != null) {
+        final movies = await radarrState.movies!;
+        final radarrMovie = movies.firstWhere(
+          (m) => m.tmdbId == tmdbId,
+          orElse: () => RadarrMovie(),
+        );
+        if (radarrMovie.id != null && radarrMovie.id! > 0) {
+          await _showRadarrMovieActions(radarrMovie);
+          return;
+        }
+      }
+      return;
+    }
+
+    final title = movie['title'] as String? ?? 'Movie';
+    final overview = movie['overview'] as String? ?? 'No overview available.';
+
+    HapticFeedback.lightImpact();
+    await ZagDialogs().textPreviewWithAdd(
+      context,
+      title,
+      overview,
+      onAdd: () => _openMovieInRadarr(tmdbId: tmdbId, title: title),
+      alignLeft: true,
+      rootFolderValue: _radarrRootFolder,
+      qualityProfileValue: _radarrQualityProfileName,
+      getRootFolders: _getRadarrRootFolders,
+      getQualityProfiles: _getRadarrQualityProfiles,
+      onRootFolderChanged: _onRadarrRootFolderChanged,
+      onQualityProfileChanged: _onRadarrQualityProfileChanged,
+    );
+  }
+
+  Future<void> _showRadarrMovieActions(RadarrMovie movie) async {
+    if (!mounted || movie.id == null || movie.id == 0) return;
+    try {
+      HapticFeedback.lightImpact();
+      final result = await RadarrDialogs().movieSettings(context, movie);
+      if (!mounted) return;
+      if (result.item1 && result.item2 != null) {
+        result.item2!.execute(context, movie);
+      }
+    } catch (error, stack) {
+      ZagLogger().error(
+          'Failed to open Radarr actions for ${movie.title}', error, stack);
+      showZagSnackBar(
+        title: movie.title ?? 'Radarr',
+        message: 'Could not load movie actions.',
+        type: ZagSnackbarType.ERROR,
+      );
+    }
+  }
+
+  Future<List<String>> _getRadarrRootFolders() async {
+    final radarrState = context.read<RadarrState>();
+    final folders = await radarrState.rootFolders;
+    return folders
+            ?.map((f) => f.path ?? '')
+            .where((p) => p.isNotEmpty)
+            .toList() ??
+        [];
+  }
+
+  Future<List<({int id, String name})>> _getRadarrQualityProfiles() async {
+    final radarrState = context.read<RadarrState>();
+    final profiles = await radarrState.api!.qualityProfile.getAll();
+    return profiles
+        .map((p) => (id: p.id ?? 0, name: p.name ?? 'Unknown'))
+        .toList();
+  }
+
+  void _onRadarrRootFolderChanged(String path) {
+    setState(() => _radarrRootFolder = path);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_ROOT_FOLDER.update(path);
+  }
+
+  void _onRadarrQualityProfileChanged(int id, String name) {
+    setState(() {
+      _radarrQualityProfileId = id;
+      _radarrQualityProfileName = name;
+    });
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_ID.update(id);
+    ZagreusDatabase.Z_ASSISTANT_RADARR_QUALITY_PROFILE_NAME.update(name);
   }
 }
