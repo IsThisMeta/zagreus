@@ -155,9 +155,19 @@ class RevenueCatService {
 
         // Note: Backend syncs subscription during device registration
       } else {
-        // Active but no expiration date - this shouldn't happen for subscriptions
-        print('⚠️ RevenueCat: Pro marked active but no expiration date');
-        ZagreusPro.disable();
+        // No expiration date - check if this is a lifetime product
+        final productId = activeProEntitlement.productIdentifier ?? '';
+        if (productId.toLowerCase().contains('lifetime')) {
+          print('🎯 RevenueCat: Pro Lifetime detected via product ID (product: $productId)');
+          ZagreusPro.applyLifetimeSubscription(productId: productId);
+        } else if (activeProEntitlement.isActive) {
+          // Active entitlement with no expiry - treat as lifetime
+          print('🎯 RevenueCat: Pro active with no expiry - treating as lifetime (product: $productId)');
+          ZagreusPro.applyLifetimeSubscription(productId: productId.isEmpty ? 'lifetime_fallback' : productId);
+        } else {
+          print('⚠️ RevenueCat: Pro marked active but no expiration date');
+          ZagreusPro.disable();
+        }
       }
     } else {
       if (hasHigherTier) {
