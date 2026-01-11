@@ -396,6 +396,85 @@ class _ProwlarrFilterSheetContentState
     _updateFilters();
   }
 
+  void _showIndexerMultiSelect(BuildContext context, List<String> availableIndexers, Color accentColor) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Text(
+                          'search.Indexer'.tr(),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            setSheetState(() {
+                              _selectedIndexers.clear();
+                            });
+                            setState(() {});
+                            _updateFilters();
+                          },
+                          child: Text(
+                            'search.All'.tr(),
+                            style: TextStyle(color: accentColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: availableIndexers.length,
+                      itemBuilder: (ctx, index) {
+                        final indexer = availableIndexers[index];
+                        final isSelected = _selectedIndexers.contains(indexer);
+                        return ListTile(
+                          title: Text(indexer),
+                          trailing: isSelected
+                              ? Icon(Icons.check_circle, color: accentColor)
+                              : Icon(Icons.circle_outlined, color: Colors.grey[600]),
+                          onTap: () {
+                            setSheetState(() {
+                              if (isSelected) {
+                                _selectedIndexers.remove(indexer);
+                              } else {
+                                _selectedIndexers.add(indexer);
+                              }
+                            });
+                            setState(() {});
+                            _updateFilters();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _showSearchDialog() async {
     final textController = TextEditingController(text: _searchQuery);
     final formKey = GlobalKey<FormState>();
@@ -675,63 +754,29 @@ class _ProwlarrFilterSheetContentState
                     style: TextStyle(color: Colors.grey[600]),
                   )
                 else
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[600]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButton<String>(
-                      value: _selectedIndexers.isEmpty
-                          ? null
-                          : (_selectedIndexers.length == 1
-                              ? _selectedIndexers.first
-                              : null),
-                      hint: Text(
-                        _selectedIndexers.isEmpty
-                            ? 'search.All'.tr()
-                            : 'search.SelectedCount'.tr(
-                                args: [_selectedIndexers.length.toString()],
-                              ),
+                  InkWell(
+                    onTap: () => _showIndexerMultiSelect(context, availableIndexers, accentColor),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[600]!),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      icon: const Icon(Icons.arrow_drop_down),
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: '__all__',
-                          child: Text('search.All'.tr()),
-                        ),
-                        ...availableIndexers.map((indexer) {
-                          return DropdownMenuItem<String>(
-                            value: indexer,
-                            child: Row(
-                              children: [
-                                if (_selectedIndexers.contains(indexer))
-                                  Icon(Icons.check, size: 18, color: accentColor)
-                                else
-                                  const SizedBox(width: 18),
-                                const SizedBox(width: 8),
-                                Text(indexer),
-                              ],
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _selectedIndexers.isEmpty
+                                  ? 'search.All'.tr()
+                                  : 'search.SelectedCount'.tr(
+                                      args: [_selectedIndexers.length.toString()],
+                                    ),
                             ),
-                          );
-                        }),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == '__all__') {
-                            _selectedIndexers.clear();
-                          } else if (value != null) {
-                            if (_selectedIndexers.contains(value)) {
-                              _selectedIndexers.remove(value);
-                            } else {
-                              _selectedIndexers.add(value);
-                            }
-                          }
-                        });
-                        _updateFilters();
-                      },
+                          ),
+                          const Icon(Icons.arrow_drop_down),
+                        ],
+                      ),
                     ),
                   ),
                 const SizedBox(height: 32),
