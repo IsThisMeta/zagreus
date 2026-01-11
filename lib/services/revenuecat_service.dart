@@ -255,6 +255,13 @@ class RevenueCatService {
       print('📵 RevenueCat: Ultra not active');
       ZagreusUltra.disable();
 
+      // Restore Pro Lifetime if user has it (Ultra may have overwritten Pro expiry)
+      if (isProLifetimeActive) {
+        final productId = proLifetimeEntitlement?.productIdentifier ?? proLifetimeProductId;
+        print('🔄 RevenueCat: Restoring Pro Lifetime after Ultra cancellation');
+        ZagreusPro.applyLifetimeSubscription(productId: productId);
+      }
+
       // Check Mega entitlement
 
       if (isMegaActive) {
@@ -285,6 +292,13 @@ class RevenueCatService {
       } else {
         print('📵 RevenueCat: Mega not active');
         ZagreusMega.disable();
+
+        // Restore Pro Lifetime if user has it (Mega may have overwritten Pro expiry)
+        if (isProLifetimeActive) {
+          final productId = proLifetimeEntitlement?.productIdentifier ?? proLifetimeProductId;
+          print('🔄 RevenueCat: Restoring Pro Lifetime after Mega cancellation');
+          ZagreusPro.applyLifetimeSubscription(productId: productId);
+        }
       }
     }
     }
