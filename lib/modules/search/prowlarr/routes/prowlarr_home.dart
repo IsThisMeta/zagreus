@@ -121,6 +121,7 @@ class _ProwlarrHomePageState extends State<ProwlarrHomePage>
                     builder: (_) => ProwlarrSearchPage(
                       apiWrapper: _apiWrapper,
                       state: _state,
+                      showSearchBar: true,
                     ),
                   ),
                 );

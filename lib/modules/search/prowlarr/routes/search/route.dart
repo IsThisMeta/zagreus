@@ -12,6 +12,7 @@ class ProwlarrSearchPage extends StatefulWidget {
   final int? categoryId;
   final String? categoryName;
   final String? initialQuery;
+  final bool showSearchBar;
 
   const ProwlarrSearchPage({
     super.key,
@@ -20,6 +21,7 @@ class ProwlarrSearchPage extends StatefulWidget {
     this.categoryId,
     this.categoryName,
     this.initialQuery,
+    this.showSearchBar = false,
   });
 
   @override
@@ -30,11 +32,17 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late final TextEditingController _searchController;
   bool _hasSearched = false;
+  bool _showSearchBar = false;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController(text: widget.initialQuery ?? '');
+    // Show search bar if requested or if there's an initial query
+    if (widget.showSearchBar ||
+        (widget.initialQuery != null && widget.initialQuery!.isNotEmpty)) {
+      _showSearchBar = true;
+    }
     // Auto-load results if category is provided or initial query exists
     if (widget.categoryId != null ||
         (widget.initialQuery != null && widget.initialQuery!.isNotEmpty)) {
@@ -95,28 +103,37 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
     return ZagAppBar(
       title: title,
       scrollControllers: [scrollController],
-      bottom: ProwlarrSearchBar(
-        controller: _searchController,
-        scrollController: scrollController,
-        onSubmitted: _performSearch,
-      ),
+      bottom: _showSearchBar
+          ? ProwlarrSearchBar(
+              controller: _searchController,
+              scrollController: scrollController,
+              onSubmitted: _performSearch,
+            )
+          : null,
       actions: [
         Consumer<ProwlarrState>(
           builder: (context, state, _) {
-            if (state.searchResults.isEmpty) {
-              return const SizedBox.shrink();
-            }
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 ZagIconButton(
-                  icon: Icons.sort_rounded,
-                  onPressed: () => _showSortSheet(context),
+                  icon: _showSearchBar ? Icons.search_off_rounded : Icons.search_rounded,
+                  onPressed: () {
+                    setState(() {
+                      _showSearchBar = !_showSearchBar;
+                    });
+                  },
                 ),
-                ZagIconButton(
-                  icon: Icons.filter_list_rounded,
-                  onPressed: () => _showFilterSheet(context),
-                ),
+                if (state.searchResults.isNotEmpty) ...[
+                  ZagIconButton(
+                    icon: Icons.sort_rounded,
+                    onPressed: () => _showSortSheet(context),
+                  ),
+                  ZagIconButton(
+                    icon: Icons.filter_list_rounded,
+                    onPressed: () => _showFilterSheet(context),
+                  ),
+                ],
               ],
             );
           },

@@ -44,7 +44,10 @@ class _State extends State<ProwlarrSubcategoriesPage>
       actions: [
         ZagIconButton(
           icon: Icons.search_rounded,
-          onPressed: () => _navigateToSearch(categoryId: widget.parentCategory.id),
+          onPressed: () => _navigateToSearch(
+            categoryId: widget.parentCategory.id,
+            showSearchBar: true,
+          ),
         ),
       ],
     );
@@ -85,7 +88,7 @@ class _State extends State<ProwlarrSubcategoriesPage>
     );
   }
 
-  void _navigateToSearch({int? categoryId}) {
+  void _navigateToSearch({int? categoryId, bool showSearchBar = false}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ProwlarrSearchPage(
@@ -98,6 +101,7 @@ class _State extends State<ProwlarrSubcategoriesPage>
                   ?.firstWhere((c) => c.id == categoryId,
                       orElse: () => ProwlarrCategory())
                   .name,
+          showSearchBar: showSearchBar,
         ),
       ),
     );
