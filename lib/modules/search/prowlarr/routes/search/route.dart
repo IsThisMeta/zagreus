@@ -504,8 +504,8 @@ class _ProwlarrFilterSheetContentState
       context: context,
       title: 'search.SearchResults'.tr(),
       buttons: [
-        ZagDialog.button(
-          text: 'zagreus.Ok'.tr(),
+        ZagDialog.ok(
+          context,
           onPressed: submit,
         ),
       ],
@@ -557,8 +557,9 @@ class _ProwlarrFilterSheetContentState
   Widget build(BuildContext context) {
     final availableIndexers = widget.state.availableIndexers.toList()..sort();
     final accentColor = ZagColours.accentColor(context);
-    final filteredCount = widget.state.searchResults.length -
-        widget.state.filteredAndSortedResults.length;
+    final visibleCount = widget.state.filteredAndSortedResults.length;
+    final totalCount = widget.state.searchResults.length;
+    final hasActiveFilter = visibleCount != totalCount;
 
     return SafeArea(
       child: Column(
@@ -568,9 +569,9 @@ class _ProwlarrFilterSheetContentState
             child: Row(
               children: [
                 Text(
-                  'search.ItemsFiltered'.tr(
-                    args: [filteredCount.toString()],
-                  ),
+                  hasActiveFilter
+                      ? 'search.ItemsCount'.tr(args: [visibleCount.toString()])
+                      : 'search.NoFilterApplied'.tr(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

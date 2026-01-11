@@ -39,6 +39,8 @@
   "search.IndexerNotFound": "Indexer Not Found",
   "search.Info": "Info",
   "search.ItemsFiltered": "{} items filtered",
+  "search.ItemsCount": "{} items",
+  "search.NoFilterApplied": "No filter applied",
   "search.LastModified": "Last Modified",
   "search.Leechers": "Leechers",
   "search.LessThanHour": "<1h",

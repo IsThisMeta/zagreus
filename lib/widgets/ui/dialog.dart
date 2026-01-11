@@ -95,6 +95,26 @@ abstract class ZagDialog {
         },
       );
 
+  static Widget ok(
+    BuildContext context, {
+    Color? textColor,
+    String? text,
+    required void Function() onPressed,
+  }) =>
+      TextButton(
+        child: Text(
+          text ?? 'zagreus.Ok'.tr(),
+          style: TextStyle(
+            color: textColor ?? ZagColours.accentColor(context),
+            fontSize: ZagDialog.BUTTON_SIZE,
+          ),
+        ),
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
+      );
+
   static Widget content({
     required List<Widget> children,
   }) =>
