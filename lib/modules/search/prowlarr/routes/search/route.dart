@@ -427,31 +427,29 @@ class _ProwlarrFilterSheetContentState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Text(
-                          'search.Indexer'.tr(),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            setSheetState(() {
-                              _selectedIndexers.clear();
-                            });
-                            setState(() {});
-                            _updateFilters();
-                          },
-                          child: Text(
-                            'search.All'.tr(),
-                            style: TextStyle(color: accentColor),
+                  ListTile(
+                    title: Text(
+                      'search.Indexer'.tr(),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
+                    ),
+                    trailing: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: GestureDetector(
+                        onTap: () {
+                          setSheetState(() {
+                            _selectedIndexers.clear();
+                            _selectedIndexers.addAll(availableIndexers);
+                          });
+                          setState(() {});
+                          _updateFilters();
+                        },
+                        child: Text(
+                          'search.All'.tr(),
+                          style: TextStyle(color: accentColor),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                   const Divider(height: 1),
