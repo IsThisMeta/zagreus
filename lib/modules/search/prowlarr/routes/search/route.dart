@@ -745,8 +745,8 @@ class _ProwlarrFilterSheetContentState
               child: OutlinedButton(
                 onPressed: _clearAll,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: ZagColours.textColor(context),
-                  side: BorderSide(color: Colors.grey[600]!),
+                  foregroundColor: ZagColours.red,
+                  side: BorderSide(color: ZagColours.red),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
