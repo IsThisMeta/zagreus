@@ -782,7 +782,7 @@ class _ProwlarrFilterSheetContentState
                         children: [
                           Expanded(
                             child: Text(
-                              _selectedIndexers.isEmpty
+                              _selectedIndexers.isEmpty || _selectedIndexers.length == availableIndexers.length
                                   ? 'search.All'.tr()
                                   : 'search.SelectedCount'.tr(
                                       args: [_selectedIndexers.length.toString()],
