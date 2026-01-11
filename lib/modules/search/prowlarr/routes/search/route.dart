@@ -268,8 +268,8 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
               return DraggableScrollableSheet(
                 expand: false,
                 maxChildSize: 0.85,
-                initialChildSize: 0.6,
-                minChildSize: 0.4,
+                initialChildSize: 0.85,
+                minChildSize: 0.5,
                 builder: (context, scrollController) {
                   return ProwlarrFilterSheetContent(
                     scrollController: scrollController,
