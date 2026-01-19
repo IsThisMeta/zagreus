@@ -113,6 +113,7 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
       actions: [
         Consumer<ProwlarrState>(
           builder: (context, state, _) {
+            final hasResults = state.searchResults.isNotEmpty;
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -124,16 +125,14 @@ class _State extends State<ProwlarrSearchPage> with ZagScrollControllerMixin {
                     });
                   },
                 ),
-                if (state.searchResults.isNotEmpty) ...[
-                  ZagIconButton(
-                    icon: Icons.sort_rounded,
-                    onPressed: () => _showSortSheet(context),
-                  ),
-                  ZagIconButton(
-                    icon: Icons.filter_list_rounded,
-                    onPressed: () => _showFilterSheet(context),
-                  ),
-                ],
+                ZagIconButton(
+                  icon: Icons.sort_rounded,
+                  onPressed: hasResults ? () => _showSortSheet(context) : null,
+                ),
+                ZagIconButton(
+                  icon: Icons.filter_list_rounded,
+                  onPressed: hasResults ? () => _showFilterSheet(context) : null,
+                ),
               ],
             );
           },

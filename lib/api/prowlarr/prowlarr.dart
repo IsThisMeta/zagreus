@@ -60,17 +60,41 @@ class ProwlarrAPI {
         connectTimeout: Duration(seconds: useSlowMode ? 300 : 60),
         receiveTimeout: Duration(seconds: useSlowMode ? 300 : 60),
         sendTimeout: Duration(seconds: useSlowMode ? 300 : 60),
+        // Accept redirect status codes to allow interceptor to handle them
+        validateStatus: (status) =>
+            (status != null && status >= 200 && status < 400),
       ),
     );
 
-    // Add verbose logging interceptor
+    // Add verbose logging interceptor with redirect handling for non-GET requests
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
           _logRequest(options);
           handler.next(options);
         },
-        onResponse: (response, handler) {
+        onResponse: (response, handler) async {
+          // Handle redirects for non-GET requests (307/308)
+          final statusCode = response.statusCode;
+          if ((statusCode == 307 || statusCode == 308) && followRedirects) {
+            final location = response.headers.value('location');
+            if (location != null) {
+              final requestOptions = response.requestOptions;
+              // Resolve relative URLs against the original request URL
+              final redirectUri =
+                  requestOptions.uri.resolve(location).toString();
+              final redirectResponse = await dio.request(
+                redirectUri,
+                data: requestOptions.data,
+                options: Options(
+                  method: requestOptions.method,
+                  headers: requestOptions.headers,
+                  contentType: requestOptions.contentType,
+                ),
+              );
+              return handler.resolve(redirectResponse);
+            }
+          }
           _logResponse(response);
           handler.next(response);
         },

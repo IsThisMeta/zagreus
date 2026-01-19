@@ -128,6 +128,7 @@ enum ZagModule {
       if (m == ZagModule.DASHBOARD) return false;
       if (m == ZagModule.SETTINGS) return false;
       if (m == ZagModule.BAZARR) return false; // Bazarr is integrated into Radarr/Sonarr
+      if (m == ZagModule.SSH) return false; // SSH module hidden from modules list
       return m.featureFlag;
     }).toList();
   }
@@ -402,7 +403,7 @@ extension ZagModuleMetadataExtension on ZagModule {
       case ZagModule.SABNZBD:
         return 'Manage Usenet Downloads';
       case ZagModule.SEARCH:
-        return 'Search Newznab Indexers';
+        return 'Search Indexers';
       case ZagModule.SETTINGS:
         return 'Configure Zagreus';
       case ZagModule.SONARR:

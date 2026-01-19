@@ -52,8 +52,41 @@ class SonarrAPI {
         connectTimeout: Duration(seconds: useSlowMode ? 300 : 20),
         receiveTimeout: Duration(seconds: useSlowMode ? 300 : 30),
         sendTimeout: Duration(seconds: useSlowMode ? 300 : 20),
+        // Accept redirect status codes to allow interceptor to handle them
+        validateStatus: (status) =>
+            (status != null && status >= 200 && status < 400),
       ),
     );
+
+    // Add interceptor to handle redirects for non-GET requests (307/308)
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onResponse: (response, handler) async {
+          final statusCode = response.statusCode;
+          if ((statusCode == 307 || statusCode == 308) && followRedirects) {
+            final location = response.headers.value('location');
+            if (location != null) {
+              final requestOptions = response.requestOptions;
+              // Resolve relative URLs against the original request URL
+              final redirectUri =
+                  requestOptions.uri.resolve(location).toString();
+              final redirectResponse = await _dio.request(
+                redirectUri,
+                data: requestOptions.data,
+                options: Options(
+                  method: requestOptions.method,
+                  headers: requestOptions.headers,
+                  contentType: requestOptions.contentType,
+                ),
+              );
+              return handler.resolve(redirectResponse);
+            }
+          }
+          return handler.next(response);
+        },
+      ),
+    );
+
     return SonarrAPI._internal(
       httpClient: _dio,
       calendar: SonarrControllerCalendar(_dio),
