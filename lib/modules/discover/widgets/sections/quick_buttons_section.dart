@@ -55,7 +55,9 @@ class _QuickButtonsSectionState extends State<QuickButtonsSection> {
 
     setState(() {
       final item = _services.removeAt(oldIndex);
-      _services.insert(newIndex, item);
+      // When moving forward, adjust for the index shift caused by removal
+      final adjustedIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
+      _services.insert(adjustedIndex, item);
     });
 
     // Save the new order to database
