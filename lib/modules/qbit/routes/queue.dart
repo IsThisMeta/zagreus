@@ -10,6 +10,18 @@ import 'package:zagreus/modules/qbit/widgets/queue_fab.dart';
 import 'package:zagreus/modules/qbit/widgets/queue_tile.dart';
 import 'package:zagreus/router/routes/qbit.dart';
 
+enum _TorrentFilter {
+  all('All'),
+  downloading('Downloading'),
+  seeding('Seeding'),
+  paused('Paused'),
+  done('Done'),
+  errored('Errored');
+
+  final String label;
+  const _TorrentFilter(this.label);
+}
+
 class QBitQueue extends StatefulWidget {
   final GlobalKey<RefreshIndicatorState>? refreshIndicatorKey;
   final QBitAPI api;
@@ -26,6 +38,7 @@ class QBitQueue extends StatefulWidget {
 
 class _State extends State<QBitQueue> with AutomaticKeepAliveClientMixin {
   List<QBitTorrentData> _torrents = [];
+  _TorrentFilter _filter = _TorrentFilter.all;
   bool _loading = true;
   bool _error = false;
 
@@ -114,24 +127,84 @@ class _State extends State<QBitQueue> with AutomaticKeepAliveClientMixin {
     }
     if (_torrents.isEmpty) {
       return ZagMessage.inList(
-        text: 'No torrents in queue',
+        text: 'No torrents found',
       );
     }
 
-    return ZagListViewBuilder(
-      controller: QBitNavigationBar
-          .scrollControllers[QBitDatabase.NAVIGATION_INDEX.read()],
-      itemCount: _torrents.length,
-      itemBuilder: (context, index) {
-        final torrent = _torrents[index];
-        return QBitQueueTile(
-          torrent: torrent,
-          onTap: () => QBitRoutes.TORRENT_DETAILS.go(
-            params: {'hash': torrent.hash},
-          ),
-          onLongPress: () => _showTorrentOptions(torrent),
-        );
-      },
+    final controller = QBitNavigationBar
+        .scrollControllers[QBitDatabase.NAVIGATION_INDEX.read()];
+    final torrents = _filteredTorrents;
+
+    return Scrollbar(
+      controller: controller,
+      interactive: true,
+      child: ListView.builder(
+        controller: controller,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: MediaQuery.of(context).padding.add(ZagUI.MARGIN_HALF_VERTICAL)
+            as EdgeInsets,
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: torrents.isEmpty ? 2 : torrents.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) return _filterBar();
+          if (torrents.isEmpty) {
+            return ZagMessage.inList(
+                text: 'No ${_filter.label.toLowerCase()} torrents');
+          }
+
+          final torrent = torrents[index - 1];
+          return QBitQueueTile(
+            torrent: torrent,
+            onTap: () => QBitRoutes.TORRENT_DETAILS.go(
+              params: {'hash': torrent.hash},
+            ),
+            onLongPress: () => _showTorrentOptions(torrent),
+          );
+        },
+      ),
+    );
+  }
+
+  List<QBitTorrentData> get _filteredTorrents {
+    switch (_filter) {
+      case _TorrentFilter.all:
+        return _torrents;
+      case _TorrentFilter.downloading:
+        return _torrents.where((torrent) => torrent.isDownloading).toList();
+      case _TorrentFilter.seeding:
+        return _torrents.where((torrent) => torrent.isSeeding).toList();
+      case _TorrentFilter.paused:
+        return _torrents.where((torrent) => torrent.isPaused).toList();
+      case _TorrentFilter.done:
+        return _torrents
+            .where((torrent) => torrent.isCompleted && !torrent.isSeeding)
+            .toList();
+      case _TorrentFilter.errored:
+        return _torrents.where((torrent) => torrent.isError).toList();
+    }
+  }
+
+  Widget _filterBar() {
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding:
+            const EdgeInsets.symmetric(horizontal: ZagUI.DEFAULT_MARGIN_SIZE),
+        itemCount: _TorrentFilter.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final filter = _TorrentFilter.values[index];
+          final selected = filter == _filter;
+          return ChoiceChip(
+            label: Text(filter.label),
+            selected: selected,
+            showCheckmark: false,
+            selectedColor: ZagColours.currentAccent.withValues(alpha: 0.25),
+            onSelected: (_) => setState(() => _filter = filter),
+          );
+        },
+      ),
     );
   }
 

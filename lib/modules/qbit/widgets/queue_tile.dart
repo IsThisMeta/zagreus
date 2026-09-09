@@ -20,50 +20,39 @@ class QBitQueueTile extends StatelessWidget {
       title: torrent.name,
       body: [
         TextSpan(
-          text: '${torrent.statusText} - ${torrent.formattedProgress}',
-          style: TextStyle(
-            color: _statusColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        if (torrent.isDownloading && torrent.dlSpeed > 0) ...[
-          const TextSpan(text: '\n'),
-          TextSpan(
-            text: '${_formatSpeed(torrent.dlSpeed)} - ETA: ${torrent.formattedEta}',
-          ),
-        ],
-        const TextSpan(text: '\n'),
-        TextSpan(
-          text: '${_formatBytes(torrent.downloaded)} / ${_formatBytes(torrent.size)}',
-        ),
-        if (torrent.category.isNotEmpty) ...[
-          const TextSpan(text: ' - '),
-          TextSpan(
-            text: torrent.category,
-            style: TextStyle(
-              color: ZagColours.currentAccent,
-            ),
-          ),
-        ],
-      ],
-      trailing: SizedBox(
-        width: 50,
-        height: 50,
-        child: Stack(
-          alignment: Alignment.center,
           children: [
-            CircularProgressIndicator(
-              value: torrent.progress,
-              strokeWidth: 3,
-              backgroundColor: Colors.grey.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(_progressColor),
+            TextSpan(
+              text: torrent.statusText,
+              style: TextStyle(
+                color: _statusColor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            Text(
-              '${(torrent.progress * 100).toInt()}%',
-              style: const TextStyle(fontSize: 10),
-            ),
+            if (torrent.isDownloading && torrent.dlSpeed > 0)
+              TextSpan(
+                text:
+                    ' - ${_formatSpeed(torrent.dlSpeed)} - ETA: ${torrent.formattedEta}',
+              ),
           ],
         ),
+        TextSpan(
+          children: [
+            TextSpan(text: _formatBytes(torrent.downloaded)),
+            if (torrent.category.isNotEmpty) ...[
+              const TextSpan(text: ' - '),
+              TextSpan(
+                text: torrent.category,
+                style: TextStyle(color: ZagColours.currentAccent),
+              ),
+            ],
+          ],
+        ),
+      ],
+      bottomHeight: ZagLinearPercentIndicator.compactHeight,
+      bottom: ZagLinearPercentIndicator(
+        percent: max(0.0, min(1.0, torrent.progress)),
+        progressColor: _progressColor,
+        compact: true,
       ),
       onTap: onTap,
       onLongPress: onLongPress,

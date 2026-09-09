@@ -5,7 +5,8 @@ class QBitAPI {
   final Dio _dio;
   final String _username;
   final String _password;
-  String? _sessionCookie;
+  final Map<String, String> _cookies = {};
+  bool _basicAuthAccepted = false;
   Future<bool>? _loginFuture;
 
   QBitAPI._internal(
@@ -47,6 +48,15 @@ class QBitAPI {
     return authorization?.toLowerCase().startsWith('bearer ') ?? false;
   }
 
+  bool get _hasBasicAuthCredentials =>
+      !_usesApiKey && _username.isNotEmpty && _password.isNotEmpty;
+
+  bool get _hasQbitSessionCookie => _cookies.keys.any(_isQbitSessionCookieName);
+
+  String? get _cookieHeader => _cookies.isEmpty
+      ? null
+      : _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+
   void logError(String text, Object error, StackTrace trace) =>
       ZagLogger().error('qBit: $text', error, trace);
 
@@ -60,34 +70,62 @@ class QBitAPI {
 
   Future<bool> _performLogin() async {
     try {
-      final response = await _dio.post(
+      var response = await _send(
+        'POST',
         'api/v2/auth/login',
-        data: _formData({
+        data: {
           'username': _username,
           'password': _password,
-        }),
+        },
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
           responseType: ResponseType.plain,
         ),
       );
 
-      _ensureSuccessful(response, 'authenticate');
-      if (response.data.toString().trim() != 'Ok.') return false;
-
-      for (final cookie in response.headers['set-cookie'] ?? const <String>[]) {
-        final pair = cookie.split(';').first.trim();
-        final separator = pair.indexOf('=');
-        if (separator <= 0) continue;
-
-        final name = pair.substring(0, separator).toUpperCase();
-        if (name == 'SID' || name.endsWith('_SID')) {
-          _sessionCookie = pair;
-          break;
+      if (_requiresBasicAuthRetry(response) && _hasBasicAuthCredentials) {
+        response = await _send(
+          'POST',
+          'api/v2/auth/login',
+          data: {
+            'username': _username,
+            'password': _password,
+          },
+          options: Options(
+            contentType: Headers.formUrlEncodedContentType,
+            responseType: ResponseType.plain,
+            headers: {
+              'Authorization': _basicAuthHeader(_username, _password),
+            },
+          ),
+        );
+        if (response.statusCode != null &&
+            response.statusCode! >= 200 &&
+            response.statusCode! < 300) {
+          _basicAuthAccepted = true;
         }
       }
 
-      return _sessionCookie != null;
+      _ensureSuccessful(response, 'authenticate');
+      final responseBody = response.data?.toString().trim() ?? '';
+      if (response.statusCode != 204 && responseBody != 'Ok.') {
+        throw QBitApiException(
+          operation: 'authenticate',
+          statusCode: response.statusCode ?? 0,
+          response: responseBody,
+        );
+      }
+
+      if (!_hasQbitSessionCookie) {
+        throw QBitApiException(
+          operation: 'authenticate',
+          statusCode: response.statusCode ?? 0,
+          response:
+              'Login succeeded but no qBittorrent session cookie was received',
+        );
+      }
+
+      return true;
     } catch (error, stack) {
       logError('Failed to login', error, stack);
       rethrow;
@@ -96,7 +134,7 @@ class QBitAPI {
 
   /// Ensure we have a valid session
   Future<void> _ensureSession() async {
-    if (!_usesApiKey && _sessionCookie == null) {
+    if (!_usesApiKey && !_hasQbitSessionCookie) {
       final success = await login();
       if (!success) {
         throw Exception('Failed to authenticate with qBittorrent');
@@ -108,9 +146,17 @@ class QBitAPI {
     final opts = options ?? Options();
     opts.headers = {
       ...opts.headers ?? {},
-      if (_sessionCookie != null) 'Cookie': _sessionCookie,
+      if (_cookieHeader != null) 'Cookie': _cookieHeader,
+      if (_basicAuthAccepted && _hasBasicAuthCredentials)
+        'Authorization': _basicAuthHeader(_username, _password),
     };
     return opts;
+  }
+
+  /// Build an RFC 7617-compliant Basic Auth header value.
+  static String _basicAuthHeader(String user, String pass) {
+    final encoded = base64Encode(utf8.encode('$user:$pass'));
+    return 'Basic $encoded';
   }
 
   String _formData(Map<String, Object?> values) => Uri(
@@ -149,23 +195,125 @@ class QBitAPI {
   }) async {
     await _ensureSession();
 
-    Future<Response<dynamic>> send() => _dio.request<dynamic>(
+    Future<Response<dynamic>> send() => _send(
+          method,
           path,
           data: data,
           queryParameters: queryParameters,
-          options: _authOptions(options).copyWith(method: method),
+          options: _authOptions(options),
         );
 
     var response = await send();
     if (!_usesApiKey &&
         (response.statusCode == 401 || response.statusCode == 403)) {
-      _sessionCookie = null;
+      _clearQbitSessionCookies();
       await _ensureSession();
       response = await send();
     }
 
     _ensureSuccessful(response, '$method $path');
     return response;
+  }
+
+  Future<Response<dynamic>> _send(
+    String method,
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    var target = path;
+    var includeQueryParameters = true;
+    final maxRedirects = _dio.options.maxRedirects;
+
+    for (var redirectCount = 0;; redirectCount++) {
+      final response = await _dio.request<dynamic>(
+        target,
+        data: data,
+        queryParameters: includeQueryParameters ? queryParameters : null,
+        options: (options ?? Options()).copyWith(
+          method: method,
+          followRedirects: false,
+        ),
+      );
+
+      _captureCookies(response);
+
+      if (!_isRedirect(response.statusCode)) return response;
+
+      final location = response.headers.value('location');
+      if (location == null || location.isEmpty) return response;
+      if (redirectCount >= maxRedirects) {
+        throw QBitApiException(
+          operation: '$method $path',
+          statusCode: response.statusCode ?? 0,
+          response: 'Too many redirects',
+        );
+      }
+
+      final source = response.requestOptions.uri;
+      final destination = source.resolve(location);
+      if (!_isSafeRedirect(source, destination)) {
+        throw QBitApiException(
+          operation: '$method $path',
+          statusCode: response.statusCode ?? 0,
+          response: 'Refused to forward credentials to $destination',
+        );
+      }
+
+      target = destination.toString();
+      includeQueryParameters = false;
+    }
+  }
+
+  bool _isRedirect(int? statusCode) =>
+      statusCode == 301 ||
+      statusCode == 302 ||
+      statusCode == 307 ||
+      statusCode == 308;
+
+  bool _requiresBasicAuthRetry(Response<dynamic> response) =>
+      response.statusCode == 401;
+
+  void _captureCookies(Response<dynamic> response) {
+    for (final cookie in response.headers['set-cookie'] ?? const <String>[]) {
+      final pair = cookie.split(';').first.trim();
+      final separator = pair.indexOf('=');
+      if (separator <= 0) continue;
+
+      final name = pair.substring(0, separator);
+      final value = pair.substring(separator + 1);
+      if (value.isEmpty) {
+        _cookies.remove(name);
+      } else {
+        _cookies[name] = value;
+      }
+    }
+  }
+
+  void _clearQbitSessionCookies() {
+    _cookies.removeWhere((name, _) => _isQbitSessionCookieName(name));
+  }
+
+  bool _isQbitSessionCookieName(String name) {
+    final normalized = name.toUpperCase();
+    return normalized == 'SID' ||
+        normalized == 'QBT_SID' ||
+        normalized == 'QBIT_SID' ||
+        normalized.startsWith('QBT_SID_') ||
+        normalized.startsWith('QBIT_SID_');
+  }
+
+  bool _isSafeRedirect(Uri source, Uri destination) {
+    if (source.host.toLowerCase() != destination.host.toLowerCase()) {
+      return false;
+    }
+
+    if (source.scheme == destination.scheme) {
+      return source.port == destination.port;
+    }
+
+    return source.scheme == 'http' && destination.scheme == 'https';
   }
 
   void _ensureSuccessful(Response<dynamic> response, String operation) {
@@ -249,12 +397,9 @@ class QBitAPI {
     }
   }
 
-  /// Get downloading torrents (queue)
+  /// Get every torrent for the combined queue view.
   Future<List<QBitTorrentData>> getQueue() async {
-    final torrents = await getTorrents();
-    return torrents
-        .where((t) => t.isDownloading || t.isPaused && !t.isCompleted)
-        .toList();
+    return getTorrents();
   }
 
   /// Get completed torrents (history/seeding)
