@@ -58,7 +58,7 @@ enum ZagBox<T> {
   }
 
   Future<void> clear() async {
-    _instance.keys.forEach((k) async => await _instance.delete(k));
+    await _instance.clear();
   }
 
   Future<Box<T>> _open() async {
@@ -102,7 +102,7 @@ extension ZagBoxExtension on ZagBox {
           .toList();
     } catch (error, stack) {
       ZagLogger().error('Failed to export ZagBox', error, stack);
-      return [];
+      rethrow;
     }
   }
 }
