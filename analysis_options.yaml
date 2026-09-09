@@ -4,6 +4,10 @@ analyzer:
     - "test/**"
     - "test.g.dart"
     - "lib/**/*.g.dart"
+    - build/**
+    - ios/**
+    - windows/**
+    - macos/**
 
 linter:
   rules:

@@ -44,7 +44,7 @@ dependencies:
   retrofit: ^4.0.1
   share_plus: ^10.1.4
   shimmer: ^3.0.0
-  simple_icons: ^14.6.1
+  simple_icons: ^16.23.0
   stack_trace: ^1.11.0
   stash_memory: ^5.2.0
   supercharged: ^2.1.1
