@@ -970,7 +970,7 @@ class ZagProfile extends HiveObject {
         : profiles.first;
 
     // Module keys we support for multi-instance
-    final supportedModules = ['radarr', 'sonarr', 'lidarr', 'readarr', 'sabnzbd', 'nzbget', 'tautulli', 'seerr'];
+    final supportedModules = ['radarr', 'sonarr', 'lidarr', 'readarr', 'sabnzbd', 'nzbget', 'tautulli', 'seerr', 'qbit'];
     
     // Track created instances for the target profile
     final List<String> newInstances = [];

@@ -22,7 +22,6 @@ class _State extends State<QBitTorrentDetailsRoute>
   late QBitAPI _api;
   late TabController _tabController;
 
-  List<QBitTorrentData>? _torrentList;
   QBitTorrentData? _torrent;
   List<QBitFileData> _files = [];
   List<QBitTrackerData> _trackers = [];
@@ -32,7 +31,7 @@ class _State extends State<QBitTorrentDetailsRoute>
   @override
   void initState() {
     super.initState();
-    _api = QBitAPI.from(ZagProfile.current);
+    _api = QBitAPI.from(ZagProfile.forModule('qbit'));
     _tabController = TabController(length: 3, vsync: this);
     _fetchData();
   }
@@ -51,7 +50,6 @@ class _State extends State<QBitTorrentDetailsRoute>
 
     try {
       final torrents = await _api.getTorrents();
-      _torrentList = torrents;
       _torrent = torrents.firstWhere(
         (t) => t.hash == widget.hash,
         orElse: () => throw Exception('Torrent not found'),
@@ -174,7 +172,9 @@ class _State extends State<QBitTorrentDetailsRoute>
         ),
         ZagBlock(
           title: 'Category',
-          body: [TextSpan(text: torrent.category.isEmpty ? 'None' : torrent.category)],
+          body: [
+            TextSpan(text: torrent.category.isEmpty ? 'None' : torrent.category)
+          ],
         ),
         ZagBlock(
           title: 'Save Path',
@@ -188,11 +188,19 @@ class _State extends State<QBitTorrentDetailsRoute>
         ZagHeader(text: 'Peers'),
         ZagBlock(
           title: 'Seeds',
-          body: [TextSpan(text: '${torrent.seedersCurrent} (${torrent.seedersTotal} total)')],
+          body: [
+            TextSpan(
+                text:
+                    '${torrent.seedersCurrent} (${torrent.seedersTotal} total)')
+          ],
         ),
         ZagBlock(
           title: 'Leechers',
-          body: [TextSpan(text: '${torrent.leechersCurrent} (${torrent.leechersTotal} total)')],
+          body: [
+            TextSpan(
+                text:
+                    '${torrent.leechersCurrent} (${torrent.leechersTotal} total)')
+          ],
         ),
       ],
     );
@@ -211,12 +219,14 @@ class _State extends State<QBitTorrentDetailsRoute>
         return ZagBlock(
           title: file.fileName,
           body: [
-            TextSpan(text: '${_formatBytes(file.size)} - ${file.formattedProgress}'),
+            TextSpan(
+                text: '${_formatBytes(file.size)} - ${file.formattedProgress}'),
             const TextSpan(text: '\n'),
             TextSpan(
               text: file.priorityEnum.name,
               style: TextStyle(
-                color: file.isSkipped ? ZagColours.red : ZagColours.currentAccent,
+                color:
+                    file.isSkipped ? ZagColours.red : ZagColours.currentAccent,
               ),
             ),
           ],
@@ -231,8 +241,9 @@ class _State extends State<QBitTorrentDetailsRoute>
 
   Widget _buildTrackersTab() {
     // Filter out DHT, PeX, and LSD entries for cleaner view
-    final filteredTrackers = _trackers.where((t) =>
-        !t.url.startsWith('** [') && t.url.isNotEmpty).toList();
+    final filteredTrackers = _trackers
+        .where((t) => !t.url.startsWith('** [') && t.url.isNotEmpty)
+        .toList();
 
     if (filteredTrackers.isEmpty) {
       return ZagMessage.inList(text: 'No trackers');
@@ -262,7 +273,8 @@ class _State extends State<QBitTorrentDetailsRoute>
             ],
             const TextSpan(text: '\n'),
             TextSpan(
-              text: 'Seeds: ${tracker.numSeeds} | Leeches: ${tracker.numLeeches}',
+              text:
+                  'Seeds: ${tracker.numSeeds} | Leeches: ${tracker.numLeeches}',
             ),
           ],
         );

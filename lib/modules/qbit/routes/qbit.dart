@@ -25,15 +25,23 @@ class QBitRoute extends StatefulWidget {
 }
 
 class _State extends State<QBitRoute> {
+  static const _moduleKey = 'qbit';
+
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   ZagPageController? _pageController;
-  String _profileState = ZagProfile.current.toString();
-  QBitAPI _api = QBitAPI.from(ZagProfile.current);
+  String _profileKey = _effectiveProfileKey();
+  QBitAPI _api = QBitAPI.from(ZagProfile.forModule(_moduleKey));
 
-  final List _refreshKeys = [
-    GlobalKey<RefreshIndicatorState>(),
-    GlobalKey<RefreshIndicatorState>(),
-  ];
+  List<GlobalKey<RefreshIndicatorState>> _refreshKeys = _newRefreshKeys();
+
+  static List<GlobalKey<RefreshIndicatorState>> _newRefreshKeys() => [
+        GlobalKey<RefreshIndicatorState>(),
+        GlobalKey<RefreshIndicatorState>(),
+      ];
+
+  static String _effectiveProfileKey() =>
+      ZagInstanceContext().getActiveInstance(_moduleKey) ??
+      ZagreusDatabase.ENABLED_PROFILE.read();
 
   @override
   void initState() {
@@ -64,7 +72,7 @@ class _State extends State<QBitRoute> {
       extendBodyBehindAppBar: false,
       extendBody: false,
       onProfileChange: (_) {
-        if (_profileState != ZagProfile.current.toString()) _refreshProfile();
+        _handleMainProfileChange();
       },
     );
   }
@@ -72,20 +80,24 @@ class _State extends State<QBitRoute> {
   Widget _drawer() => ZagDrawer(page: ZagModule.QBIT.key);
 
   Widget? _bottomNavigationBar() {
-    if (ZagProfile.current.qbitEnabled) {
+    if (ZagProfile.forModule(_moduleKey).qbitEnabled) {
       return QBitNavigationBar(pageController: _pageController);
     }
     return null;
   }
 
   Widget _appBar() {
-    List<String> profiles = ZagBox.profiles.keys.fold([], (value, element) {
-      if (ZagBox.profiles.read(element)?.qbitEnabled ?? false)
-        value.add(element);
-      return value;
-    });
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final profiles = <String>[];
+    if (ZagBox.profiles.read(currentProfile)?.qbitEnabled ?? false) {
+      profiles.add(currentProfile);
+    }
+    profiles.addAll(
+      ZagProfile.getInstancesForModule(currentProfile, _moduleKey),
+    );
+
     List<Widget>? actions;
-    if (ZagProfile.current.qbitEnabled)
+    if (ZagProfile.forModule(_moduleKey).qbitEnabled) {
       actions = [
         Selector<QBitState, bool>(
           selector: (_, model) => model.error,
@@ -97,30 +109,43 @@ class _State extends State<QBitRoute> {
           onPressed: () async => _handlePopup(),
         ),
       ];
+    }
+
+    final instanceName = ZagProfile.getActiveInstanceName(_moduleKey);
+    final title = instanceName == null
+        ? ZagModule.QBIT.title
+        : '${ZagModule.QBIT.title} $instanceName';
+
     return ZagAppBar.dropdown(
-      title: ZagModule.QBIT.title,
+      title: title,
       useDrawer: widget.showDrawer,
       hideLeading: !widget.showDrawer,
       profiles: profiles,
       actions: actions,
       pageController: _pageController,
       scrollControllers: QBitNavigationBar.scrollControllers,
+      onProfileSelected: _selectProfile,
     );
   }
 
   Widget _body() {
-    if (!ZagProfile.current.qbitEnabled)
+    if (!ZagProfile.forModule(_moduleKey).qbitEnabled) {
       return ZagMessage.moduleNotEnabled(
         context: context,
         module: ZagModule.QBIT.title,
       );
+    }
     return ZagPageView(
       controller: _pageController,
       children: [
         QBitQueue(
+          key: ValueKey('qbit-queue-$_profileKey'),
+          api: _api,
           refreshIndicatorKey: _refreshKeys[0],
         ),
         QBitHistory(
+          key: ValueKey('qbit-history-$_profileKey'),
+          api: _api,
           refreshIndicatorKey: _refreshKeys[1],
         ),
       ],
@@ -132,7 +157,7 @@ class _State extends State<QBitRoute> {
     if (values[0])
       switch (values[1]) {
         case 'web_gui':
-          ZagProfile profile = ZagProfile.current;
+          ZagProfile profile = ZagProfile.forModule(_moduleKey);
           await profile.effectiveQbitHost().openLink();
           break;
         case 'add_torrent':
@@ -183,7 +208,7 @@ class _State extends State<QBitRoute> {
       if (_file != null) {
         if (_file.data.isNotEmpty) {
           await _api.addTorrentFile(_file.data, _file.name).then((value) {
-            _refreshKeys[0]?.currentState?.show();
+            _refreshKeys[0].currentState?.show();
             showZagSuccessSnackBar(
               title: 'Added Torrent (File)',
               message: _file.name,
@@ -225,13 +250,46 @@ class _State extends State<QBitRoute> {
     }
   }
 
+  void _selectProfile(String selected) {
+    if (ZagProfile.isShadowProfile(selected)) {
+      ZagInstanceContext().setActiveInstance(_moduleKey, selected);
+    } else {
+      ZagInstanceContext().clearActiveInstance(_moduleKey);
+    }
+    _refreshProfile();
+  }
+
+  void _handleMainProfileChange() {
+    final currentProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    final activeInstance = ZagInstanceContext().getActiveInstance(_moduleKey);
+    final parsed = activeInstance == null
+        ? null
+        : ZagProfile.parseShadowKey(activeInstance);
+    if (parsed != null && parsed.parent != currentProfile) {
+      ZagInstanceContext().clearActiveInstance(_moduleKey);
+    }
+
+    final nextProfileKey = _effectiveProfileKey();
+    if (nextProfileKey == _profileKey) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _effectiveProfileKey() != _profileKey) {
+        _refreshProfile();
+      }
+    });
+  }
+
   void _refreshProfile() {
-    _api = QBitAPI.from(ZagProfile.current);
-    _profileState = ZagProfile.current.toString();
-    _refreshAllPages();
+    if (!mounted) return;
+    setState(() {
+      _profileKey = _effectiveProfileKey();
+      _api = QBitAPI.from(ZagProfile.forModule(_moduleKey));
+      _refreshKeys = _newRefreshKeys();
+    });
+    context.read<QBitState>().reset();
   }
 
   void _refreshAllPages() {
-    for (var key in _refreshKeys) key?.currentState?.show();
+    for (var key in _refreshKeys) key.currentState?.show();
   }
 }

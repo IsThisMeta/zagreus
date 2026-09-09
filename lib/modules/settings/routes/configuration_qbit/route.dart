@@ -14,7 +14,11 @@ class ConfigurationQBitRoute extends StatefulWidget {
 
 class _State extends State<ConfigurationQBitRoute>
     with ZagScrollControllerMixin {
+  static const _moduleKey = 'qbit';
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  ZagProfile get _profile => ZagProfile.forModule(_moduleKey);
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +54,10 @@ class _State extends State<ConfigurationQBitRoute>
       builder: (context, _) => ZagBlock(
         title: 'settings.EnableModule'.tr(args: [ZagModule.QBIT.title]),
         trailing: ZagSwitch(
-          value: ZagProfile.current.qbitEnabled,
+          value: _profile.qbitEnabled,
           onChanged: (value) {
-            ZagProfile.current.qbitEnabled = value;
-            ZagProfile.current.save();
+            _profile.qbitEnabled = value;
+            _profile.save();
             context.read<QBitState>().reset();
           },
         ),

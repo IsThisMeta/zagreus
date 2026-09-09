@@ -11,10 +11,12 @@ import 'package:zagreus/router/routes/qbit.dart';
 
 class QBitHistory extends StatefulWidget {
   final GlobalKey<RefreshIndicatorState>? refreshIndicatorKey;
+  final QBitAPI api;
 
   const QBitHistory({
     Key? key,
     this.refreshIndicatorKey,
+    required this.api,
   }) : super(key: key);
 
   @override
@@ -22,7 +24,6 @@ class QBitHistory extends StatefulWidget {
 }
 
 class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
-  late QBitAPI _api;
   List<QBitTorrentData> _torrents = [];
   bool _loading = true;
   bool _error = false;
@@ -33,7 +34,6 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
-    _api = QBitAPI.from(ZagProfile.current);
     _fetchData();
   }
 
@@ -45,7 +45,7 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
     });
 
     try {
-      final torrents = await _api.getHistory();
+      final torrents = await widget.api.getHistory();
 
       if (!mounted) return;
       context.read<QBitState>().error = false;
@@ -91,9 +91,8 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
     }
 
     return ZagListViewBuilder(
-      controller: QBitNavigationBar.scrollControllers[
-          QBitDatabase.NAVIGATION_INDEX.read()
-      ],
+      controller: QBitNavigationBar
+          .scrollControllers[QBitDatabase.NAVIGATION_INDEX.read()],
       itemCount: _torrents.length,
       itemBuilder: (context, index) {
         final torrent = _torrents[index];
@@ -141,10 +140,10 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
   Future<void> _toggleTorrentStatus(QBitTorrentData torrent) async {
     try {
       if (torrent.isPaused) {
-        await _api.resumeTorrents([torrent.hash]);
+        await widget.api.resumeTorrents([torrent.hash]);
         showZagSuccessSnackBar(title: 'Resumed Torrent', message: null);
       } else {
-        await _api.pauseTorrents([torrent.hash]);
+        await widget.api.pauseTorrents([torrent.hash]);
         showZagSuccessSnackBar(title: 'Paused Torrent', message: null);
       }
       widget.refreshIndicatorKey?.currentState?.show();
@@ -155,14 +154,14 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
 
   Future<void> _changeCategory(QBitTorrentData torrent) async {
     try {
-      final categories = await _api.getCategories();
+      final categories = await widget.api.getCategories();
       if (!mounted) return;
 
       final values = await QBitDialogs.changeCategory(context, categories);
       if (!values[0]) return;
 
       final category = values[1] as QBitCategoryData;
-      await _api.setCategory([torrent.hash], category.name);
+      await widget.api.setCategory([torrent.hash], category.name);
       showZagSuccessSnackBar(
         title: 'Changed Category',
         message: category.displayName,
@@ -178,7 +177,7 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
     if (!values[0]) return;
 
     try {
-      await _api.renameTorrent(torrent.hash, values[1]);
+      await widget.api.renameTorrent(torrent.hash, values[1]);
       showZagSuccessSnackBar(title: 'Renamed Torrent', message: null);
       widget.refreshIndicatorKey?.currentState?.show();
     } catch (error) {
@@ -188,7 +187,7 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
 
   Future<void> _recheckTorrent(QBitTorrentData torrent) async {
     try {
-      await _api.recheckTorrent(torrent.hash);
+      await widget.api.recheckTorrent(torrent.hash);
       showZagSuccessSnackBar(title: 'Rechecking Torrent', message: null);
       widget.refreshIndicatorKey?.currentState?.show();
     } catch (error) {
@@ -198,7 +197,7 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
 
   Future<void> _reannounceTorrent(QBitTorrentData torrent) async {
     try {
-      await _api.reannounceTorrent(torrent.hash);
+      await widget.api.reannounceTorrent(torrent.hash);
       showZagSuccessSnackBar(title: 'Reannounced Torrent', message: null);
     } catch (error) {
       showZagErrorSnackBar(title: 'Failed to Reannounce Torrent', error: error);
@@ -210,7 +209,10 @@ class _State extends State<QBitHistory> with AutomaticKeepAliveClientMixin {
     if (!values[0]) return;
 
     try {
-      await _api.deleteTorrents([torrent.hash], deleteFiles: values[1]);
+      await widget.api.deleteTorrents(
+        [torrent.hash],
+        deleteFiles: values[1],
+      );
       showZagSuccessSnackBar(title: 'Deleted Torrent', message: null);
       widget.refreshIndicatorKey?.currentState?.show();
     } catch (error) {

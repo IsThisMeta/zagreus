@@ -77,6 +77,7 @@ class QBitTorrentData {
       state == 'downloading' ||
       state == 'stalledDL' ||
       state == 'metaDL' ||
+      state == 'forcedMetaDL' ||
       state == 'forcedDL' ||
       state == 'allocating' ||
       state == 'queuedDL' ||
@@ -88,9 +89,14 @@ class QBitTorrentData {
       state == 'forcedUP' ||
       state == 'queuedUP' ||
       state == 'checkingUP' ||
-      state == 'pausedUP';
+      state == 'pausedUP' ||
+      state == 'stoppedUP';
 
-  bool get isPaused => state == 'pausedDL' || state == 'pausedUP';
+  bool get isPaused =>
+      state == 'pausedDL' ||
+      state == 'pausedUP' ||
+      state == 'stoppedDL' ||
+      state == 'stoppedUP';
 
   bool get isSeeding =>
       state == 'uploading' || state == 'stalledUP' || state == 'forcedUP';
@@ -111,6 +117,7 @@ class QBitTorrentData {
       case 'uploading':
         return 'Seeding';
       case 'pausedUP':
+      case 'stoppedUP':
         return 'Completed';
       case 'queuedUP':
         return 'Queued (Seed)';
@@ -126,7 +133,10 @@ class QBitTorrentData {
         return 'Downloading';
       case 'metaDL':
         return 'Fetching Metadata';
+      case 'forcedMetaDL':
+        return 'Fetching Metadata (Forced)';
       case 'pausedDL':
+      case 'stoppedDL':
         return 'Paused';
       case 'queuedDL':
         return 'Queued';

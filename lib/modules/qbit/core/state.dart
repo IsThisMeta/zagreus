@@ -15,6 +15,7 @@ class QBitState extends ZagModuleState {
     _currentUploadSpeed = '0.0 B/s';
     _queueSearchFilter = '';
     _historySearchFilter = '';
+    notifyListeners();
   }
 
   bool _error = false;

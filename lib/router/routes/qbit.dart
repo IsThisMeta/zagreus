@@ -18,7 +18,7 @@ enum QBitRoutes with ZagRoutesMixin {
   ZagModule get module => ZagModule.QBIT;
 
   @override
-  bool isModuleEnabled(BuildContext context) => true;
+  bool isModuleEnabled(BuildContext context) => ZagModule.QBIT.isEnabled;
 
   @override
   GoRoute get routes {

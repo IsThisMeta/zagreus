@@ -4,7 +4,6 @@ import 'package:zagreus/modules/qbit/core/api/api.dart';
 import 'package:zagreus/modules/qbit/core/state.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/router/routes/settings.dart';
-import 'package:zagreus/database/tables/zagreus.dart';
 import 'package:zagreus/system/network/local_switching_service.dart';
 
 class ConfigurationQBitConnectionDetailsRoute extends StatefulWidget {
@@ -16,7 +15,11 @@ class ConfigurationQBitConnectionDetailsRoute extends StatefulWidget {
 
 class _State extends State<ConfigurationQBitConnectionDetailsRoute>
     with ZagScrollControllerMixin {
+  static const _moduleKey = 'qbit';
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  ZagProfile get _profile => ZagProfile.forModule(_moduleKey);
 
   @override
   void initState() {
@@ -90,7 +93,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
       ];
 
   Widget _remoteHost() {
-    String host = ZagProfile.current.qbitHost;
+    String host = _profile.qbitHost;
     return ZagBlock(
       title: 'settings.Host'.tr(),
       body: [TextSpan(text: host.isEmpty ? 'zagreus.NotSet'.tr() : host)],
@@ -101,8 +104,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           prefill: host,
         );
         if (_values.item1) {
-          ZagProfile.current.qbitHost = _values.item2;
-          ZagProfile.current.save();
+          _profile.qbitHost = _values.item2;
+          _profile.save();
           context.read<QBitState>().reset();
         }
       },
@@ -110,7 +113,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
   }
 
   Widget _username() {
-    String username = ZagProfile.current.qbitUser;
+    String username = _profile.qbitUser;
     return ZagBlock(
       title: 'settings.Username'.tr(),
       body: [
@@ -124,8 +127,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           prefill: username,
         );
         if (_values.item1) {
-          ZagProfile.current.qbitUser = _values.item2;
-          ZagProfile.current.save();
+          _profile.qbitUser = _values.item2;
+          _profile.save();
           context.read<QBitState>().reset();
         }
       },
@@ -133,7 +136,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
   }
 
   Widget _password() {
-    String password = ZagProfile.current.qbitPass;
+    String password = _profile.qbitPass;
     return ZagBlock(
       title: 'settings.Password'.tr(),
       body: [
@@ -156,8 +159,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           ],
         );
         if (_values.item1) {
-          ZagProfile.current.qbitPass = _values.item2;
-          ZagProfile.current.save();
+          _profile.qbitPass = _values.item2;
+          _profile.save();
           context.read<QBitState>().reset();
         }
       },
@@ -174,7 +177,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
   }
 
   Widget _localHost() {
-    String localHost = ZagProfile.current.qbitLocalHost;
+    String localHost = _profile.qbitLocalHost;
     return ZagBlock(
       title: 'settings.LocalHost'.tr(),
       body: [
@@ -187,8 +190,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           prefill: localHost,
         );
         if (_values.item1) {
-          ZagProfile.current.qbitLocalHost = _values.item2;
-          ZagProfile.current.save();
+          _profile.qbitLocalHost = _values.item2;
+          _profile.save();
           await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<QBitState>().reset();
         }
@@ -197,7 +200,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
   }
 
   Widget _localSsids() {
-    String ssids = ZagProfile.current.qbitLocalSsids;
+    String ssids = _profile.qbitLocalSsids;
     return ZagBlock(
       title: 'settings.TrustedSsids'.tr(),
       body: [
@@ -214,8 +217,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           extraText: [TextSpan(text: 'settings.TrustedSsidsHint'.tr())],
         );
         if (_values.item1) {
-          ZagProfile.current.qbitLocalSsids = _values.item2;
-          ZagProfile.current.save();
+          _profile.qbitLocalSsids = _values.item2;
+          _profile.save();
           await ZagLocalConnectionService().refreshSsid(forceEvaluate: true);
           context.read<QBitState>().reset();
         }
@@ -231,8 +234,8 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
       builder: (context, ssid, _) {
         final advancedEnabled =
             ZagreusDatabase.NETWORKING_LOCAL_SWITCHING_ENABLED.read();
-        final hasLocalHost = ZagProfile.current.qbitLocalHost.isNotEmpty;
-        final hasSsids = ZagProfile.current.qbitLocalSsids.trim().isNotEmpty;
+        final hasLocalHost = _profile.qbitLocalHost.isNotEmpty;
+        final hasSsids = _profile.qbitLocalSsids.trim().isNotEmpty;
         final localConfigured = advancedEnabled && hasLocalHost && hasSsids;
 
         final title = 'settings.ConnectionStatus'.tr();
@@ -244,7 +247,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           );
         }
 
-        final trustedSsids = ZagProfile.current.qbitLocalSsids
+        final trustedSsids = _profile.qbitLocalSsids
             .split(',')
             .map((s) => s.trim())
             .where((s) => s.isNotEmpty)
@@ -281,7 +284,7 @@ class _State extends State<ConfigurationQBitConnectionDetailsRoute>
           message: '',
         );
         try {
-          final api = QBitAPI.from(ZagProfile.current);
+          final api = QBitAPI.from(_profile);
           final version = await api.testConnection();
           showZagSuccessSnackBar(
             title: 'settings.ConnectionSuccessful'.tr(),
