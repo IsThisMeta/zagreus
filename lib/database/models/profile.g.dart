@@ -105,13 +105,22 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
       sshEnabled: fields[76] == null ? false : fields[76] as bool?,
       sshLocalHost: fields[77] == null ? '' : fields[77] as String?,
       sshLocalSsids: fields[78] == null ? '' : fields[78] as String?,
+      qbitEnabled: fields[79] == null ? false : fields[79] as bool?,
+      qbitHost: fields[80] == null ? '' : fields[80] as String?,
+      qbitUser: fields[81] == null ? '' : fields[81] as String?,
+      qbitPass: fields[82] == null ? '' : fields[82] as String?,
+      qbitHeaders: fields[83] == null
+          ? {}
+          : (fields[83] as Map?)?.cast<String, String>(),
+      qbitLocalHost: fields[84] == null ? '' : fields[84] as String?,
+      qbitLocalSsids: fields[85] == null ? '' : fields[85] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ZagProfile obj) {
     writer
-      ..writeByte(67)
+      ..writeByte(74)
       ..writeByte(0)
       ..write(obj.lidarrEnabled)
       ..writeByte(1)
@@ -245,7 +254,21 @@ class ZagProfileAdapter extends TypeAdapter<ZagProfile> {
       ..writeByte(77)
       ..write(obj.sshLocalHost)
       ..writeByte(78)
-      ..write(obj.sshLocalSsids);
+      ..write(obj.sshLocalSsids)
+      ..writeByte(79)
+      ..write(obj.qbitEnabled)
+      ..writeByte(80)
+      ..write(obj.qbitHost)
+      ..writeByte(81)
+      ..write(obj.qbitUser)
+      ..writeByte(82)
+      ..write(obj.qbitPass)
+      ..writeByte(83)
+      ..write(obj.qbitHeaders)
+      ..writeByte(84)
+      ..write(obj.qbitLocalHost)
+      ..writeByte(85)
+      ..write(obj.qbitLocalSsids);
   }
 
   @override
@@ -351,6 +374,15 @@ ZagProfile _$ZagProfileFromJson(Map<String, dynamic> json) => ZagProfile(
       sshEnabled: json['sshEnabled'] as bool?,
       sshLocalHost: json['sshLocalHost'] as String?,
       sshLocalSsids: json['sshLocalSsids'] as String?,
+      qbitEnabled: json['qbitEnabled'] as bool?,
+      qbitHost: json['qbitHost'] as String?,
+      qbitUser: json['qbitUser'] as String?,
+      qbitPass: json['qbitPass'] as String?,
+      qbitHeaders: (json['qbitHeaders'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ),
+      qbitLocalHost: json['qbitLocalHost'] as String?,
+      qbitLocalSsids: json['qbitLocalSsids'] as String?,
     );
 
 Map<String, dynamic> _$ZagProfileToJson(ZagProfile instance) =>
@@ -422,4 +454,11 @@ Map<String, dynamic> _$ZagProfileToJson(ZagProfile instance) =>
       'sshEnabled': instance.sshEnabled,
       'sshLocalHost': instance.sshLocalHost,
       'sshLocalSsids': instance.sshLocalSsids,
+      'qbitEnabled': instance.qbitEnabled,
+      'qbitHost': instance.qbitHost,
+      'qbitUser': instance.qbitUser,
+      'qbitPass': instance.qbitPass,
+      'qbitHeaders': instance.qbitHeaders,
+      'qbitLocalHost': instance.qbitLocalHost,
+      'qbitLocalSsids': instance.qbitLocalSsids,
     };

@@ -14,6 +14,7 @@ import 'package:zagreus/modules/nzbget/core/state.dart';
 import 'package:zagreus/modules/tautulli/core/state.dart';
 import 'package:zagreus/modules/unraid/core/state.dart';
 import 'package:zagreus/modules/ssh/core/state.dart';
+import 'package:zagreus/modules/qbit/core/state.dart';
 import 'package:zagreus/modules.dart';
 import 'package:zagreus/router/router.dart';
 
@@ -44,6 +45,7 @@ class ZagState {
         ChangeNotifierProvider(create: (_) => TautulliState()),
         ChangeNotifierProvider(create: (_) => UnraidState()),
         ChangeNotifierProvider(create: (_) => SSHState()),
+        ChangeNotifierProvider(create: (_) => QBitState()),
       ],
       child: child,
     );

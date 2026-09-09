@@ -19,6 +19,7 @@ import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/unraid.dart';
 import 'package:zagreus/modules/readarr.dart';
 import 'package:zagreus/modules/ssh.dart';
+import 'package:zagreus/modules/qbit.dart';
 import 'package:zagreus/modules/dashboard/core/state.dart';
 import 'package:zagreus/api/wake_on_lan/wake_on_lan.dart';
 import 'package:zagreus/utils/zagreus_pro.dart';
@@ -42,6 +43,7 @@ const MODULE_UNRAID_KEY = 'unraid';
 const MODULE_READARR_KEY = 'readarr';
 const MODULE_BAZARR_KEY = 'bazarr';
 const MODULE_SSH_KEY = 'ssh';
+const MODULE_QBIT_KEY = 'qbit';
 
 @HiveType(typeId: 25, adapterName: 'ZagModuleAdapter')
 enum ZagModule {
@@ -78,7 +80,9 @@ enum ZagModule {
   @HiveField(16)
   BAZARR(MODULE_BAZARR_KEY),
   @HiveField(17)
-  SSH(MODULE_SSH_KEY);
+  SSH(MODULE_SSH_KEY),
+  @HiveField(18)
+  QBIT(MODULE_QBIT_KEY);
 
   final String key;
   const ZagModule(this.key);
@@ -119,6 +123,8 @@ enum ZagModule {
         return ZagModule.BAZARR;
       case MODULE_SSH_KEY:
         return ZagModule.SSH;
+      case MODULE_QBIT_KEY:
+        return ZagModule.QBIT;
     }
     return null;
   }
@@ -190,6 +196,8 @@ extension ZagModuleEnablementExtension on ZagModule {
         return ZagProfile.current.bazarrEnabled;
       case ZagModule.SSH:
         return ZagreusPro.isEnabled && ZagProfile.current.sshEnabled;
+      case ZagModule.QBIT:
+        return ZagProfile.hasEnabledInstance('qbit');
     }
   }
 }
@@ -231,6 +239,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Bazarr';
       case ZagModule.SSH:
         return 'SSH';
+      case ZagModule.QBIT:
+        return 'qBit';
     }
   }
 
@@ -270,6 +280,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return Icons.subtitles_rounded;
       case ZagModule.SSH:
         return Icons.terminal_rounded;
+      case ZagModule.QBIT:
+        return Icons.cloud_download_rounded;
     }
   }
 
@@ -309,6 +321,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return const Color(0xFFFFB949); // Bazarr yellow/orange
       case ZagModule.SSH:
         return const Color(0xFF4CAF50); // Terminal green
+      case ZagModule.QBIT:
+        return const Color(0xFF2F67BA); // qBittorrent blue
     }
   }
 
@@ -348,6 +362,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://bazarr.media';
       case ZagModule.SSH:
         return null;
+      case ZagModule.QBIT:
+        return 'https://www.qbittorrent.org';
     }
   }
 
@@ -387,6 +403,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'https://github.com/morpheus65535/bazarr';
       case ZagModule.SSH:
         return null;
+      case ZagModule.QBIT:
+        return 'https://github.com/qbittorrent/qBittorrent';
     }
   }
 
@@ -426,6 +444,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Manage Subtitles';
       case ZagModule.SSH:
         return 'Access Server Terminals';
+      case ZagModule.QBIT:
+        return 'Manage Torrent Downloads';
     }
   }
 
@@ -465,6 +485,8 @@ extension ZagModuleMetadataExtension on ZagModule {
         return 'Bazarr is a companion application to Sonarr and Radarr that manages and downloads subtitles based on your requirements. You can define your preferred languages in profiles and Bazarr takes care of everything for you.';
       case ZagModule.SSH:
         return 'Connect to your servers via SSH directly from Zagreus. Access terminal sessions, run commands, and manage your infrastructure without leaving the app. Supports password and private key authentication.';
+      case ZagModule.QBIT:
+        return 'qBittorrent is a free and open-source BitTorrent client. Monitor your torrents, pause and resume downloads, manage categories, and track download progress directly from Zagreus.';
     }
   }
 }
@@ -506,6 +528,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return null; // Bazarr is integrated into Radarr/Sonarr
       case ZagModule.SSH:
         return ZagRoutes.ssh.root.path;
+      case ZagModule.QBIT:
+        return ZagRoutes.qbit.root.path;
     }
   }
 
@@ -545,6 +569,8 @@ extension ZagModuleRoutingExtension on ZagModule {
         return SettingsRoutes.CONFIGURATION_BAZARR;
       case ZagModule.SSH:
         return SettingsRoutes.CONFIGURATION_SSH;
+      case ZagModule.QBIT:
+        return SettingsRoutes.CONFIGURATION_QBIT;
     }
   }
 
@@ -697,6 +723,8 @@ extension ZagModuleExtension on ZagModule {
         return null; // Bazarr doesn't have its own state - integrated into Radarr/Sonarr
       case ZagModule.SSH:
         return context.read<SSHState>();
+      case ZagModule.QBIT:
+        return context.read<QBitState>();
     }
   }
 

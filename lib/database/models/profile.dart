@@ -343,6 +343,34 @@ class ZagProfile extends HiveObject {
   @HiveField(78, defaultValue: '')
   String sshLocalSsids;
 
+  @JsonKey()
+  @HiveField(79, defaultValue: false)
+  bool qbitEnabled;
+
+  @JsonKey()
+  @HiveField(80, defaultValue: '')
+  String qbitHost;
+
+  @JsonKey()
+  @HiveField(81, defaultValue: '')
+  String qbitUser;
+
+  @JsonKey()
+  @HiveField(82, defaultValue: '')
+  String qbitPass;
+
+  @JsonKey()
+  @HiveField(83, defaultValue: <String, String>{})
+  Map<String, String> qbitHeaders;
+
+  @JsonKey()
+  @HiveField(84, defaultValue: '')
+  String qbitLocalHost;
+
+  @JsonKey()
+  @HiveField(85, defaultValue: '')
+  String qbitLocalSsids;
+
   ZagProfile._internal({
     //Lidarr
     required this.lidarrEnabled,
@@ -423,6 +451,14 @@ class ZagProfile extends HiveObject {
     required this.sshEnabled,
     required this.sshLocalHost,
     required this.sshLocalSsids,
+    //qBit
+    required this.qbitEnabled,
+    required this.qbitHost,
+    required this.qbitUser,
+    required this.qbitPass,
+    required this.qbitHeaders,
+    required this.qbitLocalHost,
+    required this.qbitLocalSsids,
   });
 
   factory ZagProfile({
@@ -505,6 +541,14 @@ class ZagProfile extends HiveObject {
     bool? sshEnabled,
     String? sshLocalHost,
     String? sshLocalSsids,
+    //qBit
+    bool? qbitEnabled,
+    String? qbitHost,
+    String? qbitUser,
+    String? qbitPass,
+    Map<String, String>? qbitHeaders,
+    String? qbitLocalHost,
+    String? qbitLocalSsids,
   }) {
     return ZagProfile._internal(
       // Lidarr
@@ -586,6 +630,14 @@ class ZagProfile extends HiveObject {
       sshEnabled: sshEnabled ?? false,
       sshLocalHost: sshLocalHost ?? '',
       sshLocalSsids: sshLocalSsids ?? '',
+      // qBit
+      qbitEnabled: qbitEnabled ?? false,
+      qbitHost: qbitHost ?? '',
+      qbitUser: qbitUser ?? '',
+      qbitPass: qbitPass ?? '',
+      qbitHeaders: qbitHeaders ?? {},
+      qbitLocalHost: qbitLocalHost ?? '',
+      qbitLocalSsids: qbitLocalSsids ?? '',
     );
   }
 
@@ -675,6 +727,12 @@ class ZagProfile extends HiveObject {
         remoteHost: bazarrHost,
         localHost: bazarrLocalHost,
         ssidList: bazarrLocalSsids,
+      );
+
+  String effectiveQbitHost() => ZagLocalConnectionService().resolveHost(
+        remoteHost: qbitHost,
+        localHost: qbitLocalHost,
+        ssidList: qbitLocalSsids,
       );
 
   // ============== Multi-Instance (Shadow Profile) Support ==============
@@ -988,6 +1046,7 @@ class ZagProfile extends HiveObject {
       case 'tautulli': return profile.tautulliEnabled;
       case 'seerr': return profile.seerrEnabled;
       case 'bazarr': return profile.bazarrEnabled;
+      case 'qbit': return profile.qbitEnabled;
       default: return false;
     }
   }

@@ -63,6 +63,10 @@ import 'package:zagreus/modules/settings/routes/configuration_bazarr/route.dart'
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/connection_details.dart';
 import 'package:zagreus/modules/settings/routes/configuration_bazarr/pages/headers.dart';
 import 'package:zagreus/modules/settings/routes/configuration_ssh/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_qbit/route.dart';
+import 'package:zagreus/modules/settings/routes/configuration_qbit/pages/connection_details.dart';
+import 'package:zagreus/modules/settings/routes/configuration_qbit/pages/headers.dart';
+import 'package:zagreus/modules/settings/routes/configuration_qbit/pages/default_pages.dart';
 import 'package:zagreus/modules/ssh/routes/ssh/pages/add_connection.dart';
 import 'package:zagreus/modules/ssh/routes/ssh/pages/edit_connection.dart';
 import 'package:zagreus/modules/settings/core/pages/headers.dart';
@@ -148,6 +152,10 @@ enum SettingsRoutes with ZagRoutesMixin {
   CONFIGURATION_SSH('ssh'),
   CONFIGURATION_SSH_ADD_CONNECTION('add'),
   CONFIGURATION_SSH_EDIT_CONNECTION('edit/:connectionId'),
+  CONFIGURATION_QBIT('qbit'),
+  CONFIGURATION_QBIT_CONNECTION_DETAILS('connection_details'),
+  CONFIGURATION_QBIT_CONNECTION_DETAILS_HEADERS('headers'),
+  CONFIGURATION_QBIT_DEFAULT_PAGES('default_pages'),
   Z_AGENT('z_agent'),
   NOTIFICATIONS('notifications'),
   PROFILES('profiles'),
@@ -348,6 +356,16 @@ enum SettingsRoutes with ZagRoutesMixin {
           final connectionId = state.pathParameters['connectionId'] ?? '';
           return SSHEditConnectionRoute(connectionId: connectionId);
         });
+      case SettingsRoutes.CONFIGURATION_QBIT:
+        return route(widget: const ConfigurationQBitRoute());
+      case SettingsRoutes.CONFIGURATION_QBIT_CONNECTION_DETAILS:
+        return route(widget: const ConfigurationQBitConnectionDetailsRoute());
+      case SettingsRoutes.CONFIGURATION_QBIT_CONNECTION_DETAILS_HEADERS:
+        return route(
+          widget: const ConfigurationQBitConnectionDetailsHeadersRoute(),
+        );
+      case SettingsRoutes.CONFIGURATION_QBIT_DEFAULT_PAGES:
+        return route(widget: const ConfigurationQBitDefaultPagesRoute());
       case SettingsRoutes.Z_AGENT:
         return route(widget: const ZAgentSettingsRoute());
       case SettingsRoutes.NOTIFICATIONS:
@@ -411,6 +429,7 @@ enum SettingsRoutes with ZagRoutesMixin {
           SettingsRoutes.CONFIGURATION_WAKE_ON_LAN.routes,
           SettingsRoutes.CONFIGURATION_BAZARR.routes,
           SettingsRoutes.CONFIGURATION_SSH.routes,
+          SettingsRoutes.CONFIGURATION_QBIT.routes,
           SettingsRoutes.Z_AGENT.routes,
         ];
       case SettingsRoutes.CONFIGURATION_DASHBOARD:
@@ -532,6 +551,15 @@ enum SettingsRoutes with ZagRoutesMixin {
         return [
           SettingsRoutes.CONFIGURATION_SSH_ADD_CONNECTION.routes,
           SettingsRoutes.CONFIGURATION_SSH_EDIT_CONNECTION.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_QBIT:
+        return [
+          SettingsRoutes.CONFIGURATION_QBIT_CONNECTION_DETAILS.routes,
+          SettingsRoutes.CONFIGURATION_QBIT_DEFAULT_PAGES.routes,
+        ];
+      case SettingsRoutes.CONFIGURATION_QBIT_CONNECTION_DETAILS:
+        return [
+          SettingsRoutes.CONFIGURATION_QBIT_CONNECTION_DETAILS_HEADERS.routes,
         ];
       case SettingsRoutes.CONFIGURATION_EXTERNAL_MODULES:
         return [

@@ -8,6 +8,7 @@ import 'package:zagreus/modules/sonarr.dart';
 import 'package:zagreus/modules/settings.dart';
 import 'package:zagreus/modules/tautulli.dart';
 import 'package:zagreus/modules/unraid.dart';
+import 'package:zagreus/modules/qbit.dart';
 
 class SettingsHeaderRoute extends StatefulWidget {
   final ZagModule module;
@@ -127,12 +128,14 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return profile.unraidHeaders;
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a headers page');
-      case ZagModule.READARR:
-        return profile.readarrHeaders;
       case ZagModule.BAZARR:
         return profile.bazarrHeaders;
       case ZagModule.SSH:
         throw Exception('SSH does not have a headers page');
+      case ZagModule.READARR:
+        return profile.readarrHeaders;
+      case ZagModule.QBIT:
+        return profile.qbitHeaders;
     }
   }
 
@@ -166,12 +169,14 @@ class _State extends State<SettingsHeaderRoute> with ZagScrollControllerMixin {
         return context.read<SeerrState>().reset();
       case ZagModule.DISCOVER:
         throw Exception('Discover does not have a global state');
-      case ZagModule.READARR:
-        return context.read<ReadarrState>().reset();
       case ZagModule.BAZARR:
-        return; // Bazarr doesn't have its own state
+        return;
       case ZagModule.SSH:
         throw Exception('SSH does not have a headers page');
+      case ZagModule.READARR:
+        return context.read<ReadarrState>().reset();
+      case ZagModule.QBIT:
+        return context.read<QBitState>().reset();
     }
   }
 }

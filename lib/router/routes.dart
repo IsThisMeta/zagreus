@@ -16,6 +16,7 @@ import 'package:zagreus/router/routes/sonarr.dart';
 import 'package:zagreus/router/routes/tautulli.dart';
 import 'package:zagreus/router/routes/discover.dart';
 import 'package:zagreus/router/routes/unraid.dart';
+import 'package:zagreus/router/routes/qbit.dart';
 import 'package:zagreus/router/routes/readarr.dart';
 import 'package:zagreus/router/routes/ssh.dart';
 import 'package:zagreus/vendor.dart';
@@ -37,6 +38,7 @@ enum ZagRoutes {
   discover('discover', root: DiscoverRoutes.HOME),
   unraid('unraid', root: UnraidRoutes.HOME),
   readarr('readarr', root: ReadarrRoutes.HOME),
+  qbit('qbit', root: QBitRoutes.HOME),
   ssh('ssh', root: SSHRoutes.HOME);
 
   final String key;
