@@ -3,78 +3,36 @@ import 'package:zagreus/core.dart';
 import 'package:zagreus/database/database.dart';
 import 'package:zagreus/database/models/external_module.dart';
 import 'package:zagreus/database/models/indexer.dart';
+import 'package:zagreus/database/models/ssh_connection.dart';
 import 'package:zagreus/database/table.dart';
 
 class ZagConfig {
   Future<void> import(BuildContext context, String data) async {
+    final incoming = _prepare(data);
+    final previous = _prepare(export());
+
     try {
-      // Parse JSON first before clearing to avoid wiping data on invalid backup
-      final decoded = json.decode(data);
-      if (decoded is! Map<String, dynamic>) {
-        throw const FormatException('Backup payload is not a JSON object');
-      }
-      final Map<String, dynamic> config = decoded;
-
-      // Now that we know the backup is valid JSON, clear the database
-      await ZagDatabase().clear();
-
-      // Helper to safely import sections without failing the whole import
-      void safeImport(String label, void Function() fn) {
-        try {
-          fn();
-        } catch (error, stack) {
-          ZagLogger().error('Failed to import $label', error, stack);
-        }
-      }
-
-      safeImport('profiles', () => _setProfiles(config[ZagBox.profiles.key]));
-      safeImport('indexers', () => _setIndexers(config[ZagBox.indexers.key]));
-      safeImport(
-        'external modules',
-        () => _setExternalModules(config[ZagBox.externalModules.key]),
-      );
-
-      for (final table in ZagTable.values) {
-        // Handle both new format (zagreus) and old format (lunasea)
-        dynamic tableData = config[table.key];
-
-        // Special handling for the main settings table - map lunasea -> zagreus
-        if (table.key == 'zagreus' && tableData == null && config['lunasea'] != null) {
-          tableData = config['lunasea'];
-        }
-
-        if (tableData == null) continue;
-
-        safeImport('table ${table.key}', () => table.import(tableData));
-      }
-
-      // Gracefully ignore unknown tables (from newer app versions or future modules)
-      final knownKeys = {
-        ...ZagTable.values.map((t) => t.key),
-        'lunasea', // Legacy table name
-        ZagBox.externalModules.key,
-        ZagBox.indexers.key,
-        ZagBox.profiles.key,
-      };
-      final unknownTables = config.keys
-          .where((key) => !knownKeys.contains(key))
-          .toList(growable: false);
-      if (unknownTables.isNotEmpty) {
-        ZagLogger().debug(
-          'Ignoring unknown tables in backup: ${unknownTables.join(', ')}',
-        );
-      }
-
-      if (!ZagProfile.list.contains(ZagreusDatabase.ENABLED_PROFILE.read())) {
-        ZagreusDatabase.ENABLED_PROFILE.update(ZagProfile.list[0]);
-      }
+      await _apply(incoming);
     } catch (error, stack) {
-      await ZagDatabase().bootstrap();
       ZagLogger().error(
-        'Failed to import configuration, resetting to default',
+        'Failed to import configuration, restoring previous configuration',
         error,
         stack,
       );
+
+      try {
+        await _apply(previous);
+      } catch (rollbackError, rollbackStack) {
+        ZagLogger().error(
+          'Failed to restore previous configuration after import failure',
+          rollbackError,
+          rollbackStack,
+        );
+        await ZagDatabase().bootstrap();
+      }
+
+      ZagState.reset(context);
+      rethrow;
     }
 
     ZagState.reset(context);
@@ -85,37 +43,143 @@ class ZagConfig {
     config[ZagBox.externalModules.key] = ZagBox.externalModules.export();
     config[ZagBox.indexers.key] = ZagBox.indexers.export();
     config[ZagBox.profiles.key] = ZagBox.profiles.export();
+    config[ZagBox.sshConnections.key] = ZagBox.sshConnections.export();
     for (final table in ZagTable.values) config[table.key] = table.export();
 
     return json.encode(config);
   }
 
-  void _setProfiles(List? data) {
-    if (data == null) return;
-
-    for (final item in data) {
-      final content = (item as Map).cast<String, dynamic>();
-      final key = content['key'] ?? 'default';
-      final obj = ZagProfile.fromJson(content);
-      ZagBox.profiles.update(key, obj);
+  _PreparedConfig _prepare(String data) {
+    final decoded = json.decode(data);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Backup payload is not a JSON object');
     }
+    final config = decoded;
+
+    List<dynamic> readList(String key, {bool required = false}) {
+      final value = config[key];
+      if (value == null && !required) return const [];
+      if (value is! List) {
+        throw FormatException('Backup section "$key" is not a list');
+      }
+      return value;
+    }
+
+    Map<String, dynamic> readObject(dynamic value, String label) {
+      if (value is! Map) {
+        throw FormatException('$label is not a JSON object');
+      }
+      return value.cast<String, dynamic>();
+    }
+
+    final profiles = readList(ZagBox.profiles.key, required: true).map((item) {
+      final content = readObject(item, 'Profile');
+      final key = content['key']?.toString() ?? ZagProfile.DEFAULT_PROFILE;
+      if (key.isEmpty) throw const FormatException('Profile key is empty');
+      return MapEntry(key, ZagProfile.fromJson(content));
+    }).toList(growable: false);
+    if (profiles.isEmpty) {
+      throw const FormatException('Backup contains no profiles');
+    }
+
+    final indexers = readList(ZagBox.indexers.key)
+        .map((item) => ZagIndexer.fromJson(readObject(item, 'Indexer')))
+        .toList(growable: false);
+    final externalModules = readList(ZagBox.externalModules.key)
+        .map(
+          (item) => ZagExternalModule.fromJson(
+            readObject(item, 'External module'),
+          ),
+        )
+        .toList(growable: false);
+    final sshConnections = readList(ZagBox.sshConnections.key).map((item) {
+      final connection = SSHConnection.fromJson(
+        readObject(item, 'SSH connection'),
+      );
+      if (connection.id.isEmpty) {
+        throw const FormatException('SSH connection ID is empty');
+      }
+      return connection;
+    }).toList(growable: false);
+
+    final tables = <ZagTable, Map<String, dynamic>>{};
+    for (final table in ZagTable.values) {
+      dynamic tableData = config[table.key];
+      if (table.key == 'zagreus' && tableData == null) {
+        tableData = config['lunasea'];
+      }
+      if (tableData != null) {
+        tables[table] = readObject(tableData, 'Table "${table.key}"');
+      }
+    }
+
+    final knownKeys = {
+      ...ZagTable.values.map((table) => table.key),
+      'lunasea',
+      ZagBox.externalModules.key,
+      ZagBox.indexers.key,
+      ZagBox.profiles.key,
+      ZagBox.sshConnections.key,
+    };
+    final unknownSections = config.keys
+        .where((key) => !knownKeys.contains(key))
+        .toList(growable: false);
+    if (unknownSections.isNotEmpty) {
+      ZagLogger().debug(
+        'Ignoring unknown backup sections: ${unknownSections.join(', ')}',
+      );
+    }
+
+    return _PreparedConfig(
+      profiles: profiles,
+      indexers: indexers,
+      externalModules: externalModules,
+      sshConnections: sshConnections,
+      tables: tables,
+    );
   }
 
-  void _setIndexers(List? data) {
-    if (data == null) return;
+  Future<void> _apply(_PreparedConfig config) async {
+    await ZagDatabase().clear();
 
-    for (final indexer in data) {
-      final obj = ZagIndexer.fromJson(indexer);
-      ZagBox.indexers.create(obj);
+    for (final profile in config.profiles) {
+      await ZagBox.profiles.update(profile.key, profile.value);
+    }
+    for (final indexer in config.indexers) {
+      await ZagBox.indexers.create(indexer);
+    }
+    for (final module in config.externalModules) {
+      await ZagBox.externalModules.create(module);
+    }
+    for (final connection in config.sshConnections) {
+      await ZagBox.sshConnections.update(connection.id, connection);
+    }
+    for (final entry in config.tables.entries) {
+      entry.key.import(entry.value);
+    }
+
+    final enabledProfile = ZagreusDatabase.ENABLED_PROFILE.read();
+    if (!ZagProfile.list.contains(enabledProfile)) {
+      await ZagBox.zagreus.update(
+        ZagreusDatabase.ENABLED_PROFILE.key,
+        config.profiles.first.key,
+      );
     }
   }
+}
 
-  void _setExternalModules(List? data) {
-    if (data == null) return;
+class _PreparedConfig {
+  final List<MapEntry<String, ZagProfile>> profiles;
+  final List<ZagIndexer> indexers;
+  final List<ZagExternalModule> externalModules;
+  final List<SSHConnection> sshConnections;
+  final Map<ZagTable, Map<String, dynamic>> tables;
 
-    for (final module in data) {
-      final obj = ZagExternalModule.fromJson(module);
-      ZagBox.externalModules.create(obj);
-    }
-  }
+  const _PreparedConfig({
+    required this.profiles,
+    required this.indexers,
+    required this.externalModules,
+    required this.sshConnections,
+    required this.tables,
+  });
 }
